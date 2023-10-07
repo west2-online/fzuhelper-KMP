@@ -103,7 +103,7 @@ fun NewsItem(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            PersonalInformation()
+            PersonalInformationArea()
             Surface (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -185,7 +185,7 @@ private operator fun String.times(int: Int): String {
 }
 
 @Composable
-fun PersonalInformation(
+fun PersonalInformationArea(
     url : String = "https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg",
     modifier: Modifier = Modifier
         .fillMaxWidth()
@@ -204,7 +204,7 @@ fun PersonalInformation(
                 .aspectRatio(1f)
                 .wrapContentSize(Alignment.Center)
                 .fillMaxSize(0.7f)
-                .clip(CircleShape),
+                .clip(RoundedCornerShape(10)),
             contentScale = ContentScale.FillBounds
         )
         Text(

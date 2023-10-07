@@ -4,6 +4,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
@@ -18,14 +19,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import ui.NewsScreen
+import ui.Personal
 
 
 @Composable
 fun Main(){
     Scaffold(
         drawerContent = {
-
+            Personal(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(all = 10.dp)
+            )
         },
         content = {
             Column(
@@ -35,7 +42,7 @@ fun Main(){
                 Surface (
                     modifier = Modifier.fillMaxWidth().weight(1f),
                 ){
-
+                    NewsScreen()
                 }
                 var selectedItem by remember { mutableStateOf(0) }
                 val items = listOf("Songs", "Artists", "Playlists")
