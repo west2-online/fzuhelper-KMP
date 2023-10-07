@@ -23,12 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import main.Main
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import ui.CommentInNewsDetail
 import ui.NewsDetail
 import ui.Personal
+import ui.route.RouteHost
 import ui.util.FuTalkTheme
 import kotlin.random.Random
 
@@ -36,31 +36,14 @@ import kotlin.random.Random
 @Composable
 fun App() {
     FuTalkTheme {
-        Scaffold(
-            drawerContent = {
-                Personal()
-            }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) {
-                    NewsDetail(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(10.dp)
-                    )
-
-                }
-            }
-        }
+        RouteHost(
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
 
 expect fun getPlatformName(): String
+
+@Composable
+expect fun BackHandler(isEnabled: Boolean, onBack: ()-> Unit)

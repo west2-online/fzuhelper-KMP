@@ -29,6 +29,7 @@ kotlin {
                 //图像
                 implementation("media.kamel:kamel-image:0.7.3")
                 implementation("io.ktor:ktor-client-core:2.3.4")
+                api("com.rickclephas.kmm:kmm-viewmodel-core:1.0.0-ALPHA-14")
             }
         }
         val androidMain by getting {
