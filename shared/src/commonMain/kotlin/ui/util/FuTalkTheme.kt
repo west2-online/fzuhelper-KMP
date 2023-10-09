@@ -23,6 +23,7 @@ fun FuTalkTheme(
         colors = MaterialTheme.colors.copy(
             primary = Color(6, 128, 215),
             primaryVariant = Color(6, 128, 215),
+            surface = Color(216, 216, 238)
         )
         ,content = content
     )

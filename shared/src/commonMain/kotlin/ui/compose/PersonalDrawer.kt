@@ -20,7 +20,7 @@ import io.kamel.image.asyncPainterResource
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun Personal(
+fun PersonalDrawer(
     modifier: Modifier = Modifier
 ){
     Column(
