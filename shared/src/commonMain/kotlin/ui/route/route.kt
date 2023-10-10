@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import main.MainScreen
 import ui.NewsDetail
+import ui.compose.Massage.MassageScreen
 import ui.compose.ReleasePageScreen
 
 @Composable
@@ -20,7 +21,11 @@ fun RouteHost(
     modifier: Modifier = Modifier
 ){
     val route = remember {
-        mutableStateListOf<Route>(Route.ReleasePage(  "1",""))
+        mutableStateListOf<Route>(
+            Route.Massage.Builder()
+                .setRoute("massage")
+                .build()
+        )
     }
     val currentPage = remember(route){
         derivedStateOf {
@@ -38,7 +43,8 @@ fun RouteHost(
 interface Route{
     val route: String
     val content : @Composable ( SnapshotStateList<Route> ) -> Unit
-    data class RouteNewsDetail(
+    abstract class Build
+    class RouteNewsDetail private constructor(
         val id: String,
         override val route: String,
         override val content : @Composable (
@@ -46,17 +52,55 @@ interface Route{
         ) -> Unit = {
             NewsDetail()
         }
-    ): Route
+    ): Route{
+        class Builder {
+            private var route: String? = null
+            private var id : String? = null
+            fun setRoute(route: String): Builder {
+                this.route = route
+                return this
+            }
+            fun setId(id:String) : Builder {
+                this.id = id
+                return this
+            }
+            fun build(): RouteNewsDetail {
+                return RouteNewsDetail(
+                    route!!,
+                    id!!
+                )
+            }
+        }
+    }
 
-    data class Main(
+    class Main private constructor(
         val id: String,
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
             MainScreen(it)
         }
-    ) : Route
+    ) : Route{
+        class Builder {
+            private var id:String? = null
+            private var route : String? = null
+            fun setId(id: String): Builder {
+                this.id = id
+                return this
+            }
+            fun setRoute(route: String): Builder {
+                this.route = route
+                return this
+            }
+            fun build(): Main {
+                return Main(
+                    id!!,
+                    route!!
+                )
+            }
+        }
+    }
 
-    data class ReleasePage(
+    class ReleasePage private constructor(
         val id: String,
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
@@ -66,15 +110,76 @@ interface Route{
                     .padding(horizontal = 10.dp)
             )
         }
-    ) : Route
+    ) : Route{
+        class Builder {
+            private var id: String? = null
+            private var route: String? = null
+            fun setId(id: String): Builder {
+                this.id = id
+                return this
+            }
+            fun setRoute(route: String): Builder {
+                this.route = route
+                return this
+            }
+            fun build(): ReleasePage {
+                return ReleasePage(
+                    id!!,
+                    route!!
+                )
+            }
+        }
+    }
 
-    data class Person(
+    class Person private constructor(
         val isSelf : Boolean = false,
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
             MainScreen(it)
         }
-    ) : Route
+    ) : Route{
+        class Builder {
+            private val isSelf : Boolean? = null
+            private var route: String? = null
+            fun setRoute(route: String): Builder {
+                this.route = route
+                return this
+            }
+            fun build(): Person {
+                return Person(
+                    isSelf!!,
+                    route!!
+                )
+            }
+        }
+    }
+
+    class Massage private constructor(
+        override val route: String,
+        override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
+            MassageScreen(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding( all = 10.dp )
+            ) {
+
+            }
+        }
+    ):Route{
+        class Builder {
+            private var route: String? = null
+            fun setRoute(firstName: String): Builder {
+                this.route = firstName
+                return this
+            }
+            fun build(): Massage {
+                return Massage(
+                    route!!,
+                )
+            }
+        }
+    }
+
 }
 
 
