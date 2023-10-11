@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import main.MainScreen
 import ui.NewsDetail
-import ui.compose.Massage.MassageScreen
+import ui.compose.Massage.MassageDetail
 import ui.compose.ReleasePageScreen
 
 @Composable
@@ -43,7 +43,7 @@ fun RouteHost(
 interface Route{
     val route: String
     val content : @Composable ( SnapshotStateList<Route> ) -> Unit
-    abstract class Build
+
     class RouteNewsDetail private constructor(
         val id: String,
         override val route: String,
@@ -157,13 +157,14 @@ interface Route{
     class Massage private constructor(
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
-            MassageScreen(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding( all = 10.dp )
-            ) {
-
-            }
+//            MassageScreen(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding( all = 10.dp )
+//            ) {
+//
+//            }
+            MassageDetail()
         }
     ):Route{
         class Builder {
