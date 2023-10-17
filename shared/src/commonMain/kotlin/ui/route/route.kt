@@ -10,9 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import main.MainScreen
-import ui.NewsDetail
-import ui.compose.Massage.MassageDetail
+import ui.compose.main.MainScreen
+import ui.compose.NEW.NewsDetail
+import ui.compose.Massage.MassageScreen
 import ui.compose.ReleasePageScreen
 
 @Composable
@@ -22,8 +22,9 @@ fun RouteHost(
 ){
     val route = remember {
         mutableStateListOf<Route>(
-            Route.Massage.Builder()
+            Route.Main.Builder()
                 .setRoute("massage")
+                .setId("massage")
                 .build()
         )
     }
@@ -157,14 +158,13 @@ interface Route{
     class Massage private constructor(
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
-//            MassageScreen(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding( all = 10.dp )
-//            ) {
-//
-//            }
-            MassageDetail()
+            MassageScreen(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding( all = 10.dp )
+            ) {
+
+            }
         }
     ):Route{
         class Builder {

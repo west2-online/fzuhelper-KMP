@@ -1,4 +1,4 @@
-package ui
+package ui.compose.NEW
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateIntAsState
@@ -53,11 +53,11 @@ import ui.util.Label
 
 
 @Composable
-fun NewsScreen(){
+fun NewsScreen(
+    modifier: Modifier = Modifier
+){
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(vertical = 10.dp),
+        modifier = modifier,
     ){
         items(10){
             NewsItem()
@@ -152,7 +152,7 @@ fun NewsItem(
                     }
                 ){
                     Text(
-                        text = if (isUnfold) "收进" else "展多"
+                        text = if (isUnfold) "收起" else "展开"
                     )
                 }
             }

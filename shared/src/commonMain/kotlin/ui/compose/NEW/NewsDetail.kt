@@ -1,4 +1,4 @@
-package ui
+package ui.compose.NEW
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box

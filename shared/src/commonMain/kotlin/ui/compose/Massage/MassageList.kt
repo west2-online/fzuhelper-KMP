@@ -24,7 +24,7 @@ import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -122,7 +122,7 @@ fun MassageList(
                     .size(40.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Done,
+                    imageVector = Icons.Filled.KeyboardArrowDown,
                     modifier = Modifier
                         .rotate(remote.value)
                         .size(35.dp),
