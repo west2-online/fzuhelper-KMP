@@ -10,22 +10,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ui.compose.main.MainScreen
-import ui.compose.NEW.NewsDetail
 import ui.compose.Massage.MassageScreen
+import ui.compose.NEW.NewsDetail
+import ui.compose.PERSON.PersonalDrawer
 import ui.compose.ReleasePageScreen
+import ui.compose.main.MainScreen
 
 @Composable
 fun RouteHost(
     back:()->Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    start: Route = Route.Main.Builder()
+        .setRoute("massage")
+        .setId("massage")
+        .build()
 ){
     val route = remember {
         mutableStateListOf<Route>(
-            Route.Main.Builder()
-                .setRoute("massage")
-                .setId("massage")
-                .build()
+            start
         )
     }
     val currentPage = remember(route){
@@ -78,7 +80,11 @@ interface Route{
         val id: String,
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
-            MainScreen(it)
+//            MainScreen(it)
+            PersonalDrawer(
+                modifier = Modifier
+                    .padding(10.dp),
+            )
         }
     ) : Route{
         class Builder {
