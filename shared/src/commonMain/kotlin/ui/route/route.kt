@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import ui.compose.Massage.MassageScreen
 import ui.compose.NEW.NewsDetail
 import ui.compose.PERSON.PersonalDrawer
-import ui.compose.ReleasePageScreen
+import ui.compose.Release.ReleasePageScreen
 import ui.compose.main.MainScreen
 
 @Composable

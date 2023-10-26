@@ -1,4 +1,4 @@
-package ui.compose
+package ui.compose.Release
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -137,7 +137,7 @@ fun ReleasePageScreen(
                             .wrapContentSize(Alignment.Center)
                             .clip(RoundedCornerShape(10))
                             .clickable {
-                                releasePageItems.add(ReleasePageItem.TextItem(releasePageItems.size - 1 ))
+                                releasePageItems.add(ReleasePageItem.TextItem(releasePageItems.size - 1))
                                 scope.launch{
                                     lazyListState.animateScrollToItem(releasePageItems.size - 1)
                                 }
@@ -157,7 +157,7 @@ fun ReleasePageScreen(
                             .clip(RoundedCornerShape(10))
                             .clickable {
                                 scope.launch{
-                                    releasePageItems.add(ReleasePageItem.ImageItem(releasePageItems.size - 1 ))
+                                    releasePageItems.add(ReleasePageItem.ImageItem(releasePageItems.size - 1))
                                     lazyListState.animateScrollToItem(releasePageItems.size - 1)
                                 }
                             }
@@ -221,10 +221,10 @@ interface ReleasePageItem{
     val order:Int
     data class TextItem(
         override val order: Int
-    ) :ReleasePageItem
+    ) : ReleasePageItem
     data class ImageItem(
         override val order: Int
-    ) :ReleasePageItem
+    ) : ReleasePageItem
 }
 
 
