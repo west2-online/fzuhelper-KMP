@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ui.compose.Massage.MassageScreen
 import ui.compose.NEW.NewsDetail
-import ui.compose.PERSON.PersonalDrawer
 import ui.compose.Release.ReleasePageScreen
+import ui.compose.Ribbon.Ribbon
 import ui.compose.main.MainScreen
 
 @Composable
@@ -81,7 +81,7 @@ interface Route{
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
 //            MainScreen(it)
-            PersonalDrawer(
+            Ribbon(
                 modifier = Modifier
                     .padding(10.dp),
             )
