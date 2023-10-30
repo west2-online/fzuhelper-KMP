@@ -10,10 +10,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ui.compose.Authentication.Register
 import ui.compose.Massage.MassageScreen
 import ui.compose.NEW.NewsDetail
 import ui.compose.Release.ReleasePageScreen
-import ui.compose.Ribbon.Ribbon
 import ui.compose.main.MainScreen
 
 @Composable
@@ -81,9 +81,25 @@ interface Route{
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
 //            MainScreen(it)
-            Ribbon(
+//            Ribbon(
+//                modifier = Modifier
+//                    .padding(10.dp),
+//            )
+//            Box(
+//                modifier = Modifier.fillMaxSize()
+//                    .loadAction()
+//            ){
+//
+//            }
+//            SplashPage(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding(10.dp)
+//            )
+            Register(
                 modifier = Modifier
-                    .padding(10.dp),
+                    .fillMaxSize()
+                    .padding(10.dp)
             )
         }
     ) : Route{

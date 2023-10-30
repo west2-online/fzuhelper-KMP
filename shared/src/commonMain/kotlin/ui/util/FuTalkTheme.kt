@@ -54,19 +54,16 @@ fun Modifier.shimmerLoadingAnimation(
     widthOfShadowBrush: Int = 500,
     angleOfAxisY: Float = 270f,
     durationMillis: Int = 1000,
+    colorList : List<Color> = listOf(
+        Color.Black.copy(alpha = 0.3f),
+        Color.Black.copy(alpha = 0.5f),
+        Color.Black.copy(alpha = 0.7f),
+        Color.Black.copy(alpha = 0.5f),
+        Color.Black.copy(alpha = 0.3f),
+    )
 ): Modifier {
     return composed {
-
-        val shimmerColors = listOf(
-            Color.Black.copy(alpha = 0.3f),
-            Color.Black.copy(alpha = 0.5f),
-            Color.Black.copy(alpha = 1.0f),
-            Color.Black.copy(alpha = 0.5f),
-            Color.Black.copy(alpha = 0.3f),
-        )
-
         val transition = rememberInfiniteTransition(label = "")
-
         val translateAnimation = transition.animateFloat(
             initialValue = 0f,
             targetValue = (durationMillis + widthOfShadowBrush).toFloat(),
@@ -82,7 +79,7 @@ fun Modifier.shimmerLoadingAnimation(
 
         this.background(
             brush = Brush.linearGradient(
-                colors = shimmerColors,
+                colors = colorList,
                 start = Offset(x = translateAnimation.value - widthOfShadowBrush, y = 0.0f),
                 end = Offset(x = translateAnimation.value, y = angleOfAxisY),
             ),
