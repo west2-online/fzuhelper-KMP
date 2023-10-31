@@ -10,7 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ui.compose.Authentication.Register
+import ui.compose.Authentication.Login
 import ui.compose.Massage.MassageScreen
 import ui.compose.NEW.NewsDetail
 import ui.compose.Release.ReleasePageScreen
@@ -96,7 +96,7 @@ interface Route{
 //                    .fillMaxSize()
 //                    .padding(10.dp)
 //            )
-            Register(
+            Login(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(10.dp)
