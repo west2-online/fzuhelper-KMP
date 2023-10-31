@@ -48,7 +48,8 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun Login(
-    modifier: Modifier
+    modifier: Modifier,
+    navigateToRegister:()->Unit
 ){
     var userEmail by remember {
         mutableStateOf("")
@@ -116,7 +117,10 @@ fun Login(
             )
         }
         item {
-            Row {
+            Row (
+                modifier = Modifier
+                    .padding(vertical = 10.dp)
+            ){
                 TextField(
                     value = captcha,
                     onValueChange = {
@@ -128,13 +132,12 @@ fun Login(
                     maxLines = 1,
                     singleLine = true,
                     modifier = Modifier
-                        .then(if(editAble) Modifier.weight(1f).padding(vertical = 10.dp) else Modifier.width(0.dp))
+                        .then(if(editAble) Modifier.weight(1f).padding(end = 10.dp) else Modifier.width(0.dp))
                         .height(56.dp)
                         .animateContentSize()
                 )
                 Row(
                     modifier = Modifier
-                        .padding(10.dp)
                         .then(
                             if (!editAble) Modifier.weight(1f).height(56.dp) else Modifier.size(56.dp)
                         )
@@ -176,7 +179,7 @@ fun Login(
             ){
                 Button(
                     onClick = {
-                        toast = "我已经登录"
+                        navigateToRegister.invoke()
                     },
                     shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(

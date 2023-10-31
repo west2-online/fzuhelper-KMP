@@ -49,7 +49,8 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun Register(
-        modifier: Modifier
+    modifier: Modifier,
+    navigateToLogin: () -> Unit
 ) {
     var studentCode by remember {
         mutableStateOf("")
@@ -108,7 +109,7 @@ fun Register(
                 maxLines = 1,
                 singleLine = true,
                 modifier = Modifier
-                    .padding(10.dp)
+                    .padding(vertical = 10.dp)
                     .fillMaxWidth()
                     .height(56.dp)
             )
@@ -125,7 +126,7 @@ fun Register(
                 maxLines = 1,
                 singleLine = true,
                 modifier = Modifier
-                    .padding(10.dp)
+                    .padding(vertical = 10.dp)
                     .fillMaxWidth()
                     .height(56.dp),
                 visualTransformation = PasswordVisualTransformation()
@@ -143,7 +144,7 @@ fun Register(
                 maxLines = 1,
                 singleLine = true,
                 modifier = Modifier
-                    .padding(10.dp)
+                    .padding(vertical = 10.dp)
                     .fillMaxWidth()
                     .height(56.dp)
             )
@@ -160,7 +161,7 @@ fun Register(
                 maxLines = 1,
                 singleLine = true,
                 modifier = Modifier
-                    .padding(10.dp)
+                    .padding(vertical = 10.dp)
                     .fillMaxWidth()
                     .height(56.dp),
                 visualTransformation = PasswordVisualTransformation()
@@ -178,14 +179,16 @@ fun Register(
                 maxLines = 1,
                 singleLine = true,
                 modifier = Modifier
-                    .padding(10.dp)
                     .fillMaxWidth()
                     .height(56.dp),
                 visualTransformation = PasswordVisualTransformation()
             )
         }
         item {
-            Row {
+            Row (
+                modifier = Modifier
+                    .padding(vertical = 10.dp)
+            ){
                 TextField(
                     value = captcha,
                     onValueChange = {
@@ -197,13 +200,12 @@ fun Register(
                     maxLines = 1,
                     singleLine = true,
                     modifier = Modifier
-                        .then(if(editAble) Modifier.weight(1f).padding(10.dp) else Modifier.width(0.dp))
+                        .then(if(editAble) Modifier.weight(1f).padding(end = 10.dp) else Modifier.width(0.dp))
                         .height(56.dp)
                         .animateContentSize()
                 )
                 Row(
                     modifier = Modifier
-                        .padding(10.dp)
                         .then(
                             if (!editAble) Modifier.weight(1f).height(56.dp) else Modifier.size(56.dp)
                         )
@@ -257,7 +259,7 @@ fun Register(
             ){
                 Button(
                     onClick = {
-                              toast = "我已经登录"
+                        navigateToLogin.invoke()
                     },
                     shape = RoundedCornerShape(10.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(
