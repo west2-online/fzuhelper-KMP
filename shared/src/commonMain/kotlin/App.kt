@@ -1,6 +1,10 @@
+
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import dev.icerock.moko.resources.desc.Resource
+import dev.icerock.moko.resources.desc.StringDesc
+import org.example.library.MR
 import ui.route.RouteHost
 import ui.util.FuTalkTheme
 
@@ -14,8 +18,12 @@ fun App() {
         )
     }
 }
-
-
+//fun getMyPluralDesc(quantity: Int): StringDesc {
+//    return StringDesc.Plural(MR.plurals.my_string, quantity)
+//}
+fun getMyString(): StringDesc {
+    return StringDesc.Resource(MR.strings.my_string)
+}
 expect fun getPlatformName(): String
 
 @Composable

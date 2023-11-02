@@ -34,6 +34,7 @@ fun Label(
         backgroundColor = Color(224, 244, 255),
         shape = RoundedCornerShape(100)
     ) {
+//        val string: String = stringResource(MR.strings.my_string)
         Text(
             string,
             fontSize = 10.sp,

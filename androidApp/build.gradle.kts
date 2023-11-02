@@ -11,7 +11,6 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(project(":shared"))
-
             }
         }
     }
@@ -37,4 +36,12 @@ android {
     kotlin {
         jvmToolchain(17)
     }
+//    buildTypes {
+//        debug {
+//            initWith debug
+//            matchingFallbacks = ['debug']
+//        }
+//    }
+
 }
+

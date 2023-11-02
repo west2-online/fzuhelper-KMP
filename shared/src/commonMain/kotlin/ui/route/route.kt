@@ -99,6 +99,7 @@ interface Route{
             Assembly(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(horizontal = 20.dp)
             )
         }
     ) : Route{

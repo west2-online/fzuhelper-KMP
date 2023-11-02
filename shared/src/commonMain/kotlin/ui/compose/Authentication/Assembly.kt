@@ -31,6 +31,7 @@ fun Assembly(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(10.dp)
+
                 ) {
                     scope.launch {
                         pageState.animateScrollToPage(1)

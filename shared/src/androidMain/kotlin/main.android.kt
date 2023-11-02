@@ -8,3 +8,4 @@ actual fun getPlatformName(): String = "Android"
 actual fun BackHandler(isEnabled: Boolean, onBack: () -> Unit) {
     androidx.activity.compose.BackHandler(isEnabled, onBack)
 }
+

@@ -2,11 +2,13 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("org.jetbrains.compose")
+    id("dev.icerock.mobile.multiplatform-resources")
+
 }
 
+@OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 kotlin {
     androidTarget()
-
     listOf(
         iosX64(),
         iosArm64(),
@@ -15,6 +17,9 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "shared"
             isStatic = true
+            baseName = "MultiPlatformLibrary"
+            export("dev.icerock.moko:resources:0.23.0")
+            export("dev.icerock.moko:graphics:0.9.0") // toUIColor here
         }
     }
     val koin_version = "3.5.0"
@@ -41,9 +46,14 @@ kotlin {
                 // compose multiplatform
                 api("dev.icerock.moko:permissions-compose:0.16.0") // permissions api + compose extensions
                 implementation("dev.icerock.moko:permissions-test:0.16.0")
+
+                api("dev.icerock.moko:resources:0.23.0")
+                api("dev.icerock.moko:resources-compose:0.23.0") // for compose multiplatform
+                api("dev.icerock.moko:resources-test:0.23.0")
             }
         }
         val androidMain by getting {
+            dependsOn(commonMain)
             dependencies {
                 api("androidx.activity:activity-compose:1.7.2")
                 api("androidx.appcompat:appcompat:1.6.1")
@@ -88,3 +98,12 @@ android {
         jvmToolchain(17)
     }
 }
+
+multiplatformResources {
+    multiplatformResourcesPackage = "org.example.library" // required
+//    multiplatformResourcesClassName = "SharedRes" // optional, default MR
+//    multiplatformResourcesVisibility = MRVisibility.Internal // optional, default Public
+//    iosBaseLocalizationRegion = "en" // optional, default "en"
+//    multiplatformResourcesSourceSet = "commonClientMain"  // optional, default "commonMain"
+}
+
