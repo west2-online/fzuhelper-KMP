@@ -11,7 +11,7 @@ import ui.util.FuTalkTheme
 
 
 @Composable
-fun App() {
+fun App(){
     FuTalkTheme {
         RouteHost(
             modifier = Modifier.fillMaxSize()

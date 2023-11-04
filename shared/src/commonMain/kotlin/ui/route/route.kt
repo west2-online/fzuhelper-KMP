@@ -10,11 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ui.compose.Authentication.Assembly
 import ui.compose.Massage.MassageScreen
-import ui.compose.NEW.NewsDetail
+import ui.compose.New.NewsDetail
 import ui.compose.Release.ReleasePageScreen
-import ui.compose.main.MainScreen
 
 @Composable
 fun RouteHost(
@@ -81,6 +79,11 @@ interface Route{
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
 //            MainScreen(it)
+//            Main(it)
+            NewsDetail(
+                modifier = Modifier
+                    .padding(10.dp)
+            )
 //            Ribbon(
 //                modifier = Modifier
 //                    .padding(10.dp),
@@ -96,11 +99,19 @@ interface Route{
 //                    .fillMaxSize()
 //                    .padding(10.dp)
 //            )
-            Assembly(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-            )
+//            Assembly(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding(horizontal = 20.dp)
+//            )
+//            FeedbackDetail(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//            )
+//            FeedbackList(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//            )
         }
     ) : Route{
         class Builder {
@@ -158,7 +169,7 @@ interface Route{
         val isSelf : Boolean = false,
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
-            MainScreen(it)
+//            MainScreen(it)
         }
     ) : Route{
         class Builder {

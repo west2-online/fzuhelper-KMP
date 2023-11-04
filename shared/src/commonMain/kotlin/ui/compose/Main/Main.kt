@@ -1,4 +1,4 @@
-package ui.compose.main
+package ui.compose.Main
 
 import BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -31,14 +31,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import ui.compose.Massage.MassageScreen
-import ui.compose.NEW.NewsScreen
+import ui.compose.New.NewsScreen
 import ui.compose.PERSON.PersonalDrawer
 import ui.route.Route
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainScreen(
+fun Main(
     route : SnapshotStateList<Route>
 ){
     BackHandler(true){

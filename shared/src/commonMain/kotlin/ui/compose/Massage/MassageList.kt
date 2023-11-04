@@ -232,8 +232,7 @@ fun MassageItem(
                 text,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
-                    .background(Color.Red),
+                    .wrapContentHeight(),
                 maxLines = 1
             )
         }

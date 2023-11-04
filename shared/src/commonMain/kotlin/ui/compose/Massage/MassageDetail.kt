@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,16 +21,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.flow.map
@@ -75,25 +77,40 @@ fun MassageDetail(
     }
 
     Box(modifier){
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize(),
-            state = listState,
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(50.dp))
-            }
-            items(30) {
-                MassageDetailItem(
-                    modifier = Modifier
-                        .padding(bottom = 10.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .animateContentSize()
-                ) {
-                    TextWithLink()
+        Column {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                state = listState,
+            ) {
+                item {
+                    Spacer(modifier = Modifier.height(50.dp))
                 }
+                items(30) {
+                    MassageDetailItem(
+                        modifier = Modifier
+                            .padding(bottom = 30.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .animateContentSize()
+                    ) {
+                        TextWithLink()
+                    }
+                }
+
             }
+            TextField(
+                value = "",
+                onValueChange = {},
+                label = {
+                    Text("回复")
+                },
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth()
+                    .height(56.dp)
+            )
         }
         AnimatedVisibility(
             visible = isShowTopBar.value,
@@ -147,7 +164,8 @@ fun TextWithLink(
     modifier: Modifier = Modifier
 ){
     Column (
-        modifier = modifier
+        modifier = modifier,
+        horizontalAlignment = Alignment.End
     ) {
         Text("sssssssssssssssssssssssssssssssssssssssssssssssss")
         FloatingActionButton(
@@ -159,10 +177,20 @@ fun TextWithLink(
             shape = RoundedCornerShape(10.dp)
         ) {
             Text(
-                "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+                "https://github.com/",
                 modifier = Modifier
                     .padding(10.dp)
             )
         }
+        Text(
+            "2023.10.1",
+            modifier = Modifier.padding( top = 10.dp ),
+            fontSize = 10.sp
+        )
+        Text(
+            "In FuZhou",
+            modifier = Modifier.padding( ),
+            fontSize = 10.sp
+        )
     }
 }
