@@ -1,4 +1,4 @@
-package ui.compose.NEW
+package ui.compose.New
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateIntAsState
