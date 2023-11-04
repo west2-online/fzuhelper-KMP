@@ -48,7 +48,7 @@ fun SplashPage(
             show = false
         }
     }
-    val textList = listOf("TTTTTTTTTTTTTTTTTTT","SSSSSSSSSSSSS","wwwwwwww")
+    val textList = listOf("落霞与孤鹜齐飞","秋水共长天一色")
     LazyColumn (
         modifier = modifier
             .clickable {
