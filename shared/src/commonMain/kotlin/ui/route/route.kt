@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ui.compose.Massage.MassageScreen
 import ui.compose.New.NewsDetail
+import ui.compose.New.NewsScreen
 import ui.compose.Release.ReleasePageScreen
 
 @Composable
@@ -80,10 +81,11 @@ interface Route{
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
 //            MainScreen(it)
 //            Main(it)
-            NewsDetail(
-                modifier = Modifier
-                    .padding(10.dp)
-            )
+//            NewsDetail(
+//                modifier = Modifier
+//                    .padding(10.dp)
+//            )
+            NewsScreen()
 //            Ribbon(
 //                modifier = Modifier
 //                    .padding(10.dp),

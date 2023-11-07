@@ -1,7 +1,10 @@
 package repository.register.bean
 
-data class Root(
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class AuthenticationResponse(
     val code: Int,
-    val `data`: Any,
+    val `data`: String,
     val msg: String
 )

@@ -2,11 +2,11 @@ package ui.compose.New
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
@@ -41,8 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -88,6 +84,10 @@ fun NewsItem(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .clickable {
+
+                }
+                .padding(10.dp)
         ) {
             PersonalInformationArea()
             Surface (
@@ -100,17 +100,7 @@ fun NewsItem(
                         .fillMaxSize(),
                 ) {
                     repeat(30) {
-//                        Text(
-//                            text = it.toString(),
-//                            fontSize = 30.sp,
-//                            textAlign = TextAlign.Center,
-//                            color = Color.Black,
-//                            modifier = Modifier
-//                                .width((50..100).random().dp)//宽度度使用了随机值，模拟瀑布流效果
-//                                .wrapContentHeight()
-//                                .background(color = Color.LightGray)
-//                        )
-                        Label("s"*((1..10).random()))
+                        Label("#"+"s"*((1..10).random()))
                     }
                 }
             }
@@ -125,6 +115,7 @@ fun NewsItem(
             )
             Text(
                 modifier = Modifier
+                    .padding(top = 10.dp)
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .padding(end = 10.dp),
@@ -136,6 +127,7 @@ fun NewsItem(
             )
             Text(
                 modifier = Modifier
+                    .padding(top = 10.dp)
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .animateContentSize(),
@@ -144,8 +136,14 @@ fun NewsItem(
                 fontSize = 10.sp,
                 text = "测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试试测试测试测试测试"
             )
-            Row {
-                Spacer(modifier = Modifier.weight(1f))
+            Row (
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = "2023.0.01",
+                    fontSize = 10.sp
+                )
                 Button(
                     onClick = {
                         isUnfold = !isUnfold
@@ -188,7 +186,7 @@ fun PersonalInformationArea(
             modifier = Modifier
                 .fillMaxHeight()
                 .aspectRatio(1f)
-                .wrapContentSize(Alignment.Center)
+                .wrapContentSize(Alignment.CenterStart)
                 .fillMaxSize(0.7f)
                 .clip(RoundedCornerShape(10)),
             contentScale = ContentScale.FillBounds
@@ -205,22 +203,7 @@ fun PersonalInformationArea(
     }
 }
 
-@Composable
-fun LabelGrid(
-    modifier: Modifier
-){
-    LazyVerticalGrid(
-        modifier = modifier,
-        columns = GridCells.Adaptive(minSize = 50.dp),
-    ){
-        items(6){
-            Button({}){
-                Text("ssss")
-            }
-        }
-    }
 
-}
 @Composable
 fun Interaction(
     modifier: Modifier
@@ -258,49 +241,7 @@ fun Interaction(
     }
 }
 
-@Composable
-fun LabelFlowRow(
-    modifier: Modifier = Modifier,
-    content:@Composable  () -> Unit
-) {
-    Layout(
-        modifier = modifier,
-        measurePolicy = { measurables, constraints ->
-            val placeables = measurables.map { it.measure(constraints) }
-            val constraintsGroup = mutableListOf<List<Placeable>>()
-            var currentGroup = mutableListOf<Placeable>()
-            var currentWidth = 0
-            placeables.forEach {
-                if (currentWidth + it.width <= constraints.maxWidth) {
-                    currentGroup.add(it)
-                    currentWidth += it.width
-                } else {
-                    constraintsGroup.add(currentGroup)
-                    currentGroup = mutableListOf()
-                    currentWidth = 0
-                }
-            }
-            if (currentGroup.isNotEmpty()) {
-                constraintsGroup.add(currentGroup)
-            }
-            layout(
-                width = constraints.maxWidth,
-                height = constraints.maxHeight
-            ) {
-                var yPosition = 0
-                constraintsGroup.forEach { row ->
-                    var xPosition = 0
-                    row.forEach {
-                        it.place(x = xPosition, y = yPosition)
-                        xPosition += it.width
-                    }
-                    yPosition += row.maxOfOrNull { it.height } ?: 0
-                }
-            }
-        },
-        content = content
-    )
-}
+
 
 enum class NewsLabel(name:String) {
     JAVA("java"),
@@ -311,54 +252,3 @@ enum class NewsLabel(name:String) {
     OTHER("other"),
 }
 
-//@Composable
-//fun FlowRow(
-//    modifier: Modifier = Modifier,
-//    content: @Composable () -> Unit
-//) {
-//    Layout(
-//        modifier = modifier,
-//        measurePolicy = { measurables, constraints ->
-//            val placeables = measurables.map {
-//                it.measure(constraints)
-//            }
-//            val groupedPlaceables = mutableListOf<List<Placeable>>()
-//            var currentGroup = mutableListOf<Placeable>()
-//            var currentGroupWidth = 0
-//
-//            placeables.forEach { placeable ->
-//                if(currentGroupWidth + placeable.width <= constraints.maxWidth) {
-//                    currentGroup.add(placeable)
-//                    currentGroupWidth += placeable.width
-//                } else {
-//                    groupedPlaceables.add(currentGroup)
-//                    currentGroup = mutableListOf(placeable)
-//                    currentGroupWidth = placeable.width
-//                }
-//            }
-//
-//            if(currentGroup.isNotEmpty()) {
-//                groupedPlaceables.add(currentGroup)
-//            }
-//
-//            layout(
-//                width = constraints.maxWidth,
-//                height = constraints.maxHeight
-//            ) {
-//                var yPosition = 0
-//                groupedPlaceables.forEach { row ->
-//                    var xPosition = 0
-//                    row.forEach { placeable ->
-//                        placeable.place(
-//                            x = xPosition,
-//                            y = yPosition
-//                        )
-//                        xPosition += placeable.width
-//                    }
-//                    yPosition += row.maxOfOrNull { it.height } ?: 0
-//                }
-//            }
-//        },
-//        content = content
-//    )
-//}

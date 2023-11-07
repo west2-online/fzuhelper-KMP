@@ -20,11 +20,16 @@ kotlin {
             baseName = "MultiPlatformLibrary"
             export("dev.icerock.moko:resources:0.23.0")
             export("dev.icerock.moko:graphics:0.9.0") // toUIColor here
+            export("dev.icerock.moko:mvvm-core:0.16.1")
+            export("dev.icerock.moko:mvvm-livedata:0.16.1")
+            export("dev.icerock.moko:mvvm-livedata-resources:0.16.1")
+            export("dev.icerock.moko:mvvm-state:0.16.1")
         }
     }
     val koin_version = "3.5.0"
-    val koin_android_version = "3.5.0"
-    val koin_android_compose_version = "3.5.0"
+    val koin_compose_version = "1.1.0"
+    val ktor_version = "2.3.5"
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -35,21 +40,37 @@ kotlin {
                 implementation(compose.components.resources)
                 //图像
                 implementation("media.kamel:kamel-image:0.7.3")
-                implementation("io.ktor:ktor-client-core:2.3.4")
-                api("com.rickclephas.kmm:kmm-viewmodel-core:1.0.0-ALPHA-14")
+                implementation("io.ktor:ktor-client-core:$ktor_version")
+                api("com.rickclephas.kmm:kmm-viewmodel-core:1.0.0-ALPHA-15")
+
+                //koin
                 implementation("io.insert-koin:koin-core:$koin_version")
-                implementation("io.insert-koin:koin-test:$koin_version")
-                api("dev.icerock.moko:mvvm-core:0.13.1")
+                implementation("io.insert-koin:koin-compose:$koin_compose_version")
 
                 //权限管理
                 api("dev.icerock.moko:permissions:0.16.0")
+
                 // compose multiplatform
                 api("dev.icerock.moko:permissions-compose:0.16.0") // permissions api + compose extensions
                 implementation("dev.icerock.moko:permissions-test:0.16.0")
-
                 api("dev.icerock.moko:resources:0.23.0")
                 api("dev.icerock.moko:resources-compose:0.23.0") // for compose multiplatform
                 api("dev.icerock.moko:resources-test:0.23.0")
+
+
+                api("dev.icerock.moko:mvvm-core:0.16.1") // only ViewModel, EventsDispatcher, Dispatchers.UI
+                api("dev.icerock.moko:mvvm-flow:0.16.1") // api mvvm-core, CFlow for native and binding extensions
+                api("dev.icerock.moko:mvvm-livedata:0.16.1") // api mvvm-core, LiveData and extensions
+                api("dev.icerock.moko:mvvm-state:0.16.1") // api mvvm-livedata, ResourceState class and extensions
+                api("dev.icerock.moko:mvvm-livedata-resources:0.16.1") // api mvvm-core, moko-resources, extensions for LiveData with moko-resources
+                api("dev.icerock.moko:mvvm-flow-resources:0.16.1")
+                api("dev.icerock.moko:mvvm-compose:0.16.1") // api mvvm-core, getViewModel for Compose Multiplatfrom
+                api("dev.icerock.moko:mvvm-flow-compose:0.16.1") // api mvvm-flow, binding extensions for Compose Multiplatfrom
+                api("dev.icerock.moko:mvvm-livedata-compose:0.16.1") // api mvvm-livedata, binding extensions for Compose Multiplatfrom
+
+                //ktor
+                implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
             }
         }
         val androidMain by getting {
@@ -58,10 +79,17 @@ kotlin {
                 api("androidx.activity:activity-compose:1.7.2")
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.10.1")
-                implementation("io.ktor:ktor-client-okhttp:2.3.4")
-                implementation("io.insert-koin:koin-android:$koin_android_version")
-                implementation("io.insert-koin:koin-androidx-compose:$koin_android_compose_version")
-                implementation("io.insert-koin:koin-androidx-compose:3.4.2")
+                implementation("io.ktor:ktor-client-okhttp:$ktor_version")
+
+                //koin
+                implementation("io.insert-koin:koin-android:$koin_version")
+
+                api("dev.icerock.moko:mvvm-livedata-material:0.16.1") // api mvvm-livedata, Material library android extensions
+                api("dev.icerock.moko:mvvm-livedata-glide:0.16.1") // api mvvm-livedata, Glide library android extensions
+                api("dev.icerock.moko:mvvm-livedata-swiperefresh:0.16.1") // api mvvm-livedata, SwipeRefreshLayout library android extensions
+                api("dev.icerock.moko:mvvm-databinding:0.16.1") // api mvvm-livedata, DataBinding support for Android
+                api("dev.icerock.moko:mvvm-viewbinding:0.16.1") // api mvvm-livedata, ViewBinding support for Android
+
             }
         }
         val iosX64Main by getting
@@ -73,7 +101,7 @@ kotlin {
             iosArm64Main.dependsOn(this)
             iosSimulatorArm64Main.dependsOn(this)
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:2.3.4")
+                implementation("io.ktor:ktor-client-darwin:$ktor_version")
             }
         }
     }

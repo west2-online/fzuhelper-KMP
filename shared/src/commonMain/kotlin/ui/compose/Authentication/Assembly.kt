@@ -10,15 +10,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Assembly(
-    modifier: Modifier
+    modifier: Modifier,
+    viewModel: AuthenticationViewModel = koinInject()
 ){
-    val pageState = rememberPagerState {
-        2
-    }
+    val pageState = rememberPagerState { 2 }
     val scope = rememberCoroutineScope()
     HorizontalPager(
         state = pageState,
