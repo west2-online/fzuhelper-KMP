@@ -41,6 +41,7 @@ kotlin {
                 //图像
                 implementation("media.kamel:kamel-image:0.7.3")
                 implementation("io.ktor:ktor-client-core:$ktor_version")
+                implementation("io.ktor:ktor-client-logging:$ktor_version")
                 api("com.rickclephas.kmm:kmm-viewmodel-core:1.0.0-ALPHA-15")
 
                 //koin

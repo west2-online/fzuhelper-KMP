@@ -13,9 +13,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -51,6 +54,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import data.TokenData
 import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.delay
 import org.example.library.MR
@@ -67,8 +71,10 @@ fun Register(
     navigateToLogin: () -> Unit,
     verifyStudentID: (studentCode: String, studentPassword: String, studentCaptcha: String) -> Unit,
     studentCaptchaState: State<NetworkResult<ImageBitmap>>,
-    getStudentCaptcha : () -> Unit,
+    getStudentCaptcha: () -> Unit,
+    verifyStudentIDState: State<NetworkResult<TokenData>>,
 ) {
+
     var studentCode by remember {
         mutableStateOf("")
     }
@@ -118,330 +124,375 @@ fun Register(
     LaunchedEffect(Unit){
         getStudentCaptcha()
     }
-    LazyColumn (
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        item {
-            Image(
-                painter = painterResource(MR.images.FuTalk),
-                "",
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .aspectRatio(1f)
-                    .padding(vertical = 30.dp)
-            )
-        }
-        item {
-            TextField(
-                value = studentCode,
-                onValueChange = {
-                    studentCode = it
-                },
-                label = {
-                    Text("学号")
-                },
-                maxLines = 1,
-                singleLine = true,
-                modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .fillMaxWidth()
-                    .height(56.dp)
-            )
-        }
-        item {
-            TextField(
-                value = studentPassword,
-                onValueChange = {
-                    studentPassword = it
-                },
-                label = {
-                    Text("教务处密码")
-                },
-                maxLines = 1,
-                singleLine = true,
-                modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .fillMaxWidth()
-                    .height(56.dp),
-                visualTransformation = PasswordVisualTransformation()
-            )
-        }
-        item {
-            Row{
 
-                studentCaptchaState.CollectWithContent(
-                    content = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable {
-                                    getStudentCaptcha.invoke()
-                                }
-                        )
-                    },
-                    loading = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                        ){
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                            )
-                        }
-                    },
-                    error = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Red)
-                                .clickable {
-                                    getStudentCaptcha.invoke()
-                                }
+    LaunchedEffect(verifyStudentIDState.value){
+        if( verifyStudentIDState.value is NetworkResult.Error<*> ){
+            toast = "验证失败，检查你的信息"
+            getStudentCaptcha.invoke()
+        }
+    }
+    Box(modifier = modifier){
+        LazyColumn (
+            modifier = modifier,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            item {
+                Image(
+                    painter = painterResource(MR.images.FuTalk),
+                    "",
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .aspectRatio(1f)
+                        .padding(vertical = 30.dp)
+                )
+            }
+            item {
+                verifyStudentIDState.CollectWithContent(
+                    success = {
+                        Box( modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .background(Color.Green)
                         ){
                             Text(
-                                "获取失败",
                                 modifier = Modifier
-                                    .align(Alignment.Center)
+                                    .align(Alignment.Center),
+                                text = "已通过验证"
                             )
                         }
-
                     },
-                    success = {
-                        Image(
-                            bitmap = it, null,
+                    content = {
+                        Column(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .background(color = Color.Red)
-                                .clickable {
-                                    getStudentCaptcha.invoke()
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                        ) {
+                            TextField(
+                                value = studentCode,
+                                onValueChange = {
+                                    studentCode = it
                                 },
-                            contentScale = ContentScale.FillBounds
-                        )
+                                label = {
+                                    Text("学号")
+                                },
+                                maxLines = 1,
+                                singleLine = true,
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            )
+                            TextField(
+                                value = studentPassword,
+                                onValueChange = {
+                                    studentPassword = it
+                                },
+                                label = {
+                                    Text("教务处密码")
+                                },
+                                maxLines = 1,
+                                singleLine = true,
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                visualTransformation = PasswordVisualTransformation()
+                            )
+                            Row{
+                                studentCaptchaState.CollectWithContent(
+                                    content = {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clickable {
+                                                    getStudentCaptcha.invoke()
+                                                }
+                                        )
+                                    },
+                                    loading = {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                        ){
+                                            CircularProgressIndicator(
+                                                modifier = Modifier
+                                                    .align(Alignment.Center)
+                                            )
+                                        }
+                                    },
+                                    error = {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(Color.Red)
+                                                .clickable {
+                                                    getStudentCaptcha.invoke()
+                                                }
+                                        ){
+                                            Text(
+                                                "获取失败",
+                                                modifier = Modifier
+                                                    .align(Alignment.Center)
+                                            )
+                                        }
+
+                                    },
+                                    success = {
+                                        Image(
+                                            bitmap = it, null,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(color = Color.Red)
+                                                .clickable {
+                                                    getStudentCaptcha.invoke()
+                                                },
+                                            contentScale = ContentScale.FillBounds
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .padding(vertical = 10.dp)
+                                        .weight(1f)
+                                        .height(56.dp)
+                                        .padding(end = 5.dp)
+                                )
+                                TextField(
+                                    value = studentCaptcha,
+                                    onValueChange = {
+                                        studentCaptcha = it
+                                    },
+                                    label = {
+                                        Text("验证码")
+                                    },
+                                    maxLines = 1,
+                                    singleLine = true,
+                                    modifier = Modifier
+                                        .padding(vertical = 10.dp)
+                                        .weight(1f)
+                                        .height(56.dp),
+                                )
+                            }
+                            Button(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                onClick = {
+                                    verifyStudentID.invoke(studentCode,studentPassword,studentCaptcha)
+                                }
+                            ){
+                                Text("验证")
+                            }
+                        }
                     },
-                    modifier = Modifier
-                        .padding(vertical = 10.dp)
-                        .weight(1f)
-                        .height(56.dp)
-                        .padding(end = 5.dp)
+                    loading = {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ){
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight(0.7f)
+                                    .aspectRatio(1f)
+                            ){
+                                CircularProgressIndicator()
+                            }
+                            Text("正在验证")
+                        }
+                    }
                 )
+
+            }
+            item {
                 TextField(
-                    value = studentCaptcha,
+                    value = talkerEmail,
                     onValueChange = {
-                        studentCaptcha = it
+                        talkerEmail = it
                     },
                     label = {
-                        Text("验证码")
+                        Text("邮箱")
                     },
                     maxLines = 1,
                     singleLine = true,
                     modifier = Modifier
                         .padding(vertical = 10.dp)
-                        .weight(1f)
+                        .fillMaxWidth()
+                        .height(56.dp)
+                )
+            }
+            item {
+                TextField(
+                    value = talkerPassword,
+                    onValueChange = {
+                        talkerPassword = it
+                    },
+                    label = {
+                        Text("密码")
+                    },
+                    maxLines = 1,
+                    singleLine = true,
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .fillMaxWidth()
                         .height(56.dp),
                     visualTransformation = PasswordVisualTransformation()
                 )
             }
-        }
-        item {
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                onClick = {
-                    verifyStudentID.invoke(studentCode,studentPassword,studentCaptcha)
-                }
-            ){
-                Text("验证")
-            }
-        }
-        item {
-            TextField(
-                value = talkerEmail,
-                onValueChange = {
-                    talkerEmail = it
-                },
-                label = {
-                    Text("邮箱")
-                },
-                maxLines = 1,
-                singleLine = true,
-                modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .fillMaxWidth()
-                    .height(56.dp)
-            )
-        }
-        item {
-            TextField(
-                value = talkerPassword,
-                onValueChange = {
-                    talkerPassword = it
-                },
-                label = {
-                    Text("密码")
-                },
-                maxLines = 1,
-                singleLine = true,
-                modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .fillMaxWidth()
-                    .height(56.dp),
-                visualTransformation = PasswordVisualTransformation()
-            )
-        }
-        item {
-            TextField(
-                value = talkerPasswordAgain,
-                onValueChange = {
-                    talkerPasswordAgain = it
-                },
-                label = {
-                    Text("确认密码")
-                },
-                maxLines = 1,
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                visualTransformation = PasswordVisualTransformation()
-            )
-        }
-        item {
-            Row (
-                modifier = Modifier
-                    .padding(vertical = 10.dp)
-            ){
+            item {
                 TextField(
-                    value = captcha,
+                    value = talkerPasswordAgain,
                     onValueChange = {
-                        captcha = it
+                        talkerPasswordAgain = it
                     },
                     label = {
-                        Text("验证码")
+                        Text("确认密码")
                     },
                     maxLines = 1,
                     singleLine = true,
                     modifier = Modifier
-                        .then(if(editAble) Modifier.weight(1f).padding(end = 10.dp) else Modifier.width(0.dp))
-                        .height(56.dp)
-                        .animateContentSize()
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    visualTransformation = PasswordVisualTransformation()
                 )
-                Row(
+            }
+            item {
+                Row (
                     modifier = Modifier
-                        .then(
-                            if (!editAble) Modifier.weight(1f).height(56.dp) else Modifier.size(56.dp)
-                        )
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.Green)
-                        .animateContentSize()
-                        .clickable {
-                            if(!editAble) {
-                                editAble = !editAble
-                            }
+                        .padding(vertical = 10.dp)
+                ){
+                    TextField(
+                        value = captcha,
+                        onValueChange = {
+                            captcha = it
                         },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = if (!editAble) Icons.Filled.Share else Icons.Filled.Refresh,
-                        "",
+                        label = {
+                            Text("验证码")
+                        },
+                        maxLines = 1,
+                        singleLine = true,
                         modifier = Modifier
-                            .size(56.dp)
-                            .wrapContentSize(Alignment.Center)
-                            .fillMaxSize(0.5f)
+                            .then(if(editAble) Modifier.weight(1f).padding(end = 10.dp) else Modifier.width(0.dp))
+                            .height(56.dp)
+                            .animateContentSize()
                     )
-                    Text(
-                        "申请验证码",
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
-                    )
+                            .then(
+                                if (!editAble) Modifier.weight(1f).height(56.dp) else Modifier.size(56.dp)
+                            )
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.Green)
+                            .animateContentSize()
+                            .clickable {
+                                if(!editAble) {
+                                    editAble = !editAble
+                                }
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (!editAble) Icons.Filled.Share else Icons.Filled.Refresh,
+                            "",
+                            modifier = Modifier
+                                .size(56.dp)
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.5f)
+                        )
+                        Text(
+                            "申请验证码",
+                            modifier = Modifier
+                                .weight(1f)
+                        )
+                    }
                 }
             }
+            item {
+                Text(
+                    modifier = Modifier
+                        .padding( top = 20.dp )
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(10.dp),
+                    text = "FuTalk 开发团队确保不会在未经您允许情况下故意泄露您的信息，教务处账号仅用作您的福大身份确认",
+                    textAlign = TextAlign.Center
+                )
+            }
+            item{
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Button(
+                        onClick = {
+                            navigateToLogin.invoke()
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(
+                            vertical = 10.dp,
+                            horizontal = 20.dp
+                        ),
+                        enabled = !isRegister
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Share,
+                            "",
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                        )
+                        Text("我已注册")
+                    }
+                    Button(
+                        onClick = {},
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(
+                            vertical = 10.dp,
+                            horizontal = 20.dp
+                        ),
+                        modifier = Modifier
+                            .padding( start = 20.dp )
+                            .weight(1f),
+                        enabled = registerAble.value
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Share,
+                            "",
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                        )
+                        Text("注册")
+                    }
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(50.dp))
+            }
         }
-        item {
-            Text(
+        AnimatedVisibility(
+            toast != null,
+            exit =  slideOutVertically() { 0 } + shrinkVertically() + fadeOut(tween(5000)),
+            enter = slideInVertically{0}
+        ){
+            Box(
                 modifier = Modifier
-                    .padding( top = 20.dp )
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(10.dp),
-                text = "FuTalk 开发团队确保不会在未经您允许情况下故意泄露您的信息，教务处账号仅用作您的福大身份确认",
-                textAlign = TextAlign.Center
-            )
-        }
-        item{
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                    .padding(10.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.Cyan)
+                    .padding(10.dp)
             ){
-                Button(
-                    onClick = {
-                        navigateToLogin.invoke()
-                    },
-                    shape = RoundedCornerShape(10.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        vertical = 10.dp,
-                        horizontal = 20.dp
-                    ),
-                    enabled = !isRegister
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Share,
-                        "",
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                    )
-                    Text("我已注册")
-                }
-                Button(
-                    onClick = {},
-                    shape = RoundedCornerShape(10.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        vertical = 10.dp,
-                        horizontal = 20.dp
-                    ),
+                Text(
+                    if( toast != null ) toast!! else "",
                     modifier = Modifier
-                        .padding( start = 20.dp )
-                        .weight(1f),
-                    enabled = registerAble.value
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Share,
-                        "",
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                    )
-                    Text("注册")
-                }
+                        .align(Alignment.Center),
+                    textAlign = TextAlign.Center
+                )
             }
         }
-        item {
-            Spacer(modifier = Modifier.height(50.dp))
-        }
-    }
-    AnimatedVisibility(
-        toast!=null,
-        exit =  slideOutVertically() { 0 } + shrinkVertically() + fadeOut(tween(5000)),
-        enter = slideInVertically{0}
-    ){
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(10.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.Cyan)
-                .padding(10.dp)
-        ){
-            Text(
-                if( toast != null ) toast!! else "",
-                modifier = Modifier
-                    .align(Alignment.Center),
-                textAlign = TextAlign.Center
-            )
-        }
+
     }
 }

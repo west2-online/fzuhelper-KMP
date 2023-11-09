@@ -9,7 +9,10 @@ import dev.icerock.moko.resources.desc.Resource
 import dev.icerock.moko.resources.desc.StringDesc
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
+import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import org.example.library.MR
 import org.koin.compose.KoinApplication
@@ -60,6 +63,14 @@ fun appModule() = module {
             install(ContentNegotiation) {
                 json()
             }
+            install(Logging)
+            install(HttpCookies){
+
+            }
+            install(HttpRedirect) {
+                checkHttpMethod = false
+            }
+
             configure()
         }
     }

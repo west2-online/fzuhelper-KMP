@@ -6,6 +6,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.okhttp.OkHttpConfig
+import io.ktor.client.plugins.logging.DEFAULT
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.definition.Definition
 import org.koin.core.definition.KoinDefinition
@@ -40,6 +44,7 @@ actual fun ByteArray.asImageBitmap(): ImageBitmap{
 }
 
 actual fun HttpClientConfig<*>.configureForPlatform() {
+
     engine {
         this as OkHttpConfig
         config {
@@ -55,14 +60,9 @@ actual fun HttpClientConfig<*>.configureForPlatform() {
 }
 
 val trustAllCerts = arrayOf<X509TrustManager>(object : X509TrustManager {
-    override fun checkClientTrusted(chain: Array<X509Certificate?>?, authType: String?) {
-    }
-
+    override fun checkClientTrusted(chain: Array<X509Certificate?>?, authType: String?) {}
     override fun checkServerTrusted(chain: Array<X509Certificate?>?, authType: String?) {}
-
-    override fun getAcceptedIssuers(): Array<X509Certificate?> {
-        return arrayOfNulls(0)
-    }
+    override fun getAcceptedIssuers(): Array<X509Certificate?> { return arrayOfNulls(0) }
 })
 
 val getSSLSocketFactory: SSLSocketFactory by lazy {

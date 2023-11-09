@@ -3,6 +3,7 @@ package ui.compose.Authentication
 import androidx.compose.ui.graphics.ImageBitmap
 import asImageBitmap
 import data.LoginRepository
+import data.TokenData
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.Dispatchers
@@ -21,11 +22,11 @@ class AuthenticationViewModel(private val loginRepository:LoginRepository) : Vie
     private val _registerState = CMutableStateFlow(MutableStateFlow<NetworkResult<Int>>(NetworkResult.UnSend()))
     val registerState = _registerState.asStateFlow()
 
-
     private val _studentCaptcha = CMutableStateFlow(MutableStateFlow<NetworkResult<ImageBitmap>>(NetworkResult.UnSend()))
     val studentCaptcha = _studentCaptcha.asStateFlow()
 
-
+    private val _verifyStudentIDState = CMutableStateFlow(MutableStateFlow<NetworkResult<TokenData>>(NetworkResult.UnSend()))
+    val verifyStudentIDState = _verifyStudentIDState.asStateFlow()
     fun getCaptcha(email:String){
         viewModelScope.launch (Dispatchers.Default){
             loginRepository.getCaptcha(email = "")
@@ -51,13 +52,15 @@ class AuthenticationViewModel(private val loginRepository:LoginRepository) : Vie
 
     fun verifyStudentID( studentCode : String, studentPassword:String,captcha:String){
         viewModelScope.launch (Dispatchers.IO){
+            _verifyStudentIDState.value = NetworkResult.Loading()
             loginRepository.verifyStudentIdentity(
                 userName = studentCode, password = studentPassword ,captcha = captcha
             ).catch {
                 println(it.toString())
+                _verifyStudentIDState.value = NetworkResult.Error(it)
             }
             .collect{
-                println(it.toString())
+                _verifyStudentIDState.value = NetworkResult.Success(it)
             }
         }
     }

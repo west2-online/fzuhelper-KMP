@@ -63,7 +63,9 @@ fun Assembly(
                     studentCaptchaState = viewModel.studentCaptcha.collectAsState(),
                     getStudentCaptcha = {
                         viewModel.refreshStudentCaptcha()
-                    }
+                    },
+                    verifyStudentIDState = viewModel.verifyStudentIDState.collectAsState(),
+
                 )
             }
         }

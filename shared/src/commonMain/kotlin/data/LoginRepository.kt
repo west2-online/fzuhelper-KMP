@@ -4,24 +4,20 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
-import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
-import io.ktor.client.request.post
-import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readBytes
 import io.ktor.client.statement.request
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Parameters
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import io.ktor.http.parameters
 import io.ktor.util.InternalAPI
+import io.ktor.utils.io.charsets.Charset
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.Serializable
 import repository.register.bean.AuthenticationResponse
@@ -38,7 +34,6 @@ class LoginRepository(private val client : HttpClient) {
             emit(response)
         }
     }
-
     fun register(email:String,password:String,captcha:String):Flow<AuthenticationResponse>{
         return flow{
             val response:AuthenticationResponse = client.submitForm(
@@ -54,68 +49,68 @@ class LoginRepository(private val client : HttpClient) {
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun verifyStudentIdentity(userName:String, password: String, captcha:String): Flow<LoginResult> {
+    fun verifyStudentIdentity(userName:String, password: String, captcha:String): Flow<TokenData> {
         return loginStudent(
             pass = password,
             user = userName,
             captcha = captcha,
         )
-            .flatMapConcat {
-                loginByTokenForIdInUrl(
-                    result = it,
-                    failedToGetAccount = {
-
-                    },
-                    elseMistake = {
-
-                    }
-                )
-//                .retryWhen{ error,tryTime ->
-//                    error.message == "获取account失败" && tryTime <= 3
-//                }
-//                .catch {
-////                    if(it.message == "获取account失败"){
-////                        println("获取account失败")
-////                    }
-////                    else{
-////
-////                    }
-//                    println("ssss ${it.message}")
-//                }
-            }
-            .catch {
-                println("ssss1 ${it.message}")
-            }
-            .flatMapConcat {
-                loadCookieData(
-                    queryMap = it,
-                    user = userName
-                )
-//                    .catchWithMassage {
-//                        loginButtonState.value = true
-//                        getVerificationCodeFromNetwork()
+//            .flatMapConcat {
+//                loginByTokenForIdInUrl(
+//                    result = it,
+//                    failedToGetAccount = {
+//
+//                    },
+//                    elseMistake = {
+//
 //                    }
-            }
-            .catch {
-                println("ssss2 ${it.message}")
-            }
-            .flatMapConcat {
-                checkTheUserInformation(
-                    user = userName,
-                    serialNumberHandling = {
-
-                    },
-                    id = it
-                )
-//               .catchWithMassage {
-//                    loginButtonState.value = true
-//                    getVerificationCodeFromNetwork()
-//                }
-
-            }
-            .catch {
-                println("ssss3 ${it.message}")
-            }
+//                )
+////                .retryWhen{ error,tryTime ->
+////                    error.message == "获取account失败" && tryTime <= 3
+////                }
+////                .catch {
+//////                    if(it.message == "获取account失败"){
+//////                        println("获取account失败")
+//////                    }
+//////                    else{
+//////
+//////                    }
+////                    println("ssss ${it.message}")
+////                }
+//            }
+//            .catch {
+//                println("ssss1 ${it.message}")
+//            }
+//            .flatMapConcat {
+//                loadCookieData(
+//                    queryMap = it,
+//                    user = userName
+//                )
+////                    .catchWithMassage {
+////                        loginButtonState.value = true
+////                        getVerificationCodeFromNetwork()
+////                    }
+//            }
+//            .catch {
+//                println("ssss2 ${it.message}")
+//            }
+//            .flatMapConcat {
+//                checkTheUserInformation(
+//                    user = userName,
+//                    serialNumberHandling = {
+//
+//                    },
+//                    id = it
+//                )
+////               .catchWithMassage {
+////                    loginButtonState.value = true
+////                    getVerificationCodeFromNetwork()
+////                }
+//
+//            }
+//            .catch {
+//                println("ssss3 ${it.message}")
+//            }
 //            .collectWithError{ loginResult ->
 //                when(loginResult){
 //                    LoginResult.LoginError->{
@@ -135,7 +130,6 @@ class LoginRepository(private val client : HttpClient) {
     }
 
     //登录 step1
-    @OptIn(InternalAPI::class)
     fun loginStudent(
         user: String,
         pass: String,
@@ -159,22 +153,25 @@ class LoginRepository(private val client : HttpClient) {
             networkErrorAction,
         )
         return flow {
-            val response: HttpResponse = client.post("https://jwcjwxt1.fzu.edu.cn/logincheck.asp") {
-                headers {
-                    append(HttpHeaders.Referrer, "https://jwch.fzu.edu.cn/html/login/1.html")
-                    append(HttpHeaders.Origin, "https://jwch.fzu.edu.cn")
-                }
-                contentType(ContentType.Application.FormUrlEncoded)
-                body = Parameters.build {
-                    append("muser", user)
-                    append("passwd", pass)
+
+            val response = client.submitForm (
+                url = "https://jwcjwxt1.fzu.edu.cn/logincheck.asp",
+                formParameters = Parameters.build {
+                    append("muser", "102101624")
+                    append("passwd", "351172abc2015@")
                     append("VerifyCode", captcha)
                 }
+            ){
+                contentType(ContentType.Application.FormUrlEncoded)
             }
-            if(response.status == HttpStatusCode.OK){
+
+            if( !response.status.isSuccess() ){
+                println(response.status)
                 throw LoginError.NetworkError.throwable
             }
-            val data = response.bodyAsText()
+//            val data = response.bodyAsText(fallbackCharset = Charset.forName("GB2312"))
+            val data = response.bodyAsText(Charset.forName("GBK"))
+            println(data)
             LoginError.values().forEach {
                 if(data.contains(it.throwable.message.toString())){
                     throw it.throwable
@@ -183,17 +180,9 @@ class LoginRepository(private val client : HttpClient) {
             val token = data.split("var token = \"")[1].split("\";")[0]
             val url = response.request.url.toString()
             emit(
-                TokenData(token = token,url = url)
+                TokenData( token = token , url = url )
             )
         }
-//            .catch { loginThrowable->
-//            LoginError.values().forEachIndexed { index,error ->
-//                if(loginThrowable.compareWith(error)){
-//                    exceptionActions[index].invoke()
-//                    everyErrorAction.invoke(error)
-//                }
-//            }
-//        }
     }
 
     //step2 中转，匹配Token
@@ -227,6 +216,7 @@ class LoginRepository(private val client : HttpClient) {
                 url = "https://jwcjwxt2.fzu.edu.cn/Sfrz/SSOLogin",
                 formParameters = Parameters.build {
                     append("token", result.token)
+
                 },
                 encodeInQuery = true
             ).body<JwchTokenLoginResponseDto>()
@@ -303,8 +293,6 @@ class LoginRepository(private val client : HttpClient) {
             )
         }
     }
-
-
 }
 
 enum class RegistrationStatus(val value: Int, val description: String) {
