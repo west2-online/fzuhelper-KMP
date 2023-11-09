@@ -34,7 +34,7 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ui.util.shimmerLoadingAnimation
+import ui.util.compose.shimmerLoadingAnimation
 
 @Composable
 fun SplashPage(

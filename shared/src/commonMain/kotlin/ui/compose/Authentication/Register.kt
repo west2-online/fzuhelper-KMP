@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -35,6 +36,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,23 +46,36 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.delay
 import org.example.library.MR
+import ui.util.network.CollectWithContent
+import ui.util.network.NetworkResult
 
 @Composable
 fun Register(
     modifier: Modifier,
-    navigateToLogin: () -> Unit
+    captchaState: State<NetworkResult<String>>,
+    registerState: State<NetworkResult<Int>>,
+    getCaptcha: (email: String) -> Unit,
+    register: (email: String, password: String, captccha: String) -> Unit,
+    navigateToLogin: () -> Unit,
+    verifyStudentID: (studentCode: String, studentPassword: String, studentCaptcha: String) -> Unit,
+    studentCaptchaState: State<NetworkResult<ImageBitmap>>,
+    getStudentCaptcha : () -> Unit,
 ) {
     var studentCode by remember {
         mutableStateOf("")
     }
     var studentPassword by remember {
+        mutableStateOf("")
+    }
+    var studentCaptcha by remember {
         mutableStateOf("")
     }
     var talkerEmail by remember {
@@ -81,10 +96,12 @@ fun Register(
     val weight by animateFloatAsState(
         if(editAble) 1f else 0f
     )
-    var isRegister by remember {
-        mutableStateOf(false)
+    val isRegister by remember {
+        derivedStateOf {
+            registerState.value is NetworkResult.Loading || captchaState.value is NetworkResult.Loading
+        }
     }
-    var registerAble = remember {
+    val registerAble = remember {
         derivedStateOf {
             !isRegister && studentCode != "" && studentPassword!="" && talkerPassword != "" && talkerPasswordAgain!="" && talkerEmail!="" && captcha!=""
         }
@@ -97,6 +114,9 @@ fun Register(
         toast?.let {
             toast = null
         }
+    }
+    LaunchedEffect(Unit){
+        getStudentCaptcha()
     }
     LazyColumn (
         modifier = modifier,
@@ -146,6 +166,94 @@ fun Register(
                     .height(56.dp),
                 visualTransformation = PasswordVisualTransformation()
             )
+        }
+        item {
+            Row{
+
+                studentCaptchaState.CollectWithContent(
+                    content = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable {
+                                    getStudentCaptcha.invoke()
+                                }
+                        )
+                    },
+                    loading = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ){
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                            )
+                        }
+                    },
+                    error = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Red)
+                                .clickable {
+                                    getStudentCaptcha.invoke()
+                                }
+                        ){
+                            Text(
+                                "获取失败",
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                            )
+                        }
+
+                    },
+                    success = {
+                        Image(
+                            bitmap = it, null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(color = Color.Red)
+                                .clickable {
+                                    getStudentCaptcha.invoke()
+                                },
+                            contentScale = ContentScale.FillBounds
+                        )
+                    },
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .weight(1f)
+                        .height(56.dp)
+                        .padding(end = 5.dp)
+                )
+                TextField(
+                    value = studentCaptcha,
+                    onValueChange = {
+                        studentCaptcha = it
+                    },
+                    label = {
+                        Text("验证码")
+                    },
+                    maxLines = 1,
+                    singleLine = true,
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .weight(1f)
+                        .height(56.dp),
+                    visualTransformation = PasswordVisualTransformation()
+                )
+            }
+        }
+        item {
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                onClick = {
+                    verifyStudentID.invoke(studentCode,studentPassword,studentCaptcha)
+                }
+            ){
+                Text("验证")
+            }
         }
         item {
             TextField(
@@ -230,8 +338,6 @@ fun Register(
                         .clickable {
                             if(!editAble) {
                                 editAble = !editAble
-                            }else{
-
                             }
                         },
                     verticalAlignment = Alignment.CenterVertically
@@ -252,7 +358,6 @@ fun Register(
                 }
             }
         }
-        val string = AnnotatedString("s")
         item {
             Text(
                 modifier = Modifier

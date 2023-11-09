@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -42,12 +43,28 @@ fun Assembly(
                 Register(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(10.dp)
-                ) {
-                    scope.launch {
-                        pageState.animateScrollToPage(0)
+                        .padding(10.dp),
+                    register = { email, password, captcha ->
+                        viewModel.register(email,password,captcha)
+                    },
+                    getCaptcha = { email ->
+                        viewModel.getCaptcha(email)
+                    },
+                    captchaState = viewModel.captcha.collectAsState(),
+                    registerState = viewModel.registerState.collectAsState(),
+                    verifyStudentID = { studentCode, studentPassword,studentCaptcha ->
+                        viewModel.verifyStudentID(studentCode,studentPassword, captcha = studentCaptcha)
+                    },
+                    navigateToLogin = {
+                        scope.launch {
+                            pageState.animateScrollToPage(0)
+                        }
+                    },
+                    studentCaptchaState = viewModel.studentCaptcha.collectAsState(),
+                    getStudentCaptcha = {
+                        viewModel.refreshStudentCaptcha()
                     }
-                }
+                )
             }
         }
     }

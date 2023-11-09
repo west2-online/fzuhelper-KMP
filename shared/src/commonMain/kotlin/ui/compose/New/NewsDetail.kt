@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import ui.util.shimmerLoadingAnimation
+import ui.util.compose.shimmerLoadingAnimation
 
 @Composable
 fun NewsDetail(

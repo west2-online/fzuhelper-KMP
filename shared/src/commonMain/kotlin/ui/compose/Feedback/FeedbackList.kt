@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import ui.util.Label
-import ui.util.ThemeCard
+import ui.util.compose.Label
+import ui.util.compose.ThemeCard
 
 @Composable
 fun FeedbackList(

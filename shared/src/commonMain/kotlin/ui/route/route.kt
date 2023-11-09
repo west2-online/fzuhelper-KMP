@@ -10,9 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ui.compose.Authentication.Assembly
 import ui.compose.Massage.MassageScreen
 import ui.compose.New.NewsDetail
-import ui.compose.New.NewsScreen
 import ui.compose.Release.ReleasePageScreen
 
 @Composable
@@ -85,7 +85,7 @@ interface Route{
 //                modifier = Modifier
 //                    .padding(10.dp)
 //            )
-            NewsScreen()
+//            NewsScreen()
 //            Ribbon(
 //                modifier = Modifier
 //                    .padding(10.dp),
@@ -101,11 +101,11 @@ interface Route{
 //                    .fillMaxSize()
 //                    .padding(10.dp)
 //            )
-//            Assembly(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding(horizontal = 20.dp)
-//            )
+            Assembly(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp)
+            )
 //            FeedbackDetail(
 //                modifier = Modifier
 //                    .fillMaxSize()

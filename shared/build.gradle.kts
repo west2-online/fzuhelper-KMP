@@ -3,7 +3,7 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.compose")
     id("dev.icerock.mobile.multiplatform-resources")
-
+    kotlin("plugin.serialization") version "1.9.20"
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
@@ -29,7 +29,7 @@ kotlin {
     val koin_version = "3.5.0"
     val koin_compose_version = "1.1.0"
     val ktor_version = "2.3.5"
-
+    val serialization_version = "1.6.0"
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -71,6 +71,8 @@ kotlin {
                 //ktor
                 implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+
+                implementation( "org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version")
             }
         }
         val androidMain by getting {
@@ -89,7 +91,6 @@ kotlin {
                 api("dev.icerock.moko:mvvm-livedata-swiperefresh:0.16.1") // api mvvm-livedata, SwipeRefreshLayout library android extensions
                 api("dev.icerock.moko:mvvm-databinding:0.16.1") // api mvvm-livedata, DataBinding support for Android
                 api("dev.icerock.moko:mvvm-viewbinding:0.16.1") // api mvvm-livedata, ViewBinding support for Android
-
             }
         }
         val iosX64Main by getting

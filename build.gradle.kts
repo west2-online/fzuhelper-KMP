@@ -10,10 +10,12 @@ plugins {
 buildscript {
     repositories {
         gradlePluginPortal()
+        mavenCentral()
     }
 
     dependencies {
         classpath ("dev.icerock.moko:resources-generator:0.23.0")
+
     }
 }
 
