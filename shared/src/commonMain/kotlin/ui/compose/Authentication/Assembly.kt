@@ -65,7 +65,9 @@ fun Assembly(
                         viewModel.refreshStudentCaptcha()
                     },
                     verifyStudentIDState = viewModel.verifyStudentIDState.collectAsState(),
-
+                    cleanRegisterData = {
+                        viewModel.cleanRegisterData()
+                    }
                 )
             }
         }

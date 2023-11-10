@@ -1,13 +1,7 @@
 package ui.compose.Authentication
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,12 +32,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,8 +52,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import data.TokenData
 import dev.icerock.moko.resources.compose.painterResource
-import kotlinx.coroutines.delay
 import org.example.library.MR
+import ui.util.compose.EasyToast
+import ui.util.compose.Toast
 import ui.util.network.CollectWithContent
 import ui.util.network.NetworkResult
 
@@ -65,16 +62,16 @@ import ui.util.network.NetworkResult
 fun Register(
     modifier: Modifier,
     captchaState: State<NetworkResult<String>>,
-    registerState: State<NetworkResult<Int>>,
+    registerState: State<NetworkResult<String>>,
     getCaptcha: (email: String) -> Unit,
-    register: (email: String, password: String, captccha: String) -> Unit,
+    register: (email: String, password: String, captcha: String) -> Unit,
     navigateToLogin: () -> Unit,
     verifyStudentID: (studentCode: String, studentPassword: String, studentCaptcha: String) -> Unit,
     studentCaptchaState: State<NetworkResult<ImageBitmap>>,
     getStudentCaptcha: () -> Unit,
+    cleanRegisterData: () -> Unit,
     verifyStudentIDState: State<NetworkResult<TokenData>>,
 ) {
-
     var studentCode by remember {
         mutableStateOf("")
     }
@@ -109,26 +106,59 @@ fun Register(
     }
     val registerAble = remember {
         derivedStateOf {
-            !isRegister && studentCode != "" && studentPassword!="" && talkerPassword != "" && talkerPasswordAgain!="" && talkerEmail!="" && captcha!=""
+            !isRegister &&  talkerPassword != "" && talkerPasswordAgain!="" && talkerEmail!="" && captcha!="" && verifyStudentIDState.value is NetworkResult.Success
         }
     }
-    var toast by remember {
-        mutableStateOf<String?>(null)
-    }
-    LaunchedEffect(toast){
-        delay(2000)
-        toast?.let {
-            toast = null
-        }
-    }
-    LaunchedEffect(Unit){
-        getStudentCaptcha()
+
+//    val toast = rememberToastState()
+    val scope = rememberCoroutineScope()
+    val toast = remember {
+        Toast(scope)
     }
 
     LaunchedEffect(verifyStudentIDState.value){
         if( verifyStudentIDState.value is NetworkResult.Error<*> ){
-            toast = "验证失败，检查你的信息"
+            toast.addToast("验证失败，检查你的信息")
             getStudentCaptcha.invoke()
+        }
+    }
+
+    LaunchedEffect(registerState.value){
+        registerState.value.let {
+            when( it ){
+                is NetworkResult.Success ->{
+//                    toast = Toast(it.data)
+                    toast.addToast(it.data)
+                }
+                is NetworkResult.Error ->{
+//                    toast = Toast( it.error.message.toString(), Red )
+                    toast.addToast(it.error.message.toString())
+                }
+                else ->{
+
+                }
+            }
+        }
+    }
+    LaunchedEffect(captchaState.value){
+        captchaState.value.let {
+            when( it ){
+                is NetworkResult.Success ->{
+                    toast.addToast(it.data)
+                }
+                is NetworkResult.Error ->{
+                    toast.addToast(it.error.message.toString())
+                }
+                else ->{
+
+                }
+            }
+        }
+    }
+    DisposableEffect(Unit){
+        getStudentCaptcha()
+        onDispose {
+            cleanRegisterData()
         }
     }
     Box(modifier = modifier){
@@ -388,6 +418,7 @@ fun Register(
                                 if(!editAble) {
                                     editAble = !editAble
                                 }
+                                getCaptcha.invoke(talkerEmail)
                             },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -446,7 +477,14 @@ fun Register(
                         Text("我已注册")
                     }
                     Button(
-                        onClick = {},
+                        onClick = {
+                            if(registerAble.value){
+                                register(talkerEmail,talkerPassword,captcha)
+                            }else{
+//                                toast = Toast("信息不足或未通过学生身份验证")
+                                toast.addToast("信息不足或未通过学生身份验证")
+                            }
+                        },
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(
                             vertical = 10.dp,
@@ -455,7 +493,6 @@ fun Register(
                         modifier = Modifier
                             .padding( start = 20.dp )
                             .weight(1f),
-                        enabled = registerAble.value
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Share,
@@ -471,28 +508,10 @@ fun Register(
                 Spacer(modifier = Modifier.height(50.dp))
             }
         }
-        AnimatedVisibility(
-            toast != null,
-            exit =  slideOutVertically() { 0 } + shrinkVertically() + fadeOut(tween(5000)),
-            enter = slideInVertically{0}
-        ){
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(10.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.Cyan)
-                    .padding(10.dp)
-            ){
-                Text(
-                    if( toast != null ) toast!! else "",
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-
+        EasyToast(toast)
     }
+
 }
+
+
+

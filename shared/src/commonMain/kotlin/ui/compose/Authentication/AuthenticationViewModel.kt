@@ -19,7 +19,7 @@ class AuthenticationViewModel(private val loginRepository:LoginRepository) : Vie
     private val _captcha = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val captcha = _captcha.asStateFlow()
 
-    private val _registerState = CMutableStateFlow(MutableStateFlow<NetworkResult<Int>>(NetworkResult.UnSend()))
+    private val _registerState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val registerState = _registerState.asStateFlow()
 
     private val _studentCaptcha = CMutableStateFlow(MutableStateFlow<NetworkResult<ImageBitmap>>(NetworkResult.UnSend()))
@@ -27,25 +27,40 @@ class AuthenticationViewModel(private val loginRepository:LoginRepository) : Vie
 
     private val _verifyStudentIDState = CMutableStateFlow(MutableStateFlow<NetworkResult<TokenData>>(NetworkResult.UnSend()))
     val verifyStudentIDState = _verifyStudentIDState.asStateFlow()
+
     fun getCaptcha(email:String){
         viewModelScope.launch (Dispatchers.Default){
-            loginRepository.getCaptcha(email = "")
+            loginRepository.getCaptcha(email = email)
                 .catch {
-                    _captcha.value = NetworkResult.Error(it)
+                    _captcha.value = NetworkResult.Error(Throwable("申请失败,请稍后重试"))
                 }
-                .collect{
-                    _captcha.value = NetworkResult.Success(it.data)
+                .collect{ authenticationResponse->
+                    println(authenticationResponse)
+                    RegistrationStatus.values().filter {
+                        it.value == authenticationResponse.code
+                    }.let {
+                       if(it.isNotEmpty()){
+                           _captcha.value = it[0].toNetworkResult()
+                               return@collect
+                       }
+                    }
+                    _registerState.value = NetworkResult.Success("注册成功")
                 }
         }
     }
 
-    fun register(email:String,password:String,captcha:String){
+    fun register(
+        email:String,password:String,captcha:String
+    ){
         viewModelScope.launch (Dispatchers.Default){
             loginRepository.register(email = email, password = password, captcha = captcha)
                 .catch {
                     _registerState.value = NetworkResult.Error(it)
-                }.collect{
-                    _registerState.value = NetworkResult.Success(it.code)
+                }.collect{ authenticationResponse->
+                    _registerState.value = RegistrationStatus.values().filter {
+                        it.value == authenticationResponse.code
+                    }[0].toNetworkResult()
+                    println(authenticationResponse)
                 }
         }
     }
@@ -81,4 +96,39 @@ class AuthenticationViewModel(private val loginRepository:LoginRepository) : Vie
         }
     }
 
+    fun cleanRegisterData() {
+        _captcha.value = NetworkResult.UnSend()
+        _registerState.value = NetworkResult.UnSend()
+        _studentCaptcha.value = NetworkResult.UnSend()
+        _verifyStudentIDState.value = NetworkResult.UnSend()
+    }
+
+}
+
+enum class RegistrationStatus(val value: Int, val description: String) {
+    RegisterSuccess(0, "没有问题"),
+    TheEmailIsMissingWhenAskFoCaptcha(1, "申请验证码时缺失邮箱"),
+    TheEmailIsFormatErrorWhenAskFoCaptcha(2, "申请验证码时，邮箱格式错误"),
+    TheVerificationCodeWasNotGenerated(3, "验证码生成失败"),
+    EmailFailedToSend(4, "验证码邮件发送失败"),
+    TheInformationIsEmpty(5, "注册时信息为空"),
+    StorageSystemRegistrationError(6, "因为mysql或者redis的问题导致的无法注册"),
+    ThisEmailAddressIsAlreadyRegistered(7, "该电子邮件地址已经注册"),
+    TheVerificationCodeIsIncorrect(8, "验证码不正确"),
+    CaptchaVerificationFailed(9, "验证码验证失败"),
+    RequestsForVerificationCodesAreTooFrequent(10,"验证码申请过于频繁"),
+    TheVerificationCodeWasObtained(11,"获取验证码成功")
+}
+
+fun RegistrationStatus.toNetworkResult():NetworkResult<String>{
+    return when(this){
+        RegistrationStatus.RegisterSuccess -> NetworkResult.Success("注册成功")
+        RegistrationStatus.TheVerificationCodeWasObtained -> NetworkResult.Success("获取验证码成功")
+        RegistrationStatus.CaptchaVerificationFailed,RegistrationStatus.TheVerificationCodeIsIncorrect -> NetworkResult.Error(Throwable("验证码验证失败"))
+        RegistrationStatus.ThisEmailAddressIsAlreadyRegistered -> NetworkResult.Error(Throwable("该邮箱已经注册"))
+        RegistrationStatus.TheEmailIsMissingWhenAskFoCaptcha,RegistrationStatus.TheInformationIsEmpty->NetworkResult.Error(Throwable("注册信息不足"))
+        RegistrationStatus.TheEmailIsFormatErrorWhenAskFoCaptcha -> NetworkResult.Error(Throwable("邮箱格式错误"))
+        RegistrationStatus.RequestsForVerificationCodesAreTooFrequent -> NetworkResult.Error(Throwable("验证码申请过于频繁"))
+        else ->  NetworkResult.Error(Throwable("未知错误，请稍后重试"))
+    }
 }
