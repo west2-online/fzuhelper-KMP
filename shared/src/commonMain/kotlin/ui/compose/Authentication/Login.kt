@@ -32,7 +32,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -44,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -170,7 +170,7 @@ fun Login(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = if (!editAble) Icons.Filled.Share else Icons.Filled.Refresh,
+                        painter = if (!editAble) painterResource(MR.images.cloud_key) else rememberVectorPainter(Icons.Filled.Refresh),
                         "",
                         modifier = Modifier
                             .size(56.dp)
@@ -205,10 +205,12 @@ fun Login(
                     enabled = !isLogin
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Share,
+                        painter = painterResource(MR.images.register),
                         "",
                         modifier = Modifier
-                            .padding(end = 10.dp)
+                            .size(40.dp)
+                            .wrapContentSize(Alignment.Center)
+                            .fillMaxSize(0.6f)
                     )
                     Text("未有账号")
                 }
@@ -225,10 +227,12 @@ fun Login(
                     enabled = registerAble.value
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Share,
+                        painter = painterResource(MR.images.login),
                         "",
                         modifier = Modifier
-                            .padding(end = 10.dp)
+                            .size(40.dp)
+                            .wrapContentSize(Alignment.Center)
+                            .fillMaxSize(0.6f)
                     )
                     Text("登录")
                 }

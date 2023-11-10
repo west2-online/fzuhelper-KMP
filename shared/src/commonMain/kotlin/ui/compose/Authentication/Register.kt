@@ -30,7 +30,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -423,7 +423,7 @@ fun Register(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = if (!editAble) Icons.Filled.Share else Icons.Filled.Refresh,
+                            painter = if (!editAble) painterResource(MR.images.cloud_key) else rememberVectorPainter(Icons.Filled.Refresh),
                             "",
                             modifier = Modifier
                                 .size(56.dp)
@@ -469,10 +469,12 @@ fun Register(
                         enabled = !isRegister
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Share,
+                            painter = painterResource(MR.images.login),
                             "",
                             modifier = Modifier
-                                .padding(end = 10.dp)
+                                .size(40.dp)
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.6f)
                         )
                         Text("我已注册")
                     }
@@ -481,7 +483,7 @@ fun Register(
                             if(registerAble.value){
                                 register(talkerEmail,talkerPassword,captcha)
                             }else{
-//                                toast = Toast("信息不足或未通过学生身份验证")
+//
                                 toast.addToast("信息不足或未通过学生身份验证")
                             }
                         },
@@ -495,10 +497,13 @@ fun Register(
                             .weight(1f),
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Share,
+                            painter = painterResource(MR.images.register),
                             "",
                             modifier = Modifier
-                                .padding(end = 10.dp)
+                                .size(40.dp)
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.6f)
+
                         )
                         Text("注册")
                     }
