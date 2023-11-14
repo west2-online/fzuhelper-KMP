@@ -19,6 +19,7 @@ fun Assembly(
     modifier: Modifier,
     viewModel: AuthenticationViewModel = koinInject()
 ){
+
     val pageState = rememberPagerState { 2 }
     val scope = rememberCoroutineScope()
     HorizontalPager(

@@ -14,6 +14,7 @@ import ui.compose.Authentication.Assembly
 import ui.compose.Massage.MassageScreen
 import ui.compose.New.NewsDetail
 import ui.compose.Release.ReleasePageScreen
+import ui.compose.SplashPage.SplashPage
 
 @Composable
 fun RouteHost(
@@ -22,13 +23,13 @@ fun RouteHost(
     start: Route = Route.Main.Builder()
         .setRoute("massage")
         .setId("massage")
-        .build()
-){
-    val route = remember {
+        .build(),
+    route: SnapshotStateList<Route> = remember {
         mutableStateListOf<Route>(
             start
         )
     }
+){
     val currentPage = remember(route){
         derivedStateOf {
             if(route.isEmpty()){
@@ -167,28 +168,13 @@ interface Route{
         }
     }
 
-    class Person private constructor(
+    class Person (
         val isSelf : Boolean = false,
         override val route: String,
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
 //            MainScreen(it)
         }
-    ) : Route{
-        class Builder {
-            private val isSelf : Boolean? = null
-            private var route: String? = null
-            fun setRoute(route: String): Builder {
-                this.route = route
-                return this
-            }
-            fun build(): Person {
-                return Person(
-                    isSelf!!,
-                    route!!
-                )
-            }
-        }
-    }
+    ) : Route
 
     class Massage private constructor(
         override val route: String,
@@ -215,6 +201,24 @@ interface Route{
             }
         }
     }
+
+    class LoginWithRegister(
+        override val route: String = "loginWithRegister",
+        override val content: @Composable (SnapshotStateList<Route>) -> Unit = {
+            Assembly(Modifier.fillMaxSize())
+        }
+    ):Route
+
+    class Splash(
+        override val route: String = "",
+        override val content: @Composable (SnapshotStateList<Route>) -> Unit = {
+            SplashPage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp)
+            )
+        }
+    ):Route
 
 }
 

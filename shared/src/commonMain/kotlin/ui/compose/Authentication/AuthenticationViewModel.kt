@@ -1,5 +1,6 @@
 package ui.compose.Authentication
 
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.ImageBitmap
 import asImageBitmap
 import com.liftric.kvault.KVault
@@ -13,11 +14,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import ui.route.Route
 import ui.util.network.NetworkResult
 import ui.util.network.reset
 
 
-class AuthenticationViewModel(private val loginRepository:LoginRepository,val kVault: KVault) : ViewModel() {
+class AuthenticationViewModel(private val loginRepository:LoginRepository, private val kVault: KVault ,val route:SnapshotStateList<Route>) : ViewModel() {
     private val _captcha = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val captcha = _captcha.asStateFlow()
 
@@ -122,7 +124,11 @@ class AuthenticationViewModel(private val loginRepository:LoginRepository,val kV
                             _loginState.reset(it.first().toNetworkResult())
                         }
                     }
+                    if(authenticationResponse.code == RegistrationStatus.LoginSuccessful.value){
+                        kVault.set("token",authenticationResponse.data.toString())
+                    }
                     println(authenticationResponse)
+                    enterAuthor()
                 }
         }
     }
@@ -157,6 +163,14 @@ class AuthenticationViewModel(private val loginRepository:LoginRepository,val kV
         }
     }
 
+    fun enterAuthor(){
+        val token : String? = kVault.string(forKey = "token")
+        token ?: return
+        route.add(Route.Splash())
+//        route.removeAt(
+//            route.indexOf(Route.LoginWithRegister())
+//        )
+    }
 }
 
 enum class RegistrationStatus(val value: Int, val description: String,val descriptionForToast:String? = null) {
