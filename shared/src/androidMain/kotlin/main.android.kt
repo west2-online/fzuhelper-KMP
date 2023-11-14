@@ -3,13 +3,10 @@ import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import com.liftric.kvault.KVault
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.okhttp.OkHttpConfig
-import io.ktor.client.plugins.logging.DEFAULT
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logger
-import io.ktor.client.plugins.logging.Logging
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.definition.Definition
 import org.koin.core.definition.KoinDefinition
@@ -72,4 +69,9 @@ val getSSLSocketFactory: SSLSocketFactory by lazy {
         SecureRandom()
     )
     sslContext.socketFactory
+}
+
+
+actual fun initStore(): KVault {
+    return KVault(context = MyApplication.getContext())
 }

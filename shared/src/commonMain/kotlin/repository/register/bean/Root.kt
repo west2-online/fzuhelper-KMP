@@ -8,3 +8,4 @@ data class AuthenticationResponse(
     val `data`: String?,
     val msg: String?
 )
+

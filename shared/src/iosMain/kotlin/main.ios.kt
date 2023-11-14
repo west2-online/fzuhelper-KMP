@@ -3,9 +3,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.window.ComposeUIViewController
+import androidx.datastore.core.DataStore
+import com.liftric.kvault.KVault
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.darwin.DarwinClientEngineConfig
+import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.skia.Image
 import org.koin.core.definition.Definition
 import org.koin.core.definition.KoinDefinition
@@ -47,3 +50,6 @@ actual fun HttpClientConfig<*>.configureForPlatform() {
     }
 }
 
+actual fun initStore(): KVault{
+    return KVault()
+}

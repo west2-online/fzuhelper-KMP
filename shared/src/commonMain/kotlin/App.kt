@@ -3,6 +3,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
+import com.liftric.kvault.KVault
 import data.LoginRepository
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import dev.icerock.moko.resources.desc.Resource
@@ -30,7 +31,6 @@ import ui.util.compose.FuTalkTheme
 fun App(){
     KoinApplication(application = {
         modules(appModule())
-
     }) {
         FuTalkTheme {
             RouteHost(
@@ -70,7 +70,6 @@ fun appModule() = module {
             install(HttpRedirect) {
                 checkHttpMethod = false
             }
-
             configure()
         }
     }
@@ -78,7 +77,10 @@ fun appModule() = module {
         LoginRepository( get() )
     }
     viewModelDefinition {
-        AuthenticationViewModel( get() )
+        AuthenticationViewModel( get(),get() )
+    }
+    single {
+        initStore()
     }
 }
 
@@ -89,4 +91,4 @@ fun HttpClientConfig<*>.configure() {
 
 internal expect fun HttpClientConfig<*>.configureForPlatform()
 
-
+expect fun initStore(): KVault

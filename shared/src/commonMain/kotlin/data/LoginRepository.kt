@@ -20,7 +20,7 @@ import kotlinx.serialization.Serializable
 import repository.register.bean.AuthenticationResponse
 
 class LoginRepository(private val client : HttpClient) {
-    fun getCaptcha(email:String):Flow<AuthenticationResponse>{
+    fun getRegisterCaptcha(email:String):Flow<AuthenticationResponse>{
         return flow{
             val response:AuthenticationResponse = client.submitForm(
                 url = "http://172.20.10.2:8000/register/captcha",
@@ -33,10 +33,39 @@ class LoginRepository(private val client : HttpClient) {
             emit(response)
         }
     }
+
+    fun getLoginCaptcha(email:String):Flow<AuthenticationResponse>{
+        return flow{
+            val response:AuthenticationResponse = client.submitForm(
+                url = "http://172.20.10.2:8000/login/captcha",
+                formParameters = parameters {
+                    append("email", email)
+                }
+            ){
+                cookie("","")
+            }.body()
+            emit(response)
+        }
+    }
+
     fun register(email:String,password:String,captcha:String):Flow<AuthenticationResponse>{
         return flow{
             val response:AuthenticationResponse = client.submitForm(
                 url = "http://172.20.10.2:8000/register/register",
+                formParameters = parameters {
+                    append("email", email)
+                    append("password",password)
+                    append("captcha",captcha)
+                }
+            ).body()
+            emit(response)
+        }
+    }
+
+    fun login(email:String,password:String,captcha:String):Flow<AuthenticationResponse>{
+        return flow{
+            val response:AuthenticationResponse = client.submitForm(
+                url = "http://172.20.10.2:8000/login/login",
                 formParameters = parameters {
                     append("email", email)
                     append("password",password)
@@ -79,7 +108,6 @@ class LoginRepository(private val client : HttpClient) {
             networkErrorAction,
         )
         return flow {
-
             val response = client.submitForm (
                 url = "https://jwcjwxt1.fzu.edu.cn/logincheck.asp",
                 formParameters = Parameters.build {

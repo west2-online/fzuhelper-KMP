@@ -74,6 +74,8 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
 
                 implementation( "org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version")
+
+                implementation("com.liftric:kvault:1.12.0")
             }
         }
         val androidMain by getting {

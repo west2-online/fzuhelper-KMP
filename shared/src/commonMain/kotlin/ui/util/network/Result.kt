@@ -2,25 +2,36 @@ package ui.util.network
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlin.random.Random
 
+@Stable
 interface NetworkResult<T> {
+    val key: MutableState<Int>
+
     data class Success<T>(
-        val data:T
+        val data:T,
+        override val key: MutableState<Int> = mutableStateOf(0)
     ) : NetworkResult<T>
 
     data class Error<T>(
-        val error: Throwable
+        val error: Throwable,
+        override val key: MutableState<Int> = mutableStateOf(0)
     ):NetworkResult<T>
 
-    class Loading<T>:NetworkResult<T>
+    class Loading<T>(override val key: MutableState<Int> = mutableStateOf(0)):NetworkResult<T>
 
-    class UnSend<T> : NetworkResult<T>
+    class UnSend<T>(override val key: MutableState<Int> = mutableStateOf(0)) : NetworkResult<T>
+
+
 }
 
 @Composable
@@ -140,5 +151,13 @@ fun <T>T.logicWithNullCheckInCompose(
     }
     else{
         isNotNull.invoke(this)
+    }
+}
+
+fun <T> MutableStateFlow<NetworkResult<T>>.reset(newValue : NetworkResult<T>){
+    val oldKey = this.value.key.value
+    val newKey = Random(0).nextInt(0,(oldKey+10))
+    this.value = newValue.apply {
+        key.value = newKey
     }
 }

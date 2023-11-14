@@ -31,13 +31,25 @@ fun Assembly(
                 Login(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(10.dp)
-
-                ) {
-                    scope.launch {
-                        pageState.animateScrollToPage(1)
+                        .padding(10.dp),
+                    navigateToRegister = {
+                        scope.launch {
+                            pageState.animateScrollToPage(1)
+                        }
+                    },
+                    login = { userEmail,userPassword,captcha ->
+                        viewModel.login(userEmail,userPassword,captcha)
+                    },
+                    loginState = viewModel.loginState.collectAsState(),
+                    getCaptcha = { userEmail ->
+                        viewModel.getLoginCaptcha(userEmail)
+                    },
+                    loginCaptcha = viewModel.loginCaptcha.collectAsState(),
+                    cleanRegisterData = {
+                        viewModel.cleanRegisterData()
                     }
-                }
+
+                )
             }
             1->{
                 Register(
@@ -48,7 +60,7 @@ fun Assembly(
                         viewModel.register(email,password,captcha)
                     },
                     getCaptcha = { email ->
-                        viewModel.getCaptcha(email)
+                        viewModel.getRegisterCaptcha(email)
                     },
                     captchaState = viewModel.captcha.collectAsState(),
                     registerState = viewModel.registerState.collectAsState(),

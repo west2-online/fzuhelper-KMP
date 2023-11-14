@@ -1,12 +1,6 @@
 package ui.compose.Authentication
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,7 +27,9 @@ import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,16 +41,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
-import kotlinx.coroutines.delay
 import org.example.library.MR
+import ui.util.compose.EasyToast
+import ui.util.compose.rememberToastState
+import ui.util.network.NetworkResult
 
 @Composable
 fun Login(
     modifier: Modifier,
-    navigateToRegister:()->Unit
+    navigateToRegister:()->Unit,
+    login:(userEmail:String,userPassword:String,captcha:String)->Unit,
+    getCaptcha:(userEmail:String)->Unit,
+    loginState: State<NetworkResult<String>>,
+    loginCaptcha:State<NetworkResult<String>>,
+    cleanRegisterData:()->Unit
 ){
     var userEmail by remember {
         mutableStateOf("")
@@ -68,200 +70,203 @@ fun Login(
     var editAble by remember {
         mutableStateOf(false)
     }
-    var toast by remember {
-        mutableStateOf<String?>(null)
-    }
-    var isLogin by remember {
-        mutableStateOf(false)
-    }
-    var registerAble = remember {
+    val toast = rememberToastState()
+    val registerAble = remember {
         derivedStateOf {
-            !isLogin && userEmail != "" && userPassword!="" && captcha!=""
+            loginState.value !is NetworkResult.Loading && userEmail != "" && userPassword!="" && captcha!=""
         }
     }
-    LaunchedEffect(toast){
-        delay(2000)
-        if (toast!=null){
-            toast = null
+    DisposableEffect(Unit){
+        onDispose {
+            cleanRegisterData()
         }
     }
-    LazyColumn (
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        item {
-            Image(
-                painter = painterResource(MR.images.FuTalk),
-                "",
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .aspectRatio(1f)
-                    .padding(vertical = 30.dp)
-            )
+    LaunchedEffect(loginState.value,loginState.value.key.value){
+        loginState.value.let {
+            when( it ){
+                is NetworkResult.Success<String>->{
+                    toast.addToast( it.data )
+                }
+                is NetworkResult.Error -> {
+                    toast.addToast( it.error.message.toString() , Color.Red )
+                }
+
+            }
         }
-        item {
-            TextField(
-                value = userEmail,
-                onValueChange = {
-                    userEmail = it
-                },
-                label = {
-                    Text("邮箱")
-                },
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .fillMaxWidth()
-                    .height(56.dp),
-                singleLine = true
-            )
+    }
+    LaunchedEffect(loginCaptcha.value){
+        loginCaptcha.value.let {
+            when( it ){
+                is NetworkResult.Success<String>->{
+                    toast.addToast( it.data )
+                }
+                is NetworkResult.Error -> {
+                    toast.addToast( it.error.message.toString() , Color.Red )
+                }
+
+            }
         }
-        item {
-            TextField(
-                value = userPassword,
-                onValueChange = {
-                    userPassword = it
-                },
-                label = {
-                    Text("密码")
-                },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .fillMaxWidth()
-                    .height(56.dp),
-                singleLine = true
-            )
-        }
-        item {
-            Row (
-                modifier = Modifier
-                    .padding(vertical = 10.dp)
-            ){
+    }
+    Box( modifier = Modifier.fillMaxSize() ){
+        LazyColumn (
+            modifier = modifier,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            item {
+                Image(
+                    painter = painterResource(MR.images.FuTalk),
+                    "",
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .aspectRatio(1f)
+                        .padding(vertical = 30.dp)
+                )
+            }
+            item {
                 TextField(
-                    value = captcha,
+                    value = userEmail,
                     onValueChange = {
-                        captcha = it
+                        userEmail = it
                     },
                     label = {
-                        Text("验证码")
+                        Text("邮箱")
                     },
-                    maxLines = 1,
-                    singleLine = true,
                     modifier = Modifier
-                        .then(if(editAble) Modifier.weight(1f).padding(end = 10.dp) else Modifier.width(0.dp))
-                        .height(56.dp)
-                        .animateContentSize()
+                        .padding(top = 10.dp)
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    singleLine = true
                 )
-                Row(
-                    modifier = Modifier
-                        .then(
-                            if (!editAble) Modifier.weight(1f).height(56.dp) else Modifier.size(56.dp)
-                        )
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.Green)
-                        .animateContentSize()
-                        .clickable {
-                            if(!editAble) {
-                                editAble = !editAble
-                            }else{
-
-                            }
-                        },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = if (!editAble) painterResource(MR.images.cloud_key) else rememberVectorPainter(Icons.Filled.Refresh),
-                        "",
-                        modifier = Modifier
-                            .size(56.dp)
-                            .wrapContentSize(Alignment.Center)
-                            .fillMaxSize(0.5f)
-                    )
-                    Text(
-                        "申请验证码",
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-                }
             }
-        }
-        item{
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ){
-                Button(
-                    onClick = {
-                        navigateToRegister.invoke()
+            item {
+                TextField(
+                    value = userPassword,
+                    onValueChange = {
+                        userPassword = it
                     },
-                    shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(
-                        vertical = 10.dp,
-                        horizontal = 20.dp
-                    ),
-                    enabled = !isLogin
-                ) {
-                    Icon(
-                        painter = painterResource(MR.images.register),
-                        "",
-                        modifier = Modifier
-                            .size(40.dp)
-                            .wrapContentSize(Alignment.Center)
-                            .fillMaxSize(0.6f)
-                    )
-                    Text("未有账号")
-                }
-                Button(
-                    onClick = {},
-                    shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(
-                        vertical = 10.dp,
-                        horizontal = 20.dp
-                    ),
+                    label = {
+                        Text("密码")
+                    },
+                    visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier
-                        .padding( start = 20.dp )
-                        .weight(1f),
-                    enabled = registerAble.value
-                ) {
-                    Icon(
-                        painter = painterResource(MR.images.login),
-                        "",
+                        .padding(top = 10.dp)
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    singleLine = true
+                )
+            }
+            item {
+                Row (
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                ){
+                    TextField(
+                        value = captcha,
+                        onValueChange = {
+                            captcha = it
+                        },
+                        label = {
+                            Text("验证码")
+                        },
+                        maxLines = 1,
+                        singleLine = true,
                         modifier = Modifier
-                            .size(40.dp)
-                            .wrapContentSize(Alignment.Center)
-                            .fillMaxSize(0.6f)
+                            .then(if(editAble) Modifier.weight(1f).padding(end = 10.dp) else Modifier.width(0.dp))
+                            .height(56.dp)
+                            .animateContentSize()
                     )
-                    Text("登录")
+                    Row(
+                        modifier = Modifier
+                            .then(
+                                if (!editAble) Modifier.weight(1f).height(56.dp) else Modifier.size(56.dp)
+                            )
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.Green)
+                            .animateContentSize()
+                            .clickable {
+                                if(!editAble) {
+                                    editAble = !editAble
+                                }
+                                getCaptcha(userEmail)
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = if (!editAble) painterResource(MR.images.cloud_key) else rememberVectorPainter(
+                                Icons.Filled.Refresh),
+                            "",
+                            modifier = Modifier
+                                .size(56.dp)
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.5f)
+                        )
+                        Text(
+                            "申请验证码",
+                            modifier = Modifier
+                                .weight(1f)
+                        )
+                    }
                 }
             }
+            item{
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Button(
+                        onClick = {
+                            navigateToRegister.invoke()
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(
+                            vertical = 10.dp,
+                            horizontal = 20.dp
+                        ),
+                        enabled = loginState.value !is NetworkResult.Loading
+                    ) {
+                        Icon(
+                            painter = painterResource(MR.images.register),
+                            "",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.6f)
+                        )
+                        Text("未有账号")
+                    }
+                    Button(
+                        onClick = {
+                            login.invoke(userEmail,userPassword,captcha)
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(
+                            vertical = 10.dp,
+                            horizontal = 20.dp
+                        ),
+                        modifier = Modifier
+                            .padding( start = 20.dp )
+                            .weight(1f),
+                        enabled = registerAble.value
+                    ) {
+                        Icon(
+                            painter = painterResource(MR.images.login),
+                            "",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.6f)
+                        )
+                        Text("登录")
+                    }
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(50.dp))
+            }
         }
-        item {
-            Spacer(modifier = Modifier.height(50.dp))
-        }
-    }
-    AnimatedVisibility(
-        toast!=null,
-        exit =  slideOutVertically() { 0 } + shrinkVertically() + fadeOut(tween(5000)),
-        enter = slideInVertically{0}
-    ){
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(10.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.Cyan)
-                .padding(10.dp)
-        ){
-            Text(
-                if( toast != null ) toast!! else "",
-                modifier = Modifier
-                    .align(Alignment.Center),
-                textAlign = TextAlign.Center
-            )
-        }
+        EasyToast(toast)
     }
 }

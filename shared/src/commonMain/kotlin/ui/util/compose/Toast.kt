@@ -39,18 +39,20 @@ data class ToastImp(
 )
 
 class Toast(private val scope: CoroutineScope) {
-    var currentToast = mutableStateOf<ToastImp?>(null)
+    var currentToast = mutableStateOf<ToastImp>(ToastImp(null,"", Color.Cyan))
+        private set
+    var isShow = mutableStateOf(false)
         private set
     private val mutex = Mutex()
     suspend fun show(toast : ToastImp):Unit{
         if(!mutex.isLocked){
             mutex.withLock {
                 try {
-                    println("sssssssssssssssssssssssssssssssss")
                     currentToast.value = toast
+                    isShow.value = true
                 }finally {
                     delay(2000)
-                    currentToast.value = null
+                    isShow.value = false
                 }
             }
         }
@@ -62,8 +64,8 @@ class Toast(private val scope: CoroutineScope) {
         }
     }
 
-    fun addToast(string: String){
-        run(ToastImp(Icons.Filled.Refresh,string, Color.Red))
+    fun addToast(string: String,color: Color = Color.Cyan){
+        run(ToastImp(Icons.Filled.Refresh,string, color))
     }
 
 }
@@ -83,7 +85,7 @@ fun EasyToast(
     toast : Toast = rememberToastState()
 ){
     AnimatedVisibility(
-        toast.currentToast.value != null,
+        toast.isShow.value,
         exit =  slideOutVertically() { 0 } + shrinkVertically() + fadeOut(tween(5000)),
         enter = slideInVertically{0}
     ){
@@ -93,10 +95,10 @@ fun EasyToast(
                 .wrapContentHeight()
                 .padding(10.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color.Cyan)
+                .background(toast.currentToast.value.color)
                 .padding(10.dp)
         ){
-            toast.currentToast.value?.let {
+            toast.currentToast.value.let {
                 Text(
                     it.text,
                     modifier = Modifier
