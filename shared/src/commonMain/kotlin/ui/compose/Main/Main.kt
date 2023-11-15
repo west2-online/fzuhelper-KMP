@@ -1,6 +1,5 @@
 package ui.compose.Main
 
-import BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,24 +25,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import ui.compose.Massage.MassageScreen
 import ui.compose.New.NewsScreen
 import ui.compose.PERSON.PersonalDrawer
-import ui.route.Route
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Main(
-    route : SnapshotStateList<Route>
-){
-    BackHandler(true){
-        route.remove(route.last())
-    }
+fun MainScreen(){
+//    BackHandler(true){
+//        route.remove(route.last())
+//    }
     Scaffold(
         drawerContent = {
             PersonalDrawer(

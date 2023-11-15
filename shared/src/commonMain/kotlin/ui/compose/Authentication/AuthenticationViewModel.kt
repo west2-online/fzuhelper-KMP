@@ -1,6 +1,5 @@
 package ui.compose.Authentication
 
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.ImageBitmap
 import asImageBitmap
 import com.liftric.kvault.KVault
@@ -15,11 +14,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import ui.route.Route
+import ui.route.RouteState
 import ui.util.network.NetworkResult
 import ui.util.network.reset
 
 
-class AuthenticationViewModel(private val loginRepository:LoginRepository, private val kVault: KVault ,val route:SnapshotStateList<Route>) : ViewModel() {
+class AuthenticationViewModel(private val loginRepository:LoginRepository, private val kVault: KVault ,val routeState:RouteState) : ViewModel() {
     private val _captcha = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val captcha = _captcha.asStateFlow()
 
@@ -163,14 +163,12 @@ class AuthenticationViewModel(private val loginRepository:LoginRepository, priva
         }
     }
 
-    fun enterAuthor(){
+    private fun enterAuthor(){
         val token : String? = kVault.string(forKey = "token")
         token ?: return
-        route.add(Route.Splash())
-//        route.removeAt(
-//            route.indexOf(Route.LoginWithRegister())
-//        )
+        routeState.navigateWithPop(Route.Splash())
     }
+
 }
 
 enum class RegistrationStatus(val value: Int, val description: String,val descriptionForToast:String? = null) {

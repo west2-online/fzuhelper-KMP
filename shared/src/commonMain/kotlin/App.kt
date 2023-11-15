@@ -1,11 +1,11 @@
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import com.liftric.kvault.KVault
 import data.LoginRepository
+import data.SplashRepository
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import dev.icerock.moko.resources.desc.Resource
 import dev.icerock.moko.resources.desc.StringDesc
@@ -25,8 +25,10 @@ import org.koin.core.module.Module
 import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
 import ui.compose.Authentication.AuthenticationViewModel
+import ui.compose.SplashPage.SplashPageViewModel
 import ui.route.Route
 import ui.route.RouteHost
+import ui.route.RouteState
 import ui.util.compose.FuTalkTheme
 
 
@@ -35,11 +37,15 @@ fun App(){
     KoinApplication(application = {
         modules(appModule())
     }) {
+        val route = koinInject<RouteState>()
         FuTalkTheme {
             RouteHost(
                 modifier = Modifier.fillMaxSize(),
-                route = koinInject()
+                route = route
             )
+        }
+        BackHandler(true){
+            route.back()
         }
     }
 }
@@ -52,7 +58,7 @@ fun getMyString(): StringDesc {
 expect fun getPlatformName(): String
 
 @Composable
-expect fun BackHandler(isEnabled: Boolean, onBack: ()-> Unit)
+expect fun BackHandler(isEnabled: Boolean, onBack: @Composable ()-> Unit)
 
 expect inline fun <reified T : ViewModel> Module.viewModelDefinition(
     qualifier: Qualifier? = null,
@@ -78,10 +84,16 @@ fun appModule() = module {
         }
     }
     single {
+        SplashRepository( get() )
+    }
+    single {
         LoginRepository( get() )
     }
     viewModelDefinition {
         AuthenticationViewModel( get(),get(),get() )
+    }
+    viewModelDefinition {
+        SplashPageViewModel(get(),get(),get())
     }
     single {
         initStore()
@@ -89,9 +101,10 @@ fun appModule() = module {
     single {
         val kVault = get<KVault>()
         val token : String? = kVault.string(forKey = "token")
-        mutableStateListOf<Route>(
-            if( token == null ) Route.LoginWithRegister() else Route.Splash()
-        )
+//        mutableStateListOf<Route>(
+//            if( token == null ) Route.LoginWithRegister() else Route.Splash()
+//        )
+        RouteState( if( token == null ) Route.LoginWithRegister() else Route.Splash())
     }
 }
 

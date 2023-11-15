@@ -6,11 +6,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import ui.compose.Authentication.Assembly
+import ui.compose.Main.MainScreen
 import ui.compose.Massage.MassageScreen
 import ui.compose.New.NewsDetail
 import ui.compose.Release.ReleasePageScreen
@@ -18,28 +24,12 @@ import ui.compose.SplashPage.SplashPage
 
 @Composable
 fun RouteHost(
-    back:()->Unit = {},
     modifier: Modifier = Modifier,
-    start: Route = Route.Main.Builder()
-        .setRoute("massage")
-        .setId("massage")
-        .build(),
-    route: SnapshotStateList<Route> = remember {
-        mutableStateListOf<Route>(
-            start
-        )
-    }
+    route:RouteState
 ){
-    val currentPage = remember(route){
-        derivedStateOf {
-            if(route.isEmpty()){
-                return@derivedStateOf null
-            }
-            route.last()
-        }
-    }
+
     Box(modifier = modifier) {
-        currentPage.value?.content?.invoke(route)
+        route.currentPage.value?.content?.invoke(route.route)
     }
 }
 
@@ -76,66 +66,14 @@ interface Route{
         }
     }
 
-    class Main private constructor(
-        val id: String,
-        override val route: String,
+    class Main (
+        val id: String ,
+        override val route: String = "Main",
         override val content: @Composable ( SnapshotStateList<Route> ) -> Unit = {
-//            MainScreen(it)
-//            Main(it)
-//            NewsDetail(
-//                modifier = Modifier
-//                    .padding(10.dp)
-//            )
-//            NewsScreen()
-//            Ribbon(
-//                modifier = Modifier
-//                    .padding(10.dp),
-//            )
-//            Box(
-//                modifier = Modifier.fillMaxSize()
-//                    .loadAction()
-//            ){
-//
-//            }
-//            SplashPage(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding(10.dp)
-//            )
-            Assembly(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-            )
-//            FeedbackDetail(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//            )
-//            FeedbackList(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//            )
+            MainScreen()
         }
-    ) : Route{
-        class Builder {
-            private var id:String? = null
-            private var route : String? = null
-            fun setId(id: String): Builder {
-                this.id = id
-                return this
-            }
-            fun setRoute(route: String): Builder {
-                this.route = route
-                return this
-            }
-            fun build(): Main {
-                return Main(
-                    id!!,
-                    route!!
-                )
-            }
-        }
-    }
+    ) : Route
+
 
     class ReleasePage private constructor(
         val id: String,
@@ -221,6 +159,36 @@ interface Route{
     ):Route
 
 }
+
+class RouteState(start:Route){
+    val route = mutableStateListOf<Route>(start)
+    val currentPage = derivedStateOf {
+        if(route.isEmpty()){
+            return@derivedStateOf null
+        }
+        route.last()
+    }
+    private val scope = CoroutineScope(Job())
+    private val mutex = Mutex()
+    fun back(){
+        if(!mutex.isLocked){
+            scope.launch(Dispatchers.Default) {
+                mutex.withLock {
+                    route.removeLast()
+                }
+            }
+        }
+    }
+    fun navigateWithPop(newRoute: Route){
+        route.removeLastOrNull()
+        route.add(newRoute)
+    }
+    fun navigateWithoutPop(newRoute: Route){
+        route.add(newRoute)
+    }
+}
+
+
 
 
 

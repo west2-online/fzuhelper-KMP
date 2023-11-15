@@ -34,12 +34,13 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import ui.util.compose.shimmerLoadingAnimation
 
 @Composable
 fun SplashPage(
     modifier: Modifier,
-    skip :() -> Unit = {}
+    viewModel:SplashPageViewModel = koinInject()
 ){
     var show by remember { mutableStateOf(true) }
     LaunchedEffect(Unit){
@@ -52,7 +53,7 @@ fun SplashPage(
     LazyColumn (
         modifier = modifier
             .clickable {
-                 skip.invoke()
+                viewModel.navigateToMain()
             },
     ) {
         item {
