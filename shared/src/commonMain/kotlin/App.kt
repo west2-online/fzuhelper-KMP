@@ -4,13 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import com.liftric.kvault.KVault
-import data.LoginRepository
-import data.SplashRepository
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import dev.icerock.moko.resources.desc.Resource
 import dev.icerock.moko.resources.desc.StringDesc
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
+import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
@@ -24,6 +23,8 @@ import org.koin.core.definition.KoinDefinition
 import org.koin.core.module.Module
 import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
+import repository.LoginRepository
+import repository.SplashRepository
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.route.Route
@@ -72,6 +73,11 @@ fun appModule() = module {
         HttpClient{
             install(ContentNegotiation) {
                 json()
+            }
+            install(
+                DefaultRequest
+            ){
+                url("http://172.20.10.2:8000/")
             }
             install(Logging)
             install(HttpCookies){

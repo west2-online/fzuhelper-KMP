@@ -1,4 +1,4 @@
-package repository.register.bean
+package data.register
 
 import kotlinx.serialization.Serializable
 

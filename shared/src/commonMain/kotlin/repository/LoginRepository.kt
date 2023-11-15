@@ -1,5 +1,6 @@
-package data
+package repository
 
+import data.register.AuthenticationResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.cookie
@@ -17,13 +18,12 @@ import io.ktor.utils.io.charsets.Charset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.Serializable
-import repository.register.bean.AuthenticationResponse
 
 class LoginRepository(private val client : HttpClient) {
     fun getRegisterCaptcha(email:String):Flow<AuthenticationResponse>{
         return flow{
-            val response:AuthenticationResponse = client.submitForm(
-                url = "http://172.20.10.2:8000/register/captcha",
+            val response: AuthenticationResponse = client.submitForm(
+                url = "register/captcha",
                 formParameters = parameters {
                     append("email", email)
                 }
@@ -36,8 +36,8 @@ class LoginRepository(private val client : HttpClient) {
 
     fun getLoginCaptcha(email:String):Flow<AuthenticationResponse>{
         return flow{
-            val response:AuthenticationResponse = client.submitForm(
-                url = "http://172.20.10.2:8000/login/captcha",
+            val response: AuthenticationResponse = client.submitForm(
+                url = "login/captcha",
                 formParameters = parameters {
                     append("email", email)
                 }
@@ -50,8 +50,8 @@ class LoginRepository(private val client : HttpClient) {
 
     fun register(email:String,password:String,captcha:String):Flow<AuthenticationResponse>{
         return flow{
-            val response:AuthenticationResponse = client.submitForm(
-                url = "http://172.20.10.2:8000/register/register",
+            val response: AuthenticationResponse = client.submitForm(
+                url = "register/register",
                 formParameters = parameters {
                     append("email", email)
                     append("password",password)
@@ -64,8 +64,8 @@ class LoginRepository(private val client : HttpClient) {
 
     fun login(email:String,password:String,captcha:String):Flow<AuthenticationResponse>{
         return flow{
-            val response:AuthenticationResponse = client.submitForm(
-                url = "http://172.20.10.2:8000/login/login",
+            val response: AuthenticationResponse = client.submitForm(
+                url = "login/login",
                 formParameters = parameters {
                     append("email", email)
                     append("password",password)
@@ -166,7 +166,7 @@ enum class LoginError(val throwable: Throwable){
     NetworkError(Throwable("网络错误"))
 }
 
-fun Throwable.compareWith(t:LoginError):Boolean{
+fun Throwable.compareWith(t: LoginError):Boolean{
     return this.message == t.throwable.message
 }
 

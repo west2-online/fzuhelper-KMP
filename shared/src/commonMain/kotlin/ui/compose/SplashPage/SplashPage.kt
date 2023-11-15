@@ -1,47 +1,54 @@
 package ui.compose.SplashPage
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import ui.util.compose.EasyToast
+import ui.util.compose.rememberToastState
 import ui.util.compose.shimmerLoadingAnimation
+import ui.util.network.CollectWithContent
+import ui.util.network.logicWithType
 
 @Composable
 fun SplashPage(
     modifier: Modifier,
     viewModel:SplashPageViewModel = koinInject()
 ){
+
+    val imageState = viewModel.imageState.collectAsState()
+    val toast = rememberToastState()
+
+    LaunchedEffect(imageState,imageState.value.key){
+        imageState.value.logicWithType(
+            error = {
+                toast.addToast(it.message.toString(), Color.Red)
+            }
+        )
+    }
+    LaunchedEffect(Unit){
+        toast.addToast("点击屏幕直接进入")
+        viewModel.getSplashPageImage()
+    }
     var show by remember { mutableStateOf(true) }
     LaunchedEffect(Unit){
         launch {
@@ -49,22 +56,20 @@ fun SplashPage(
             show = false
         }
     }
-    val textList = listOf("落霞与孤鹜齐飞","秋水共长天一色")
-    LazyColumn (
-        modifier = modifier
+    Box(
+        modifier = Modifier.fillMaxSize()
             .clickable {
                 viewModel.navigateToMain()
-            },
-    ) {
-        item {
-            Box(modifier = Modifier.fillMaxWidth().wrapContentHeight().animateContentSize()){
+            }
+    ){
+        imageState.CollectWithContent(
+            success = {
                 KamelImage(
-                    resource = asyncPainterResource("https://pica.zhimg.com/80/v2-cb2c09a7f53a8ff2c022343a3546bf40_720w.webp?source=1940ef5c"),
+                    resource = asyncPainterResource("http://172.20.10.2:8000/openImage/$it"),
                     null,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight(),
-                    contentScale = ContentScale.FillWidth,
+                        .fillMaxSize(),
+                    contentScale = ContentScale.FillBounds,
                     onLoading = {
                         Box(modifier = Modifier
                             .fillMaxWidth()
@@ -82,43 +87,32 @@ fun SplashPage(
                         )
                     }
                 )
-            }
-        }
-        items(textList.size) {
-            Text(
-                modifier = Modifier
+            },
+            error = {
+                Box( modifier = Modifier.fillMaxSize() ){
+                    Text("获取失败",modifier = Modifier.align(Alignment.Center))
+                }
+            },
+            content = {
+                Box(modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(10.dp),
-                text = textList[it],
-                textAlign = TextAlign.End
-            )
-        }
-    }
-    Box(modifier = Modifier.fillMaxSize()) {
-        AnimatedVisibility(
-            show,
-            exit =  slideOutVertically() {
-                0
-            } + shrinkVertically() + fadeOut(tween(5000)),
-        ){
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(10.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.Cyan)
-                    .padding(10.dp)
-                    .align(Alignment.BottomCenter)
-            ){
-                Text(
-                    "点击屏幕可跳过",
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    textAlign = TextAlign.Center
+                    .aspectRatio(0.5f)
+                    .shimmerLoadingAnimation(
+                        colorList = listOf(
+                            Color.Black.copy(alpha = 0.1f),
+                            Color.Black.copy(alpha = 0.2f),
+                            Color.Black.copy(alpha = 0.3f),
+                            Color.Black.copy(alpha = 0.2f),
+                            Color.Black.copy(alpha = 0.1f),
+                        )
+                    )
+                    .animateContentSize()
                 )
-            }
-        }
+            },
+            modifier = Modifier
+                .fillMaxSize()
+        )
+
     }
+    EasyToast(toast)
 }

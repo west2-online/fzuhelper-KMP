@@ -3,8 +3,6 @@ package ui.compose.Authentication
 import androidx.compose.ui.graphics.ImageBitmap
 import asImageBitmap
 import com.liftric.kvault.KVault
-import data.LoginRepository
-import data.TokenData
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.Dispatchers
@@ -13,13 +11,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import repository.LoginRepository
+import repository.TokenData
 import ui.route.Route
 import ui.route.RouteState
 import ui.util.network.NetworkResult
 import ui.util.network.reset
 
 
-class AuthenticationViewModel(private val loginRepository:LoginRepository, private val kVault: KVault ,val routeState:RouteState) : ViewModel() {
+class AuthenticationViewModel(private val loginRepository: LoginRepository, private val kVault: KVault, val routeState:RouteState) : ViewModel() {
     private val _captcha = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val captcha = _captcha.asStateFlow()
 

@@ -50,7 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import data.TokenData
+import repository.TokenData
 import dev.icerock.moko.resources.compose.painterResource
 import org.example.library.MR
 import ui.util.compose.EasyToast

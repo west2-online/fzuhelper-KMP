@@ -161,3 +161,25 @@ fun <T> MutableStateFlow<NetworkResult<T>>.reset(newValue : NetworkResult<T>){
         key.value = newKey
     }
 }
+
+fun <T>NetworkResult<T>.logicWithType(
+    success: ((T) -> Unit)? = null,
+    error: ((Throwable) -> Unit)? = null,
+    unSend : (() -> Unit)? = null,
+    loading : (() -> Unit)? = null,
+){
+    when(this){
+        is NetworkResult.Success<T> -> {
+            success?.invoke(this.data)
+        }
+        is NetworkResult.Error<T> -> {
+            error?.invoke(this.error)
+        }
+        is NetworkResult.Loading<T> -> {
+            loading?.invoke()
+        }
+        is NetworkResult.UnSend<T> -> {
+            unSend?.invoke()
+        }
+    }
+}
