@@ -76,6 +76,9 @@ kotlin {
                 implementation( "org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version")
 
                 implementation("com.liftric:kvault:1.12.0")
+
+                // QRcode 生成周期
+                implementation("io.github.alexzhirkevich:qrose:1.0.0-beta02")
             }
         }
         val androidMain by getting {

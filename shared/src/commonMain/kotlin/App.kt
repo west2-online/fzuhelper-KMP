@@ -26,6 +26,7 @@ import org.koin.dsl.module
 import repository.LoginRepository
 import repository.SplashRepository
 import ui.compose.Authentication.AuthenticationViewModel
+import ui.compose.Ribbon.RibbonViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.route.Route
 import ui.route.RouteHost
@@ -45,7 +46,7 @@ fun App(){
                 route = route
             )
         }
-        BackHandler(true){
+        BackHandler(route.canBack.value){
             route.back()
         }
     }
@@ -97,6 +98,9 @@ fun appModule() = module {
     }
     viewModelDefinition {
         AuthenticationViewModel( get(),get(),get() )
+    }
+    viewModelDefinition {
+        RibbonViewModel( get() )
     }
     viewModelDefinition {
         SplashPageViewModel(get(),get(),get())

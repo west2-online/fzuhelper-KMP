@@ -1,7 +1,9 @@
 package ui.compose.Ribbon
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,14 +27,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import dev.icerock.moko.resources.ImageResource
+import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.example.library.MR
+import org.koin.compose.koinInject
+import ui.route.Route
 
 @Composable
 fun Ribbon(
-    modifier: Modifier
+    modifier: Modifier,
+    viewModel: RibbonViewModel = koinInject()
 ){
     Column(
         modifier = modifier,
@@ -47,31 +56,37 @@ fun Ribbon(
             modifier = Modifier.padding(top = 10.dp).weight(1f).fillMaxWidth().clip(RoundedCornerShape(10.dp)),
             columns = GridCells.Fixed(5)
         ){
-            items(100){
+            items(Functions.values().size){
                 Column (
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(0.7f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable {
+                            viewModel.enterFunction(Functions.values()[it].route)
+
+                        }
                         .padding(10.dp)
                 ){
-                    KamelImage(
-                        resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+                    Image(
+                      painter = painterResource(Functions.values()[it].painter),
                         null,
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1f)
                             .wrapContentSize(Alignment.Center)
-                            .fillMaxSize(0.7f)
+                            .fillMaxSize(0.5f)
                             .clip(RoundedCornerShape(10)),
                         contentScale = ContentScale.FillBounds
                     )
                     Text(
-                        "sssssssssssssss",
+                        Functions.values()[it].functionName,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
                         textAlign = TextAlign.Center,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 10.sp
                     )
                 }
             }
@@ -115,4 +130,8 @@ private fun Carousel(
             contentScale = ContentScale.FillBounds
         )
     }
+}
+
+enum class Functions(val route:Route,val functionName: String,val painter: ImageResource){
+    QRCODE(route = Route.QRCode(),functionName = "二维码生成", painter = MR.images.feedback)
 }

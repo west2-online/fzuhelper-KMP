@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import ui.compose.Massage.MassageScreen
 import ui.compose.New.NewsScreen
 import ui.compose.PERSON.PersonalDrawer
+import ui.compose.Ribbon.Ribbon
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -111,10 +112,10 @@ enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
         "功能",
         Icons.Filled.Share,
         content = {
-            NewsScreen(
-                Modifier
+            Ribbon(
+                modifier = Modifier
                     .fillMaxSize()
-                    .padding(all = 10.dp)
+                    .padding(10.dp)
             )
         }
     ),
