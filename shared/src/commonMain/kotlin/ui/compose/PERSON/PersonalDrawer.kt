@@ -29,6 +29,7 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.example.library.MR
 
+
 @Composable
 fun PersonalDrawer(
     modifier: Modifier = Modifier
@@ -40,7 +41,7 @@ fun PersonalDrawer(
             modifier = Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
-                .padding(10.dp)
+                .padding(20.dp)
         )
         Functions(
             modifier = Modifier

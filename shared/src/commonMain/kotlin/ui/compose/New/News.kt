@@ -3,6 +3,7 @@ package ui.compose.New
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -12,7 +13,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,10 +25,12 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Button
 import androidx.compose.material.Card
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Share
@@ -45,18 +50,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import org.koin.compose.koinInject
 import ui.util.compose.Label
 
 
 @Composable
 fun NewsScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: NewViewModel = koinInject()
 ){
-    LazyColumn(
-        modifier = modifier,
-    ){
-        items(10){
-            NewsItem()
+    Box(modifier = modifier){
+        LazyColumn(
+            modifier = modifier,
+        ){
+            items(10){
+                NewsItem()
+            }
+        }
+        FloatingActionButton(
+            onClick = {
+                viewModel.navigateToRelease("")
+            },
+            modifier = Modifier
+                .offset(x = (-15).dp,y = ((-5).dp))
+                .size(50.dp)
+                .align(Alignment.BottomEnd),
+            shape = CircleShape
+
+        ){
+            Icon(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.Center)
+                    .fillMaxSize(0.5f),
+                imageVector = Icons.Filled.Add,
+                contentDescription = null
+            )
         }
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import ui.compose.Massage.MassageScreen
 import ui.compose.New.NewsScreen
+import ui.compose.PERSON.PersonScreen
 import ui.compose.PERSON.PersonalDrawer
 import ui.compose.Ribbon.Ribbon
 
@@ -132,6 +133,14 @@ enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
         }
     ),
     @OptIn(ExperimentalFoundationApi::class)
-    PERSON("个人",Icons.Filled.Person),
+    PERSON(
+        "个人",
+        Icons.Filled.Person,
+        content = {
+            PersonScreen(
+
+            )
+        }
+    ),
 }
 

@@ -1,9 +1,11 @@
 package ui.compose.Release
 
+import ImagePickerFactory
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Card
@@ -28,28 +31,29 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
+import asImageBitmap
+import dev.icerock.moko.resources.compose.painterResource
+import getPlatformContext
 import kotlinx.coroutines.launch
+import org.example.library.MR
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -61,62 +65,132 @@ fun ReleasePageScreen(
     }
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
+    var preview by remember {
+        mutableStateOf(false)
+    }
     Column (
         modifier = modifier
     ){
-        LazyColumn (
+        Crossfade(
+            preview,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(11f)
-                .padding(top = 10.dp),
-            state = lazyListState
+                .padding(top = 10.dp)
         ){
-            items(releasePageItems.size){ it ->
-                Card (
+            if (preview) {
+                LazyColumn (
                     modifier = Modifier
-                        .padding(bottom = 10.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight(),
-                    shape = RoundedCornerShape(5),
+                        .fillMaxSize(),
+                    state = lazyListState
                 ){
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .padding(10.dp)
-                    ){
-                        when(releasePageItems.toList().sortedBy {
-                            it.order
-                        }[it]){
-                            is ReleasePageItem.TextItem ->{
-                                ReleasePageItemText(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .animateItemPlacement()
-                                ) {
-                                    scope.launch{
-                                        lazyListState.animateScrollBy(it.toFloat())
+                    val list = releasePageItems.toList().sortedBy {
+                        it.order
+                    }.filter {
+                        return@filter when(it){
+                            is ReleasePageItem.TextItem -> it.text.value != ""
+                            is ReleasePageItem.ImageItem -> it.image.value != null
+                            else -> false
+                        }
+                    }.forEachIndexed { index, releasePageItem ->
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .padding(bottom = 10.dp)
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                                    .padding(10.dp)
+                            ){
+                                when(releasePageItem){
+                                    is ReleasePageItem.TextItem ->{
+                                        ReleasePageItemTextForShow(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .wrapContentHeight()
+                                                .animateItemPlacement(),
+                                            text = releasePageItem.text
+                                        )
                                     }
-                                }
-                            }
-                            is ReleasePageItem.ImageItem ->{
-                                ReleasePageItemImage(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .animateContentSize()
-                                        .animateItemPlacement()
-                                ) {
-
+                                    is ReleasePageItem.ImageItem ->{
+                                        ReleasePageItemImageForShow(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .wrapContentHeight()
+                                                .animateContentSize()
+                                                .animateItemPlacement(),
+                                            image = releasePageItem.image
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            item {
-                Spacer(modifier = Modifier.fillMaxWidth().height(250.dp))
+            }else{
+                LazyColumn (
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    state = lazyListState
+                ){
+                    releasePageItems.toList().sortedBy {
+                        it.order
+                    }.forEachIndexed { index, releasePageItem ->
+                        item {
+                            Card (
+                                modifier = Modifier
+                                    .padding(bottom = 10.dp)
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(),
+                                shape = RoundedCornerShape(5),
+                            ){
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .padding(10.dp)
+                                ){
+                                    when(releasePageItem){
+                                        is ReleasePageItem.TextItem ->{
+                                            ReleasePageItemText(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .wrapContentHeight()
+                                                    .animateItemPlacement(),
+                                                text = releasePageItem.text,
+                                                onValueChange = {
+                                                    releasePageItem.text.value = it
+                                                },
+                                                delete = {
+                                                    releasePageItems.removeAt(index)
+                                                }
+                                            )
+                                        }
+                                        is ReleasePageItem.ImageItem ->{
+                                            ReleasePageItemImage(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .wrapContentHeight()
+                                                    .animateContentSize()
+                                                    .animateItemPlacement(),
+                                                onImagePicked = {
+                                                    releasePageItem.image.value = it.asImageBitmap()
+                                                },
+                                                image = releasePageItem.image,
+                                                delete = {
+                                                    releasePageItems.removeAt(index)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.fillMaxWidth().height(250.dp))
+                    }
+                }
             }
         }
         Row (
@@ -135,16 +209,18 @@ fun ReleasePageScreen(
                             .fillMaxHeight()
                             .aspectRatio(1f)
                             .wrapContentSize(Alignment.Center)
-                            .clip(RoundedCornerShape(10))
+                            .fillMaxSize(0.75f)
+                            .clip(CircleShape)
                             .clickable {
                                 releasePageItems.add(ReleasePageItem.TextItem(releasePageItems.size - 1))
                                 scope.launch{
                                     lazyListState.animateScrollToItem(releasePageItems.size - 1)
                                 }
                             }
+                            .wrapContentSize(Alignment.Center)
                             .fillMaxSize(0.7f)
                         ,
-                        imageVector = Icons.Filled.Build,
+                        painter = painterResource(MR.images.text),
                         contentDescription = null
                     )
                 }
@@ -154,16 +230,38 @@ fun ReleasePageScreen(
                             .fillMaxHeight()
                             .aspectRatio(1f)
                             .wrapContentSize(Alignment.Center)
-                            .clip(RoundedCornerShape(10))
+                            .fillMaxSize(0.75f)
+                            .clip(CircleShape)
                             .clickable {
                                 scope.launch{
                                     releasePageItems.add(ReleasePageItem.ImageItem(releasePageItems.size - 1))
                                     lazyListState.animateScrollToItem(releasePageItems.size - 1)
                                 }
                             }
+                            .wrapContentSize(Alignment.Center)
                             .fillMaxSize(0.7f)
                         ,
-                        imageVector = Icons.Filled.Delete,
+                        painter = painterResource(MR.images.image),
+                        contentDescription = null
+                    )
+                }
+                item{
+                    Icon(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .wrapContentSize(Alignment.Center)
+                            .fillMaxSize(0.75f)
+                            .clip(CircleShape)
+                            .clickable {
+                                scope.launch{
+                                   preview = !preview
+                                }
+                            }
+                            .wrapContentSize(Alignment.Center)
+                            .fillMaxSize(0.7f)
+                        ,
+                        painter = painterResource(MR.images.eye),
                         contentDescription = null
                     )
                 }
@@ -213,7 +311,6 @@ fun ReleasePageScreen(
                 )
             }
         }
-
     }
 }
 
@@ -221,10 +318,14 @@ interface ReleasePageItem{
     val order:Int
     data class TextItem(
         override val order: Int
-    ) : ReleasePageItem
+    ) : ReleasePageItem{
+        var text = mutableStateOf<String>("")
+    }
     data class ImageItem(
         override val order: Int
-    ) : ReleasePageItem
+    ) : ReleasePageItem{
+        var image = mutableStateOf<ImageBitmap?>(null)
+    }
 }
 
 
@@ -237,14 +338,9 @@ fun ReleasePageItemText(
     overflow:(Int)->Unit = {},
     delete:()->Unit = {},
     moveUp:()->Unit = {},
-    moveDown: () -> Unit = {}
+    moveDown: () -> Unit = {},
+    text:State<String>
 ){
-    var text by rememberSaveable{
-        mutableStateOf("")
-    }
-    LaunchedEffect(text){
-        onValueChange(text)
-    }
     Column( modifier ) {
         LazyRow(
             modifier = Modifier
@@ -307,10 +403,8 @@ fun ReleasePageItemText(
                 .wrapContentHeight(),
             content = {
                 TextField(
-                    value = text,
-                    onValueChange = {
-                        text = it
-                    },
+                    value = text.value,
+                    onValueChange = onValueChange,
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
@@ -332,7 +426,9 @@ fun ReleasePageItemImage(
     modifier: Modifier,
     delete:()->Unit = {},
     moveUp:()->Unit = {},
-    moveDown: () -> Unit = {}
+    moveDown: () -> Unit = {},
+    onImagePicked : (ByteArray) -> Unit,
+    image: State<ImageBitmap?>
 ){
     Column( modifier ) {
         LazyRow(
@@ -341,8 +437,12 @@ fun ReleasePageItemImage(
                 .padding(vertical = 5.dp)
         ) {
             item{
+                val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
+                imagePicker.registerPicker(onImagePicked)
                 Button(
-                    {}
+                    {
+                        imagePicker.pickImage()
+                    }
                 ){
                     Text("选择图片")
                 }
@@ -402,15 +502,74 @@ fun ReleasePageItemImage(
                 .fillMaxWidth()
                 .wrapContentHeight(),
             content = {
-                KamelImage(
-                    resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-                    null,
+                Crossfade(image.value){
+                    if(it != null){
+                        Image(
+                            bitmap = it,
+                            null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun ReleasePageItemTextForShow(
+    modifier: Modifier,
+    onValueChange:(String)->Unit = {},
+    overflow:(Int)->Unit = {},
+    delete:()->Unit = {},
+    moveUp:()->Unit = {},
+    moveDown: () -> Unit = {},
+    text : State<String>
+){
+
+    Column( modifier ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            content = {
+                Text(
+                    text = text.value,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight(),
-                    contentScale = ContentScale.Crop
+                        .wrapContentHeight()
                 )
             }
         )
     }
+}
+
+
+@Composable
+fun ReleasePageItemImageForShow(
+    modifier: Modifier,
+    image: State<ImageBitmap?>
+){
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        content = {
+            Crossfade(image.value){
+                if(it != null){
+                    Image(
+                        bitmap = it,
+                        null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+        }
+    )
 }

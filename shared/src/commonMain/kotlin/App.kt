@@ -24,14 +24,17 @@ import org.koin.core.module.Module
 import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
 import repository.LoginRepository
+import repository.NewRepository
 import repository.SplashRepository
 import ui.compose.Authentication.AuthenticationViewModel
+import ui.compose.New.NewViewModel
 import ui.compose.Ribbon.RibbonViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.route.Route
 import ui.route.RouteHost
 import ui.route.RouteState
 import ui.util.compose.FuTalkTheme
+
 
 
 @Composable
@@ -78,7 +81,7 @@ fun appModule() = module {
             install(
                 DefaultRequest
             ){
-                url("http://172.20.10.2:8000/")
+                url(get<BaseUrl>().getMainUrl())
             }
             install(Logging)
             install(HttpCookies){
@@ -90,23 +93,13 @@ fun appModule() = module {
             configure()
         }
     }
-    single {
-        SplashRepository( get() )
-    }
-    single {
-        LoginRepository( get() )
-    }
-    viewModelDefinition {
-        AuthenticationViewModel( get(),get(),get() )
-    }
-    viewModelDefinition {
-        RibbonViewModel( get() )
-    }
-    viewModelDefinition {
-        SplashPageViewModel(get(),get(),get())
-    }
+    repositoryList()
+    viewModel()
     single {
         initStore()
+    }
+    single{
+        BaseUrl()
     }
     single {
         val kVault = get<KVault>()
@@ -126,3 +119,65 @@ fun HttpClientConfig<*>.configure() {
 internal expect fun HttpClientConfig<*>.configureForPlatform()
 
 expect fun initStore(): KVault
+
+
+class BaseUrl(
+    private val debug :Boolean = true,
+    val url:String = if (debug) "http://10.0.2.2" else "http://172.20.10.2",
+    val port :String = "8000"
+){
+    fun getMainUrl():String{
+        return "$url:$port"
+    }
+}
+
+fun Module.repositoryList(){
+    single {
+        SplashRepository( get() )
+    }
+    single {
+        LoginRepository( get() )
+    }
+    single {
+        NewRepository(get())
+    }
+}
+
+fun Module.viewModel(){
+    viewModelDefinition {
+        AuthenticationViewModel( get(),get(),get() )
+    }
+    viewModelDefinition {
+        RibbonViewModel( get() )
+    }
+    viewModelDefinition {
+        SplashPageViewModel(get(),get(),get())
+    }
+    viewModelDefinition {
+        NewViewModel(get(),get())
+    }
+}
+
+
+
+
+expect class ImagePickerFactory(context: PlatformContext) {
+    @Composable
+    fun createPicker(): ImagePicker
+}
+
+expect class ImagePicker {
+    @Composable
+    fun registerPicker(onImagePicked: (ByteArray) -> Unit)
+
+    fun pickImage()
+}
+
+@Composable
+expect fun rememberBitmapFromBytes(bytes: ByteArray?): ImageBitmap?
+
+
+expect class PlatformContext
+
+@Composable
+expect fun getPlatformContext(): PlatformContext

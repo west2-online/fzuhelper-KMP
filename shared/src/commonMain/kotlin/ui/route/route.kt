@@ -1,6 +1,6 @@
 package ui.route
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -18,6 +18,7 @@ import ui.compose.Authentication.Assembly
 import ui.compose.Main.MainScreen
 import ui.compose.Massage.MassageScreen
 import ui.compose.New.NewsDetail
+import ui.compose.PERSON.PersonScreen
 import ui.compose.QRCode.QRCodeScreen
 import ui.compose.Release.ReleasePageScreen
 import ui.compose.SplashPage.SplashPage
@@ -28,8 +29,8 @@ fun RouteHost(
     route:RouteState
 ){
 
-    Box(modifier = modifier) {
-        route.currentPage.value?.content?.invoke()
+    Crossfade(modifier = modifier, targetState = route.currentPage.value) {
+        it?.content?.invoke()
     }
 }
 
@@ -55,8 +56,8 @@ interface Route{
 
 
     class ReleasePage (
-        val id: String,
-        override val route: String,
+        val token: String,
+        override val route: String = "ReleasePage",
         override val content: @Composable (  ) -> Unit = {
             ReleasePageScreen(
                 modifier = Modifier
@@ -70,7 +71,7 @@ interface Route{
         val isSelf : Boolean = false,
         override val route: String,
         override val content: @Composable () -> Unit = {
-//            MainScreen(it)
+           PersonScreen()
         }
     ) : Route
 

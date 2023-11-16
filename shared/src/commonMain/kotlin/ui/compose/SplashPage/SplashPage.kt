@@ -1,5 +1,6 @@
 package ui.compose.SplashPage
 
+import BaseUrl
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -56,6 +57,7 @@ fun SplashPage(
             show = false
         }
     }
+    val baseUrl = koinInject<BaseUrl>()
     Box(
         modifier = Modifier.fillMaxSize()
             .clickable {
@@ -65,7 +67,7 @@ fun SplashPage(
         imageState.CollectWithContent(
             success = {
                 KamelImage(
-                    resource = asyncPainterResource("http://172.20.10.2:8000/openImage/$it"),
+                    resource = asyncPainterResource("${baseUrl.getMainUrl()}/openImage/$it"),
                     null,
                     modifier = Modifier
                         .fillMaxSize(),
