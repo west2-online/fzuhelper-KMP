@@ -28,11 +28,13 @@ import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.example.library.MR
-
+import org.koin.compose.koinInject
+import ui.route.Route
+import ui.route.RouteState
 
 @Composable
 fun PersonalDrawer(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ){
     Column(
         modifier = modifier
@@ -41,7 +43,7 @@ fun PersonalDrawer(
             modifier = Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(10.dp)
         )
         Functions(
             modifier = Modifier
@@ -85,19 +87,37 @@ fun PersonalInformation(
 
 @Composable
 fun Functions(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    routeState: RouteState = koinInject()
 ){
     LazyColumn(
         modifier = modifier
     ){
-        (1..20).forEach { _ ->
-            item {
-                FunctionsItem(
-                    painterResource(MR.images.feedback),
-                    {},
-                    "个人资料"
-                )
-            }
+        item {
+            FunctionsItem(
+                painterResource(MR.images.feedback),
+                {
+                    routeState.navigateWithoutPop(Route.Feedback())
+                },
+                "反馈"
+            )
+        }
+        item {
+            FunctionsItem(
+                painterResource(MR.images.feedback),
+                {},
+                "个人资料"
+            )
+
+        }
+        item {
+            FunctionsItem(
+                painterResource(MR.images.test),
+                {
+                    routeState.navigateWithoutPop(Route.Test())
+                },
+                "个人资料"
+            )
         }
     }
 }

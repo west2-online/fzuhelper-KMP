@@ -1,6 +1,7 @@
 package ui.compose.Feedback
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -30,7 +31,8 @@ import ui.util.compose.ThemeCard
 
 @Composable
 fun FeedbackList(
-    modifier: Modifier
+    modifier: Modifier,
+    navigateToDetail:(id:String)->Unit
 ) {
     LazyColumn (
         modifier = modifier
@@ -39,17 +41,24 @@ fun FeedbackList(
 
         }
         items(10){
-            FeedbackListItem()
+            FeedbackListItem(
+                navigateToDetail = navigateToDetail
+            )
         }
     }
 }
 
 @Composable
-fun FeedbackListItem() {
+fun FeedbackListItem(
+    navigateToDetail:(id:String)->Unit
+) {
     ThemeCard(
         cardModifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
+            .clickable {
+                navigateToDetail("")
+            }
             .padding(10.dp),
         columnModifier = Modifier
             .wrapContentHeight()

@@ -101,11 +101,16 @@ private fun Carousel(
     modifier: Modifier = Modifier,
     refreshCarousel:()->Unit = {},
 ) {
-
+    val data = listOf<String>(
+        "https://www.jetbrains.com/lp/compose-multiplatform/static/hero-desktop-a91cbf05d6f13666a61aba073a2e71bf.jpg",
+        "https://www.jetbrains.com/_assets/www/fleet/inc/overview-content/parts/heading-section/img/main1248.8e6d0b77d29fd84703f62206d15767ff.png",
+        "https://i1.wp.com/ugtechmag.com/wp-content/uploads/2018/05/kotlin-featured.png?fit=1200%2C630&ssl=1",
+        "https://tse2-mm.cn.bing.net/th/id/OIP-C.ndsvvkmLDtOMBtFXt20BzwHaD4?w=329&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7"
+    )
     val pageState = rememberPagerState(
         initialPage = 0,
     ) {
-        10
+        data.size
     }
 
     val coroutineScope= rememberCoroutineScope()
@@ -114,7 +119,7 @@ private fun Carousel(
         while (true){
             delay(4000)
             coroutineScope.launch {
-                pageState.animateScrollToPage((pageState.currentPage+1)%10)
+                pageState.animateScrollToPage((pageState.currentPage+1)%data.size)
             }
         }
     }
@@ -123,7 +128,7 @@ private fun Carousel(
         modifier = modifier.background(Color.Blue)
     ){
         KamelImage(
-            resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+            resource = asyncPainterResource(data[it]),
             null,
             modifier = Modifier
                 .fillMaxSize(),

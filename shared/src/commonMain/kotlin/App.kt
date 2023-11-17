@@ -25,9 +25,11 @@ import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
 import repository.LoginRepository
 import repository.NewRepository
+import repository.PersonRepository
 import repository.SplashRepository
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.New.NewViewModel
+import ui.compose.PERSON.PersonViewModel
 import ui.compose.Ribbon.RibbonViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.route.Route
@@ -141,6 +143,9 @@ fun Module.repositoryList(){
     single {
         NewRepository(get())
     }
+    single {
+        PersonRepository(get())
+    }
 }
 
 fun Module.viewModel(){
@@ -148,13 +153,16 @@ fun Module.viewModel(){
         AuthenticationViewModel( get(),get(),get() )
     }
     viewModelDefinition {
-        RibbonViewModel( get() )
+        RibbonViewModel( get(), get()  )
     }
     viewModelDefinition {
         SplashPageViewModel(get(),get(),get())
     }
     viewModelDefinition {
-        NewViewModel(get(),get())
+        NewViewModel(get(),get(),get())
+    }
+    viewModelDefinition {
+        PersonViewModel(get(),get(),get())
     }
 }
 
@@ -181,3 +189,14 @@ expect class PlatformContext
 
 @Composable
 expect fun getPlatformContext(): PlatformContext
+
+
+suspend fun KVault.token(routeState: RouteState,block:suspend (token:String)->Unit) {
+    val token = this.string("token")
+    if(token == null ){
+        routeState.reLogin()
+    }
+    else{
+        block.invoke(token)
+    }
+}

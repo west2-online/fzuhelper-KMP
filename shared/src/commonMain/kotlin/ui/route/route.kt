@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ui.compose.Authentication.Assembly
+import ui.compose.Feedback.FeedbackScreen
 import ui.compose.Main.MainScreen
 import ui.compose.Massage.MassageScreen
 import ui.compose.New.NewsDetail
@@ -22,6 +23,7 @@ import ui.compose.PERSON.PersonScreen
 import ui.compose.QRCode.QRCodeScreen
 import ui.compose.Release.ReleasePageScreen
 import ui.compose.SplashPage.SplashPage
+import ui.util.compose.colorPicker.ColorPicker
 
 @Composable
 fun RouteHost(
@@ -37,7 +39,6 @@ fun RouteHost(
 interface Route{
     val route: String
     val content : @Composable ( ) -> Unit
-
     class RouteNewsDetail(
         val id: String,
         override val route: String,
@@ -115,6 +116,23 @@ interface Route{
             )
         }
     ):Route
+
+    class Feedback(
+        override val route: String = "QRCode",
+        override val content: @Composable () -> Unit = {
+            FeedbackScreen(
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+        }
+    ):Route
+
+    class Test(
+        override val route: String = "Test",
+        override val content: @Composable () -> Unit = {
+            ColorPicker()
+        }
+    ):Route
 }
 
 class RouteState(start:Route){
@@ -126,7 +144,10 @@ class RouteState(start:Route){
         route.last()
     }
     val canBack = derivedStateOf {
-        route.size != 1
+        if(route.isEmpty()){
+            return@derivedStateOf false
+        }
+        route.size != 1 && route.last() !is Route.LoginWithRegister
     }
     private val scope = CoroutineScope(Job())
     private val mutex = Mutex()
@@ -145,6 +166,10 @@ class RouteState(start:Route){
     }
     fun navigateWithoutPop(newRoute: Route){
         route.add(newRoute)
+    }
+
+    fun reLogin(){
+        navigateWithoutPop(Route.LoginWithRegister())
     }
 }
 

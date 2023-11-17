@@ -1,5 +1,6 @@
 package ui.compose.New
 
+import BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,14 +18,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,7 +37,11 @@ import ui.util.compose.shimmerLoadingAnimation
 @Composable
 fun NewsDetail(
     modifier: Modifier = Modifier,
+    back : (()->Unit)? = null
 ) {
+    BackHandler(back!=null){
+        back?.invoke()
+    }
     LazyColumn(
             modifier = modifier
     ) {
@@ -82,7 +82,7 @@ fun NewsDetail(
             }
         }
         newsDetailItem{
-            Text("ssssssssssssssssssssssssssss")
+            Text("这是帖子内容"*(10..20).random())
         }
         item {
             Divider(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp))
@@ -197,62 +197,66 @@ fun CommentInNewsDetail(){
                 .weight(1f)
                 .wrapContentHeight()
         ){
-            Text("sssss")
-            val painter = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg")
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .animateContentSize()
-            ){
-                var show by remember {
-                    mutableStateOf(false)
-                }
-                if(painter is Resource.Success<Painter>){
-                    if(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()>50){
-                        Column {
-                            KamelImage(
-                                resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-                                null,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()),
-                                contentScale = ContentScale.FillBounds
-                            )
-                            Button(
-                                onClick = {
-                                    show = !show
-                                }
-                            ) {
-                                Text(
-                                    if (show) "收起" else "展开"
-                                )
-                            }
-                        }
-                    }else{
-                        KamelImage(
-                            resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-                            null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()),
-                            contentScale = ContentScale.FillBounds
-                        )
-                    }
-                }
-                else{
-                    KamelImage(
-                        resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-                        null,
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                            .fillMaxWidth()
-                            .aspectRatio(2f),
-                        contentScale = ContentScale.FillBounds
-                    )
-                }
-            }
-            Text("ssssssssssssssssss")
+            Text("theonenull")
+            Text(
+                "2023.10.1 10:22",
+                fontSize = 10.sp
+            )
+//            val painter = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg")
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .wrapContentHeight()
+//                    .animateContentSize()
+//            ){
+//                var show by remember {
+//                    mutableStateOf(false)
+//                }
+//                if(painter is Resource.Success<Painter>){
+//                    if(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()>50){
+//                        Column {
+//                            KamelImage(
+//                                resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+//                                null,
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .aspectRatio(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()),
+//                                contentScale = ContentScale.FillBounds
+//                            )
+//                            Button(
+//                                onClick = {
+//                                    show = !show
+//                                }
+//                            ) {
+//                                Text(
+//                                    if (show) "收起" else "展开"
+//                                )
+//                            }
+//                        }
+//                    }else{
+//                        KamelImage(
+//                            resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+//                            null,
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .aspectRatio(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()),
+//                            contentScale = ContentScale.FillBounds
+//                        )
+//                    }
+//                }
+//                else{
+//                    KamelImage(
+//                        resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+//                        null,
+//                        modifier = Modifier
+//                            .padding(top = 10.dp)
+//                            .fillMaxWidth()
+//                            .aspectRatio(2f),
+//                        contentScale = ContentScale.FillBounds
+//                    )
+//                }
+//            }
+            Text("你好" * (10..60).random())
         }
     }
 }

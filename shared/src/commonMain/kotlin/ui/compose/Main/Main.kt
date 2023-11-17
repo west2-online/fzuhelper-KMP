@@ -29,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import ui.compose.Massage.MassageScreen
-import ui.compose.New.NewsScreen
+import ui.compose.New.NewScreen
 import ui.compose.PERSON.PersonScreen
 import ui.compose.PERSON.PersonalDrawer
 import ui.compose.Ribbon.Ribbon
@@ -37,7 +37,9 @@ import ui.compose.Ribbon.Ribbon
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainScreen(){
+fun MainScreen(
+
+){
 //    BackHandler(true){
 //        route.remove(route.last())
 //    }
@@ -46,7 +48,7 @@ fun MainScreen(){
             PersonalDrawer(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(all = 10.dp)
+                    .padding(all = 10.dp),
             )
         },
         content = {
@@ -101,7 +103,7 @@ enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
         "主页",
         Icons.Filled.Home,
         content = {
-            NewsScreen(
+            NewScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(vertical = 10.dp)
@@ -138,7 +140,6 @@ enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
         Icons.Filled.Person,
         content = {
             PersonScreen(
-
             )
         }
     ),

@@ -1,5 +1,6 @@
 package ui.compose.Feedback
 
+import BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -39,8 +40,12 @@ import ui.util.compose.Label
 const val SpaceWeight = 0.2f
 @Composable
 fun FeedbackDetail(
-    modifier: Modifier
+    modifier: Modifier,
+    back: (() -> Unit)?
 ){
+    BackHandler(back!=null){
+        back?.invoke()
+    }
     Row (
         modifier = Modifier
             .fillMaxSize()

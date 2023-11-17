@@ -7,6 +7,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.header
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -182,4 +184,8 @@ fun <T>NetworkResult<T>.logicWithType(
             unSend?.invoke()
         }
     }
+}
+
+fun HttpRequestBuilder.token(token:String){
+    this.header("Authorization",token)
 }

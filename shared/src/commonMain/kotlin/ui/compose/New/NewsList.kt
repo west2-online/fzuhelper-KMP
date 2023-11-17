@@ -55,16 +55,17 @@ import ui.util.compose.Label
 
 
 @Composable
-fun NewsScreen(
+fun NewsList(
     modifier: Modifier = Modifier,
-    viewModel: NewViewModel = koinInject()
+    viewModel: NewViewModel = koinInject(),
+    navigateToNewsDetail :(String)->Unit
 ){
     Box(modifier = modifier){
         LazyColumn(
             modifier = modifier,
         ){
             items(10){
-                NewsItem()
+                NewsItem(navigateToNewsDetail = navigateToNewsDetail)
             }
         }
         FloatingActionButton(
@@ -93,8 +94,12 @@ fun NewsScreen(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NewsItem(
+    navigateToNewsDetail :(String)->Unit,
     modifier: Modifier = Modifier
         .fillMaxWidth()
+        .clickable {
+            navigateToNewsDetail.invoke("")
+        }
         .padding(10.dp)
         .wrapContentHeight()
         .animateContentSize()
@@ -114,11 +119,11 @@ fun NewsItem(
             modifier = Modifier
                 .fillMaxSize()
                 .clickable {
-
+                    navigateToNewsDetail.invoke("")
                 }
                 .padding(10.dp)
         ) {
-            PersonalInformationArea()
+            PersonalInformationAreaInList()
             Surface (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -189,7 +194,7 @@ fun NewsItem(
     }
 }
 
-private operator fun String.times(int: Int): String {
+operator fun String.times(int: Int): String {
     var data = ""
     for (i in 0 until int) {
         data += this
@@ -215,14 +220,13 @@ fun PersonalInformationArea(
             modifier = Modifier
                 .fillMaxHeight()
                 .aspectRatio(1f)
-                .wrapContentSize(Alignment.CenterStart)
+                .wrapContentSize(Alignment.Center)
                 .fillMaxSize(0.7f)
                 .clip(RoundedCornerShape(10)),
             contentScale = ContentScale.FillBounds
         )
         Text(
             modifier = Modifier
-                .padding(horizontal = 10.dp)
                 .weight(1f)
                 .wrapContentHeight(),
             text = userName,
@@ -279,5 +283,39 @@ enum class NewsLabel(name:String) {
     C("c"),
     CPP("cpp"),
     OTHER("other"),
+}
+
+@Composable
+fun PersonalInformationAreaInList(
+    url : String = "https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg",
+    modifier: Modifier = Modifier
+        .fillMaxWidth()
+        .height(50.dp),
+    userName : String = "theonenull",
+){
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        KamelImage(
+            resource = asyncPainterResource(url),
+            null,
+            modifier = Modifier
+                .fillMaxHeight()
+                .aspectRatio(1f)
+                .wrapContentSize(Alignment.CenterStart)
+                .fillMaxSize(0.7f)
+                .clip(RoundedCornerShape(10)),
+            contentScale = ContentScale.FillBounds
+        )
+        Text(
+            modifier = Modifier
+                .weight(1f)
+                .wrapContentHeight(),
+            text = userName,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
 }
 
