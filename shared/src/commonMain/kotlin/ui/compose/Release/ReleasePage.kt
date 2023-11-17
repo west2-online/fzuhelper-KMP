@@ -6,6 +6,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import asImageBitmap
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
@@ -62,6 +64,9 @@ fun ReleasePageScreen(
 ){
     val releasePageItems = remember {
         mutableStateListOf<ReleasePageItem>()
+    }
+    val title = remember {
+        mutableStateOf("")
     }
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -84,6 +89,24 @@ fun ReleasePageScreen(
                         .fillMaxSize(),
                     state = lazyListState
                 ){
+                    item{
+                        Column(modifier) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(),
+                                content = {
+                                    Text(
+                                        text = title.value,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight(),
+                                        fontSize = 20.sp
+                                    )
+                                }
+                            )
+                        }
+                    }
                     val list = releasePageItems.toList().sortedBy {
                         it.order
                     }.filter {
@@ -108,7 +131,12 @@ fun ReleasePageScreen(
                                                 .fillMaxWidth()
                                                 .wrapContentHeight()
                                                 .animateItemPlacement(),
-                                            text = releasePageItem.text
+                                            text = releasePageItem.text,
+                                            overflow = {
+                                                scope.launch {
+                                                    lazyListState.animateScrollBy(it.toFloat())
+                                                }
+                                            }
                                         )
                                     }
                                     is ReleasePageItem.ImageItem ->{
@@ -132,6 +160,37 @@ fun ReleasePageScreen(
                         .fillMaxSize(),
                     state = lazyListState
                 ){
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .padding(bottom = 10.dp)
+                        ){
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(),
+                                content = {
+                                    TextField(
+                                        value = title.value,
+                                        onValueChange = {
+                                            title.value = it
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .animateContentSize(
+                                                finishedListener = { init,target ->
+                                                    println(target.height - init.height)
+                                                }
+                                            ),
+                                        label = {
+                                            Text("标题")
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    }
                     releasePageItems.toList().sortedBy {
                         it.order
                     }.forEachIndexed { index, releasePageItem ->
@@ -326,6 +385,7 @@ interface ReleasePageItem{
     ) : ReleasePageItem{
         var image = mutableStateOf<ImageBitmap?>(null)
     }
+
 }
 
 
