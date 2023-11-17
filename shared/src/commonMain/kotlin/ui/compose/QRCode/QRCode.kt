@@ -261,7 +261,7 @@ fun QRCodeScreen(
                                         .clip(RoundedCornerShape(3.dp))
                                         .background(it)
                                         .clickable {
-                                            contentColor.value = it
+                                            angleColor.value = it
                                         }
                                 )
                             }
