@@ -14,6 +14,9 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import dev.icerock.moko.resources.compose.fontFamilyResource
+import org.example.library.MR
 
 @Composable
 fun FuTalkTheme(
@@ -24,8 +27,13 @@ fun FuTalkTheme(
             primary = Color(6, 128, 215),
             primaryVariant = Color(6, 128, 215),
             surface = Color(216, 216, 238)
+        ),
+        content = content,
+        typography = MaterialTheme.typography.copy(
+            body1 = TextStyle(
+                fontFamily = fontFamilyResource(MR.fonts.Mulish.light)
+            )
         )
-        ,content = content
     )
 }
 

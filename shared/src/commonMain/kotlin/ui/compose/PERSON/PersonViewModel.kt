@@ -31,7 +31,7 @@ class PersonViewModel(
                 personRepository.getUserData(token)
                    .catch {
                        println(it.message)
-                       _userData.reset(NetworkResult.Error(Throwable("获取失败1")))
+                       _userData.reset(NetworkResult.Error(Throwable("获取失败")))
                    }
                    .collect{ userData ->
                        UserDataResult.values().filter {
