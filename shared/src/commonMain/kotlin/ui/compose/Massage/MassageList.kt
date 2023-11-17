@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -57,7 +58,8 @@ import io.kamel.image.asyncPainterResource
 
 @Composable
 fun MassageList(
-    modifier: Modifier
+    modifier: Modifier,
+    navigateToMassageDetail:(String)->Unit
 ) {
     var isExpanded by remember {
         mutableStateOf(false)
@@ -73,6 +75,10 @@ fun MassageList(
                         .padding(vertical = 3.dp)
                         .fillMaxWidth()
                         .height(50.dp)
+                        .clickable {
+                            navigateToMassageDetail.invoke("")
+                        },
+                    navigateToMassageDetail = navigateToMassageDetail
                 )
             }
         }
@@ -136,6 +142,7 @@ fun MassageList(
 @Composable
 fun MassageItem(
     modifier: Modifier,
+    navigateToMassageDetail: (String) -> Unit,
 ){
     Row (
         modifier = modifier
