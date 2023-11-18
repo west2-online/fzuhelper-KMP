@@ -1,5 +1,6 @@
 package ui.compose.PERSON
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,13 +11,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -35,6 +41,7 @@ import ui.util.network.NetworkResult
 import ui.util.network.logicWithType
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PersonScreen(
     modifier: Modifier = Modifier,
@@ -59,8 +66,6 @@ fun PersonScreen(
             modifier = Modifier
                 .fillMaxSize()
         ){
-
-
             KamelImage(
                 resource = asyncPainterResource("https://picx.zhimg.com/80/v2-cee6c1a92831cd1566e4c5f9dd4a35f4_720w.webp?source=1def8aca"),
                 null,
@@ -97,6 +102,34 @@ fun PersonScreen(
                     )
                 }
             }
+            val items = listOf("发布","动态","身份")
+            val selectedItem = remember {
+                mutableStateOf(0)
+            }
+            val pageState = rememberPagerState {
+                items.size
+            }
+            LaunchedEffect(selectedItem.value){
+                pageState.animateScrollToPage(selectedItem.value)
+            }
+            TabRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                selectedTabIndex = selectedItem.value,
+                tabs = {
+                    items.forEachIndexed { index, item ->
+                        Tab(
+                            text = {
+                                 Text(item)
+                            },
+                            selected = selectedItem.value == index,
+                            onClick = { selectedItem.value = index },
+                            selectedContentColor = Color.Magenta
+                        )
+                    }
+                }
+            )
         }
         EasyToast(toast = toast)
     }
