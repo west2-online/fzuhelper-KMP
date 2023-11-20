@@ -26,10 +26,12 @@ import org.koin.dsl.module
 import repository.LoginRepository
 import repository.NewRepository
 import repository.PersonRepository
+import repository.ReleaseRepository
 import repository.SplashRepository
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.New.NewViewModel
 import ui.compose.PERSON.PersonViewModel
+import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Ribbon.RibbonViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.route.Route
@@ -146,6 +148,9 @@ fun Module.repositoryList(){
     single {
         PersonRepository(get())
     }
+    single {
+        ReleaseRepository(get())
+    }
 }
 
 fun Module.viewModel(){
@@ -163,6 +168,9 @@ fun Module.viewModel(){
     }
     viewModelDefinition {
         PersonViewModel(get(),get(),get())
+    }
+    viewModelDefinition {
+        ReleasePageViewModel(get(),get())
     }
 }
 

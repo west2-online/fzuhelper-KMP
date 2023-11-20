@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -47,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,11 +56,13 @@ import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import kotlinx.coroutines.launch
 import org.example.library.MR
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReleasePageScreen(
     modifier: Modifier = Modifier,
+    viewModel: ReleasePageViewModel = koinInject()
 ){
     val releasePageItems = remember {
         mutableStateListOf<ReleasePageItem>()
@@ -232,7 +234,7 @@ fun ReleasePageScreen(
                                                     .animateContentSize()
                                                     .animateItemPlacement(),
                                                 onImagePicked = {
-                                                    releasePageItem.image.value = it.asImageBitmap()
+                                                    releasePageItem.image.value = it
                                                 },
                                                 image = releasePageItem.image,
                                                 delete = {
@@ -349,7 +351,7 @@ fun ReleasePageScreen(
             }
             FloatingActionButton(
                 onClick = {
-
+                    viewModel.newPost(releasePageItems.toList(),title.value)
                 },
                 modifier = Modifier
                     .padding(10.dp)
@@ -383,7 +385,7 @@ interface ReleasePageItem{
     data class ImageItem(
         override val order: Int
     ) : ReleasePageItem{
-        var image = mutableStateOf<ImageBitmap?>(null)
+        var image = mutableStateOf<ByteArray?>(null)
     }
 
 }
@@ -488,7 +490,7 @@ fun ReleasePageItemImage(
     moveUp:()->Unit = {},
     moveDown: () -> Unit = {},
     onImagePicked : (ByteArray) -> Unit,
-    image: State<ImageBitmap?>
+    image: State<ByteArray?>
 ){
     Column( modifier ) {
         LazyRow(
@@ -565,7 +567,7 @@ fun ReleasePageItemImage(
                 Crossfade(image.value){
                     if(it != null){
                         Image(
-                            bitmap = it,
+                            bitmap = it.asImageBitmap(),
                             null,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -611,7 +613,7 @@ fun ReleasePageItemTextForShow(
 @Composable
 fun ReleasePageItemImageForShow(
     modifier: Modifier,
-    image: State<ImageBitmap?>
+    image: MutableState<ByteArray?>
 ){
     Box(
         modifier = Modifier
@@ -621,7 +623,7 @@ fun ReleasePageItemImageForShow(
             Crossfade(image.value){
                 if(it != null){
                     Image(
-                        bitmap = it,
+                        bitmap = it.asImageBitmap(),
                         null,
                         modifier = Modifier
                             .fillMaxWidth()
