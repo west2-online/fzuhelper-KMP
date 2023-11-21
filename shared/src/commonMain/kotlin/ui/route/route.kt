@@ -18,7 +18,6 @@ import ui.compose.Authentication.Assembly
 import ui.compose.Feedback.FeedbackScreen
 import ui.compose.Main.MainScreen
 import ui.compose.Massage.MassageScreen
-import ui.compose.New.NewsDetail
 import ui.compose.PERSON.PersonScreen
 import ui.compose.QRCode.QRCodeScreen
 import ui.compose.Release.ReleasePageScreen
@@ -43,7 +42,7 @@ interface Route{
         val id: String,
         override val route: String,
         override val content : @Composable () -> Unit = {
-            NewsDetail()
+//            NewsDetail()
         }
     ): Route
 

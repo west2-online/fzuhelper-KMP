@@ -5,6 +5,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,74 +19,98 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import data.post.PostById.FileData
+import data.post.PostById.PostById
+import data.post.PostById.PostContent
+import data.post.PostById.ValueData
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import ui.util.compose.shimmerLoadingAnimation
+import ui.util.network.CollectWithContent
+import ui.util.network.NetworkResult
+
 
 @Composable
 fun NewsDetail(
+    id: String,
     modifier: Modifier = Modifier,
-    back : (()->Unit)? = null
+    back: (() -> Unit)? = null,
+    postState: State<NetworkResult<PostById>>,
+    getPostById: () -> Unit
 ) {
     BackHandler(back!=null){
         back?.invoke()
     }
+    LaunchedEffect(Unit){
+        getPostById()
+    }
     LazyColumn(
             modifier = modifier
     ) {
-        item{ AuthorInformation() }
-        newsDetailItem{
-            Time()
-        }
-        newsDetailItem{
-            val painter = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg")
-            Box(
+        item {
+            Box (
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillParentMaxWidth()
                     .wrapContentHeight()
                     .animateContentSize()
             ){
-                if(painter is Resource.Success<Painter>){
-                    KamelImage(
-                        resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-                        null,
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                            .fillMaxWidth()
-                            .aspectRatio(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()),
-                        contentScale = ContentScale.FillBounds
-                    )
-                }
-                else{
-                    KamelImage(
-                        resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-                        null,
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                            .fillMaxWidth()
-                            .aspectRatio(2f),
-                        contentScale = ContentScale.FillBounds
-                    )
-                }
+                postState.CollectWithContent(
+                    success = { postById ->
+                        val contentData = postById.data.fileData.plus<PostContent>(postById.data.valueData).sortedBy {
+                            it.order
+                        }
+                        Column {
+                            PersonalInformationAreaInDetail(
+                                userName = postById.data.Post.User.username
+                            )
+                            Time(postById.data.Post.Time)
+                            Text(
+                                text = postById.data.Post.Title,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            contentData.forEach {
+                                when(it){
+                                    is FileData ->{
+                                        ImageContent()
+                                    }
+                                    is ValueData ->{
+                                        Text(it.value)
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    loading = {
+                        CircularProgressIndicator()
+                    },
+                    content = {
+                        Spacer(modifier = Modifier.height(1.dp))
+                    }
+                )
             }
         }
-        newsDetailItem{
-            Text("这是帖子内容"*(10..20).random())
-        }
         item {
-            Divider(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp))
+            Divider(modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp))
         }
         items(10){
             CommentInNewsDetail()
@@ -93,17 +118,13 @@ fun NewsDetail(
     }
 }
 
-@Composable
-fun AuthorInformation(){
-    Column {
-        PersonalInformationArea()
-    }
-}
 
 @Composable
-fun Time(){
+fun Time(time:String){
+    val instant = Instant.parse(time)
+    val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
     Text(
-        text = "2023.1.1",
+        text = "${ localDateTime.date.toString() } ${localDateTime.hour}:${localDateTime.minute}",
         fontSize = 10.sp
     )
 }
@@ -124,10 +145,8 @@ fun PersonalInformationAreaInDetail(
             resource = asyncPainterResource(url),
             null,
             modifier = Modifier
-                .fillMaxHeight()
+                .fillMaxHeight(0.7f)
                 .aspectRatio(1f)
-                .wrapContentSize(Alignment.Center)
-                .fillMaxSize(0.7f)
                 .clip(CircleShape),
             contentScale = ContentScale.FillBounds
         )
@@ -257,6 +276,40 @@ fun CommentInNewsDetail(){
 //                }
 //            }
             Text("你好" * (10..60).random())
+        }
+    }
+}
+
+@Composable
+fun ImageContent(){
+    val painter = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg")
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .animateContentSize()
+    ){
+        if(painter is Resource.Success<Painter>){
+            KamelImage(
+                resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+                null,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth()
+                    .aspectRatio(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()),
+                contentScale = ContentScale.FillBounds
+            )
+        }
+        else{
+            KamelImage(
+                resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+                null,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth()
+                    .aspectRatio(2f),
+                contentScale = ContentScale.FillBounds
+            )
         }
     }
 }

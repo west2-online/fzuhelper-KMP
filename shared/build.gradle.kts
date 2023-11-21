@@ -79,6 +79,8 @@ kotlin {
 
                 // QRcode 生成周期
                 implementation("io.github.alexzhirkevich:qrose:1.0.0-beta02")
+
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
             }
         }
         val androidMain by getting {

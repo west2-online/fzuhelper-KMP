@@ -1,10 +1,12 @@
 package repository
 
 import data.post.NewPostResponse
+import data.post.PostById.PostById
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.Headers
@@ -49,39 +51,9 @@ class PostRepository(private val client: HttpClient) {
             emit(response)
         }
     }
-    fun getPostById(releasePageItemList:List<ReleasePageItem>,title : String): Flow<NewPostResponse> {
+    fun getPostById(id:String): Flow<PostById> {
         return flow {
-            val response = client.post("/post/new") {
-                setBody(
-                    MultiPartFormDataContent(
-                        formData {
-                            releasePageItemList.forEachIndexed{ index,item->
-                                when (item) {
-                                    is ReleasePageItem.ImageItem -> {
-                                        append(index.toString(),item.image.value!!,
-                                            Headers.build {
-                                                append("order", index.toString())
-                                                append("isImage", "true")
-                                                append("Content-Disposition", "form-data; name=\"file\"; filename=\"${index}\"")
-                                            }
-                                        )
-                                    }
-
-                                    is ReleasePageItem.TextItem -> {
-                                        append( index.toString(),item.text.value,
-                                            Headers.build {
-                                                append("order", index.toString())
-                                                append("Content-Type", "text/plain")
-                                            })
-                                    }
-                                }
-                            }
-                        },
-                        boundary = "WebAppBoundary"
-                    )
-                )
-                headers.append("title",title)
-            }.body<NewPostResponse>()
+            val response = client.get("/post/post/${id}").body<PostById>()
             emit(response)
         }
     }
@@ -94,6 +66,6 @@ enum class PostStatus(val value: Int, val translation: String) {
     ThePostWasPublishedSuccessfullyInPost(4, "帖子成功发布"),
     MissingIDInPost(5, "在帖子中缺少ID"),
     PostFetchFailedInPost(6, "获取帖子失败"),
-    ThePostWasSuccessfulInPost(7, "帖子成功");
+    ThePostWasSuccessfulInPost(7, "获取帖子成功");
 }
 
