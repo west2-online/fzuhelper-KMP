@@ -36,8 +36,10 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +59,9 @@ import getPlatformContext
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
+import ui.util.compose.EasyToast
+import ui.util.compose.rememberToastState
+import ui.util.network.logicWithType
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -64,12 +69,27 @@ fun ReleasePageScreen(
     modifier: Modifier = Modifier,
     viewModel: ReleasePageViewModel = koinInject()
 ){
+    val toastState = rememberToastState()
     val releasePageItems = remember {
         mutableStateListOf<ReleasePageItem>()
     }
     val title = remember {
         mutableStateOf("")
     }
+    val newPostState = viewModel.newPostState.collectAsState()
+    LaunchedEffect(newPostState.value,newPostState.value.key.value){
+        newPostState.value.logicWithType(
+            success = {
+                toastState.addToast("发布成功")
+                releasePageItems.clear()
+                title.value = ""
+            },
+            error = {
+                toastState.addToast("发布失败", Color.Red)
+            }
+        )
+    }
+
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
     var preview by remember {
@@ -373,6 +393,7 @@ fun ReleasePageScreen(
             }
         }
     }
+    EasyToast(toastState)
 }
 
 interface ReleasePageItem{

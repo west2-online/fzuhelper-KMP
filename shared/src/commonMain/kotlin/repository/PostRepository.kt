@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import ui.compose.Release.ReleasePageItem
 
-class ReleaseRepository(private val client: HttpClient) {
+class PostRepository(private val client: HttpClient) {
     fun newPost(releasePageItemList:List<ReleasePageItem>,title : String): Flow<NewPostResponse> {
         return flow {
             val response = client.post("/post/new") {
@@ -86,3 +86,14 @@ class ReleaseRepository(private val client: HttpClient) {
         }
     }
 }
+enum class PostStatus(val value: Int, val translation: String) {
+    MissingTitleInPost(0, "在帖子中缺少标题"),
+    PostInitializationFailedInPost(1, "帖子初始化失败"),
+    PartParsingFailedInPost(2, "在帖子中解析部分失败"),
+    FailedToSaveData(3, "保存数据失败"),
+    ThePostWasPublishedSuccessfullyInPost(4, "帖子成功发布"),
+    MissingIDInPost(5, "在帖子中缺少ID"),
+    PostFetchFailedInPost(6, "获取帖子失败"),
+    ThePostWasSuccessfulInPost(7, "帖子成功");
+}
+

@@ -26,7 +26,7 @@ import org.koin.dsl.module
 import repository.LoginRepository
 import repository.NewRepository
 import repository.PersonRepository
-import repository.ReleaseRepository
+import repository.PostRepository
 import repository.SplashRepository
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.New.NewViewModel
@@ -149,7 +149,7 @@ fun Module.repositoryList(){
         PersonRepository(get())
     }
     single {
-        ReleaseRepository(get())
+        PostRepository(get())
     }
 }
 
