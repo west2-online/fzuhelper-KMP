@@ -2,6 +2,7 @@ package ui.compose.New
 
 import BackHandler
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,25 +26,34 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import data.post.PostById.FileData
+import asImageBitmap
+import data.post.PostById.ImageData
 import data.post.PostById.PostById
 import data.post.PostById.PostContent
 import data.post.PostById.ValueData
-import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.readBytes
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.koin.compose.koinInject
 import ui.util.compose.shimmerLoadingAnimation
 import ui.util.network.CollectWithContent
 import ui.util.network.NetworkResult
@@ -63,10 +73,41 @@ fun NewsDetail(
     LaunchedEffect(Unit){
         getPostById()
     }
+    val currentData = remember {
+        mutableStateListOf<PostContent>()
+    }
+    val scope = rememberCoroutineScope()
+    val client = koinInject<HttpClient>()
+    LaunchedEffect(postState.value.key){
+        postState.value.let {
+             when(it){
+                is NetworkResult.Success<PostById> -> {
+                    it.data.data.valueData.forEach {
+                        currentData.add(it)
+                    }
+
+                    it.data.data.fileData.forEach {
+                        scope.launch(Dispatchers.IO) {
+                            val byteArray = client.get("static/post/${it.fileName}").readBytes()
+                            val data = ImageData(
+                                order = it.order,
+                                imageData = byteArray,
+                                fileName = it.fileName
+                            )
+                            currentData.add(data)
+                        }
+                    }
+                }
+                else ->{
+
+                }
+            }
+        }
+    }
     LazyColumn(
             modifier = modifier
     ) {
-        item {
+        item (key = postState.value.key.value){
             Box (
                 modifier = Modifier
                     .fillParentMaxWidth()
@@ -75,9 +116,7 @@ fun NewsDetail(
             ){
                 postState.CollectWithContent(
                     success = { postById ->
-                        val contentData = postById.data.fileData.plus<PostContent>(postById.data.valueData).sortedBy {
-                            it.order
-                        }
+
                         Column {
                             PersonalInformationAreaInDetail(
                                 userName = postById.data.Post.User.username
@@ -88,10 +127,12 @@ fun NewsDetail(
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold
                             )
-                            contentData.forEach {
+                            currentData.sortedBy {
+                                it.order
+                            }.forEach {
                                 when(it){
-                                    is FileData ->{
-                                        ImageContent()
+                                    is ImageData ->{
+                                        ImageContent(it.imageData)
                                     }
                                     is ValueData ->{
                                         Text(it.value)
@@ -176,18 +217,6 @@ fun LazyListScope.newsDetailItem(
     }
 }
 
-interface NewsDetailItemForShow{
-    val id : Int
-    data class NewsDetailItemForShowText(
-        override val id : Int = 0,
-        val string: String
-    ) : NewsDetailItemForShow
-
-    data class NewsDetailItemForShowImage(
-        override val id : Int = 0,
-        val url: String
-    ) : NewsDetailItemForShow
-}
 
 @Composable
 fun CommentInNewsDetail(){
@@ -221,95 +250,28 @@ fun CommentInNewsDetail(){
                 "2023.10.1 10:22",
                 fontSize = 10.sp
             )
-//            val painter = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg")
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .wrapContentHeight()
-//                    .animateContentSize()
-//            ){
-//                var show by remember {
-//                    mutableStateOf(false)
-//                }
-//                if(painter is Resource.Success<Painter>){
-//                    if(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()>50){
-//                        Column {
-//                            KamelImage(
-//                                resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-//                                null,
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .aspectRatio(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()),
-//                                contentScale = ContentScale.FillBounds
-//                            )
-//                            Button(
-//                                onClick = {
-//                                    show = !show
-//                                }
-//                            ) {
-//                                Text(
-//                                    if (show) "收起" else "展开"
-//                                )
-//                            }
-//                        }
-//                    }else{
-//                        KamelImage(
-//                            resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-//                            null,
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .aspectRatio(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()),
-//                            contentScale = ContentScale.FillBounds
-//                        )
-//                    }
-//                }
-//                else{
-//                    KamelImage(
-//                        resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-//                        null,
-//                        modifier = Modifier
-//                            .padding(top = 10.dp)
-//                            .fillMaxWidth()
-//                            .aspectRatio(2f),
-//                        contentScale = ContentScale.FillBounds
-//                    )
-//                }
-//            }
             Text("你好" * (10..60).random())
         }
     }
 }
 
 @Composable
-fun ImageContent(){
-    val painter = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg")
+fun ImageContent(
+    imageData:ByteArray
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .animateContentSize()
     ){
-        if(painter is Resource.Success<Painter>){
-            KamelImage(
-                resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-                null,
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .fillMaxWidth()
-                    .aspectRatio(painter.value.intrinsicSize.width.toFloat() / painter.value.intrinsicSize.height.toFloat()),
-                contentScale = ContentScale.FillBounds
-            )
-        }
-        else{
-            KamelImage(
-                resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-                null,
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .fillMaxWidth()
-                    .aspectRatio(2f),
-                contentScale = ContentScale.FillBounds
-            )
-        }
+        Image(
+            bitmap = imageData.asImageBitmap(),
+            null,
+            modifier = Modifier
+                .padding(top = 10.dp)
+                .fillMaxWidth(),
+            contentScale = ContentScale.FillBounds
+        )
     }
 }

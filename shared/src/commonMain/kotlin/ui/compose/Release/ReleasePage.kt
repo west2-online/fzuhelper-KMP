@@ -35,6 +35,8 @@ import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -130,7 +132,7 @@ fun ReleasePageScreen(
                         }
                     }
                     val list = releasePageItems.toList().sortedBy {
-                        it.order
+                        it.order.value
                     }.filter {
                         return@filter when(it){
                             is ReleasePageItem.TextItem -> it.text.value != ""
@@ -214,7 +216,7 @@ fun ReleasePageScreen(
                         }
                     }
                     releasePageItems.toList().sortedBy {
-                        it.order
+                        it.order.value
                     }.forEachIndexed { index, releasePageItem ->
                         item {
                             Card (
@@ -229,20 +231,27 @@ fun ReleasePageScreen(
                                         .fillMaxWidth()
                                         .wrapContentHeight()
                                         .padding(10.dp)
+                                        .animateContentSize { initialValue, targetValue ->
+                                            scope.launch {
+                                                lazyListState.animateScrollBy((targetValue.height - initialValue.height).dp.value)
+                                            }
+                                        }
                                 ){
                                     when(releasePageItem){
                                         is ReleasePageItem.TextItem ->{
                                             ReleasePageItemText(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .wrapContentHeight()
-                                                    .animateItemPlacement(),
+                                                    .wrapContentHeight(),
                                                 text = releasePageItem.text,
                                                 onValueChange = {
                                                     releasePageItem.text.value = it
                                                 },
                                                 delete = {
                                                     releasePageItems.removeAt(index)
+                                                },
+                                                moveDown = {
+                                                    releasePageItem.order.value = releasePageItem.order.value - 1
                                                 }
                                             )
                                         }
@@ -293,7 +302,16 @@ fun ReleasePageScreen(
                             .fillMaxSize(0.75f)
                             .clip(CircleShape)
                             .clickable {
-                                releasePageItems.add(ReleasePageItem.TextItem(releasePageItems.size - 1))
+                                releasePageItems.add(ReleasePageItem.TextItem(
+                                        if(releasePageItems.isNotEmpty()){
+                                            releasePageItems.maxBy {
+                                                it.order.value
+                                            }.order.value
+                                        }else{
+                                            0
+                                        }
+                                    )
+                                )
                                 scope.launch{
                                     lazyListState.animateScrollToItem(releasePageItems.size - 1)
                                 }
@@ -315,7 +333,16 @@ fun ReleasePageScreen(
                             .clip(CircleShape)
                             .clickable {
                                 scope.launch{
-                                    releasePageItems.add(ReleasePageItem.ImageItem(releasePageItems.size - 1))
+                                    releasePageItems.add(ReleasePageItem.ImageItem(
+                                            if(releasePageItems.isNotEmpty()){
+                                                releasePageItems.maxBy {
+                                                    it.order.value
+                                                }.order.value
+                                            }else{
+                                                0
+                                            }
+                                        )
+                                    )
                                     lazyListState.animateScrollToItem(releasePageItems.size - 1)
                                 }
                             }
@@ -397,15 +424,22 @@ fun ReleasePageScreen(
 }
 
 interface ReleasePageItem{
-    val order:Int
-    data class TextItem(
-        override val order: Int
-    ) : ReleasePageItem{
+    var order:MutableState<Int>
+    class TextItem(theOrder:Int) : ReleasePageItem{
+        override var order: MutableState<Int> = mutableStateOf(0)
+        init {
+            order.value = theOrder
+        }
         var text = mutableStateOf<String>("")
+
     }
-    data class ImageItem(
-        override val order: Int
+    class ImageItem(
+        theOrder:Int
     ) : ReleasePageItem{
+        override var order: MutableState<Int> = mutableStateOf(0)
+        init {
+            order.value = theOrder
+        }
         var image = mutableStateOf<ByteArray?>(null)
     }
 
@@ -455,11 +489,11 @@ fun ReleasePageItemText(
                         .wrapContentSize(Alignment.Center)
                         .clip(RoundedCornerShape(10))
                         .clickable {
-                            delete.invoke()
+                            moveDown.invoke()
                         }
                         .fillMaxSize(0.7f)
                     ,
-                    imageVector = Icons.Filled.Info,
+                    imageVector = Icons.Filled.KeyboardArrowDown,
                     contentDescription = null
                 )
             }
@@ -471,11 +505,11 @@ fun ReleasePageItemText(
                         .wrapContentSize(Alignment.Center)
                         .clip(RoundedCornerShape(10))
                         .clickable {
-                            delete.invoke()
+                            moveUp.invoke()
                         }
                         .fillMaxSize(0.7f)
                     ,
-                    imageVector = Icons.Filled.Delete,
+                    imageVector = Icons.Filled.KeyboardArrowUp,
                     contentDescription = null
                 )
             }
