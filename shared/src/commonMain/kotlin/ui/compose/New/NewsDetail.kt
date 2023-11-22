@@ -41,6 +41,7 @@ import asImageBitmap
 import data.post.PostById.ImageData
 import data.post.PostById.PostById
 import data.post.PostById.PostContent
+
 import data.post.PostById.ValueData
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -65,13 +66,13 @@ fun NewsDetail(
     modifier: Modifier = Modifier,
     back: (() -> Unit)? = null,
     postState: State<NetworkResult<PostById>>,
-    getPostById: () -> Unit
+    getPostById: (String) -> Unit
 ) {
     BackHandler(back!=null){
         back?.invoke()
     }
     LaunchedEffect(Unit){
-        getPostById()
+        getPostById(id)
     }
     val currentData = remember {
         mutableStateListOf<PostContent>()
@@ -82,11 +83,11 @@ fun NewsDetail(
         postState.value.let {
              when(it){
                 is NetworkResult.Success<PostById> -> {
-                    it.data.data.valueData.forEach {
+                    it.data.data.valueData?.forEach {
                         currentData.add(it)
                     }
 
-                    it.data.data.fileData.forEach {
+                    it.data.data.fileData?.forEach {
                         scope.launch(Dispatchers.IO) {
                             val byteArray = client.get("static/post/${it.fileName}").readBytes()
                             val data = ImageData(
@@ -158,6 +159,8 @@ fun NewsDetail(
         }
     }
 }
+
+
 
 
 @Composable

@@ -2,6 +2,7 @@ package ui.compose.New
 
 import com.liftric.kvault.KVault
 import data.post.PostById.PostById
+import data.post.PostList.PostList
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,15 +25,32 @@ class NewViewModel(
     private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostById>>(NetworkResult.UnSend()))
     val currentPostDetail = _currentPostDetail.asStateFlow()
 
+    private val _postList = CMutableStateFlow(MutableStateFlow<NetworkResult<PostList>>(NetworkResult.UnSend()))
+    val postList = _postList.asStateFlow()
+
     fun getPostById(id: String){
         viewModelScope.launch (Dispatchers.IO){
             _currentPostDetail.reset(NetworkResult.Loading())
             postRepository.getPostById(id = id)
                 .catch {
+                    println(it.message)
                     _currentPostDetail.reset(NetworkResult.Error(Throwable("帖子获取失败")))
                 }
                 .collect{
                     _currentPostDetail.reset(NetworkResult.Success(it))
+                    println(_currentPostDetail.value)
+                }
+        }
+    }
+    fun getPostByPage(page: String){
+        viewModelScope.launch (Dispatchers.IO){
+            _currentPostDetail.reset(NetworkResult.Loading())
+            postRepository.getPostByPage(page = page)
+                .catch {
+                    _postList.reset(NetworkResult.Error(Throwable("帖子获取失败")))
+                }
+                .collect{
+                    _postList.reset(NetworkResult.Success(it))
                 }
         }
     }

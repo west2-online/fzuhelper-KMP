@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
@@ -27,7 +27,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -35,6 +34,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -48,26 +48,44 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import data.post.PostList.Data
+import data.post.PostList.PostList
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
-import ui.util.compose.Label
+import ui.util.network.CollectWithContent
+import ui.util.network.NetworkResult
 
 
 @Composable
 fun NewsList(
     modifier: Modifier = Modifier,
     viewModel: NewViewModel = koinInject(),
-    navigateToNewsDetail :(String)->Unit
+    navigateToNewsDetail: (String) -> Unit,
+    postListState: State<NetworkResult<PostList>>,
+    state: LazyListState
 ){
     Box(modifier = modifier){
-        LazyColumn(
-            modifier = modifier,
-        ){
-            items(10){
-                NewsItem(navigateToNewsDetail = navigateToNewsDetail)
-            }
+        postListState.let { networkResultState ->
+            networkResultState.CollectWithContent(
+                success = { list ->
+                    list.data?.let{ postList ->
+                        LazyColumn(
+                            modifier = modifier,
+                            state = state
+                        ){
+                            items(postList.size){
+                                NewsItem(
+                                    navigateToNewsDetail = navigateToNewsDetail,
+                                    post = postList[it]
+                                )
+                            }
+                        }
+                    }
+                }
+            )
         }
+
         FloatingActionButton(
             onClick = {
                 viewModel.navigateToRelease("")
@@ -94,11 +112,12 @@ fun NewsList(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NewsItem(
-    navigateToNewsDetail :(String)->Unit,
+    navigateToNewsDetail: (String) -> Unit,
+    post: Data,
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .clickable {
-            navigateToNewsDetail.invoke("")
+            navigateToNewsDetail.invoke(post.Id.toString())
         }
         .padding(10.dp)
         .wrapContentHeight()
@@ -119,25 +138,25 @@ fun NewsItem(
             modifier = Modifier
                 .fillMaxSize()
                 .clickable {
-                    navigateToNewsDetail.invoke("")
+                    navigateToNewsDetail.invoke(post.Id.toString())
                 }
                 .padding(10.dp)
         ) {
             PersonalInformationAreaInList()
-            Surface (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ){
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                ) {
-                    repeat(30) {
-                        Label("#"+"s"*((1..10).random()))
-                    }
-                }
-            }
+//            Surface (
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .wrapContentHeight()
+//            ){
+//                FlowRow(
+//                    modifier = Modifier
+//                        .fillMaxSize(),
+//                ) {
+//                    repeat(30) {
+//                        Label("#"+"s"*((1..10).random()))
+//                    }
+//                }
+//            }
             KamelImage(
                 resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
                 null,
@@ -157,7 +176,7 @@ fun NewsItem(
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                text = "测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试试测试测试测试测试"
+                text = post.Title
             )
             Text(
                 modifier = Modifier
@@ -168,14 +187,14 @@ fun NewsItem(
                 maxLines = lines,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 10.sp,
-                text = "测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试试测试测试测试测试"
+                text = post.LittleDescribe?:""
             )
             Row (
                 verticalAlignment = Alignment.CenterVertically
             ){
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = "2023.0.01",
+                    text = post.Time,
                     fontSize = 10.sp
                 )
                 Button(
@@ -188,7 +207,12 @@ fun NewsItem(
                     )
                 }
             }
-            Interaction(modifier = Modifier.fillMaxWidth(0.5f).wrapContentHeight())
+            Interaction(
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+                    .wrapContentHeight(),
+                likeNumber = post.LikeNum
+            )
         }
 
     }
@@ -239,7 +263,8 @@ fun PersonalInformationArea(
 
 @Composable
 fun Interaction(
-    modifier: Modifier
+    modifier: Modifier,
+    likeNumber :Int
 ){
     BottomNavigation(
         contentColor = Color.Transparent,
@@ -249,7 +274,7 @@ fun Interaction(
     ){
         BottomNavigationItem(
             icon = { Icon(Icons.Filled.Favorite, contentDescription = null) },
-            label = { Text("100") },
+            label = { Text(likeNumber.toString()) },
             selected = false,
             onClick = {  },
             modifier = Modifier

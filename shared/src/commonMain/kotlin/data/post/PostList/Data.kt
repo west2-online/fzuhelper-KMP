@@ -1,13 +1,13 @@
-package data.post.PostById
+package data.post.PostList
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Post(
-    val FirstImage: String,
+data class Data(
+    val FirstImage: String?,
     val Id: Int,
     val LikeNum: Int,
-    val LittleDescribe: String,
+    val LittleDescribe: String?,
     val Statue: Int,
     val Time: String,
     val Title: String,

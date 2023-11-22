@@ -2,6 +2,7 @@ package repository
 
 import data.post.NewPostResponse
 import data.post.PostById.PostById
+import data.post.PostList.PostList
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -9,6 +10,7 @@ import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -53,7 +55,17 @@ class PostRepository(private val client: HttpClient) {
     }
     fun getPostById(id:String): Flow<PostById> {
         return flow {
-            val response = client.get("/post/post/${id}").body<PostById>()
+            val response = client.get("/post/id/${id}")
+                .let {
+                    println(it.bodyAsText())
+                    return@let it
+                }.body<PostById>()
+            emit(response)
+        }
+    }
+    fun getPostByPage(page:String): Flow<PostList> {
+        return flow {
+            val response = client.get("/post/page/${page}").body<PostList>()
             emit(response)
         }
     }

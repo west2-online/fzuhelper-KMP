@@ -1,4 +1,4 @@
-package data.post.PostById
+package data.post.PostList
 
 import kotlinx.serialization.Serializable
 

@@ -3,7 +3,9 @@ package ui.compose.New
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,17 +21,25 @@ fun NewScreen(
     val currentItem = remember {
         mutableStateOf<NewItem>(NewItem.NewList())
     }
+    LaunchedEffect(Unit){
+        viewModel.getPostByPage("1")
+    }
+
+    val state = rememberLazyListState()
     Crossfade(
         currentItem.value
     ){
+
         when(it){
             is NewItem.NewList ->{
                 NewsList(
                     modifier = Modifier
                         .fillMaxSize(),
                     navigateToNewsDetail = {
-                        currentItem.value = NewItem.NewDetail("68")
-                    }
+                        currentItem.value = NewItem.NewDetail(it)
+                    },
+                    postListState = viewModel.postList.collectAsState(),
+                    state = state
                 )
             }
             is NewItem.NewDetail ->{
@@ -43,7 +53,7 @@ fun NewScreen(
                     },
                     postState = viewModel.currentPostDetail.collectAsState(),
                     getPostById = {
-                        viewModel.getPostById(it.id)
+                        viewModel.getPostById(it)
                     }
                 )
             }
