@@ -25,6 +25,8 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Button
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -52,6 +54,9 @@ import data.post.PostList.Data
 import data.post.PostList.PostList
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.koinInject
 import ui.util.network.CollectWithContent
 import ui.util.network.NetworkResult
@@ -132,7 +137,7 @@ fun NewsItem(
     Card(
         shape = RoundedCornerShape(10.dp),
         modifier = modifier,
-        elevation = 1.dp
+        elevation = 0.dp
     ) {
         Column(
             modifier = Modifier
@@ -142,7 +147,9 @@ fun NewsItem(
                 }
                 .padding(10.dp)
         ) {
-            PersonalInformationAreaInList()
+            PersonalInformationAreaInList(
+                userName = post.User.username
+            )
 //            Surface (
 //                modifier = Modifier
 //                    .fillMaxWidth()
@@ -157,15 +164,31 @@ fun NewsItem(
 //                    }
 //                }
 //            }
-            KamelImage(
-                resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-                null,
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .fillMaxWidth()
-                    .aspectRatio(2f),
-                contentScale = ContentScale.FillBounds
-            )
+            post.FirstImage?.let{
+                if(it.isEmpty()){
+                    return@let
+                }
+                KamelImage(
+                    resource = asyncPainterResource("http://10.0.2.2:8000/static/post/${it}"),
+                    null,
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .fillMaxWidth(),
+                    contentScale = ContentScale.FillWidth,
+                    onFailure = {
+                        Text("加载失败")
+                    },
+                    onLoading = {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .padding(vertical = 20.dp)
+                                .align(Alignment.Center)
+                        )
+                    }
+
+                )
+            }
+
             Text(
                 modifier = Modifier
                     .padding(top = 10.dp)
@@ -192,9 +215,12 @@ fun NewsItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically
             ){
+
+                val instant = Instant.parse(post.Time)
+                val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = post.Time,
+                    text = "${ localDateTime.date } ${localDateTime.hour}:${localDateTime.minute}",
                     fontSize = 10.sp
                 )
                 Button(
@@ -213,6 +239,7 @@ fun NewsItem(
                     .wrapContentHeight(),
                 likeNumber = post.LikeNum
             )
+            Divider(modifier = Modifier.padding( top = 3.dp ).fillMaxWidth(),thickness = 1.dp)
         }
 
     }
@@ -273,28 +300,37 @@ fun Interaction(
         modifier = modifier
     ){
         BottomNavigationItem(
-            icon = { Icon(Icons.Filled.Favorite, contentDescription = null) },
+            icon = { Icon(
+                Icons.Filled.Favorite, contentDescription = null,
+                modifier = Modifier
+                    .size(15.dp)
+            ) },
             label = { Text(likeNumber.toString()) },
             selected = false,
             onClick = {  },
             modifier = Modifier
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(10.dp))
         )
         BottomNavigationItem(
-            icon = { Icon(Icons.Filled.Info, contentDescription = null) },
-            label = { Text("100") },
+            icon = { Icon(Icons.Filled.Info, contentDescription = null,
+                modifier = Modifier
+                    .size(15.dp)) },
+            label = { Text("举报",
+                fontSize = 10.sp) },
             selected = false,
             onClick = { },
             modifier = Modifier
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(10.dp))
         )
         BottomNavigationItem(
-            icon = { Icon(Icons.Filled.Share, contentDescription = null) },
-            label = { Text("100") },
+            icon = { Icon(Icons.Filled.Share, contentDescription = null,
+                modifier = Modifier
+                    .size(15.dp)) },
+            label = { Text("分享", fontSize = 10.sp) },
             selected = false,
             onClick = { },
             modifier = Modifier
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(10.dp))
         )
     }
 }
