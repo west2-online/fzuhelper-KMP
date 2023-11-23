@@ -164,7 +164,7 @@ fun Module.viewModel(){
         SplashPageViewModel(get(),get(),get())
     }
     viewModelDefinition {
-        NewViewModel(get(),get(),get())
+        NewViewModel(get(),get(),get(),get())
     }
     viewModelDefinition {
         PersonViewModel(get(),get(),get())

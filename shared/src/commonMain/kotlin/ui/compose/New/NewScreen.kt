@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.cash.paging.compose.collectAsLazyPagingItems
 import org.koin.compose.koinInject
 
 @Composable
@@ -21,15 +22,14 @@ fun NewScreen(
     val currentItem = remember {
         mutableStateOf<NewItem>(NewItem.NewList())
     }
-    LaunchedEffect(Unit){
-        viewModel.getPostByPage("1")
-    }
+//    LaunchedEffect(Unit){
+//        viewModel.getPostByPage("1")
+//    }
 
     val state = rememberLazyListState()
     Crossfade(
         currentItem.value
     ){
-
         when(it){
             is NewItem.NewList ->{
                 NewsList(
@@ -38,8 +38,12 @@ fun NewScreen(
                     navigateToNewsDetail = {
                         currentItem.value = NewItem.NewDetail(it)
                     },
-                    postListState = viewModel.postList.collectAsState(),
-                    state = state
+                    navigateToRelease = {
+                        viewModel.navigateToRelease("")
+                    },
+//                    postListState = viewModel.postList.collectAsState(),
+                    state = state,
+                    postListFlow = viewModel.postListFlow.collectAsLazyPagingItems()
                 )
             }
             is NewItem.NewDetail ->{

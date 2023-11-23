@@ -36,7 +36,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -50,50 +49,62 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.cash.paging.compose.LazyPagingItems
 import data.post.PostList.Data
-import data.post.PostList.PostList
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.koin.compose.koinInject
-import ui.util.network.CollectWithContent
-import ui.util.network.NetworkResult
 
 
 @Composable
 fun NewsList(
     modifier: Modifier = Modifier,
-    viewModel: NewViewModel = koinInject(),
     navigateToNewsDetail: (String) -> Unit,
-    postListState: State<NetworkResult<PostList>>,
-    state: LazyListState
+//    postListState: State<NetworkResult<PostList>>,
+    state: LazyListState,
+    postListFlow: LazyPagingItems<Data>,
+    navigateToRelease: () -> Unit
 ){
     Box(modifier = modifier){
-        postListState.let { networkResultState ->
-            networkResultState.CollectWithContent(
-                success = { list ->
-                    list.data?.let{ postList ->
-                        LazyColumn(
-                            modifier = modifier,
-                            state = state
-                        ){
-                            items(postList.size){
-                                NewsItem(
-                                    navigateToNewsDetail = navigateToNewsDetail,
-                                    post = postList[it]
-                                )
-                            }
-                        }
+//        postListState.let { networkResultState ->
+//            networkResultState.CollectWithContent(
+//                success = { list ->
+//                    list.data?.let{ postList ->
+//                        LazyColumn(
+//                            modifier = modifier,
+//                            state = state
+//                        ){
+//                            items(postList.size){
+//                                NewsItem(
+//                                    navigateToNewsDetail = navigateToNewsDetail,
+//                                    post = postList[it]
+//                                )
+//                            }
+//                        }
+//                    }
+//                }
+//            )
+//        }
+        postListFlow.let{ postList ->
+            LazyColumn(
+                modifier = modifier,
+                state = state
+            ){
+                items(postList.itemCount){
+                    postList[it]?.let {
+                        NewsItem(
+                            navigateToNewsDetail = navigateToNewsDetail,
+                            post = it
+                        )
                     }
                 }
-            )
+            }
         }
-
         FloatingActionButton(
             onClick = {
-                viewModel.navigateToRelease("")
+                navigateToRelease()
             },
             modifier = Modifier
                 .offset(x = (-15).dp,y = ((-5).dp))

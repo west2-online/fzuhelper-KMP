@@ -81,6 +81,10 @@ kotlin {
                 implementation("io.github.alexzhirkevich:qrose:1.0.0-beta02")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+
+                //分页
+                implementation("app.cash.paging:paging-common:3.3.0-alpha02-0.4.0")
+                implementation("app.cash.paging:paging-compose-common:3.3.0-alpha02-0.4.0")
             }
         }
         val androidMain by getting {
