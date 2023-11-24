@@ -37,7 +37,8 @@ import ui.util.compose.ThemeCard
 @Composable
 fun FeedbackList(
     modifier: Modifier,
-    navigateToDetail:(id:String)->Unit
+    navigateToDetail: (id: String) -> Unit,
+    navigateToPost: () -> Unit
 ) {
     Box(modifier = Modifier){
         LazyColumn (
@@ -51,10 +52,10 @@ fun FeedbackList(
         }
         FloatingActionButton(
             onClick = {
-
+                navigateToPost.invoke()
             },
             modifier = Modifier
-                .offset(x = (-15).dp,y = ((-5).dp))
+                .offset(x = (-15).dp,y = ((-15).dp))
                 .size(50.dp)
                 .align(Alignment.BottomEnd),
             shape = CircleShape

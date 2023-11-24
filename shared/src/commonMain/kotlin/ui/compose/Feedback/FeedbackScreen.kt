@@ -24,6 +24,9 @@ fun FeedbackScreen(
                         .fillMaxSize(),
                     navigateToDetail = { id->
                         currentItem.value = FeedbackItem.FeedbackDetail(id)
+                    },
+                    navigateToPost = {
+                        currentItem.value = FeedbackItem.FeedbackPost()
                     }
                 )
             }
@@ -33,6 +36,15 @@ fun FeedbackScreen(
                         .fillMaxSize(),
                     back = {
                         currentItem.value = FeedbackItem.Feedback()
+                    },
+                )
+            }
+            is FeedbackItem.FeedbackPost ->{
+                FeedbackPost(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    submit = {
+
                     }
                 )
             }
@@ -44,4 +56,5 @@ fun FeedbackScreen(
 interface FeedbackItem{
     class Feedback():FeedbackItem
     class FeedbackDetail(var id:String):FeedbackItem
+    class FeedbackPost():FeedbackItem
 }
