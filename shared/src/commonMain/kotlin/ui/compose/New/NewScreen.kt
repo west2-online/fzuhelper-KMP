@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,9 +40,8 @@ fun NewScreen(
                     navigateToRelease = {
                         viewModel.navigateToRelease("")
                     },
-//                    postListState = viewModel.postList.collectAsState(),
                     state = state,
-                    postListFlow = viewModel.postListFlow.collectAsLazyPagingItems()
+                    postListFlow = viewModel.postListFlow.collectAsLazyPagingItems(),
                 )
             }
             is NewItem.NewDetail ->{

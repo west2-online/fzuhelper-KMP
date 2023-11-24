@@ -106,7 +106,7 @@ enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
             NewScreen(
                 Modifier
                     .fillMaxSize()
-                    .padding(vertical = 10.dp)
+                    .padding(vertical = 10.dp),
             )
         }
     ),
@@ -139,8 +139,7 @@ enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
         "个人",
         Icons.Filled.Person,
         content = {
-            PersonScreen(
-            )
+            PersonScreen()
         }
     ),
 }

@@ -1,7 +1,11 @@
 package ui.compose.New
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,23 +40,30 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
 import app.cash.paging.compose.LazyPagingItems
 import data.post.PostList.Data
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filter
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -67,6 +78,21 @@ fun NewsList(
     postListFlow: LazyPagingItems<Data>,
     navigateToRelease: () -> Unit
 ){
+    val isRefresh = remember{
+        mutableStateOf(false)
+    }
+    LaunchedEffect(state){
+        snapshotFlow{ state.isScrollInProgress && !state.canScrollBackward }
+            .filter {
+                it
+            }
+            .collect {
+                isRefresh.value = true
+                delay(3000)
+                postListFlow.refresh()
+                isRefresh.value = false
+            }
+    }
     Box(modifier = modifier){
 //        postListState.let { networkResultState ->
 //            networkResultState.CollectWithContent(
@@ -90,9 +116,11 @@ fun NewsList(
         postListFlow.let{ postList ->
             LazyColumn(
                 modifier = modifier,
-                state = state
+                state = state,
             ){
-                items(postList.itemCount){
+                items(
+                    postList.itemCount,
+                ){
                     postList[it]?.let {
                         NewsItem(
                             navigateToNewsDetail = navigateToNewsDetail,
@@ -100,7 +128,59 @@ fun NewsList(
                         )
                     }
                 }
+                postList.loadState.apply {
+                    when{
+                        refresh is LoadState.Loading || append is LoadState.Loading ->{
+                            item {
+                                Box(modifier = Modifier.fillMaxWidth()){
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .padding(5.dp)
+                                            .align(Alignment.Center)
+                                            .size(30.dp)
+                                    )
+                                }
+                            }
+                        }
+                        refresh is LoadState.Error || append is LoadState.Error ->{
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color.Red)
+                                ){
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(vertical = 3.dp)
+                                            .fillMaxWidth(),
+                                        text = "加载失败",
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
+        }
+        AnimatedVisibility(
+            isRefresh.value,
+            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
+            exit = slideOutVertically(),
+            enter = slideInVertically()
+        ){
+            Box(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)){
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .align(Alignment.Center)
+                        .size(30.dp)
+                )
+            }
+
         }
         FloatingActionButton(
             onClick = {

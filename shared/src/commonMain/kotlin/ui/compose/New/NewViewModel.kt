@@ -33,21 +33,24 @@ class NewViewModel(
     private val kVault: KVault,
     private val client: HttpClient
 ):ViewModel() {
+    init {
+        println("newViewModel${this}")
+    }
     private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostById>>(NetworkResult.UnSend()))
     val currentPostDetail = _currentPostDetail.asStateFlow()
 
-//    private val _postList = CMutableStateFlow(MutableStateFlow<NetworkResult<PostList>>(NetworkResult.UnSend()))
-//    val postList = _postList.asStateFlow()
     val postListFlow = Pager(
-        // Configure how data is loaded by passing additional properties to
-        // PagingConfig, such as prefetchDistance.
-        PagingConfig(pageSize = 10)
-    ) {
-        ExamplePagingSource(BackendService {
-            delay(2000)
-            return@BackendService client.get("/post/page/${it}").body<PostList>()
-        })
-    }.flow
+            PagingConfig(
+                pageSize = 10,
+                prefetchDistance = 2
+            ),
+    ){
+            EasyPageSource(
+                backend = LoadPageData {
+                    return@LoadPageData client.get("/post/page/${it}").body<PostList>().data
+                }
+            )
+        }.flow
         .cachedIn(viewModelScope)
 
     fun getPostById(id: String){
@@ -64,43 +67,50 @@ class NewViewModel(
                 }
         }
     }
-//    fun getPostByPage(page: String){
-//        viewModelScope.launch (Dispatchers.IO){
-//            _currentPostDetail.reset(NetworkResult.Loading())
-//            postRepository.getPostByPage(page = page)
-//                .catch {
-//                    _postList.reset(NetworkResult.Error(Throwable("帖子获取失败")))
-//                }
-//                .collect{
-//                    _postList.reset(NetworkResult.Success(it))
-//                }
-//        }
-//    }
     fun navigateToRelease(token:String){
         routeState.navigateWithoutPop(Route.ReleasePage(token))
     }
 }
 
+class LoadPageData(
+    val getResult : suspend (page:Int) -> List<Data>?
+) {
+    suspend fun searchUsers(page: Int): PageLoadData {
+        val response = getResult(page)
+        return PageLoadData(
+            response,
+            when{
+                response!!.isEmpty() -> null
+                response.size < 10 -> null
+                else -> ( page + 1 )
+            }
+        )
+    }
+}
 
-class ExamplePagingSource(
-    private val backend: BackendService,
+
+data class PageLoadData(
+    val result : List<Data>?,
+    val nextPageNumber: Int?
+)
+
+
+class EasyPageSource(
+    private val backend: LoadPageData,
 ) : PagingSource<Int, Data>() {
     override suspend fun load(
         params: LoadParams<Int>
     ): LoadResult<Int, Data> {
         return try {
-            // Start refresh at page 1 if undefined.
-            val nextPageNumber = params.key ?: 1
-            val response = backend.searchUsers(nextPageNumber)
-            response.result.data ?: throw Throwable("数据为空")
+            val page = params.key ?: 1
+            delay(3000)
+            val response = backend.searchUsers(page)
             LoadResult.Page(
-                data = response.result.data,
+                data = response.result!!,
                 prevKey = null, // Only paging forward.
                 nextKey = response.nextPageNumber
             )
         } catch (e: Exception) {
-            // Handle errors in this block and return LoadResult.Error for
-            // expected errors (such as a network failure).
             LoadResult.Error(Throwable("加载失败"))
         }
     }
@@ -119,27 +129,3 @@ class ExamplePagingSource(
         }
     }
 }
-
-class BackendService(
-    val getResult : suspend (page:Int?)->PostList
-) {
-    var nextPageNumber:Int? = null
-    suspend fun searchUsers(nextPageNumber: Int): PageResultData {
-        this.nextPageNumber  = nextPageNumber
-        val response = getResult(this.nextPageNumber)
-        return PageResultData(
-            response,
-            when{
-                response.data == null -> null
-                response.data.size < 10 -> null
-                else -> (nextPageNumber + 1)
-              }
-        )
-    }
-
-}
-
-data class PageResultData(
-    val result : PostList,
-    val nextPageNumber: Int?
-)

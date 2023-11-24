@@ -160,10 +160,10 @@ fun Module.viewModel(){
     viewModelDefinition {
         RibbonViewModel( get(), get()  )
     }
-    viewModelDefinition {
+    single {
         SplashPageViewModel(get(),get(),get())
     }
-    viewModelDefinition {
+    single {
         NewViewModel(get(),get(),get(),get())
     }
     viewModelDefinition {
