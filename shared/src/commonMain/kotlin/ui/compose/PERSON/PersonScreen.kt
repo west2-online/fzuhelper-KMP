@@ -30,6 +30,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import config.BaseUrlConfig
 import data.Person.UserData
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -146,15 +147,33 @@ fun PersonalInformationInPerson(
     Column(
         modifier = modifier
     ) {
-        KamelImage(
-            resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-            null,
+        Box(
             modifier = Modifier
                 .height(50.dp)
                 .aspectRatio(1f)
                 .clip(CircleShape),
-            contentScale = ContentScale.FillBounds
-        )
+        ){
+            userData.value.let {
+                when(it){
+                    is NetworkResult.Success<UserData> -> {
+                        KamelImage(
+                            resource = asyncPainterResource("${BaseUrlConfig.BaseUrl}static/userAvatar/${it.data.data!!.avatar}"),
+                            null,
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentScale = ContentScale . FillBounds
+                        )
+                    }
+                    else -> Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .shimmerLoadingAnimation()
+                    )
+                }
+            }
+
+
+        }
         Text(
             text = when(userData.value){
                 is NetworkResult.Success<UserData> -> (userData.value as NetworkResult.Success<UserData>).data.data!!.username

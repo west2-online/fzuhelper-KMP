@@ -23,12 +23,14 @@ import org.koin.core.definition.KoinDefinition
 import org.koin.core.module.Module
 import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
+import repository.FeedbackRepository
 import repository.LoginRepository
 import repository.NewRepository
 import repository.PersonRepository
 import repository.PostRepository
 import repository.SplashRepository
 import ui.compose.Authentication.AuthenticationViewModel
+import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.New.NewViewModel
 import ui.compose.PERSON.PersonViewModel
 import ui.compose.Release.ReleasePageViewModel
@@ -151,6 +153,9 @@ fun Module.repositoryList(){
     single {
         PostRepository(get())
     }
+    single {
+        FeedbackRepository(get())
+    }
 }
 
 fun Module.viewModel(){
@@ -165,6 +170,9 @@ fun Module.viewModel(){
     }
     single {
         NewViewModel(get(),get(),get(),get())
+    }
+    single {
+        FeedBackViewModel(get())
     }
     viewModelDefinition {
         PersonViewModel(get(),get(),get())

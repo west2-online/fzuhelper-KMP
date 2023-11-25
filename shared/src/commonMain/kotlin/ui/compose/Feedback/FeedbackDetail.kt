@@ -34,12 +34,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.icerock.moko.resources.ImageResource
+import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import org.example.library.MR
 import ui.util.compose.Label
 
 const val SpaceWeight = 0.2f
@@ -107,9 +109,9 @@ fun FeedbackDetail(
                     )
                 }
                 items(10) {
-                    StateLabel(
-                        LabelType.Down
-                    )
+//                    StateLabel(
+//                        LabelType.Down
+//                    )
                 }
                 item {
                     Discuss(
@@ -174,7 +176,7 @@ fun StateLabel(
                 .weight(SpaceWeight)
         )
         Icon(
-            imageVector = type.icon,
+            painter = painterResource(type.icon),
             "",
             modifier = Modifier
                 .size(50.dp)
@@ -196,8 +198,19 @@ fun StateLabel(
     }
 }
 
-enum class LabelType(val background:Color,val icon:ImageVector){
-    Down(Color.Green, icon = Icons.Filled.Done)
+enum class LabelType(val background: Color, val icon: ImageResource, val value: Int, val description: String) {
+    ActiveStatus(Color.Green, icon = MR.images.activeStatus, 0, "活跃状态"),
+    Closed(Color.Red, icon = MR.images.close, 1, "已关闭"),
+    ItCanTBeSolvedForTheTimeBeing(Color.Yellow, icon = MR.images.not_solved, 2, "目前无法解决"),
+    Postpone(Color(155, 114, 211), icon = MR.images.time_delay, 3, "延期"),
+    Resolved(Color.Green, icon = MR.images.done, 4, "已解决"),
+}
+
+fun Int.toLabelType():LabelType{
+    println("int -> $this")
+    return LabelType.values().find {
+        it.value == this
+    }?:LabelType.ActiveStatus
 }
 @Composable
 fun Discuss(

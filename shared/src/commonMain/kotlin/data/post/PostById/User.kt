@@ -10,5 +10,6 @@ data class User(
     val email: String,
     val gender: String,
     val location: String,
-    val username: String
+    val username: String,
+    val avatar : String
 )

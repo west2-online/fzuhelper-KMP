@@ -1,5 +1,6 @@
 package ui.compose.Feedback
 
+import BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,13 +21,17 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun FeedbackPost(
     modifier: Modifier = Modifier,
-    submit: () -> Unit
+    submit: (content: String, type: FeedbackType) -> Unit,
+    back: () -> Unit
 ){
+    BackHandler(true){
+        back.invoke()
+    }
     Column {
         val content = remember {
             mutableStateOf("")
         }
-        val checkedState = remember { mutableStateOf(FeedbackType.Bug) }
+        val feedbackType = remember { mutableStateOf(FeedbackType.Bug) }
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -54,8 +59,8 @@ fun FeedbackPost(
                         verticalAlignment = Alignment.CenterVertically
                     ){
                         Checkbox(
-                            checked = checkedState.value == feedback,
-                            onCheckedChange = { checkedState.value = feedback }
+                            checked = feedbackType.value == feedback,
+                            onCheckedChange = { feedbackType.value = feedback }
                         )
                         Text(
                             feedback.describe,
@@ -70,7 +75,7 @@ fun FeedbackPost(
         }
         Button(
             onClick = {
-                submit.invoke()
+                submit.invoke(content.value,feedbackType.value)
             },
             modifier = Modifier
                 .padding(10.dp)
@@ -82,7 +87,7 @@ fun FeedbackPost(
     }
 }
 
-enum class FeedbackType(val describe:String){
-    Bug("Bug 反馈"),
-    Suggest("软件建议")
+enum class FeedbackType(val describe:String,val code:Int){
+    Bug("Bug 反馈", code = 0),
+    Suggest("软件建议", code = 1)
 }

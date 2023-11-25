@@ -29,25 +29,35 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.cash.paging.compose.LazyPagingItems
+import config.BaseUrlConfig.UserAvatar
+import data.Feedback.FeedbackList.Data
+import data.Feedback.FeedbackList.User
+import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import ui.util.compose.Label
 import ui.util.compose.ThemeCard
+import ui.util.network.toEasyTime
 
 @Composable
 fun FeedbackList(
     modifier: Modifier,
     navigateToDetail: (id: String) -> Unit,
-    navigateToPost: () -> Unit
+    navigateToPost: () -> Unit,
+    feedbackListFlow: LazyPagingItems<Data>
 ) {
     Box(modifier = Modifier){
         LazyColumn (
             modifier = modifier
         ){
-            items(10){
-                FeedbackListItem(
-                    navigateToDetail = navigateToDetail
-                )
+            items(feedbackListFlow.itemCount){
+                feedbackListFlow[it]?.let {
+                    FeedbackListItem(
+                        navigateToDetail = navigateToDetail,
+                        feedback = it
+                    )
+                }
             }
         }
         FloatingActionButton(
@@ -75,7 +85,8 @@ fun FeedbackList(
 
 @Composable
 fun FeedbackListItem(
-    navigateToDetail:(id:String)->Unit
+    navigateToDetail: (id: String) -> Unit,
+    feedback: Data
 ) {
     ThemeCard(
         cardModifier = Modifier
@@ -92,29 +103,33 @@ fun FeedbackListItem(
         shape = RoundedCornerShape(10.dp)
     ){
         Text(
-            "#123",
+            "#${feedback.Id}",
             modifier = Modifier,
         )
         DiscussInList(
-            userId = "", content = "testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest", time = "2023.1.10", identity = "开发者"
+            user = feedback.User,
+            content = feedback.Tab,
+            time = feedback.Time.toEasyTime(),
+            identity = "开发者",
+            type = feedback.Status.toLabelType()
         )
     }
 }
 
 @Composable
 fun DiscussInList(
-    userId:String ,
+    user:User ,
     content:String,
     time:String,
     identity :String,
-    type: LabelType = LabelType.Down
+    type: LabelType = LabelType.ActiveStatus
 ){
     Column{
         Row(
             Modifier.fillMaxWidth().wrapContentHeight().padding(top = 10.dp)
         ) {
             KamelImage(
-                resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+                resource = asyncPainterResource("${UserAvatar}/${user.avatar}"),
                 null,
                 modifier = Modifier
                     .padding(end = 10.dp)
@@ -138,16 +153,14 @@ fun DiscussInList(
                 Text(
                     content,
                     modifier = Modifier
-
                 )
             }
-
         }
         Row (
             verticalAlignment = Alignment.CenterVertically
         ){
             Icon(
-                imageVector = type.icon,
+                painter = painterResource(type.icon),
                 "",
                 modifier = Modifier
                     .size(50.dp)
@@ -158,7 +171,7 @@ fun DiscussInList(
                     .wrapContentSize(Alignment.Center)
                     .fillMaxSize(0.7f)
             )
-            Text(type.name)
+            Text(type.description)
         }
     }
 }

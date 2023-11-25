@@ -6,10 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import app.cash.paging.compose.collectAsLazyPagingItems
+import org.koin.compose.koinInject
 
 @Composable
 fun FeedbackScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: FeedBackViewModel = koinInject()
 ){
     val currentItem = remember {
         mutableStateOf<FeedbackItem>(FeedbackItem.Feedback())
@@ -27,7 +30,8 @@ fun FeedbackScreen(
                     },
                     navigateToPost = {
                         currentItem.value = FeedbackItem.FeedbackPost()
-                    }
+                    },
+                    feedbackListFlow = viewModel.postListFlow.collectAsLazyPagingItems()
                 )
             }
             is FeedbackItem.FeedbackDetail ->{
@@ -43,10 +47,14 @@ fun FeedbackScreen(
                 FeedbackPost(
                     modifier = Modifier
                         .fillMaxSize(),
-                    submit = {
-
+                    submit = { content,type ->
+                        viewModel.submitNewFeedback(content,type)
+                    },
+                    back = {
+                        currentItem.value = FeedbackItem.Feedback()
                     }
                 )
+
             }
         }
     }

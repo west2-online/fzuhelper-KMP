@@ -59,14 +59,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import app.cash.paging.compose.LazyPagingItems
+import config.BaseUrlConfig
 import data.post.PostList.Data
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import ui.util.network.toEasyTime
 
 
 @Composable
@@ -239,6 +238,7 @@ fun NewsItem(
                 .padding(10.dp)
         ) {
             PersonalInformationAreaInList(
+                userAvatar = post.User.avatar,
                 userName = post.User.username
             )
 //            Surface (
@@ -307,11 +307,9 @@ fun NewsItem(
                 verticalAlignment = Alignment.CenterVertically
             ){
 
-                val instant = Instant.parse(post.Time)
-                val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = "${ localDateTime.date } ${localDateTime.hour}:${localDateTime.minute}",
+                    text = post.Time.toEasyTime(),
                     fontSize = 10.sp
                 )
                 Button(
@@ -439,7 +437,7 @@ enum class NewsLabel(name:String) {
 
 @Composable
 fun PersonalInformationAreaInList(
-    url : String = "https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg",
+    userAvatar : String = "defaultAvatar.jpg",
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .height(50.dp),
@@ -450,7 +448,7 @@ fun PersonalInformationAreaInList(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         KamelImage(
-            resource = asyncPainterResource(url),
+            resource = asyncPainterResource("${BaseUrlConfig.BaseUrl}/static/userAvatar/${userAvatar}"),
             null,
             modifier = Modifier
                 .fillMaxHeight()
