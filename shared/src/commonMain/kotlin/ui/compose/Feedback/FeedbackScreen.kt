@@ -3,6 +3,7 @@ package ui.compose.Feedback
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -41,6 +42,10 @@ fun FeedbackScreen(
                     back = {
                         currentItem.value = FeedbackItem.Feedback()
                     },
+                    getDetailData = {
+                        viewModel.getFeedbackDetail(it.id)
+                    },
+                    detailState = viewModel.detailResult.collectAsState(),
                 )
             }
             is FeedbackItem.FeedbackPost ->{
@@ -54,7 +59,6 @@ fun FeedbackScreen(
                         currentItem.value = FeedbackItem.Feedback()
                     }
                 )
-
             }
         }
     }
@@ -63,6 +67,6 @@ fun FeedbackScreen(
 
 interface FeedbackItem{
     class Feedback():FeedbackItem
-    class FeedbackDetail(var id:String):FeedbackItem
+    class FeedbackDetail(var id:Int):FeedbackItem
     class FeedbackPost():FeedbackItem
 }

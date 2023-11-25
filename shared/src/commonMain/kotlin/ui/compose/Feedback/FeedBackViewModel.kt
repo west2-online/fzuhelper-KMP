@@ -6,18 +6,20 @@ import app.cash.paging.PagingConfig
 import app.cash.paging.PagingState
 import app.cash.paging.cachedIn
 import data.Feedback.FeedbackList.FeedbackList
+import data.Feedback.FeelbackDetail.Data
+import data.Feedback.FeelbackDetail.FeedbackDetail
 import data.Feedback.SubmitNewFeedBack.FeedbackSubmit
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import repository.FeedbackRepository
 import ui.util.network.NetworkResult
+import ui.util.network.loading
 import ui.util.network.reset
 
 class FeedBackViewModel(
@@ -26,18 +28,37 @@ class FeedBackViewModel(
     private val _submitResult = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val submitResult = _submitResult.asStateFlow()
 
+    private val _detailResult = CMutableStateFlow(MutableStateFlow<NetworkResult<Data>>(NetworkResult.UnSend()))
+    val detailResult = _detailResult.asStateFlow()
+
     fun submitNewFeedback(content : String,type: FeedbackType){
         viewModelScope.launch {
+            _submitResult.loading()
             feedbackRepository.submitNewFeedBack(content,type.code)
                 .catch {
                     println(it.message)
                     _submitResult.reset(NetworkResult.Error(it))
                 }
                 .collect{
-                    _submitResult.reset(it.toNetworkResult())
+                    _submitResult.reset(it.toSubmitResult())
                 }
         }
     }
+
+    fun getFeedbackDetail(id:Int){
+        viewModelScope.launch {
+            _detailResult.loading()
+            feedbackRepository.getFeedbackDetail(id)
+                .catch {
+                    println(it.message)
+                    _detailResult.reset(NetworkResult.Error(it))
+                }
+                .collect{
+                    _detailResult.reset(it.toDetailResult())
+                }
+        }
+    }
+
     val postListFlow = Pager(
         PagingConfig(
             pageSize = 10,
@@ -59,7 +80,8 @@ enum class SubmitStatus(val value: Int, val description: String) {
     CreationIsSuccessful(2, "创建成功")
 }
 
-fun FeedbackSubmit.toNetworkResult():NetworkResult<String>{
+
+fun FeedbackSubmit.toSubmitResult():NetworkResult<String>{
     val response = SubmitStatus.values().findLast {
         it.value == this.code
     }
@@ -70,7 +92,23 @@ fun FeedbackSubmit.toNetworkResult():NetworkResult<String>{
         return NetworkResult.Success("发布成功")
     }
 }
+enum class FeedbackStatus(val value: Int, val description: String) {
+    MissingID(0, "缺少ID"),
+    FailedToGetFeedbackDetails(1, "获取反馈详情失败"),
+    SuccessToGetFeedbackDetails(2, "成功获取反馈详情")
+}
 
+fun FeedbackDetail.toDetailResult():NetworkResult<Data>{
+    val response = SubmitStatus.values().findLast {
+        it.value == this.code
+    }
+    response?:let{
+        return NetworkResult.Error(Throwable("数据为空"))
+    }
+    response.let {
+        return NetworkResult.Success(this.data)
+    }
+}
 
 class LoadFeedBackPageData(
     val getResult : suspend (page:Int) -> List<data.Feedback.FeedbackList.Data>?
@@ -103,7 +141,6 @@ class EasyFeedbackPageSource(
     ): LoadResult<Int, data.Feedback.FeedbackList.Data> {
         return try {
             val page = params.key ?: 1
-            delay(3000)
             val response = backend.searchFeedbacks(page)
             LoadResult.Page(
                 data = response.result!!,

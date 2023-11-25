@@ -157,7 +157,7 @@ fun PersonalInformationInPerson(
                 when(it){
                     is NetworkResult.Success<UserData> -> {
                         KamelImage(
-                            resource = asyncPainterResource("${BaseUrlConfig.BaseUrl}static/userAvatar/${it.data.data!!.avatar}"),
+                            resource = asyncPainterResource("${BaseUrlConfig.BaseUrl}/static/userAvatar/${it.data.data!!.avatar}"),
                             null,
                             modifier = Modifier
                                 .fillMaxSize(),

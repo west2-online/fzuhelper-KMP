@@ -16,7 +16,6 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -103,7 +102,6 @@ class EasyPageSource(
     ): LoadResult<Int, Data> {
         return try {
             val page = params.key ?: 1
-            delay(3000)
             val response = backend.searchUsers(page)
             LoadResult.Page(
                 data = response.result!!,

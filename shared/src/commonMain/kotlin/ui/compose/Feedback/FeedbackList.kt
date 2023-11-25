@@ -43,7 +43,7 @@ import ui.util.network.toEasyTime
 @Composable
 fun FeedbackList(
     modifier: Modifier,
-    navigateToDetail: (id: String) -> Unit,
+    navigateToDetail: (id: Int) -> Unit,
     navigateToPost: () -> Unit,
     feedbackListFlow: LazyPagingItems<Data>
 ) {
@@ -85,7 +85,7 @@ fun FeedbackList(
 
 @Composable
 fun FeedbackListItem(
-    navigateToDetail: (id: String) -> Unit,
+    navigateToDetail: (id: Int) -> Unit,
     feedback: Data
 ) {
     ThemeCard(
@@ -93,7 +93,7 @@ fun FeedbackListItem(
             .fillMaxWidth()
             .wrapContentHeight()
             .clickable {
-                navigateToDetail("")
+                navigateToDetail(feedback.Id)
             }
             .padding(10.dp),
         columnModifier = Modifier
@@ -102,10 +102,12 @@ fun FeedbackListItem(
             .padding(10.dp),
         shape = RoundedCornerShape(10.dp)
     ){
-        Text(
-            "#${feedback.Id}",
-            modifier = Modifier,
-        )
+        Row {
+            Text(
+                "#${feedback.Id} ${if(feedback.Type == 0) "反馈" else "Bug"}",
+                modifier = Modifier,
+            )
+        }
         DiscussInList(
             user = feedback.User,
             content = feedback.Tab,

@@ -33,7 +33,6 @@ interface NetworkResult<T> {
 
     class UnSend<T>(override val key: MutableState<Int> = mutableStateOf(0)) : NetworkResult<T>
 
-
 }
 
 @Composable
@@ -162,6 +161,13 @@ fun <T> MutableStateFlow<NetworkResult<T>>.reset(newValue : NetworkResult<T>){
     this.value = newValue.apply {
         key.value = newKey
     }
+}
+
+fun <T> MutableStateFlow<NetworkResult<T>>.loading(){
+    this.reset(NetworkResult.Loading())
+}
+fun <T> MutableStateFlow<NetworkResult<T>>.unSend(){
+    this.reset(NetworkResult.UnSend())
 }
 
 fun <T>NetworkResult<T>.logicWithType(

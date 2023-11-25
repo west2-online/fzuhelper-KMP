@@ -22,7 +22,6 @@ class PersonViewModel(
 ):ViewModel() {
     private val _userData = CMutableStateFlow(MutableStateFlow<NetworkResult<UserData>>(NetworkResult.UnSend()))
     val userData = _userData.asStateFlow()
-
     fun getUserData(){
         viewModelScope.launch(Dispatchers.Default) {
             kVault.token(

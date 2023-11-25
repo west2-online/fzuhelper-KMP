@@ -27,6 +27,8 @@ import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,122 +39,155 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import config.BaseUrlConfig
+import data.Feedback.FeelbackDetail.Data
+import data.Feedback.FeelbackDetail.FeedbackComment
+import data.Feedback.FeelbackDetail.FeedbackStatus
+import data.Feedback.FeelbackDetail.User
 import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.example.library.MR
-import ui.util.compose.Label
+import ui.util.network.CollectWithContent
+import ui.util.network.NetworkResult
+import ui.util.network.toEasyTime
 
 const val SpaceWeight = 0.2f
 @Composable
 fun FeedbackDetail(
     modifier: Modifier,
-    back: (() -> Unit)?
+    back: (() -> Unit)?,
+    detailState: State<NetworkResult<Data>>,
+    getDetailData: () -> Unit
 ){
+    LaunchedEffect(Unit){
+        getDetailData()
+    }
     val comment = remember {
         mutableStateOf("")
     }
     BackHandler(back!=null){
         back?.invoke()
     }
-    Column(
-        modifier = modifier
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ){
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                Row(
+    detailState.CollectWithContent(
+        success = {
+            Box(
+                modifier = modifier
+            ){
+
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
-                    Spacer(
+                    Box(
                         modifier = Modifier
-                            .weight(SpaceWeight)
-                    )
-                    Canvas(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(50.dp)
-                    ) {
-                        drawLine(
-                            Color.Black,
-                            start = Offset(center.x, 0f),
-                            end = Offset(center.x, 2 * center.y)
-                        )
-                    }
-                    Spacer(
-                        modifier = Modifier
+                            .fillMaxWidth()
                             .weight(1f)
-                    )
-                }
-            }
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                item {
-                    Numbering()
-                }
-                item {
-                    Discuss(
-                        userId = "",
-                        content = "testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest",
-                        time = "2023.0.01",
-                        identity = ""
-                    )
-                }
-                items(10) {
-//                    StateLabel(
-//                        LabelType.Down
-//                    )
-                }
-                item {
-                    Discuss(
-                        userId = "",
-                        content = "testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest",
-                        time = "2023.0.01",
-                        identity = ""
-                    )
-                }
-
-            }
-        }
-        TextField(
-            value = comment.value,
-            onValueChange = {
-                comment.value = it
-            },
-            modifier = Modifier
-                .padding(top = 10.dp)
-                .padding(bottom = 5.dp)
-                .padding(horizontal = 10.dp)
-                .wrapContentHeight()
-                .fillMaxWidth(),
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.Done,
-                    contentDescription = null,
-                    tint = Color.Green,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .wrapContentSize(Alignment.Center)
-                        .fillMaxSize(0.8f)
-                        .aspectRatio(1f)
-                        .clip(CircleShape)
-                        .clickable {
-
+                    ){
+                        //画中间线
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            Spacer(
+                                modifier = Modifier
+                                    .weight(SpaceWeight)
+                            )
+                            Canvas(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .width(50.dp)
+                            ) {
+                                drawLine(
+                                    Color.Black,
+                                    start = Offset(center.x, 0f),
+                                    end = Offset(center.x, 2 * center.y)
+                                )
+                            }
+                            Spacer(
+                                modifier = Modifier
+                                    .weight(1f)
+                            )
                         }
-                )
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            item {
+                                Numbering(it.Feedback.Id)
+                            }
+                            item {
+                                Discuss(
+                                    content = it.Feedback.Tab,
+                                    time = it.Feedback.Time,
+                                    identity = "",
+                                    user = it.Feedback.User
+                                )
+                            }
+                            it.FeedbackComment.plus(it.FeedbackStatus).sortedBy { it.Order }
+                                .forEach {
+                                    when (it) {
+                                        is FeedbackComment -> {
+                                            item {
+                                                Discuss(
+                                                    content = it.Comment,
+                                                    time = it.Time,
+                                                    identity = "",
+                                                    user = it.User
+                                                )
+                                            }
+                                        }
+
+                                        is FeedbackStatus -> {
+                                            item {
+                                                StateLabel(
+                                                    type = LabelType.Closed,
+                                                    commit = it.Message,
+                                                    time = it.Time.toEasyTime()
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                        }
+                    }
+                    TextField(
+                        value = comment.value,
+                        onValueChange = {
+                            comment.value = it
+                        },
+                        modifier = Modifier
+                            .padding(top = 10.dp)
+                            .padding(bottom = 5.dp)
+                            .padding(horizontal = 10.dp)
+                            .wrapContentHeight()
+                            .fillMaxWidth(),
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Filled.Done,
+                                contentDescription = null,
+                                tint = Color.Green,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .wrapContentSize(Alignment.Center)
+                                    .fillMaxSize(0.8f)
+                                    .aspectRatio(1f)
+                                    .clip(CircleShape)
+                                    .clickable {
+
+                                    }
+                            )
+                        }
+                    )
+                }
             }
-        )
-    }
+
+        },
+        error = {
+            Text("加载失败")
+        }
+    )
 }
 
 @Composable
@@ -162,6 +197,7 @@ fun FeedbackDetailItem(){
 
 @Composable
 fun StateLabel(
+    time :String = "",
     type : LabelType,
     commit : String = "TestTestTestTesTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTesttTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest"
 ){
@@ -187,14 +223,24 @@ fun StateLabel(
                 .wrapContentSize(Alignment.Center)
                 .fillMaxSize(0.7f)
         )
-        Text(
-            commit,
+        Column(
             modifier = Modifier
                 .weight(1f)
                 .wrapContentHeight()
                 .padding(horizontal = 10.dp),
-            fontSize = 10.sp
-        )
+        ) {
+            Text(
+                time,
+                fontSize = 10.sp,
+                modifier = Modifier
+                    .padding(bottom = 3.dp)
+            )
+            Text(
+                commit,
+                fontSize = 10.sp
+            )
+        }
+
     }
 }
 
@@ -214,10 +260,10 @@ fun Int.toLabelType():LabelType{
 }
 @Composable
 fun Discuss(
-    userId:String ,
     content:String,
     time:String,
-    identity :String
+    identity :String,
+    user: User
 ){
     Card (
         modifier = Modifier
@@ -228,7 +274,7 @@ fun Discuss(
     ){
         Row(Modifier.fillMaxWidth().wrapContentHeight().padding(10.dp)){
             KamelImage(
-                resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+                resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${user.avatar}"),
                 null,
                 modifier = Modifier
                     .padding(end = 10.dp)
@@ -248,11 +294,10 @@ fun Discuss(
                     modifier = Modifier
                         .padding(bottom = 10.dp)
                 )
-                Label("开发者")
+//                Label("开发者")
                 Text(
                     content,
                     modifier = Modifier
-
                 )
             }
         }
@@ -260,7 +305,9 @@ fun Discuss(
 }
 
 @Composable
-fun Numbering(){
+fun Numbering(
+    id:Int
+){
     Card (
         modifier = Modifier
             .padding(10.dp)
@@ -269,7 +316,7 @@ fun Numbering(){
         shape = RoundedCornerShape(10.dp)
     ){
         Text(
-            "#123",
+            "#${id}",
             modifier = Modifier
                 .padding(10.dp),
         )

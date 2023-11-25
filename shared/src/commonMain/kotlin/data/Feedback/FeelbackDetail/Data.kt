@@ -1,0 +1,10 @@
+package data.Feedback.FeelbackDetail
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Data(
+    val Feedback: Feedback,
+    val FeedbackComment: List<FeedbackComment>,
+    val FeedbackStatus: List<FeedbackStatus>
+)
