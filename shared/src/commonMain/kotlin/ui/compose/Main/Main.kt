@@ -1,6 +1,7 @@
 package ui.compose.Main
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,8 +12,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -66,7 +67,7 @@ fun MainScreen(
                 LaunchedEffect(selectedItem){
                     pagerState.animateScrollToPage(selectedItem)
                 }
-                Surface (
+                Box (
                     modifier = Modifier.fillMaxWidth().weight(1f),
                 ){
                     HorizontalPager(
@@ -82,7 +83,8 @@ fun MainScreen(
                             icon = { Icon(item.imageVector, contentDescription = null) },
                             label = { Text(item.tag) },
                             selected = selectedItem == index,
-                            onClick = { selectedItem = index }
+                            onClick = { selectedItem = index },
+                            selectedContentColor = MaterialTheme.colors.primaryVariant
                         )
                     }
                 }

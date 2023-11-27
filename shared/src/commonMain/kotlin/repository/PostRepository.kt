@@ -2,6 +2,8 @@ package repository
 
 import data.post.NewPostResponse
 import data.post.PostById.PostById
+import data.post.PostComment.PostCommentListPreview
+import data.post.PostCommentNew.PostCommentNew
 import data.post.PostList.PostList
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -66,6 +68,38 @@ class PostRepository(private val client: HttpClient) {
     fun getPostByPage(page:String): Flow<PostList> {
         return flow {
             val response = client.get("/post/page/${page}").body<PostList>()
+            emit(response)
+        }
+    }
+    fun postNewComment(parentId:Int,postId:Int,tree:String,content:String,image:ByteArray?):Flow<PostCommentNew>{
+        return flow {
+            val response = client.post("/post/comment/new"){
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            image?.let {
+                                append(
+                                    "commentImage",it,
+                                    Headers.build {
+                                        append("isImage", "true")
+                                    }
+                                )
+                            }
+                        }
+                    )
+                )
+                headers.append("parentId", parentId.toString())
+                headers.append("postId", postId.toString())
+                headers.append("tree", tree)
+                headers.append("content", content)
+            }.body<PostCommentNew>()
+            emit(response)
+        }
+    }
+
+    fun getCommentPreview(page:Int,postId: Int):Flow<PostCommentListPreview>{
+        return flow {
+            val response = client.get("/post/comment/page/${page}/${postId}").body<PostCommentListPreview>()
             emit(response)
         }
     }

@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,12 +38,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.PagingData
+import app.cash.paging.compose.collectAsLazyPagingItems
 import asImageBitmap
+import config.BaseUrlConfig
 import data.post.PostById.ImageData
 import data.post.PostById.PostById
 import data.post.PostById.PostContent
-
 import data.post.PostById.ValueData
+import data.post.PostComment.Data
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import io.ktor.client.HttpClient
@@ -50,6 +54,7 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.readBytes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -58,6 +63,7 @@ import org.koin.compose.koinInject
 import ui.util.compose.shimmerLoadingAnimation
 import ui.util.network.CollectWithContent
 import ui.util.network.NetworkResult
+import ui.util.network.toEasyTime
 
 
 @Composable
@@ -66,8 +72,10 @@ fun NewsDetail(
     modifier: Modifier = Modifier,
     back: (() -> Unit)? = null,
     postState: State<NetworkResult<PostById>>,
-    getPostById: (String) -> Unit
+    getPostById: (String) -> Unit,
+    postCommentPreview: Flow<PagingData<Data>>
 ) {
+    val data = postCommentPreview.collectAsLazyPagingItems()
     BackHandler(back!=null){
         back?.invoke()
     }
@@ -117,10 +125,10 @@ fun NewsDetail(
             ){
                 postState.CollectWithContent(
                     success = { postById ->
-
                         Column {
                             PersonalInformationAreaInDetail(
-                                userName = postById.data.Post.User.username
+                                userName = postById.data.Post.User.username,
+                                url = "${BaseUrlConfig.UserAvatar}/${postById.data.Post.User.avatar}"
                             )
                             Time(postById.data.Post.Time)
                             Text(
@@ -154,8 +162,11 @@ fun NewsDetail(
         item {
             Divider(modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp))
         }
-        items(10){
-            CommentInNewsDetail()
+
+        items(data.itemCount){
+            CommentInNewsDetail(
+                data[it]
+            )
         }
     }
 }
@@ -222,38 +233,71 @@ fun LazyListScope.newsDetailItem(
 
 
 @Composable
-fun CommentInNewsDetail(){
-    Row(modifier = Modifier.padding(bottom = 10.dp).animateContentSize()){
-        KamelImage(
-            resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-            null,
-            modifier = Modifier
-                .size(50.dp)
-                .wrapContentSize(Alignment.TopCenter)
-                .fillMaxSize(0.7f)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(10)),
-            contentScale = ContentScale.FillBounds,
-            onLoading = {
+fun CommentInNewsDetail(
+    data: Data?
+) {
+    data?.let {
+        Row(modifier = Modifier.padding(bottom = 10.dp).animateContentSize()){
+            KamelImage(
+                resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${data.MainComment.User.avatar}"),
+                null,
+                modifier = Modifier
+                    .size(50.dp)
+                    .wrapContentSize(Alignment.TopCenter)
+                    .fillMaxSize(0.7f)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(10)),
+                contentScale = ContentScale.FillBounds,
+                onLoading = {
 
                     Box(modifier = Modifier
                         .matchParentSize()
                         .shimmerLoadingAnimation()
-                   )
-            }
-        )
-        Column (
-            modifier = Modifier
-                .padding(end = 10.dp)
-                .weight(1f)
-                .wrapContentHeight()
-        ){
-            Text("theonenull")
-            Text(
-                "2023.10.1 10:22",
-                fontSize = 10.sp
+                    )
+                }
             )
-            Text("你好" * (10..60).random())
+            Column (
+                modifier = Modifier
+                    .padding(end = 10.dp)
+                    .weight(1f)
+                    .wrapContentHeight()
+            ){
+                Text(data.MainComment.User.username)
+                Text(
+                    data.MainComment.Time.toEasyTime(),
+                    fontSize = 10.sp
+                )
+                Text(
+                    data.MainComment.Content,
+                    fontSize = 14.sp
+                )
+                if(data.SonComment.isNotEmpty()){
+                    Surface (
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    ){
+                        Column (
+                            modifier = Modifier
+                                .padding(10.dp)
+                        ){
+                            data.SonComment.forEach {
+                                Text(
+                                    "${ it.User.username }: ${ it.Content }",
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier
+                                        .padding(bottom = 3.dp)
+                                        .fillMaxWidth()
+                                        .wrapContentHeight(),
+                                    fontSize = 10.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

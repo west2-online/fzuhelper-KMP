@@ -1,5 +1,6 @@
 package ui.compose.New
 
+import androidx.compose.runtime.mutableStateOf
 import app.cash.paging.Pager
 import app.cash.paging.PagingConfig
 import app.cash.paging.PagingSource
@@ -7,6 +8,7 @@ import app.cash.paging.PagingState
 import app.cash.paging.cachedIn
 import com.liftric.kvault.KVault
 import data.post.PostById.PostById
+import data.post.PostComment.PostCommentListPreview
 import data.post.PostList.Data
 import data.post.PostList.PostList
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
@@ -35,23 +37,46 @@ class NewViewModel(
     init {
         println("newViewModel${this}")
     }
+    val currentItem = mutableStateOf<NewItem>(NewItem.NewList())
+
+
     private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostById>>(NetworkResult.UnSend()))
     val currentPostDetail = _currentPostDetail.asStateFlow()
 
-    val postListFlow = Pager(
+    var postListFlow = Pager(
             PagingConfig(
                 pageSize = 10,
                 prefetchDistance = 2
             ),
     ){
-            EasyPageSource(
-                backend = LoadPageData {
-                    return@LoadPageData client.get("/post/page/${it}").body<PostList>().data
+            EasyPageSourceForPost(
+                backend = LoadPageDataForPost {
+                    return@LoadPageDataForPost client.get("/post/page/${it}").body<PostList>().data
                 }
             )
         }.flow
         .cachedIn(viewModelScope)
 
+    private val _postCommentPreviewFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, data.post.PostComment.Data>?>(null))
+    var postCommentPreviewFlow = _postCommentPreviewFlow.asStateFlow()
+
+
+    fun getPostCommentPreview(postId: String){
+        viewModelScope.launch {
+            _postCommentPreviewFlow.value = Pager(
+                PagingConfig(
+                    pageSize = 10,
+                    prefetchDistance = 2
+                ),
+            ){
+                EasyPageSourceForCommentPreview(
+                    backend = LoadPageDataForCommentPreview {
+                        return@LoadPageDataForCommentPreview client.get("post/comment/page/${it}/${postId}").body<PostCommentListPreview>().data
+                    }
+                )
+            }
+        }
+    }
     fun getPostById(id: String){
         viewModelScope.launch (Dispatchers.IO){
             _currentPostDetail.reset(NetworkResult.Loading())
@@ -71,12 +96,12 @@ class NewViewModel(
     }
 }
 
-class LoadPageData(
+class LoadPageDataForPost(
     val getResult : suspend (page:Int) -> List<Data>?
 ) {
-    suspend fun searchUsers(page: Int): PageLoadData {
+    suspend fun searchUsers(page: Int): PageLoadDataForPost {
         val response = getResult(page)
-        return PageLoadData(
+        return PageLoadDataForPost(
             response,
             when{
                 response!!.isEmpty() -> null
@@ -88,14 +113,14 @@ class LoadPageData(
 }
 
 
-data class PageLoadData(
+data class PageLoadDataForPost(
     val result : List<Data>?,
     val nextPageNumber: Int?
 )
 
 
-class EasyPageSource(
-    private val backend: LoadPageData,
+class EasyPageSourceForPost(
+    private val backend: LoadPageDataForPost,
 ) : PagingSource<Int, Data>() {
     override suspend fun load(
         params: LoadParams<Int>
@@ -127,3 +152,64 @@ class EasyPageSource(
         }
     }
 }
+
+
+
+class LoadPageDataForCommentPreview(
+    val getResult : suspend (page:Int) -> List<data.post.PostComment.Data>?
+) {
+    suspend fun searchUsers(page: Int): PageLoadDataForCommentPreview {
+        val response = getResult(page)
+        return PageLoadDataForCommentPreview(
+            response,
+            when{
+                response!!.isEmpty() -> null
+                response.size < 10 -> null
+                else -> ( page + 1 )
+            }
+        )
+    }
+}
+
+
+data class PageLoadDataForCommentPreview(
+    val result : List<data.post.PostComment.Data>?,
+    val nextPageNumber: Int?
+)
+
+
+class EasyPageSourceForCommentPreview(
+    private val backend: LoadPageDataForCommentPreview,
+) : PagingSource<Int,data.post.PostComment.Data>() {
+    override suspend fun load(
+        params: LoadParams<Int>
+    ): LoadResult<Int, data.post.PostComment.Data> {
+        return try {
+            val page = params.key ?: 1
+            val response = backend.searchUsers(page)
+            LoadResult.Page(
+                data = response.result!!,
+                prevKey = null, // Only paging forward.
+                nextKey = response.nextPageNumber
+            )
+        } catch (e: Exception) {
+            LoadResult.Error(Throwable("加载失败"))
+        }
+    }
+
+    override fun getRefreshKey(state: PagingState<Int,  data.post.PostComment.Data>): Int? {
+        // Try to find the page key of the closest page to anchorPosition from
+        // either the prevKey or the nextKey; you need to handle nullability
+        // here.
+        //  * prevKey == null -> anchorPage is the first page.
+        //  * nextKey == null -> anchorPage is the last page.
+        //  * both prevKey and nextKey are null -> anchorPage is the
+        //    initial page, so return null.
+        return state.anchorPosition?.let { anchorPosition ->
+            val anchorPage = state.closestPageToPosition(anchorPosition)
+            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+        }
+    }
+}
+
+

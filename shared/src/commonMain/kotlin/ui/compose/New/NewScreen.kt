@@ -1,13 +1,14 @@
 package ui.compose.New
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.cash.paging.compose.collectAsLazyPagingItems
@@ -18,16 +19,14 @@ fun NewScreen(
     modifier: Modifier = Modifier,
     viewModel:NewViewModel = koinInject()
 ){
-    val currentItem = remember {
-        mutableStateOf<NewItem>(NewItem.NewList())
-    }
+
 //    LaunchedEffect(Unit){
 //        viewModel.getPostByPage("1")
 //    }
 
     val state = rememberLazyListState()
     Crossfade(
-        currentItem.value
+        viewModel.currentItem.value
     ){
         when(it){
             is NewItem.NewList ->{
@@ -35,7 +34,7 @@ fun NewScreen(
                     modifier = Modifier
                         .fillMaxSize(),
                     navigateToNewsDetail = {
-                        currentItem.value = NewItem.NewDetail(it)
+                        viewModel.currentItem.value = NewItem.NewDetail(it)
                     },
                     navigateToRelease = {
                         viewModel.navigateToRelease("")
@@ -45,19 +44,27 @@ fun NewScreen(
                 )
             }
             is NewItem.NewDetail ->{
-                NewsDetail(
-                    id = it.id,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(10.dp),
-                    back = {
-                        currentItem.value = NewItem.NewList()
-                    },
-                    postState = viewModel.currentPostDetail.collectAsState(),
-                    getPostById = {
-                        viewModel.getPostById(it)
+                Box(modifier = Modifier.fillMaxSize()){
+                    LaunchedEffect(Unit){
+                        viewModel.getPostCommentPreview(it.id)
                     }
-                )
+                    viewModel.postCommentPreviewFlow.collectAsState().value?.let { page ->
+                        NewsDetail(
+                            id = it.id,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(10.dp),
+                            back = {
+                                viewModel.currentItem.value = NewItem.NewList()
+                            },
+                            postState = viewModel.currentPostDetail.collectAsState(),
+                            getPostById = {
+                                viewModel.getPostById(it)
+                            },
+                            postCommentPreview = page.flow
+                        )
+                    }
+                }
             }
         }
     }
