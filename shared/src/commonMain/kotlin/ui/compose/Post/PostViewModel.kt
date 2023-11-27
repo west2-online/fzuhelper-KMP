@@ -1,4 +1,4 @@
-package ui.compose.New
+package ui.compose.Post
 
 import androidx.compose.runtime.mutableStateOf
 import app.cash.paging.Pager
@@ -9,6 +9,7 @@ import app.cash.paging.cachedIn
 import com.liftric.kvault.KVault
 import data.post.PostById.PostById
 import data.post.PostComment.PostCommentListPreview
+import data.post.PostCommentTree.PostCommentTree
 import data.post.PostList.Data
 import data.post.PostList.PostList
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
@@ -60,6 +61,8 @@ class NewViewModel(
     private val _postCommentPreviewFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, data.post.PostComment.Data>?>(null))
     var postCommentPreviewFlow = _postCommentPreviewFlow.asStateFlow()
 
+    private val _postCommentTreeFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, data.post.PostCommentTree.Data>?>(null))
+    var postCommentTreeFlow = _postCommentTreeFlow.asStateFlow()
 
     fun getPostCommentPreview(postId: String){
         viewModelScope.launch {
@@ -72,6 +75,23 @@ class NewViewModel(
                 EasyPageSourceForCommentPreview(
                     backend = LoadPageDataForCommentPreview {
                         return@LoadPageDataForCommentPreview client.get("post/comment/page/${it}/${postId}").body<PostCommentListPreview>().data
+                    }
+                )
+            }
+        }
+    }
+
+    fun getPostCommentTree(treeStart: String){
+        viewModelScope.launch {
+            _postCommentTreeFlow.value = Pager(
+                PagingConfig(
+                    pageSize = 10,
+                    prefetchDistance = 2
+                ),
+            ){
+                EasyPageSourceForCommentTree(
+                    backend = LoadPageDataForCommentTree {
+                        return@LoadPageDataForCommentTree client.get("post/commentList/page/${it}/${treeStart}").body<PostCommentTree>().data
                     }
                 )
             }
@@ -155,6 +175,8 @@ class EasyPageSourceForPost(
 
 
 
+
+
 class LoadPageDataForCommentPreview(
     val getResult : suspend (page:Int) -> List<data.post.PostComment.Data>?
 ) {
@@ -213,3 +235,60 @@ class EasyPageSourceForCommentPreview(
 }
 
 
+
+class LoadPageDataForCommentTree(
+    val getResult : suspend (page:Int) -> List<data.post.PostCommentTree.Data>?
+) {
+    suspend fun searchUsers(page: Int): PageLoadDataForCommentTree {
+        val response = getResult(page)
+        return PageLoadDataForCommentTree(
+            response,
+            when{
+                response!!.isEmpty() -> null
+                response.size < 10 -> null
+                else -> ( page + 1 )
+            }
+        )
+    }
+}
+
+
+data class PageLoadDataForCommentTree(
+    val result : List<data.post.PostCommentTree.Data>?,
+    val nextPageNumber: Int?
+)
+
+
+class EasyPageSourceForCommentTree(
+    private val backend: LoadPageDataForCommentTree,
+) : PagingSource<Int,data.post.PostCommentTree.Data>() {
+    override suspend fun load(
+        params: LoadParams<Int>
+    ): LoadResult<Int,data.post.PostCommentTree.Data> {
+        return try {
+            val page = params.key ?: 1
+            val response = backend.searchUsers(page)
+            LoadResult.Page(
+                data = response.result!!,
+                prevKey = null, // Only paging forward.
+                nextKey = response.nextPageNumber
+            )
+        } catch (e: Exception) {
+            LoadResult.Error(Throwable("加载失败"))
+        }
+    }
+
+    override fun getRefreshKey(state: PagingState<Int,data.post.PostCommentTree.Data>): Int? {
+        // Try to find the page key of the closest page to anchorPosition from
+        // either the prevKey or the nextKey; you need to handle nullability
+        // here.
+        //  * prevKey == null -> anchorPage is the first page.
+        //  * nextKey == null -> anchorPage is the last page.
+        //  * both prevKey and nextKey are null -> anchorPage is the
+        //    initial page, so return null.
+        return state.anchorPosition?.let { anchorPosition ->
+            val anchorPage = state.closestPageToPosition(anchorPosition)
+            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+        }
+    }
+}

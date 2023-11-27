@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import ui.compose.Massage.MassageScreen
-import ui.compose.New.NewScreen
+import ui.compose.Post.NewScreen
 import ui.compose.PERSON.PersonScreen
 import ui.compose.PERSON.PersonalDrawer
 import ui.compose.Ribbon.Ribbon

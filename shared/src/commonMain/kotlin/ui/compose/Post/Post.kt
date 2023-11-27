@@ -1,4 +1,4 @@
-package ui.compose.New
+package ui.compose.Post
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.cash.paging.compose.collectAsLazyPagingItems
@@ -61,7 +60,11 @@ fun NewScreen(
                             getPostById = {
                                 viewModel.getPostById(it)
                             },
-                            postCommentPreview = page.flow
+                            postCommentPreview = page.flow,
+                            postCommentTree = viewModel.postCommentTreeFlow,
+                            getPostCommentTree = { treeStart ->
+                                viewModel.getPostCommentTree(treeStart)
+                            }
                         )
                     }
                 }

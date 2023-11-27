@@ -1,8 +1,9 @@
-package ui.compose.New
+package ui.compose.Post
 
 import BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
@@ -31,6 +32,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -39,6 +41,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +49,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +57,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.PagingData
+import app.cash.paging.Pager
 import app.cash.paging.compose.collectAsLazyPagingItems
 import asImageBitmap
 import config.BaseUrlConfig
@@ -69,6 +74,7 @@ import io.ktor.client.statement.readBytes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -87,10 +93,17 @@ fun NewsDetail(
     back: (() -> Unit)? = null,
     postState: State<NetworkResult<PostById>>,
     getPostById: (String) -> Unit,
-    postCommentPreview: Flow<PagingData<Data>>
+    postCommentPreview: Flow<PagingData<Data>>,
+    postCommentTree: StateFlow<Pager<Int, data.post.PostCommentTree.Data>?>,
+    getPostCommentTree: (String)->Unit
 ) {
     val show = remember {
-        mutableStateOf(false)
+        mutableStateOf<data.post.PostComment.MainComment?>(null)
+    }
+    LaunchedEffect(show.value){
+        show.value?.let {
+            getPostCommentTree(it.Id.toString())
+        }
     }
     val data = postCommentPreview.collectAsLazyPagingItems()
     BackHandler(back!=null){
@@ -184,7 +197,9 @@ fun NewsDetail(
                 data[it],
                 click = {
                     scope.launch {
-                        show.value = !show.value
+                        data[it]?.let {
+                            show.value = it.MainComment
+                        }
                     }
                 }
             )
@@ -195,7 +210,7 @@ fun NewsDetail(
             .fillMaxSize()
     ){
         AnimatedVisibility(
-            visible = show.value,
+            visible = show.value != null,
             exit = slideOutVertically {
                 return@slideOutVertically it
             },
@@ -205,6 +220,9 @@ fun NewsDetail(
             modifier = Modifier
                 .fillMaxSize(),
         ){
+            BackHandler(show.value != null){
+                show.value = null
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -218,7 +236,7 @@ fun NewsDetail(
                             remember { MutableInteractionSource() },
                             indication = null,
                             onClick = {
-                                show.value = false
+                                show.value = null
                             }
                         )
                 )
@@ -248,16 +266,49 @@ fun NewsDetail(
                                         CircleShape
                                     )
                                     .clickable {
-                                        show.value = false
+                                        show.value = null
                                     }
                                     .wrapContentSize(Alignment.Center)
                                     .fillMaxSize(0.6f)
                             )
                         }
+                        postCommentTree.value?.let {
+                            val commentTree = it.flow.collectAsLazyPagingItems()
+                            LazyColumn(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                            ) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .animateContentSize()
+                                    ){
+                                        show.value?.let {
+                                            CommentInNewsDetail(
+                                                data = Data(
+                                                    MainComment = it,
+                                                    SonComment = listOf()
+                                                ), click = {}
+                                            )
+                                        }
+                                    }
+                                }
+                                item {
+                                    Divider(modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp))
+                                }
+                                items(commentTree.itemCount){
+                                    commentTree[it]?.let { comment ->
+                                        CommentTree(
+                                            comment,
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-
         }
     }
 }
@@ -442,5 +493,199 @@ fun ImageContent(
                 .fillMaxWidth(),
             contentScale = ContentScale.FillBounds
         )
+    }
+}
+
+@Composable
+fun CommentTree(
+    data : data.post.PostCommentTree.Data
+){
+    val showParent = remember {
+        mutableStateOf(false)
+    }
+    val rotate: Float by animateFloatAsState(if (showParent.value) 180f else 0f)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize()
+    ){
+
+        data.MainComment.let {
+            Column{
+                Row(
+                    modifier = Modifier
+                        .padding(bottom = 10.dp)
+                        .animateContentSize()
+                        .clip(RoundedCornerShape(3.dp))
+                        .padding(vertical = 5.dp)
+                ) {
+                    KamelImage(
+                        resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${it.User.avatar}"),
+                        null,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .wrapContentSize(Alignment.TopCenter)
+                            .fillMaxSize(0.7f)
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(10)),
+                        contentScale = ContentScale.FillBounds,
+                        onLoading = {
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .shimmerLoadingAnimation()
+                            )
+                        }
+                    )
+                    Column(
+                        modifier = Modifier
+                            .padding(end = 10.dp)
+                            .weight(1f)
+                            .wrapContentHeight()
+                    ) {
+                        Row (
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Column (
+                                modifier = Modifier
+                                    .weight(1f)
+                            ){
+                                Text(it.User.username)
+                                Text("回复@${data.ParentComment.User.username}", fontSize = 10.sp)
+                            }
+                            Row (
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .wrapContentSize()
+                                    .clip(
+                                        RoundedCornerShape(10)
+                                    )
+                                    .clickable {
+                                        showParent.value = !showParent.value
+                                    }
+                                    .padding(start = 3.dp)
+                            ){
+                                Text(
+                                    text = if(showParent.value) "隐藏回复内容" else  "显示回复内容",
+                                    fontSize = 9.sp
+                                )
+                                Icon(
+                                    imageVector = Icons.Filled.KeyboardArrowDown,
+                                    null,
+                                    modifier = Modifier
+                                        .rotate(rotate)
+                                        .size(30.dp)
+                                        .clip(CircleShape)
+                                )
+                            }
+
+                        }
+                        Text(
+                            it.Time.toEasyTime(),
+                            fontSize = 10.sp
+                        )
+                        Text(
+                            it.Content,
+                            fontSize = 14.sp
+                        )
+                        it.Image.let {
+                            if (it != "") {
+                                KamelImage(
+                                    resource = asyncPainterResource("${BaseUrlConfig.CommentImage}/${it}"),
+                                    null,
+                                    modifier = Modifier
+                                        .padding(vertical = 5.dp)
+                                        .fillMaxWidth(0.5f)
+                                        .wrapContentHeight()
+                                        .clip(RoundedCornerShape(3))
+                                        .animateContentSize(),
+                                    contentScale = ContentScale.Inside,
+                                    onLoading = {
+                                        Box(
+                                            modifier = Modifier
+                                                .matchParentSize()
+                                                .shimmerLoadingAnimation()
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                        AnimatedVisibility(
+                            showParent.value,
+                            modifier = Modifier
+
+                        ){
+                            data.ParentComment.let {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(bottom = 10.dp)
+                                        .animateContentSize()
+                                        .clip(RoundedCornerShape(3.dp))
+                                        .background(MaterialTheme.colors.primary )
+                                        .padding(vertical = 5.dp)
+                                ) {
+                                    KamelImage(
+                                        resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${it.User.avatar}"),
+                                        null,
+                                        modifier = Modifier
+                                            .size(50.dp)
+                                            .wrapContentSize(Alignment.TopCenter)
+                                            .fillMaxSize(0.7f)
+                                            .aspectRatio(1f)
+                                            .clip(RoundedCornerShape(10)),
+                                        contentScale = ContentScale.FillBounds,
+                                        onLoading = {
+                                            Box(
+                                                modifier = Modifier
+                                                    .matchParentSize()
+                                                    .shimmerLoadingAnimation()
+                                            )
+                                        }
+                                    )
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(end = 10.dp)
+                                            .weight(1f)
+                                            .wrapContentHeight()
+                                    ) {
+                                        Text(it.User.username)
+                                        Text(
+                                            it.Time.toEasyTime(),
+                                            fontSize = 10.sp
+                                        )
+                                        Text(
+                                            it.Content,
+                                            fontSize = 14.sp
+                                        )
+                                        it.Image.let {
+                                            if (it != "") {
+                                                KamelImage(
+                                                    resource = asyncPainterResource("${BaseUrlConfig.CommentImage}/${it}"),
+                                                    null,
+                                                    modifier = Modifier
+                                                        .padding(vertical = 5.dp)
+                                                        .fillMaxWidth(0.5f)
+                                                        .wrapContentHeight()
+                                                        .clip(RoundedCornerShape(3))
+                                                        .animateContentSize(),
+                                                    contentScale = ContentScale.Inside,
+                                                    onLoading = {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .matchParentSize()
+                                                                .shimmerLoadingAnimation()
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

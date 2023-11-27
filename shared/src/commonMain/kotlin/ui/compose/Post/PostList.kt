@@ -1,4 +1,4 @@
-package ui.compose.New
+package ui.compose.Post
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize

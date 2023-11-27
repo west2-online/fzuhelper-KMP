@@ -31,7 +31,7 @@ import repository.PostRepository
 import repository.SplashRepository
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.Feedback.FeedBackViewModel
-import ui.compose.New.NewViewModel
+import ui.compose.Post.NewViewModel
 import ui.compose.PERSON.PersonViewModel
 import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Ribbon.RibbonViewModel
