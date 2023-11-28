@@ -49,7 +49,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -69,7 +68,7 @@ import app.cash.paging.Pager
 import app.cash.paging.compose.collectAsLazyPagingItems
 import asImageBitmap
 import config.BaseUrlConfig
-import data.post.PostById.ImageData
+import data.post.PostById.FileData
 import data.post.PostById.PostById
 import data.post.PostById.PostContent
 import data.post.PostById.ValueData
@@ -79,11 +78,6 @@ import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.statement.readBytes
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -91,7 +85,6 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.example.library.MR
-import org.koin.compose.koinInject
 import ui.util.compose.Toast
 import ui.util.compose.shimmerLoadingAnimation
 import ui.util.network.CollectWithContent
@@ -142,41 +135,11 @@ fun NewsDetail(
     LaunchedEffect(Unit){
         getPostById(id)
     }
-    val currentData = remember {
-        mutableStateListOf<PostContent>()
-    }
     val scope = rememberCoroutineScope()
-    val client = koinInject<HttpClient>()
-    LaunchedEffect(postState.value.key){
-        postState.value.let {
-             when(it){
-                is NetworkResult.Success<PostById> -> {
-                    it.data.data.valueData?.forEach {
-                        currentData.add(it)
-                    }
-
-                    it.data.data.fileData?.forEach {
-                        scope.launch(Dispatchers.IO) {
-                            val byteArray = client.get("static/post/${it.fileName}").readBytes()
-                            val data = ImageData(
-                                order = it.order,
-                                imageData = byteArray,
-                                fileName = it.fileName
-                            )
-                            currentData.add(data)
-                        }
-                    }
-                }
-                else ->{
-
-                }
-            }
-        }
-    }
     LazyColumn(
         modifier = modifier
     ) {
-        item (key = postState.value.key.value){
+        item{
             Box (
                 modifier = Modifier
                     .fillParentMaxWidth()
@@ -196,12 +159,12 @@ fun NewsDetail(
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold
                             )
-                            currentData.sortedBy {
+                            listOf<PostContent>().plus(postById.data.valueData?: listOf()).plus(postById.data.fileData?: listOf()).sortedBy {
                                 it.order
                             }.forEach {
                                 when(it){
-                                    is ImageData ->{
-                                        ImageContent(it.imageData)
+                                    is FileData ->{
+                                        ImageContent(it.fileName)
                                     }
                                     is ValueData ->{
                                         Text(it.value)
@@ -713,7 +676,7 @@ fun CommentInNewsDetail(
 
 @Composable
 fun ImageContent(
-    imageData:ByteArray
+    imageData: String
 ) {
     Box(
         modifier = Modifier
@@ -721,8 +684,9 @@ fun ImageContent(
             .wrapContentHeight()
             .animateContentSize()
     ){
-        Image(
-            bitmap = imageData.asImageBitmap(),
+//        "static/post/${it.fileName}"
+        KamelImage(
+            resource = asyncPainterResource("${BaseUrlConfig.PostImage}/${imageData}"),
             null,
             modifier = Modifier
                 .padding(top = 10.dp)

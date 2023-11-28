@@ -12,8 +12,3 @@ data class Data(
 interface PostContent{
     val order:Int
 }
-data class ImageData(
-    override val order: Int,
-    val imageData: ByteArray,
-    val fileName: String
-):PostContent
