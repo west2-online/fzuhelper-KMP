@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.cash.paging.compose.collectAsLazyPagingItems
 import org.koin.compose.koinInject
+import ui.util.compose.EasyToast
+import ui.util.compose.rememberToastState
 
 @Composable
 fun NewScreen(
@@ -22,7 +24,7 @@ fun NewScreen(
 //    LaunchedEffect(Unit){
 //        viewModel.getPostByPage("1")
 //    }
-
+    val toastState = rememberToastState()
     val state = rememberLazyListState()
     Crossfade(
         viewModel.currentItem.value
@@ -63,14 +65,20 @@ fun NewScreen(
                             postCommentPreview = page.flow,
                             postCommentTree = viewModel.postCommentTreeFlow,
                             getPostCommentTree = { treeStart ->
-                                viewModel.getPostCommentTree(treeStart)
-                            }
+                                viewModel.getPostCommentTree(treeStart, postId = it.id)
+                            },
+                            submitComment = { parentId,postId,tree,content,image->
+                              viewModel.submitComment(parentId,it.id.toInt(),tree,content,image)
+                            },
+                            commentSubmitState = viewModel.commentSubmitState.collectAsState(),
+                            toastState = toastState
                         )
                     }
                 }
             }
         }
     }
+    EasyToast(toastState)
 }
 
 

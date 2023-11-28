@@ -168,7 +168,8 @@ class RouteState(start:Route){
     }
 
     fun reLogin(){
-        navigateWithoutPop(Route.LoginWithRegister())
+        route.clear()
+        route.add(Route.LoginWithRegister())
     }
 }
 

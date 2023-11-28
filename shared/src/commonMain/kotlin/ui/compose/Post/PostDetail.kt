@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -40,6 +41,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -90,9 +92,11 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.example.library.MR
 import org.koin.compose.koinInject
+import ui.util.compose.Toast
 import ui.util.compose.shimmerLoadingAnimation
 import ui.util.network.CollectWithContent
 import ui.util.network.NetworkResult
+import ui.util.network.logicWithType
 import ui.util.network.toEasyTime
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
@@ -105,8 +109,21 @@ fun NewsDetail(
     getPostById: (String) -> Unit,
     postCommentPreview: Flow<PagingData<Data>>,
     postCommentTree: StateFlow<Pager<Int, data.post.PostCommentTree.Data>?>,
-    getPostCommentTree: (String)->Unit
+    getPostCommentTree: (String) -> Unit,
+    submitComment: (parentId: Int, postId: Int, tree: String, content: String, image: ByteArray?) -> Unit,
+    commentSubmitState: State<NetworkResult<String>>,
+    toastState: Toast
 ) {
+    LaunchedEffect(commentSubmitState.value.key.value,commentSubmitState.value){
+        commentSubmitState.value.logicWithType(
+            success = {
+                toastState.addToast(it)
+            },
+            error = {
+                toastState.addToast(it.message.toString(), Color.Red)
+            }
+        )
+    }
     val show = remember {
         mutableStateOf<MainComment?>(null)
     }
@@ -497,6 +514,32 @@ fun NewsDetail(
                                     painter = painterResource(MR.images.image),
                                     contentDescription = null
                                 )
+                            }
+                            item {
+                                Button(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 10.dp),
+                                    onClick = {
+                                        submitComment.invoke(
+                                            if(commentState.value.commentAt.value == null) -1 else commentState.value.commentAt.value!!.Id,
+                                            id.toInt(),
+                                            if(commentState.value.commentAt.value == null) "-1/" else commentState.value.commentAt.value!!.Tree+commentState.value.commentAt.value!!.Id+"/",
+                                            commentValue.value,
+                                            imageByteArray.value
+                                        )
+                                    }
+                                ){
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(end = 5.dp)
+                                            .size(30.dp)
+                                            .padding(5.dp),
+                                        imageVector = Icons.Filled.Done,
+                                        contentDescription = null
+                                    )
+                                    Text("提交评论")
+                                }
                             }
                         }
                     }

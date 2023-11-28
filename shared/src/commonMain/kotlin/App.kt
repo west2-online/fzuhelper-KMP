@@ -14,7 +14,9 @@ import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.statement.HttpReceivePipeline
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.pipeline.PipelinePhase
 import org.example.library.MR
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
@@ -31,8 +33,8 @@ import repository.PostRepository
 import repository.SplashRepository
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.Feedback.FeedBackViewModel
-import ui.compose.Post.NewViewModel
 import ui.compose.PERSON.PersonViewModel
+import ui.compose.Post.NewViewModel
 import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Ribbon.RibbonViewModel
 import ui.compose.SplashPage.SplashPageViewModel
@@ -80,7 +82,7 @@ expect fun ByteArray.asImageBitmap(): ImageBitmap
 
 fun appModule() = module {
     single {
-        HttpClient{
+        val client = HttpClient{
             install(ContentNegotiation) {
                 json()
             }
@@ -97,7 +99,30 @@ fun appModule() = module {
                 checkHttpMethod = false
             }
             configure()
+//            HttpResponseValidator{
+//                validateResponse{
+//                    val data = it
+//                    println("this is data ${data.bodyAsText()}")
+//                    it.ensureActive()
+//                }
+//            }
         }
+//        client.sendPipeline.intercept(HttpSendPipeline.State){
+//            val kVault = get<KVault>()
+//            val token : String? = kVault.string(forKey = "token")
+//            context.header("Authorization",token)
+//        }
+        val authPhase = PipelinePhase("Auth")
+        client.receivePipeline.insertPhaseBefore(HttpReceivePipeline.Before,authPhase)
+        client.receivePipeline.intercept(authPhase){
+            if(it.status.value == 555){
+                println(it.status)
+                val kVault = get<KVault>()
+                kVault.clear()
+                get<RouteState>().reLogin()
+            }
+        }
+        return@single client
     }
     repositoryList()
     viewModel()

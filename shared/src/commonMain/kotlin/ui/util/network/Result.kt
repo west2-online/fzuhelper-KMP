@@ -170,6 +170,15 @@ fun <T> MutableStateFlow<NetworkResult<T>>.unSend(){
     this.reset(NetworkResult.UnSend())
 }
 
+suspend fun <T> MutableStateFlow<NetworkResult<T>>.loginIfNotLoading(
+    block: suspend () -> Unit
+){
+    if(this.value !is NetworkResult.Loading){
+        this.reset(NetworkResult.Loading())
+        block.invoke()
+    }
+}
+
 fun <T>NetworkResult<T>.logicWithType(
     success: ((T) -> Unit)? = null,
     error: ((Throwable) -> Unit)? = null,

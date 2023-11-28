@@ -9,6 +9,7 @@ import app.cash.paging.cachedIn
 import com.liftric.kvault.KVault
 import data.post.PostById.PostById
 import data.post.PostComment.PostCommentListPreview
+import data.post.PostCommentNew.PostCommentNew
 import data.post.PostCommentTree.PostCommentTree
 import data.post.PostList.Data
 import data.post.PostList.PostList
@@ -23,10 +24,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import repository.CommentSubmitStatus
 import repository.PostRepository
 import ui.route.Route
 import ui.route.RouteState
 import ui.util.network.NetworkResult
+import ui.util.network.loginIfNotLoading
 import ui.util.network.reset
 
 class NewViewModel(
@@ -64,6 +67,8 @@ class NewViewModel(
     private val _postCommentTreeFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, data.post.PostCommentTree.Data>?>(null))
     var postCommentTreeFlow = _postCommentTreeFlow.asStateFlow()
 
+    private val _commentSubmitState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    val commentSubmitState = _commentSubmitState.asStateFlow()
     fun getPostCommentPreview(postId: String){
         viewModelScope.launch {
             _postCommentPreviewFlow.value = Pager(
@@ -81,7 +86,7 @@ class NewViewModel(
         }
     }
 
-    fun getPostCommentTree(treeStart: String){
+    fun getPostCommentTree(treeStart: String,postId:String){
         viewModelScope.launch {
             _postCommentTreeFlow.value = Pager(
                 PagingConfig(
@@ -91,7 +96,7 @@ class NewViewModel(
             ){
                 EasyPageSourceForCommentTree(
                     backend = LoadPageDataForCommentTree {
-                        return@LoadPageDataForCommentTree client.get("post/commentList/page/${it}/${treeStart}").body<PostCommentTree>().data
+                        return@LoadPageDataForCommentTree client.get("post/commentList/page/${it}/${treeStart}/${postId}").body<PostCommentTree>().data
                     }
                 )
             }
@@ -109,6 +114,18 @@ class NewViewModel(
                     _currentPostDetail.reset(NetworkResult.Success(it))
                     println(_currentPostDetail.value)
                 }
+        }
+    }
+    fun submitComment(parentId:Int,postId:Int,tree:String,content:String,image:ByteArray?){
+        viewModelScope.launch {
+            _commentSubmitState.loginIfNotLoading {
+                postRepository.postNewComment(parentId,postId,tree,content,image)
+                    .catch {
+                        _commentSubmitState.reset(NetworkResult.Error(Throwable("评论失败，稍后再试")))
+                    }.collect{
+                        _commentSubmitState.reset(it.toNetworkResult())
+                    }
+            }
         }
     }
     fun navigateToRelease(token:String){
@@ -289,6 +306,29 @@ class EasyPageSourceForCommentTree(
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+        }
+    }
+}
+
+fun PostCommentNew.toNetworkResult():NetworkResult<String>{
+    val result = CommentSubmitStatus.values().find {
+        it.value == this.code
+    }
+    return when(result){
+        null ->{
+            NetworkResult.Error(Throwable("评论失败,稍后再试"))
+        }
+        CommentSubmitStatus.CommentFailed,CommentSubmitStatus.FileParsingFailed, CommentSubmitStatus.FailedToSaveTheCommentImage->{
+            NetworkResult.Error(Throwable("评论失败,稍后再试"))
+        }
+        CommentSubmitStatus.TheCommentIsEmpty -> {
+            NetworkResult.Error(Throwable("评论不能为空"))
+        }
+        CommentSubmitStatus.TheReviewWasSuccessful -> {
+            NetworkResult.Success("评论成功")
+        }
+        else -> {
+            NetworkResult.Error(Throwable("评论失败,稍后再试"))
         }
     }
 }
