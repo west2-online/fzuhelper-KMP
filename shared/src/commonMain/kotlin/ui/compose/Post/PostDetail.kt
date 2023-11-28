@@ -1,6 +1,7 @@
 package ui.compose.Post
 
 import BackHandler
+import ImagePickerFactory
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -8,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -31,15 +34,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -50,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -66,6 +72,9 @@ import data.post.PostById.PostById
 import data.post.PostById.PostContent
 import data.post.PostById.ValueData
 import data.post.PostComment.Data
+import data.post.PostCommentTree.MainComment
+import dev.icerock.moko.resources.compose.painterResource
+import getPlatformContext
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import io.ktor.client.HttpClient
@@ -79,6 +88,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.util.compose.shimmerLoadingAnimation
 import ui.util.network.CollectWithContent
@@ -98,12 +108,15 @@ fun NewsDetail(
     getPostCommentTree: (String)->Unit
 ) {
     val show = remember {
-        mutableStateOf<data.post.PostComment.MainComment?>(null)
+        mutableStateOf<MainComment?>(null)
     }
     LaunchedEffect(show.value){
         show.value?.let {
             getPostCommentTree(it.Id.toString())
         }
+    }
+    val commentState = remember {
+        mutableStateOf<CommentState>(CommentState())
     }
     val data = postCommentPreview.collectAsLazyPagingItems()
     BackHandler(back!=null){
@@ -209,6 +222,30 @@ fun NewsDetail(
         modifier = Modifier
             .fillMaxSize()
     ){
+        FloatingActionButton(
+            onClick = {
+                commentState.value.setCommentAt(null)
+            },
+            modifier = Modifier
+                .offset(x = (-15).dp,y = ((-5).dp))
+                .size(50.dp)
+                .align(Alignment.BottomEnd),
+            shape = CircleShape
+        ){
+            Icon(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.Center)
+                    .fillMaxSize(0.5f),
+                painter = painterResource(MR.images.comment),
+                contentDescription = null
+            )
+        }
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ){
         AnimatedVisibility(
             visible = show.value != null,
             exit = slideOutVertically {
@@ -289,7 +326,9 @@ fun NewsDetail(
                                                 data = Data(
                                                     MainComment = it,
                                                     SonComment = listOf()
-                                                ), click = {}
+                                                ), click = {
+                                                      commentState.value.setCommentAt(it)
+                                                }
                                             )
                                         }
                                     }
@@ -301,9 +340,163 @@ fun NewsDetail(
                                     commentTree[it]?.let { comment ->
                                         CommentTree(
                                             comment,
+                                            click = {
+                                                commentState.value.setCommentAt(it)
+                                            }
                                         )
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ){
+        AnimatedVisibility(
+            visible = commentState.value.isShow.value,
+            exit = slideOutVertically {
+                return@slideOutVertically it
+            },
+            enter = slideInVertically {
+                return@slideInVertically it
+            },
+            modifier = Modifier
+                .fillMaxSize(),
+        ){
+            val commentValue = remember {
+                mutableStateOf("")
+            }
+            BackHandler(commentState.value.isShow.value){
+                commentState.value.closeCommentAt()
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ){
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .background(Color(216, 211, 210, 150))
+                        .clickable(
+                            remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                commentState.value.closeCommentAt()
+                            }
+                        )
+                )
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.8f)
+                        .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(10.dp)
+                    ) {
+                        val imageByteArray = remember {
+                            mutableStateOf<ByteArray?>(null)
+                        }
+                        val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
+                        imagePicker.registerPicker(
+                            onImagePicked = {
+                                imageByteArray.value = it
+                            }
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.End,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowDown,
+                                null,
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(
+                                        CircleShape
+                                    )
+                                    .clickable {
+                                        commentState.value.closeCommentAt()
+                                    }
+                                    .wrapContentSize(Alignment.Center)
+                                    .fillMaxSize(0.6f)
+                            )
+                        }
+                        LazyColumn (
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(1f)
+                        ){
+                            commentState.value.commentAt.value?.let {
+                                item {
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(bottom = 10.dp)
+                                            .border(
+                                                width = 1.dp,
+                                                shape = RoundedCornerShape(5.dp),
+                                                color = Color.Gray
+                                            )
+                                            .padding(5.dp)
+                                    ) {
+                                        Text(
+                                            text = "回复@"
+                                        )
+                                        CommentInNewsDetail(
+                                            data = Data(
+                                                it,
+                                                listOf()
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                            item {
+                                TextField(
+                                    value = commentValue.value,
+                                    onValueChange = {
+                                        commentValue.value = it
+                                    } ,
+                                    modifier = Modifier
+                                        .padding(bottom = 5.dp)
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .animateContentSize()
+                                )
+                            }
+                            item {
+                                imageByteArray.value?.let {
+                                    Image(
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.5f)
+                                            .wrapContentHeight()
+                                            .clip(RoundedCornerShape(3.dp)),
+                                        bitmap = it.asImageBitmap(),
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                            item {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .clickable {
+                                            imagePicker.pickImage()
+                                        }
+                                        .padding(3.dp),
+                                    painter = painterResource(MR.images.image),
+                                    contentDescription = null
+                                )
                             }
                         }
                     }
@@ -498,7 +691,8 @@ fun ImageContent(
 
 @Composable
 fun CommentTree(
-    data : data.post.PostCommentTree.Data
+    data : data.post.PostCommentTree.Data,
+    click: (data.post.PostCommentTree.MainComment) -> Unit
 ){
     val showParent = remember {
         mutableStateOf(false)
@@ -509,7 +703,6 @@ fun CommentTree(
             .fillMaxWidth()
             .animateContentSize()
     ){
-
         data.MainComment.let {
             Column{
                 Row(
@@ -517,6 +710,9 @@ fun CommentTree(
                         .padding(bottom = 10.dp)
                         .animateContentSize()
                         .clip(RoundedCornerShape(3.dp))
+                        .clickable {
+                            click.invoke(data.MainComment)
+                        }
                         .padding(vertical = 5.dp)
                 ) {
                     KamelImage(
@@ -620,8 +816,12 @@ fun CommentTree(
                                     modifier = Modifier
                                         .padding(bottom = 10.dp)
                                         .animateContentSize()
-                                        .clip(RoundedCornerShape(3.dp))
-                                        .background(MaterialTheme.colors.primary )
+                                        .clip(RoundedCornerShape(5.dp))
+                                        .border(
+                                            width = 1.dp,
+                                            shape = RoundedCornerShape(3.dp),
+                                            brush = Brush.linearGradient(listOf(Color(174, 174, 174),Color(174, 174, 174)))
+                                        )
                                         .padding(vertical = 5.dp)
                                 ) {
                                     KamelImage(
@@ -687,5 +887,20 @@ fun CommentTree(
                 }
             }
         }
+    }
+}
+
+
+class CommentState (){
+    val isShow: MutableState<Boolean> = mutableStateOf(false)
+    val commentAt: MutableState<data.post.PostCommentTree.MainComment?> = mutableStateOf(null)
+    fun setCommentAt(mainComment: data.post.PostCommentTree.MainComment?){
+        commentAt.value = mainComment
+        isShow.value = true
+    }
+
+    fun closeCommentAt(){
+        isShow.value = false
+        commentAt.value = null
     }
 }

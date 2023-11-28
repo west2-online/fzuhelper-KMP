@@ -1,5 +1,6 @@
 package data.post.PostComment
 
+import data.post.PostCommentTree.MainComment
 import kotlinx.serialization.Serializable
 
 @Serializable
