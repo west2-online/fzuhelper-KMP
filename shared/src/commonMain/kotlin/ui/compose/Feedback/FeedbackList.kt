@@ -1,5 +1,8 @@
 package ui.compose.Feedback
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -15,14 +18,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +45,8 @@ import data.Feedback.FeedbackList.User
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filter
 import ui.util.compose.Label
 import ui.util.compose.ThemeCard
 import ui.util.network.toEasyTime
@@ -47,9 +58,27 @@ fun FeedbackList(
     navigateToPost: () -> Unit,
     feedbackListFlow: LazyPagingItems<Data>
 ) {
+    val isRefresh = remember{
+        mutableStateOf(false)
+    }
+    val state = rememberLazyListState()
+    LaunchedEffect(state){
+        snapshotFlow{ state.isScrollInProgress && !state.canScrollBackward }
+            .filter {
+                it
+            }
+            .collect {
+                isRefresh.value = true
+                delay(1000)
+                feedbackListFlow.refresh()
+                isRefresh.value = false
+            }
+    }
+
     Box(modifier = Modifier){
         LazyColumn (
-            modifier = modifier
+            modifier = modifier,
+            state = state
         ){
             items(feedbackListFlow.itemCount){
                 feedbackListFlow[it]?.let {
@@ -69,7 +98,6 @@ fun FeedbackList(
                 .size(50.dp)
                 .align(Alignment.BottomEnd),
             shape = CircleShape
-
         ){
             Icon(
                 modifier = Modifier
@@ -79,6 +107,22 @@ fun FeedbackList(
                 imageVector = Icons.Filled.Add,
                 contentDescription = null
             )
+        }
+        AnimatedVisibility(
+            isRefresh.value,
+            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
+            exit = slideOutVertically(),
+            enter = slideInVertically()
+        ){
+            Box(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)){
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .align(Alignment.Center)
+                        .size(30.dp)
+                )
+            }
+
         }
     }
 }
