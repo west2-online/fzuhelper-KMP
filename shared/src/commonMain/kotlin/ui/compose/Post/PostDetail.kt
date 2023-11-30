@@ -107,7 +107,10 @@ fun NewsDetail(
     commentSubmitState: State<NetworkResult<String>>,
     toastState: Toast
 ) {
-    LaunchedEffect(commentSubmitState.value.key.value,commentSubmitState.value){
+    LaunchedEffect(commentSubmitState.value.key){
+        if(!commentSubmitState.value.showToast){
+            return@LaunchedEffect
+        }
         commentSubmitState.value.logicWithType(
             success = {
                 toastState.addToast(it)

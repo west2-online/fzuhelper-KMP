@@ -72,9 +72,10 @@ interface Theme{
     val isLight: Boolean
 
     class MyTheme : Theme {
-        override val primary: Color = Color(199, 231, 255) // RGB(197, 225, 165)
+
+        override val primary: Color = Color( 11, 200, 242) // RGB(197, 225, 165)
         override val primaryVariant: Color = Color(51, 113, 243) // RGB(174, 213, 129)
-        override val secondary: Color = Color(199, 231, 255) // RGB(199, 231, 255)
+        override val secondary: Color = Color( 11, 200, 242) // RGB(199, 231, 255)
         override val secondaryVariant: Color = Color(220, 231, 117) // RGB(220, 231, 117)
         override val background: Color = Color(255, 255, 255) // RGB(253, 253, 246)
         override val surface: Color = Color(241, 244, 249) // RGB(241, 244, 249)

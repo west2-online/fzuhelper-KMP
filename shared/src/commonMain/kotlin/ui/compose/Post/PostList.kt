@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import app.cash.paging.compose.LazyPagingItems
 import config.BaseUrlConfig
+import config.BaseUrlConfig.PostImage
 import data.post.PostList.Data
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -260,7 +261,7 @@ fun NewsItem(
                     return@let
                 }
                 KamelImage(
-                    resource = asyncPainterResource("http://10.0.2.2:8000/static/post/${it}"),
+                    resource = asyncPainterResource("${PostImage}/${it}"),
                     null,
                     modifier = Modifier
                         .padding(top = 10.dp)

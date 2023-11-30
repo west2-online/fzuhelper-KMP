@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import com.liftric.kvault.KVault
+import config.BaseUrlConfig
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import dev.icerock.moko.resources.desc.Resource
 import dev.icerock.moko.resources.desc.StringDesc
@@ -89,7 +90,7 @@ fun appModule() = module {
             install(
                 DefaultRequest
             ){
-                url(get<BaseUrl>().getMainUrl())
+                url(BaseUrlConfig.BaseUrl)
             }
             install(Logging)
             install(HttpCookies){
@@ -129,9 +130,6 @@ fun appModule() = module {
     single {
         initStore()
     }
-    single{
-        BaseUrl()
-    }
     single {
         val kVault = get<KVault>()
         val token : String? = kVault.string(forKey = "token")
@@ -152,15 +150,7 @@ internal expect fun HttpClientConfig<*>.configureForPlatform()
 expect fun initStore(): KVault
 
 
-class BaseUrl(
-    private val debug :Boolean = true,
-    val url:String = if (debug) "http://10.0.2.2" else "http://172.20.10.2",
-    val port :String = "8000"
-){
-    fun getMainUrl():String{
-        return "$url:$port"
-    }
-}
+
 
 fun Module.repositoryList(){
     single {

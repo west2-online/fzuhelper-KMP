@@ -40,7 +40,7 @@ class AuthenticationViewModel(private val loginRepository: LoginRepository, priv
     val loginCaptcha = _loginCaptcha.asStateFlow()
 
     fun getRegisterCaptcha(email:String){
-        viewModelScope.launch (Dispatchers.Default){
+        viewModelScope.launch{
             loginRepository.getRegisterCaptcha(email = email)
                 .catch {
                     _captcha.value = NetworkResult.Error(Throwable("申请失败,请稍后重试"))
@@ -204,7 +204,7 @@ enum class RegistrationStatus(val value: Int, val description: String,val descri
 
 fun RegistrationStatus.toNetworkResult():NetworkResult<String>{
     return when(this.value){
-        0,1,24,12,20 -> if(this.descriptionForToast!=null) NetworkResult.Success(this.descriptionForToast) else NetworkResult.Success(this.description)
+        0,1,24,12,20,11 -> if(this.descriptionForToast!=null) NetworkResult.Success(this.descriptionForToast) else NetworkResult.Success(this.description)
         else -> if(this.descriptionForToast!=null) NetworkResult.Error(Throwable(this.descriptionForToast)) else NetworkResult.Error(
             Throwable(this.description))
     }

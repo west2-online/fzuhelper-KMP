@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,20 +19,22 @@ import kotlin.random.Random
 @Stable
 interface NetworkResult<T> {
     val key: MutableState<Int>
-
+    var showToast :Boolean
     data class Success<T>(
         val data:T,
+        override var showToast: Boolean = true,
         override val key: MutableState<Int> = mutableStateOf(0)
     ) : NetworkResult<T>
 
     data class Error<T>(
         val error: Throwable,
+        override var showToast: Boolean = true,
         override val key: MutableState<Int> = mutableStateOf(0)
     ):NetworkResult<T>
 
-    class Loading<T>(override val key: MutableState<Int> = mutableStateOf(0)):NetworkResult<T>
+    class Loading<T>( override var showToast: Boolean = true,override val key: MutableState<Int> = mutableStateOf(0)):NetworkResult<T>
 
-    class UnSend<T>(override val key: MutableState<Int> = mutableStateOf(0)) : NetworkResult<T>
+    class UnSend<T>( override var showToast: Boolean = true,override val key: MutableState<Int> = mutableStateOf(0)) : NetworkResult<T>
 
 }
 
@@ -155,18 +158,21 @@ fun <T>T.logicWithNullCheckInCompose(
     }
 }
 
-fun <T> MutableStateFlow<NetworkResult<T>>.reset(newValue : NetworkResult<T>){
+
+suspend fun <T> MutableStateFlow<NetworkResult<T>>.reset(newValue : NetworkResult<T>){
     val oldKey = this.value.key.value
     val newKey = Random(0).nextInt(0,(oldKey+10))
     this.value = newValue.apply {
         key.value = newKey
     }
+    delay(1500)
+    this.value.showToast = false
 }
 
-fun <T> MutableStateFlow<NetworkResult<T>>.loading(){
+suspend fun <T> MutableStateFlow<NetworkResult<T>>.loading(){
     this.reset(NetworkResult.Loading())
 }
-fun <T> MutableStateFlow<NetworkResult<T>>.unSend(){
+suspend fun <T> MutableStateFlow<NetworkResult<T>>.unSend(){
     this.reset(NetworkResult.UnSend())
 }
 
