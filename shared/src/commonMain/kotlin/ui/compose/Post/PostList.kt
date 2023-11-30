@@ -88,11 +88,12 @@ fun NewsList(
             }
             .collect {
                 isRefresh.value = true
-                delay(3000)
+                delay(1000)
                 postListFlow.refresh()
                 isRefresh.value = false
             }
     }
+
     Box(modifier = modifier){
 //        postListState.let { networkResultState ->
 //            networkResultState.CollectWithContent(

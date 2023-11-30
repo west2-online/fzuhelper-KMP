@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
@@ -181,7 +182,7 @@ fun Login(
                                 if (!editAble) Modifier.weight(1f).height(56.dp) else Modifier.size(56.dp)
                             )
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color.Green)
+                            .background(MaterialTheme.colors.onBackground)
                             .animateContentSize()
                             .clickable {
                                 if(!editAble) {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -27,62 +28,68 @@ fun Assembly(
         modifier = modifier,
         userScrollEnabled = false
     ){
-        when(it){
-            0->{
-                Login(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(10.dp),
-                    navigateToRegister = {
-                        scope.launch {
-                            pageState.animateScrollToPage(1)
+        Surface (
+            modifier = Modifier
+                .fillMaxSize()
+        ){
+            when(it){
+                0->{
+                    Login(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(10.dp),
+                        navigateToRegister = {
+                            scope.launch {
+                                pageState.animateScrollToPage(1)
+                            }
+                        },
+                        login = { userEmail,userPassword,captcha ->
+                            viewModel.login(userEmail,userPassword,captcha)
+                        },
+                        loginState = viewModel.loginState.collectAsState(),
+                        getCaptcha = { userEmail ->
+                            viewModel.getLoginCaptcha(userEmail)
+                        },
+                        loginCaptcha = viewModel.loginCaptcha.collectAsState(),
+                        cleanRegisterData = {
+                            viewModel.cleanRegisterData()
                         }
-                    },
-                    login = { userEmail,userPassword,captcha ->
-                        viewModel.login(userEmail,userPassword,captcha)
-                    },
-                    loginState = viewModel.loginState.collectAsState(),
-                    getCaptcha = { userEmail ->
-                        viewModel.getLoginCaptcha(userEmail)
-                    },
-                    loginCaptcha = viewModel.loginCaptcha.collectAsState(),
-                    cleanRegisterData = {
-                        viewModel.cleanRegisterData()
-                    }
 
-                )
-            }
-            1->{
-                Register(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(10.dp),
-                    register = { email, password, captcha ->
-                        viewModel.register(email,password,captcha)
-                    },
-                    getCaptcha = { email ->
-                        viewModel.getRegisterCaptcha(email)
-                    },
-                    captchaState = viewModel.captcha.collectAsState(),
-                    registerState = viewModel.registerState.collectAsState(),
-                    verifyStudentID = { studentCode, studentPassword,studentCaptcha ->
-                        viewModel.verifyStudentID(studentCode,studentPassword, captcha = studentCaptcha)
-                    },
-                    navigateToLogin = {
-                        scope.launch {
-                            pageState.animateScrollToPage(0)
+                    )
+                }
+                1->{
+                    Register(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(10.dp),
+                        register = { email, password, captcha ->
+                            viewModel.register(email,password,captcha)
+                        },
+                        getCaptcha = { email ->
+                            viewModel.getRegisterCaptcha(email)
+                        },
+                        captchaState = viewModel.captcha.collectAsState(),
+                        registerState = viewModel.registerState.collectAsState(),
+                        verifyStudentID = { studentCode, studentPassword,studentCaptcha ->
+                            viewModel.verifyStudentID(studentCode,studentPassword, captcha = studentCaptcha)
+                        },
+                        navigateToLogin = {
+                            scope.launch {
+                                pageState.animateScrollToPage(0)
+                            }
+                        },
+                        studentCaptchaState = viewModel.studentCaptcha.collectAsState(),
+                        getStudentCaptcha = {
+                            viewModel.refreshStudentCaptcha()
+                        },
+                        verifyStudentIDState = viewModel.verifyStudentIDState.collectAsState(),
+                        cleanRegisterData = {
+                            viewModel.cleanRegisterData()
                         }
-                    },
-                    studentCaptchaState = viewModel.studentCaptcha.collectAsState(),
-                    getStudentCaptcha = {
-                        viewModel.refreshStudentCaptcha()
-                    },
-                    verifyStudentIDState = viewModel.verifyStudentIDState.collectAsState(),
-                    cleanRegisterData = {
-                        viewModel.cleanRegisterData()
-                    }
-                )
+                    )
+                }
             }
         }
+
     }
 }

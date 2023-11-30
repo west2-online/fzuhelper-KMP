@@ -69,6 +69,7 @@ fun App(){
 fun getMyString(): StringDesc {
     return StringDesc.Resource(MR.strings.my_string)
 }
+
 expect fun getPlatformName(): String
 
 @Composable

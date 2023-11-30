@@ -3,6 +3,7 @@ package ui.compose.Post
 import BackHandler
 import ImagePickerFactory
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInVertically
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -41,8 +43,10 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,6 +56,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,8 +83,10 @@ import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -105,8 +112,27 @@ fun NewsDetail(
     getPostCommentTree: (String) -> Unit,
     submitComment: (parentId: Int, postId: Int, tree: String, content: String, image: ByteArray?) -> Unit,
     commentSubmitState: State<NetworkResult<String>>,
-    toastState: Toast
+    toastState: Toast,
 ) {
+    val data = postCommentPreview.collectAsLazyPagingItems()
+    val isRefresh = remember{
+        mutableStateOf(false)
+    }
+    val state = rememberLazyListState()
+    LaunchedEffect(state){
+        snapshotFlow{ state.isScrollInProgress && !state.canScrollBackward }
+            .filter {
+                it
+            }
+            .collect {
+                isRefresh.value = true
+                delay(1000)
+                data.refresh()
+                isRefresh.value = false
+            }
+    }
+
+
     LaunchedEffect(commentSubmitState.value.key){
         if(!commentSubmitState.value.showToast){
             return@LaunchedEffect
@@ -131,74 +157,85 @@ fun NewsDetail(
     val commentState = remember {
         mutableStateOf<CommentState>(CommentState())
     }
-    val data = postCommentPreview.collectAsLazyPagingItems()
+
     BackHandler(back!=null){
         back?.invoke()
     }
+
     LaunchedEffect(Unit){
         getPostById(id)
     }
+
     val scope = rememberCoroutineScope()
-    LazyColumn(
-        modifier = modifier
-    ) {
-        item{
-            Box (
-                modifier = Modifier
-                    .fillParentMaxWidth()
-                    .wrapContentHeight()
-                    .animateContentSize()
-            ){
-                postState.CollectWithContent(
-                    success = { postById ->
-                        Column {
-                            PersonalInformationAreaInDetail(
-                                userName = postById.data.Post.User.username,
-                                url = "${BaseUrlConfig.UserAvatar}/${postById.data.Post.User.avatar}"
-                            )
-                            Time(postById.data.Post.Time)
-                            Text(
-                                text = postById.data.Post.Title,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            listOf<PostContent>().plus(postById.data.valueData?: listOf()).plus(postById.data.fileData?: listOf()).sortedBy {
-                                it.order
-                            }.forEach {
-                                when(it){
-                                    is FileData ->{
-                                        ImageContent(it.fileName)
-                                    }
-                                    is ValueData ->{
-                                        Text(it.value)
+    Box(modifier = Modifier
+        .fillMaxSize()
+    ){
+        LazyColumn(
+            modifier = modifier,
+            state = state
+        ) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillParentMaxWidth()
+                        .wrapContentHeight()
+                        .animateContentSize()
+                ) {
+                    postState.CollectWithContent(
+                        success = { postById ->
+                            Column {
+                                PersonalInformationAreaInDetail(
+                                    userName = postById.data.Post.User.username,
+                                    url = "${BaseUrlConfig.UserAvatar}/${postById.data.Post.User.avatar}"
+                                )
+                                Time(postById.data.Post.Time)
+                                Text(
+                                    text = postById.data.Post.Title,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                listOf<PostContent>().plus(postById.data.valueData ?: listOf())
+                                    .plus(postById.data.fileData ?: listOf()).sortedBy {
+                                    it.order
+                                }.forEach {
+                                    when (it) {
+                                        is FileData -> {
+                                            ImageContent(it.fileName)
+                                        }
+
+                                        is ValueData -> {
+                                            Text(it.value)
+                                        }
                                     }
                                 }
                             }
+                        },
+                        loading = {
+                            CircularProgressIndicator()
+                        },
+                        content = {
+                            Spacer(modifier = Modifier.height(1.dp))
                         }
-                    },
-                    loading = {
-                        CircularProgressIndicator()
-                    },
-                    content = {
-                        Spacer(modifier = Modifier.height(1.dp))
+                    )
+                }
+            }
+            item {
+                Divider(
+                    modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp)
+                )
+            }
+            items(data.itemCount) {
+                CommentInNewsDetail(
+                    data[it],
+                    click = {
+                        scope.launch {
+                            data[it]?.let {
+                                show.value = it.MainComment
+                            }
+                        }
                     }
                 )
             }
-        }
-        item {
-            Divider(modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp))
-        }
-        items(data.itemCount){
-            CommentInNewsDetail(
-                data[it],
-                click = {
-                    scope.launch {
-                        data[it]?.let {
-                            show.value = it.MainComment
-                        }
-                    }
-                }
-            )
         }
     }
     Box(
@@ -223,6 +260,22 @@ fun NewsDetail(
                 painter = painterResource(MR.images.comment),
                 contentDescription = null
             )
+        }
+        AnimatedVisibility(
+            isRefresh.value,
+            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
+            exit = slideOutVertically(),
+            enter = slideInVertically()
+        ){
+            Box(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)){
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .align(Alignment.Center)
+                        .size(30.dp)
+                )
+            }
+
         }
     }
     Box(
@@ -266,17 +319,40 @@ fun NewsDetail(
                         .fillMaxHeight(0.8f)
                         .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
                 ) {
+                    var isRefreshInCommentTree = remember{
+                        mutableStateOf(false)
+                    }
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(10.dp)
                     ) {
+                        val commentTree = postCommentTree.value?.flow?.collectAsLazyPagingItems()
                         Row(
                             horizontalArrangement = Arrangement.End,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
                         ) {
+                            Icon(
+                                imageVector = Icons.Filled.Refresh,
+                                null,
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(
+                                        CircleShape
+                                    )
+                                    .clickable {
+                                        scope.launch {
+                                            isRefreshInCommentTree.value = true
+                                            delay(1000)
+                                            commentTree?.refresh()
+                                            isRefreshInCommentTree.value = false
+                                        }
+                                    }
+                                    .wrapContentSize(Alignment.Center)
+                                    .fillMaxSize(0.6f)
+                            )
                             Icon(
                                 imageVector = Icons.Filled.KeyboardArrowDown,
                                 null,
@@ -292,42 +368,64 @@ fun NewsDetail(
                                     .fillMaxSize(0.6f)
                             )
                         }
-                        postCommentTree.value?.let {
-                            val commentTree = it.flow.collectAsLazyPagingItems()
-                            LazyColumn(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                            ) {
-                                item {
-                                    Box(
-                                        modifier = Modifier
-                                            .animateContentSize()
-                                    ){
-                                        show.value?.let {
-                                            CommentInNewsDetail(
-                                                data = Data(
-                                                    MainComment = it,
-                                                    SonComment = listOf()
-                                                ), click = {
-                                                      commentState.value.setCommentAt(it)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                        ){
+                            commentTree?.let {
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                ) {
+                                    item {
+                                        Box(
+                                            modifier = Modifier
+                                                .animateContentSize()
+                                        ) {
+                                            show.value?.let {
+                                                CommentInNewsDetail(
+                                                    data = Data(
+                                                        MainComment = it,
+                                                        SonComment = listOf()
+                                                    ), click = {
+                                                        commentState.value.setCommentAt(it)
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                    item {
+                                        Divider(
+                                            modifier = Modifier.padding(top = 10.dp).fillMaxWidth()
+                                                .padding(bottom = 10.dp)
+                                        )
+                                    }
+                                    items(commentTree.itemCount) {
+                                        commentTree[it]?.let { comment ->
+                                            CommentTree(
+                                                comment,
+                                                click = {
+                                                    commentState.value.setCommentAt(it)
                                                 }
                                             )
                                         }
                                     }
                                 }
-                                item {
-                                    Divider(modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp))
-                                }
-                                items(commentTree.itemCount){
-                                    commentTree[it]?.let { comment ->
-                                        CommentTree(
-                                            comment,
-                                            click = {
-                                                commentState.value.setCommentAt(it)
-                                            }
-                                        )
-                                    }
+                            }
+                           androidx.compose.animation.AnimatedVisibility(
+                               isRefreshInCommentTree.value,
+                                modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
+                                exit = slideOutVertically(),
+                                enter = slideInVertically()
+                            ){
+                                Box(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)){
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .padding(5.dp)
+                                            .align(Alignment.Center)
+                                            .size(30.dp)
+                                    )
                                 }
                             }
                         }
@@ -458,28 +556,61 @@ fun NewsDetail(
                                 )
                             }
                             item {
-                                imageByteArray.value?.let {
-                                    Image(
-                                        modifier = Modifier
-                                            .fillMaxWidth(0.5f)
-                                            .wrapContentHeight()
-                                            .clip(RoundedCornerShape(3.dp)),
-                                        bitmap = it.asImageBitmap(),
-                                        contentDescription = null
-                                    )
+                                Box(
+                                    modifier = Modifier
+                                        .wrapContentHeight()
+                                        .fillMaxWidth()
+                                        .animateContentSize()
+                                ){
+                                    imageByteArray.value?.let {
+                                        Image(
+                                            modifier = Modifier
+                                                .fillMaxWidth(0.5f)
+                                                .wrapContentHeight()
+                                                .clip(RoundedCornerShape(3.dp)),
+                                            bitmap = it.asImageBitmap(),
+                                            contentDescription = null
+                                        )
+                                    }
                                 }
                             }
                             item {
-                                Icon(
+                                Row(
                                     modifier = Modifier
-                                        .size(50.dp)
-                                        .clickable {
-                                            imagePicker.pickImage()
+                                        .padding(bottom = 5.dp)
+                                ) {
+                                    Crossfade(
+                                        imageByteArray.value
+                                    ){
+                                        if(it == null){
+                                            Icon(
+                                                modifier = Modifier
+                                                    .size(50.dp)
+                                                    .clip(RoundedCornerShape(5.dp))
+                                                    .clickable {
+                                                        imagePicker.pickImage()
+                                                    }
+                                                    .padding(7.dp),
+                                                painter = painterResource(MR.images.image),
+                                                contentDescription = null,
+                                                tint = Color.Gray
+                                            )
+                                        }else{
+                                            Icon(
+                                                modifier = Modifier
+                                                    .size(50.dp)
+                                                    .clip(RoundedCornerShape(5.dp))
+                                                    .clickable {
+                                                        imageByteArray.value = null
+                                                    }
+                                                    .padding(7.dp),
+                                                imageVector = Icons.Filled.Close,
+                                                contentDescription = null,
+                                                tint = Color.Gray
+                                            )
                                         }
-                                        .padding(3.dp),
-                                    painter = painterResource(MR.images.image),
-                                    contentDescription = null
-                                )
+                                    }
+                                }
                             }
                             item {
                                 Button(
@@ -819,7 +950,6 @@ fun CommentTree(
                         AnimatedVisibility(
                             showParent.value,
                             modifier = Modifier
-
                         ){
                             data.ParentComment.let {
                                 Row(
