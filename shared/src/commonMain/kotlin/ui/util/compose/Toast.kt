@@ -65,7 +65,7 @@ class Toast(private val scope: CoroutineScope) {
         }
     }
 
-    fun addToast(string: String,color: Color = Color.Cyan){
+    fun addToast(string: String,color: Color = Color.Gray){
         run(ToastImp(Icons.Filled.Refresh,string, color))
     }
 

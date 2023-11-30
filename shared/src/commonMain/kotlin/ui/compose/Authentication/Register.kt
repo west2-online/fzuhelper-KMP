@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
@@ -50,9 +51,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import repository.TokenData
 import dev.icerock.moko.resources.compose.painterResource
 import org.example.library.MR
+import repository.TokenData
 import ui.util.compose.EasyToast
 import ui.util.compose.Toast
 import ui.util.network.CollectWithContent
@@ -412,7 +413,7 @@ fun Register(
                                 if (!editAble) Modifier.weight(1f).height(56.dp) else Modifier.size(56.dp)
                             )
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color.Green)
+                            .background(MaterialTheme.colors.onBackground)
                             .animateContentSize()
                             .clickable {
                                 if(!editAble) {

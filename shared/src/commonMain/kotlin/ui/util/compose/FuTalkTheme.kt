@@ -25,10 +25,11 @@ fun FuTalkTheme(
     content:@Composable () -> Unit
 ){
     MaterialTheme (
-        colors =
-        if (isSystemInDarkTheme()) MaterialTheme.colors.copy(
+        colors = if (isSystemInDarkTheme()) MaterialTheme.colors.copy(
+            Theme.DarkModeTheme()
+        ) else  MaterialTheme.colors.copy(
             Theme.MyTheme()
-        ) else MaterialTheme.colors.copy(Theme.DarkModeTheme()),
+        ),
         content = content,
         typography = MaterialTheme.typography.copy(
             body1 = TextStyle(
@@ -88,20 +89,21 @@ interface Theme{
         override val isLight: Boolean = true
     }
     class DarkModeTheme : Theme {
-        override val primary: Color = Color(0xFFBB86FC)
-        override val primaryVariant: Color = Color(0xFF3700B3)
-        override val secondary: Color = Color(0xFF03DAC6)
-        override val secondaryVariant: Color = Color(0xFF018786)
-        override val background: Color = Color(0xFF121212)
-        override val surface: Color = Color(0xFF121212)
-        override val error: Color = Color(0xFFCF6679)
-        override val onPrimary: Color = Color(0xFF000000)
-        override val onSecondary: Color = Color(0xFF000000)
-        override val onBackground: Color = Color(0xFFFFFFFF)
-        override val onSurface: Color = Color(0xFFFFFFFF)
-        override val onError: Color = Color(0xFF000000)
+        override val primary: Color = Color(22, 27, 34)
+        override val primaryVariant: Color = Color.Black
+        override val secondary: Color = Color.Black
+        override val secondaryVariant: Color = Color.Black
+        override val background: Color = Color.Black
+        override val surface: Color = Color.Black
+        override val error: Color = Color.Black
+        override val onPrimary: Color = Color(218, 218, 239,100)
+        override val onSecondary: Color = Color.White
+        override val onBackground: Color = Color(56, 59, 67)
+        override val onSurface: Color = Color.White
+        override val onError: Color = Color(255, 50, 114)
         override val isLight: Boolean = false
     }
+
 }
 
 //fun Modifier.shimmerLoadingAnimation(): Modifier {
