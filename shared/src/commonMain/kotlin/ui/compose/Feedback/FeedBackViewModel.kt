@@ -5,6 +5,7 @@ import app.cash.paging.Pager
 import app.cash.paging.PagingConfig
 import app.cash.paging.PagingState
 import app.cash.paging.cachedIn
+import data.Feedback.FeedbackDetailComment.FeedbackDetailComment
 import data.Feedback.FeedbackList.FeedbackList
 import data.Feedback.FeelbackDetail.Data
 import data.Feedback.FeelbackDetail.FeedbackDetail
@@ -15,9 +16,10 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import repository.FeedbackRepository
+import ui.util.flow.catchWithMassage
+import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
 import ui.util.network.loading
 import ui.util.network.reset
@@ -31,30 +33,42 @@ class FeedBackViewModel(
     private val _detailResult = CMutableStateFlow(MutableStateFlow<NetworkResult<Data>>(NetworkResult.UnSend()))
     val detailResult = _detailResult.asStateFlow()
 
+    private val _commentResult = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    val commentResult = _commentResult.asStateFlow()
+
     fun submitNewFeedback(content : String,type: FeedbackType){
         viewModelScope.launch {
             _submitResult.loading()
             feedbackRepository.submitNewFeedBack(content,type.code)
-                .catch {
-                    println(it.message)
+                .catchWithMassage {
                     _submitResult.reset(NetworkResult.Error(it))
                 }
-                .collect{
+                .collectWithMassage{
                     _submitResult.reset(it.toSubmitResult())
                 }
         }
     }
-
     fun getFeedbackDetail(id:Int){
         viewModelScope.launch {
             _detailResult.loading()
             feedbackRepository.getFeedbackDetail(id)
-                .catch {
-                    println(it.message)
+                .catchWithMassage {
                     _detailResult.reset(NetworkResult.Error(it))
                 }
-                .collect{
+                .collectWithMassage{
                     _detailResult.reset(it.toDetailResult())
+                }
+        }
+    }
+    fun postFeedbackDetailComment(content:String,id: Int){
+        viewModelScope.launch {
+            _commentResult.loading()
+            feedbackRepository.postFeedbackDetailComment(content,id)
+                .catchWithMassage {
+                    _commentResult.reset(NetworkResult.Error(it))
+                }
+                .collectWithMassage{
+                    _commentResult.reset(it.toNetworkResult())
                 }
         }
     }
@@ -81,6 +95,7 @@ enum class SubmitStatus(val value: Int, val description: String) {
 }
 
 
+
 fun FeedbackSubmit.toSubmitResult():NetworkResult<String>{
     val response = SubmitStatus.values().findLast {
         it.value == this.code
@@ -89,7 +104,10 @@ fun FeedbackSubmit.toSubmitResult():NetworkResult<String>{
         return NetworkResult.Error(Throwable("数据为空"))
     }
     response.let {
-        return NetworkResult.Success("发布成功")
+        return when(it.value){
+            2-> NetworkResult.Success("发布成功")
+            else -> NetworkResult.Error(Throwable("发布失败"))
+        }
     }
 }
 enum class FeedbackStatus(val value: Int, val description: String) {
@@ -97,6 +115,7 @@ enum class FeedbackStatus(val value: Int, val description: String) {
     FailedToGetFeedbackDetails(1, "获取反馈详情失败"),
     SuccessToGetFeedbackDetails(2, "成功获取反馈详情")
 }
+
 
 fun FeedbackDetail.toDetailResult():NetworkResult<Data>{
     val response = SubmitStatus.values().findLast {
@@ -109,6 +128,30 @@ fun FeedbackDetail.toDetailResult():NetworkResult<Data>{
         return NetworkResult.Success(this.data)
     }
 }
+
+enum class CommentStatus(val value: Int, val description: String) {
+    MissingCommentID(0, "缺少评论id"),
+    CommentFailed(1, "评论失败"),
+    TheReviewWasSuccessful(2, "评论成功")
+}
+
+
+fun FeedbackDetailComment.toNetworkResult():NetworkResult<String>{
+    val response = SubmitStatus.values().findLast {
+        it.value == this.code
+    }
+    response?:let{
+        return NetworkResult.Error(Throwable("数据为空"))
+    }
+    response.let {
+        return when(it.value){
+            2-> NetworkResult.Success("评论成功")
+            else -> NetworkResult.Error(Throwable("评论失败"))
+        }
+    }
+}
+
+
 
 class LoadFeedBackPageData(
     val getResult : suspend (page:Int) -> List<data.Feedback.FeedbackList.Data>?

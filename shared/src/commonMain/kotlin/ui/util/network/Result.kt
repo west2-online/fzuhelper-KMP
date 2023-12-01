@@ -172,6 +172,7 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.reset(newValue : NetworkResul
 suspend fun <T> MutableStateFlow<NetworkResult<T>>.loading(){
     this.reset(NetworkResult.Loading())
 }
+
 suspend fun <T> MutableStateFlow<NetworkResult<T>>.unSend(){
     this.reset(NetworkResult.UnSend())
 }
@@ -206,6 +207,23 @@ fun <T>NetworkResult<T>.logicWithType(
         }
     }
 }
+
+suspend fun <T>NetworkResult<T>.toast(
+    success: ((T) -> Unit)? = null,
+    error: ((Throwable) -> Unit)? = null,
+    unSend : (() -> Unit)? = null,
+    loading : (() -> Unit)? = null,
+){
+    if(this.showToast){
+        this.logicWithType(
+            success = success,
+            error = error,
+            unSend = unSend,
+            loading = loading,
+        )
+    }
+}
+
 
 fun HttpRequestBuilder.token(token:String){
     this.header("Authorization",token)

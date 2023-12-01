@@ -1,7 +1,7 @@
 package repository
 
+import LoginClient
 import data.register.AuthenticationResponse
-import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.cookie
 import io.ktor.client.request.forms.submitForm
@@ -19,7 +19,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.Serializable
 
-class LoginRepository(private val client : HttpClient) {
+class LoginRepository(private val loginClient : LoginClient) {
+    val client = loginClient.client
     fun getRegisterCaptcha(email:String):Flow<AuthenticationResponse>{
         return flow{
             val response: AuthenticationResponse = client.submitForm(

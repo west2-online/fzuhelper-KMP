@@ -69,6 +69,10 @@ class Toast(private val scope: CoroutineScope) {
         run(ToastImp(Icons.Filled.Refresh,string, color))
     }
 
+    fun addWarnToast(string: String){
+        run(ToastImp(Icons.Filled.Refresh,string,Color(248, 102, 95)))
+    }
+
 }
 
 

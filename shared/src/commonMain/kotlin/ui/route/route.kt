@@ -8,6 +8,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import data.Person.Data
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,6 +19,7 @@ import ui.compose.Authentication.Assembly
 import ui.compose.Feedback.FeedbackScreen
 import ui.compose.Main.MainScreen
 import ui.compose.Massage.MassageScreen
+import ui.compose.ModifierInformation.ModifierInformationScreen
 import ui.compose.PERSON.PersonScreen
 import ui.compose.QRCode.QRCodeScreen
 import ui.compose.Release.ReleasePageScreen
@@ -46,6 +48,17 @@ interface Route{
         }
     ): Route
 
+
+    class ModifierInformation(
+        val userId:Int,
+        val userData: Data,
+        override val route: String = "modifer",
+        override val content: @Composable (  ) -> Unit = {
+            ModifierInformationScreen(userId = userId, userData = userData)
+        }
+    ) : Route
+
+
     class Main (
         val id: String ,
         override val route: String = "Main",
@@ -53,7 +66,6 @@ interface Route{
             MainScreen()
         }
     ) : Route
-
 
     class ReleasePage (
         val token: String,
@@ -68,8 +80,7 @@ interface Route{
     ) : Route
 
     class Person (
-        val isSelf : Boolean = false,
-        override val route: String,
+        override val route: String = "person",
         override val content: @Composable () -> Unit = {
            PersonScreen()
         }

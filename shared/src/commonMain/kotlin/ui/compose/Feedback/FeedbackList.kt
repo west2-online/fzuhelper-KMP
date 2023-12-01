@@ -49,6 +49,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import ui.util.compose.Label
 import ui.util.compose.ThemeCard
+import ui.util.compose.Toast
 import ui.util.network.toEasyTime
 
 @Composable
@@ -56,7 +57,8 @@ fun FeedbackList(
     modifier: Modifier,
     navigateToDetail: (id: Int) -> Unit,
     navigateToPost: () -> Unit,
-    feedbackListFlow: LazyPagingItems<Data>
+    feedbackListFlow: LazyPagingItems<Data>,
+    toastState: Toast
 ) {
     val isRefresh = remember{
         mutableStateOf(false)

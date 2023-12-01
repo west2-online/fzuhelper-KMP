@@ -1,6 +1,8 @@
 package ui.compose.Feedback
 
 import BackHandler
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,9 +20,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -31,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,16 +47,20 @@ import androidx.compose.ui.unit.sp
 import config.BaseUrlConfig
 import data.Feedback.FeelbackDetail.Data
 import data.Feedback.FeelbackDetail.FeedbackComment
-import data.Feedback.FeelbackDetail.FeedbackStatus
+import data.Feedback.FeelbackDetail.FeedbackStatu
 import data.Feedback.FeelbackDetail.User
 import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filter
 import org.example.library.MR
+import ui.util.compose.Toast
 import ui.util.network.CollectWithContent
 import ui.util.network.NetworkResult
 import ui.util.network.toEasyTime
+import ui.util.network.toast
 
 const val SpaceWeight = 0.2f
 @Composable
@@ -59,10 +68,23 @@ fun FeedbackDetail(
     modifier: Modifier,
     back: (() -> Unit)?,
     detailState: State<NetworkResult<Data>>,
-    getDetailData: () -> Unit
+    getDetailData: () -> Unit,
+    toastState: Toast,
+    postNewComment: (content: String) -> Unit,
+    commentState: State<NetworkResult<String>>
 ){
     LaunchedEffect(Unit){
         getDetailData()
+    }
+    LaunchedEffect(commentState.value.key.value){
+        commentState.value.toast(
+            success = {
+                toastState.addWarnToast("评论成功")
+            },
+            error = {
+                toastState.addWarnToast("评论失败")
+            }
+        )
     }
     val comment = remember {
         mutableStateOf("")
@@ -80,6 +102,22 @@ fun FeedbackDetail(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
+                    val isRefresh = remember{
+                        mutableStateOf(false)
+                    }
+                    val state = rememberLazyListState()
+                    LaunchedEffect(state){
+                        snapshotFlow{ state.isScrollInProgress && !state.canScrollBackward }
+                            .filter {
+                                it
+                            }
+                            .collect {
+                                isRefresh.value = true
+                                delay(1000)
+                                getDetailData.invoke()
+                                isRefresh.value = false
+                            }
+                    }
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -112,7 +150,8 @@ fun FeedbackDetail(
                         }
                         LazyColumn(
                             modifier = Modifier
-                                .fillMaxSize()
+                                .fillMaxSize(),
+                            state = state
                         ) {
                             item {
                                 Numbering(it.Feedback.Id)
@@ -139,7 +178,7 @@ fun FeedbackDetail(
                                             }
                                         }
 
-                                        is FeedbackStatus -> {
+                                        is FeedbackStatu -> {
                                             item {
                                                 StateLabel(
                                                     type = LabelType.Closed,
@@ -150,6 +189,22 @@ fun FeedbackDetail(
                                         }
                                     }
                                 }
+                        }
+                        androidx.compose.animation.AnimatedVisibility(
+                            isRefresh.value,
+                            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
+                            exit = slideOutVertically(),
+                            enter = slideInVertically()
+                        ) {
+                            Box(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .padding(5.dp)
+                                        .align(Alignment.Center)
+                                        .size(30.dp)
+                                )
+                            }
+
                         }
                     }
                     TextField(
@@ -175,7 +230,7 @@ fun FeedbackDetail(
                                     .aspectRatio(1f)
                                     .clip(CircleShape)
                                     .clickable {
-
+                                        postNewComment(comment.value)
                                     }
                             )
                         }
@@ -253,11 +308,11 @@ enum class LabelType(val background: Color, val icon: ImageResource, val value: 
 }
 
 fun Int.toLabelType():LabelType{
-    println("int -> $this")
     return LabelType.values().find {
         it.value == this
     }?:LabelType.ActiveStatus
 }
+
 @Composable
 fun Discuss(
     content:String,

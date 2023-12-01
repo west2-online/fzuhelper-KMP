@@ -38,6 +38,7 @@ import org.koin.compose.koinInject
 import ui.util.compose.EasyToast
 import ui.util.compose.rememberToastState
 import ui.util.compose.shimmerLoadingAnimation
+import ui.util.network.CollectWithContent
 import ui.util.network.NetworkResult
 import ui.util.network.logicWithType
 
@@ -67,42 +68,54 @@ fun PersonScreen(
             modifier = Modifier
                 .fillMaxSize()
         ){
-            KamelImage(
-                resource = asyncPainterResource("https://picx.zhimg.com/80/v2-cee6c1a92831cd1566e4c5f9dd4a35f4_720w.webp?source=1def8aca"),
-                null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .shimmerLoadingAnimation(
-                        colorList = listOf(
-                            Color.Black.copy(alpha = 0.1f),
-                            Color.Black.copy(alpha = 0.2f),
-                            Color.Black.copy(alpha = 0.3f),
-                            Color.Black.copy(alpha = 0.2f),
-                            Color.Black.copy(alpha = 0.1f),
+            viewModel.userData.collectAsState().CollectWithContent(
+                success = {
+                    Column{
+                        KamelImage(
+                            resource = asyncPainterResource("https://picx.zhimg.com/80/v2-cee6c1a92831cd1566e4c5f9dd4a35f4_720w.webp?source=1def8aca"),
+                            null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .shimmerLoadingAnimation(
+                                    colorList = listOf(
+                                        Color.Black.copy(alpha = 0.1f),
+                                        Color.Black.copy(alpha = 0.2f),
+                                        Color.Black.copy(alpha = 0.3f),
+                                        Color.Black.copy(alpha = 0.2f),
+                                        Color.Black.copy(alpha = 0.1f),
+                                    )
+                                ),
+                            contentScale = ContentScale.FillBounds
                         )
-                    ),
-                contentScale = ContentScale.FillBounds
-            )
-            Row {
-                PersonalInformationInPerson(
-                    modifier = Modifier
-                        .offset(y = (-25).dp)
-                        .wrapContentHeight()
-                        .weight(1f)
-                        .padding( start = 10.dp ),
-                    viewModel.userData.collectAsState()
-                )
-                Button(
-                    onClick = {},
-                    modifier = Modifier
-                        .padding(horizontal = 5.dp)
-                ){
-                    Text(
-                        "编辑个人信息",
-                    )
+                        Row {
+                            PersonalInformationInPerson(
+                                modifier = Modifier
+                                    .offset(y = (-25).dp)
+                                    .wrapContentHeight()
+                                    .weight(1f)
+                                    .padding(start = 10.dp),
+                                viewModel.userData.collectAsState()
+                            )
+                            Button(
+                                onClick = {
+                                    it.data?.let { it1 ->
+                                        viewModel.navigateToModifierInformation(
+                                            userId = it1.Id, userData = it
+                                        )
+                                    }
+                                },
+                                modifier = Modifier
+                                    .padding(horizontal = 5.dp)
+                            ) {
+                                Text(
+                                    "编辑个人信息",
+                                )
+                            }
+                        }
+                    }
                 }
-            }
+            )
             val items = listOf("发布","动态","身份")
             val selectedItem = remember {
                 mutableStateOf(0)

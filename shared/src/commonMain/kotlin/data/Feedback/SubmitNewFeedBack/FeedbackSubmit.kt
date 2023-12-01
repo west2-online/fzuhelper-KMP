@@ -1,7 +1,10 @@
 package data.Feedback.SubmitNewFeedBack
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class FeedbackSubmit(
     val code: Int,
-    val `data`: Any,
-    val msg: String
+    val `data`: String?,
+    val msg: String?
 )

@@ -12,21 +12,39 @@ import androidx.compose.material.Checkbox
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ui.util.compose.Toast
+import ui.util.network.NetworkResult
+import ui.util.network.toast
 
 @Composable
 fun FeedbackPost(
     modifier: Modifier = Modifier,
     submit: (content: String, type: FeedbackType) -> Unit,
-    back: () -> Unit
+    back: () -> Unit,
+    toastState: Toast,
+    submitResult: State<NetworkResult<String>>
 ){
     BackHandler(true){
         back.invoke()
     }
+    LaunchedEffect(submitResult.value.key.value){
+        submitResult.value.toast(
+            success = {
+                toastState.addToast("发布成功")
+            },
+            error = {
+                toastState.addWarnToast("发布失败")
+            }
+        )
+    }
+
     Column {
         val content = remember {
             mutableStateOf("")

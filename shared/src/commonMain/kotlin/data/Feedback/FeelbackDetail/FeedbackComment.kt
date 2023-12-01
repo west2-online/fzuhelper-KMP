@@ -9,8 +9,7 @@ data class FeedbackComment(
     val Feedback_Id: Int,
     val Id: Int,
     override val Order: Int,
-    val Status: String,
+    val Time: String,
     val User: User,
-    val User_Id: Int,
-    val Time:String
-):FeedbackDetailItem
+    val User_Id: Int
+):FeedbackItem

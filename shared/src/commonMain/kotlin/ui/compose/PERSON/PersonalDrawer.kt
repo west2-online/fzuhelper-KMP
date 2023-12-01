@@ -97,17 +97,19 @@ fun Functions(
         }
         item {
             FunctionsItem(
-                painterResource(MR.images.feedback),
-                {},
-                "个人资料"
+                painterResource(MR.images.qrcode),
+                {
+                    routeState.navigateWithoutPop(Route.QRCode())
+                },
+                "二维码生成"
             )
 
         }
         item {
             FunctionsItem(
-                painterResource(MR.images.test),
+                painterResource(MR.images.eye),
                 {
-                    routeState.navigateWithoutPop(Route.Test())
+                    routeState.navigateWithoutPop(Route.Person())
                 },
                 "个人资料"
             )

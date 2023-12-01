@@ -16,6 +16,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.statement.HttpReceivePipeline
+import io.ktor.http.headers
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.pipeline.PipelinePhase
 import org.example.library.MR
@@ -28,12 +29,14 @@ import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
 import repository.FeedbackRepository
 import repository.LoginRepository
+import repository.ModifierInformationRepository
 import repository.NewRepository
 import repository.PersonRepository
 import repository.PostRepository
 import repository.SplashRepository
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.Feedback.FeedBackViewModel
+import ui.compose.ModifierInformation.ModifierInformationViewModel
 import ui.compose.PERSON.PersonViewModel
 import ui.compose.Post.NewViewModel
 import ui.compose.Release.ReleasePageViewModel
@@ -88,9 +91,25 @@ fun appModule() = module {
             install(ContentNegotiation) {
                 json()
             }
+            headers {
+                val kVault = get<KVault>()
+                val token : String? = kVault.string(forKey = "token")
+                println("token in clint data: ${token}")
+                println()
+                token?.let {
+                    append("Authorization",token)
+                }
+            }
             install(
                 DefaultRequest
             ){
+                val kVault = get<KVault>()
+                val token : String? = kVault.string(forKey = "token")
+                println("token in clint data: ${token}")
+                println()
+                token?.let {
+                    headers.append("Authorization",token)
+                }
                 url(BaseUrlConfig.BaseUrl)
             }
             install(Logging)
@@ -117,7 +136,7 @@ fun appModule() = module {
         val authPhase = PipelinePhase("Auth")
         client.receivePipeline.insertPhaseBefore(HttpReceivePipeline.Before,authPhase)
         client.receivePipeline.intercept(authPhase){
-            if(it.status.value == 555){
+            if(it.status.value in 555..559){
                 println(it.status)
                 val kVault = get<KVault>()
                 kVault.clear()
@@ -138,6 +157,9 @@ fun appModule() = module {
 //            if( token == null ) Route.LoginWithRegister() else Route.Splash()
 //        )
         RouteState( if( token == null ) Route.LoginWithRegister() else Route.Splash())
+    }
+    single {
+        LoginClient()
     }
 }
 
@@ -172,6 +194,9 @@ fun Module.repositoryList(){
     single {
         FeedbackRepository(get())
     }
+    single {
+        ModifierInformationRepository(get())
+    }
 }
 
 fun Module.viewModel(){
@@ -195,6 +220,9 @@ fun Module.viewModel(){
     }
     viewModelDefinition {
         ReleasePageViewModel(get(),get())
+    }
+    viewModelDefinition {
+        ModifierInformationViewModel(get())
     }
 }
 
@@ -232,3 +260,24 @@ suspend fun KVault.token(routeState: RouteState,block:suspend (token:String)->Un
         block.invoke(token)
     }
 }
+
+class LoginClient(
+    val client : HttpClient = HttpClient{
+        install(ContentNegotiation) {
+            json()
+        }
+        install(
+            DefaultRequest
+        ){
+            url(BaseUrlConfig.BaseUrl)
+        }
+        install(Logging)
+        install(HttpCookies){
+
+        }
+        install(HttpRedirect) {
+            checkHttpMethod = false
+        }
+        configure()
+    }
+)

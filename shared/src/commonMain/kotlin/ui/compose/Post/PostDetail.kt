@@ -319,7 +319,7 @@ fun NewsDetail(
                         .fillMaxHeight(0.8f)
                         .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
                 ) {
-                    var isRefreshInCommentTree = remember{
+                    val isRefreshInCommentTree = remember{
                         mutableStateOf(false)
                     }
                     Column(

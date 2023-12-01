@@ -9,12 +9,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import repository.LoginRepository
 import repository.TokenData
 import ui.route.Route
 import ui.route.RouteState
+import ui.util.flow.catchWithMassage
+import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
 import ui.util.network.reset
 
@@ -42,17 +43,17 @@ class AuthenticationViewModel(private val loginRepository: LoginRepository, priv
     fun getRegisterCaptcha(email:String){
         viewModelScope.launch{
             loginRepository.getRegisterCaptcha(email = email)
-                .catch {
+                .catchWithMassage {
                     _captcha.value = NetworkResult.Error(Throwable("申请失败,请稍后重试"))
                 }
-                .collect{ authenticationResponse->
+                .collectWithMassage{ authenticationResponse->
                     println(authenticationResponse)
                     RegistrationStatus.values().filter {
                         it.value == authenticationResponse.code
                     }.let {
                        if(it.isNotEmpty()){
                            _captcha.value = it[0].toNetworkResult()
-                               return@collect
+                               return@collectWithMassage
                        }
                     }
                     _captcha.value = NetworkResult.Success("发送成功")
@@ -65,9 +66,9 @@ class AuthenticationViewModel(private val loginRepository: LoginRepository, priv
     ){
         viewModelScope.launch (Dispatchers.Default){
             loginRepository.register(email = email, password = password, captcha = captcha)
-                .catch {
+                .catchWithMassage {
                     _registerState.value = NetworkResult.Error(it)
-                }.collect{ authenticationResponse->
+                }.collectWithMassage{ authenticationResponse->
                     RegistrationStatus.values().filter {
                         it.value == authenticationResponse.code
                     }.let {
@@ -85,11 +86,10 @@ class AuthenticationViewModel(private val loginRepository: LoginRepository, priv
             _verifyStudentIDState.value = NetworkResult.Loading()
             loginRepository.verifyStudentIdentity(
                 userName = studentCode, password = studentPassword ,captcha = captcha
-            ).catch {
-                println(it.toString())
+            ).catchWithMassage {
                 _verifyStudentIDState.value = NetworkResult.Error(it)
             }
-            .collect{
+            .collectWithMassage{
                 _verifyStudentIDState.reset(NetworkResult.Success(it))
             }
         }
@@ -102,10 +102,9 @@ class AuthenticationViewModel(private val loginRepository: LoginRepository, priv
             }
             _studentCaptcha.value = NetworkResult.Loading()
             loginRepository.getVerifyCode()
-                .catch {
-                    println(it.message.toString())
+                .catchWithMassage {
                     _studentCaptcha.value = NetworkResult.Error(it)
-                }.collect{
+                }.collectWithMassage{
                     _studentCaptcha.value = NetworkResult.Success(it.asImageBitmap())
                 }
         }
@@ -114,9 +113,9 @@ class AuthenticationViewModel(private val loginRepository: LoginRepository, priv
     fun login(email: String,password: String,captcha:String){
         viewModelScope.launch (Dispatchers.Default){
             loginRepository.login(email = email, password = password, captcha = captcha)
-                .catch {
+                .catchWithMassage {
                     _loginState.value = NetworkResult.Error(it)
-                }.collect{ authenticationResponse->
+                }.collectWithMassage{ authenticationResponse ->
                     RegistrationStatus.values().filter {
                         it.value == authenticationResponse.code
                     }.let {
@@ -125,7 +124,10 @@ class AuthenticationViewModel(private val loginRepository: LoginRepository, priv
                         }
                     }
                     if(authenticationResponse.code == RegistrationStatus.LoginSuccessful.value){
-                        kVault.set("token",authenticationResponse.data.toString())
+                        val data = kVault.set("token",authenticationResponse.data.toString())
+                        println("token : ${kVault.string("token")}")
+                        println("authenticationResponse.data.toString() : ${authenticationResponse.data.toString()}")
+                        println("token : ${data}")
                     }
                     println(authenticationResponse)
                     enterAuthor()
@@ -145,17 +147,17 @@ class AuthenticationViewModel(private val loginRepository: LoginRepository, priv
     fun getLoginCaptcha(email: String){
         viewModelScope.launch (Dispatchers.Default){
             loginRepository.getLoginCaptcha(email = email)
-                .catch {
+                .catchWithMassage {
                     _loginCaptcha.value = NetworkResult.Error(Throwable("申请失败,请稍后重试"))
                 }
-                .collect{ authenticationResponse->
+                .collectWithMassage{ authenticationResponse->
                     println(authenticationResponse)
                     RegistrationStatus.values().filter {
                         it.value == authenticationResponse.code
                     }.let {
                         if(it.isNotEmpty()){
                             _loginCaptcha.value = it[0].toNetworkResult()
-                            return@collect
+                            return@collectWithMassage
                         }
                     }
                     _loginCaptcha.value = NetworkResult.Success("注册成功")

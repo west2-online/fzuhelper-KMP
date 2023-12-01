@@ -7,11 +7,12 @@ import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import repository.PersonRepository
-import token
+import ui.route.Route
 import ui.route.RouteState
+import ui.util.flow.catchWithMassage
+import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
 import ui.util.network.reset
 
@@ -24,26 +25,32 @@ class PersonViewModel(
     val userData = _userData.asStateFlow()
     fun getUserData(){
         viewModelScope.launch(Dispatchers.Default) {
-            kVault.token(
-                routeState = routeState,
-            ){ token ->
-                personRepository.getUserData(token)
-                   .catch {
-                       println(it.message)
-                       _userData.reset(NetworkResult.Error(Throwable("获取失败")))
-                   }
-                   .collect{ userData ->
-                       UserDataResult.values().filter {
-                           it.value == userData.code
-                       }.let {
-                           if(it.isNotEmpty()){
-                               _userData.value = it[0].toNetworkResult(userData)
-                               return@collect
-                           }
-                       }
-                   }
-            }
+            personRepository.getUserData()
+                .catchWithMassage {
+                    _userData.reset(NetworkResult.Error(Throwable("获取失败")))
+                }
+                .collectWithMassage{ userData ->
+                    UserDataResult.values().filter {
+                        it.value == userData.code
+                    }.let {
+                        if(it.isNotEmpty()){
+                            _userData.value = it[0].toNetworkResult(userData)
+                            return@collectWithMassage
+                        }
+                    }
+                }
         }
+    }
+    fun navigateToModifierInformation(userId:Int,userData :UserData){
+        userData.data?.let {
+            routeState.navigateWithoutPop(
+                Route.ModifierInformation(
+                    userId = userId,
+                    userData = it
+                )
+            )
+        }
+
     }
 }
 
