@@ -87,6 +87,8 @@ kotlin {
                 implementation("app.cash.paging:paging-compose-common:3.3.0-alpha02-0.4.0")
 
                 implementation(compose.material3)
+
+                implementation("com.doist.x:normalize:1.0.5")
             }
         }
         val androidMain by getting {

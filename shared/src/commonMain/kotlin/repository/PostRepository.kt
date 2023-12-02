@@ -5,6 +5,8 @@ import data.post.PostById.PostById
 import data.post.PostComment.PostCommentListPreview
 import data.post.PostCommentNew.PostCommentNew
 import data.post.PostList.PostList
+import doist.x.normalize.Form
+import doist.x.normalize.normalize
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -12,7 +14,6 @@ import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -38,7 +39,7 @@ class PostRepository(private val client: HttpClient) {
                                     }
 
                                     is ReleasePageItem.TextItem -> {
-                                        append( index.toString(),item.text.value,
+                                        append( index.toString(),item.text.value.normalize(Form.NFKD),
                                             Headers.build {
                                                 append("order", index.toString())
                                                 append("Content-Type", "text/plain")
@@ -50,18 +51,14 @@ class PostRepository(private val client: HttpClient) {
                         boundary = "WebAppBoundary"
                     )
                 )
-                headers.append("title",title)
+                headers.append("title",title.normalize(Form.NFKD))
             }.body<NewPostResponse>()
             emit(response)
         }
     }
     fun getPostById(id:String): Flow<PostById> {
         return flow {
-            val response = client.get("/post/id/${id}")
-                .let {
-                    println(it.bodyAsText())
-                    return@let it
-                }.body<PostById>()
+            val response = client.get("/post/id/${id}").body<PostById>()
             emit(response)
         }
     }
@@ -84,14 +81,20 @@ class PostRepository(private val client: HttpClient) {
                                         append("isImage", "true")
                                     }
                                 )
+//                                append("parentId", parentId.toString())
+//                                append("postId", postId.toString())
+//                                append("tree", tree)
                             }
+                            append("content", content.normalize(Form.NFD),Headers.build {
+                                append("isContent","ssss")
+                            })
                         }
                     )
                 )
                 headers.append("parentId", parentId.toString())
                 headers.append("postId", postId.toString())
                 headers.append("tree", tree)
-                headers.append("content", content)
+//                headers.append("content", content.normalize(Form.NFD))
             }.body<PostCommentNew>()
             emit(response)
         }

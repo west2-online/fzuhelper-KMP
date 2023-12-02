@@ -825,7 +825,7 @@ fun ImageContent(
             modifier = Modifier
                 .padding(top = 10.dp)
                 .fillMaxWidth(),
-            contentScale = ContentScale.FillBounds
+            contentScale = ContentScale.Fit
         )
     }
 }

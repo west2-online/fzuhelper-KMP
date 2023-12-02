@@ -267,7 +267,7 @@ fun NewsItem(
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .fillMaxWidth(),
-                    contentScale = ContentScale.FillWidth,
+                    contentScale = ContentScale.Fit,
                     onFailure = {
                         Text("加载失败")
                     },

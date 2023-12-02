@@ -15,6 +15,8 @@ import data.post.PostList.Data
 import data.post.PostList.PostList
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
+import doist.x.normalize.Form
+import doist.x.normalize.normalize
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -22,12 +24,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import repository.CommentSubmitStatus
 import repository.PostRepository
 import ui.route.Route
 import ui.route.RouteState
+import ui.util.flow.catchWithMassage
+import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
 import ui.util.network.loginIfNotLoading
 import ui.util.network.reset
@@ -106,11 +109,11 @@ class NewViewModel(
         viewModelScope.launch (Dispatchers.IO){
             _currentPostDetail.reset(NetworkResult.Loading())
             postRepository.getPostById(id = id)
-                .catch {
+                .catchWithMassage {
                     println(it.message)
                     _currentPostDetail.reset(NetworkResult.Error(Throwable("帖子获取失败")))
                 }
-                .collect{
+                .collectWithMassage{
                     _currentPostDetail.reset(NetworkResult.Success(it))
                     println(_currentPostDetail.value)
                 }
@@ -119,10 +122,10 @@ class NewViewModel(
     fun submitComment(parentId:Int,postId:Int,tree:String,content:String,image:ByteArray?){
         viewModelScope.launch {
             _commentSubmitState.loginIfNotLoading {
-                postRepository.postNewComment(parentId,postId,tree,content,image)
-                    .catch {
+                postRepository.postNewComment(parentId,postId,tree,content.normalize(Form.NFC),image)
+                    .catchWithMassage {
                         _commentSubmitState.reset(NetworkResult.Error(Throwable("评论失败，稍后再试")))
-                    }.collect{
+                    }.collectWithMassage{
                         _commentSubmitState.reset(it.toNetworkResult())
                     }
             }

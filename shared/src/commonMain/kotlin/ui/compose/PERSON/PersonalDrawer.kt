@@ -1,5 +1,6 @@
 package ui.compose.PERSON
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,11 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.liftric.kvault.KVault
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -34,6 +37,7 @@ import ui.route.RouteState
 @Composable
 fun PersonalDrawer(
     modifier: Modifier = Modifier,
+    kVault: KVault = koinInject()
 ){
     Column(
         modifier = modifier
@@ -81,7 +85,8 @@ fun PersonalInformation(
 @Composable
 fun Functions(
     modifier: Modifier = Modifier,
-    routeState: RouteState = koinInject()
+    routeState: RouteState = koinInject(),
+    kVault: KVault = koinInject()
 ){
     LazyColumn(
         modifier = modifier
@@ -114,6 +119,27 @@ fun Functions(
                 "个人资料"
             )
         }
+        item {
+            FunctionsItem(
+                painterResource(MR.images.loginOut),
+                onclick = {
+                    kVault.clear()
+                    routeState.reLogin()
+                },
+                "退出登录",
+                modifier = Modifier
+                    .padding(bottom = 10.dp)
+                    .height(50.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(231, 64, 50))
+                    .clickable {
+                        kVault.clear()
+                        routeState.reLogin()
+                    }
+                    .padding( start = 10.dp )
+            )
+        }
     }
 }
 
@@ -121,16 +147,20 @@ fun Functions(
 fun LazyItemScope.FunctionsItem(
     painter: Painter,
     onclick :()->Unit = { },
-    text : String
+    text : String,
+    modifier: Modifier = Modifier
+        .padding(bottom = 10.dp)
+        .height(50.dp)
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(10.dp))
+        .clickable { onclick.invoke() }
+        .padding( start = 10.dp )
 ){
     Row(
-        modifier = Modifier
-            .padding(bottom = 10.dp)
-            .height(50.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .clickable { onclick.invoke() }
-            .padding( start = 10.dp),
+        modifier = modifier
+            .clickable {
+                       onclick.invoke()
+            },
         verticalAlignment = Alignment.CenterVertically
     ){
         Icon(

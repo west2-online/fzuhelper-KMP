@@ -6,11 +6,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import repository.PostRepository
 import repository.PostStatus
 import ui.route.RouteState
+import ui.util.flow.catchWithMassage
+import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
 import ui.util.network.reset
 
@@ -44,9 +45,9 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository, val ro
             releaseRepository.newPost(
                 list,
                 title = title
-            ).catch {
+            ).catchWithMassage {
                 _newPostState.reset(NetworkResult.Error(Throwable("发布失败")))
-            }.collect { newPostResponse ->
+            }.collectWithMassage { newPostResponse ->
                 PostStatus.values().find {
                     it.value == newPostResponse.code
                 }?.let {

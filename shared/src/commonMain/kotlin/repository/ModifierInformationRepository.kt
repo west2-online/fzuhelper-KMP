@@ -2,6 +2,8 @@ package repository
 
 import data.modifer.ModifierAvatar
 import data.modifer.ModifierData
+import doist.x.normalize.Form
+import doist.x.normalize.normalize
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -21,10 +23,10 @@ class ModifierInformationRepository(val client: HttpClient) {
             val response = client.submitForm(
                 url = "/user/userDataUpdate",
                 formParameters = parameters {
-                    append("username",username)
+                    append("username",username.normalize(Form.NFKD))
                     append("age",age)
-                    append("grade",grade)
-                    append("location",location)
+                    append("grade",grade.normalize(Form.NFKD))
+                    append("location",location.normalize(Form.NFKD))
                 }
             ).body<ModifierData>()
             emit(response)

@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
@@ -413,7 +413,7 @@ fun Register(
                                 if (!editAble) Modifier.weight(1f).height(56.dp) else Modifier.size(56.dp)
                             )
                             .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colors.onBackground)
+                            .background(if (isSystemInDarkTheme()) Color.Gray else Color.Green)
                             .animateContentSize()
                             .clickable {
                                 if(!editAble) {

@@ -3,6 +3,8 @@ package repository
 import data.Feedback.FeedbackDetailComment.FeedbackDetailComment
 import data.Feedback.FeelbackDetail.FeedbackDetail
 import data.Feedback.SubmitNewFeedBack.FeedbackSubmit
+import doist.x.normalize.Form
+import doist.x.normalize.normalize
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitForm
@@ -19,7 +21,7 @@ class FeedbackRepository(val client: HttpClient) {
             val response = client.submitForm(
                 "/feedback/new",
                 formParameters = Parameters.build {
-                    append("content",content)
+                    append("content",content.normalize(Form.NFKD))
                     append("type",type.toString())
                 }
             ).body<FeedbackSubmit>()
@@ -27,7 +29,7 @@ class FeedbackRepository(val client: HttpClient) {
         }
     }
 
-    fun getFeedbackDetail(id:Int ):Flow<FeedbackDetail>{
+    fun getFeedbackDetail(id:Int):Flow<FeedbackDetail>{
         return flow {
             val response = client.get("/feedback/detail/${id}").body<FeedbackDetail>()
             emit(response)
@@ -39,7 +41,7 @@ class FeedbackRepository(val client: HttpClient) {
             val response = client.submitForm(
                 url = "/feedback/comment/${id}",
                 formParameters = parameters {
-                    append("comment",comment)
+                    append("comment",comment.normalize(Form.NFKD))
                 }
             ).body<FeedbackDetailComment>()
             emit(response)

@@ -6,7 +6,6 @@ import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import repository.ModifierAvatarStatus
 import repository.ModifierDataStatus
@@ -40,7 +39,7 @@ class ModifierInformationViewModel(val repository : ModifierInformationRepositor
         viewModelScope.launch {
             _modifierAvatarState.loginIfNotLoading {
                 repository.modifierAvatar(imageByteArray)
-                    .catch {
+                    .catchWithMassage {
                         _modifierAvatarState.reset(NetworkResult.Error(Throwable("修改失败")))
                     }.collectWithMassage {
                         _modifierAvatarState.reset(it.toNetworkResult())
