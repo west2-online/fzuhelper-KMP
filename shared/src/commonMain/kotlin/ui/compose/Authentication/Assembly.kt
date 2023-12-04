@@ -62,8 +62,8 @@ fun Assembly(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(10.dp),
-                        register = { email, password, captcha ->
-                            viewModel.register(email,password,captcha)
+                        register = { email, password, captcha,studentCode,studentPassword->
+                            viewModel.register(email,password,captcha,studentCode,studentPassword)
                         },
                         getCaptcha = { email ->
                             viewModel.getRegisterCaptcha(email)

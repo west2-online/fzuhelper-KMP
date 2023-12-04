@@ -62,10 +62,10 @@ class AuthenticationViewModel(private val loginRepository: LoginRepository, priv
     }
 
     fun register(
-        email:String,password:String,captcha:String
+        email:String,password:String,captcha:String,studentCode:String,studentPassword:String
     ){
         viewModelScope.launch (Dispatchers.Default){
-            loginRepository.register(email = email, password = password, captcha = captcha)
+            loginRepository.register(email = email, password = password, captcha = captcha,studentCode = studentCode,studentPassword = studentPassword)
                 .catchWithMassage {
                     _registerState.value = NetworkResult.Error(it)
                 }.collectWithMassage{ authenticationResponse->

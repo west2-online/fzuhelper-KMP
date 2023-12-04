@@ -65,7 +65,7 @@ fun Register(
     captchaState: State<NetworkResult<String>>,
     registerState: State<NetworkResult<String>>,
     getCaptcha: (email: String) -> Unit,
-    register: (email: String, password: String, captcha: String) -> Unit,
+    register: (email: String, password: String, captcha: String,studentCode:String,studentPassword:String) -> Unit,
     navigateToLogin: () -> Unit,
     verifyStudentID: (studentCode: String, studentPassword: String, studentCaptcha: String) -> Unit,
     studentCaptchaState: State<NetworkResult<ImageBitmap>>,
@@ -482,9 +482,8 @@ fun Register(
                     Button(
                         onClick = {
                             if(registerAble.value){
-                                register(talkerEmail,talkerPassword,captcha)
+                                register(talkerEmail,talkerPassword,captcha,studentCode,studentPassword)
                             }else{
-//
                                 toast.addToast("信息不足或未通过学生身份验证")
                             }
                         },

@@ -6,6 +6,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.cookie
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readBytes
 import io.ktor.client.statement.request
@@ -17,6 +18,7 @@ import io.ktor.http.parameters
 import io.ktor.utils.io.charsets.Charset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 
 class LoginRepository(private val loginClient : LoginClient) {
@@ -49,7 +51,7 @@ class LoginRepository(private val loginClient : LoginClient) {
         }
     }
 
-    fun register(email:String,password:String,captcha:String):Flow<AuthenticationResponse>{
+    fun register(email:String,password:String,captcha:String,studentCode:String,studentPassword:String):Flow<AuthenticationResponse>{
         return flow{
             val response: AuthenticationResponse = client.submitForm(
                 url = "register/register",
@@ -57,6 +59,13 @@ class LoginRepository(private val loginClient : LoginClient) {
                     append("email", email)
                     append("password",password)
                     append("captcha",captcha)
+                },
+                block = {
+                    val key = Clock.System.now().toString()
+                    val coding = SimpleSubstitutionCipher(key)
+                    header("sc",coding.encrypt(studentCode))
+                    header("sp",coding.encrypt(studentPassword))
+                    header("key",key)
                 }
             ).body()
             emit(response)
@@ -183,6 +192,35 @@ data class JwchTokenLoginResponseDto(
     val info: String
 )
 
+class SimpleSubstitutionCipher(private val key: String) {
+    // 加密
+    fun encrypt(plainText: String): String {
+        return plainText.map { char ->
+            if (char.isLetter()) {
+                val isUpperCase = char.isUpperCase()
+                val index = key.indexOf(char.toUpperCase())
+                val encryptedChar = if (index != -1) key[(index + 3) % key.length] else char
+                if (isUpperCase) encryptedChar else encryptedChar.toLowerCase()
+            } else {
+                char
+            }
+        }.joinToString("")
+    }
+
+    // 解密
+    fun decrypt(cipherText: String): String {
+        return cipherText.map { char ->
+            if (char.isLetter()) {
+                val isUpperCase = char.isUpperCase()
+                val index = key.indexOf(char.uppercaseChar())
+                val decryptedChar = if (index != -1) key[(index - 3 + key.length) % key.length] else char
+                if (isUpperCase) decryptedChar else decryptedChar.lowercaseChar()
+            } else {
+                char
+            }
+        }.joinToString("")
+    }
+}
 
 
 
