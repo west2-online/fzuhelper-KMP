@@ -11,7 +11,7 @@ buildscript {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-
+        maven("https://jogamp.org/deployment/maven")
     }
 
     dependencies {
