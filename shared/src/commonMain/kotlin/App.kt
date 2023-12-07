@@ -34,6 +34,7 @@ import repository.NewRepository
 import repository.PersonRepository
 import repository.PostRepository
 import repository.SplashRepository
+import repository.WeatherRepository
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.ModifierInformation.ModifierInformationViewModel
@@ -42,6 +43,7 @@ import ui.compose.Post.NewViewModel
 import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Ribbon.RibbonViewModel
 import ui.compose.SplashPage.SplashPageViewModel
+import ui.compose.Weather.WeatherViewModel
 import ui.route.Route
 import ui.route.RouteHost
 import ui.route.RouteState
@@ -55,7 +57,7 @@ fun App(){
         modules(appModule())
     }) {
         val route = koinInject<RouteState>()
-        FuTalkTheme {
+        FuTalkTheme{
             RouteHost(
                 modifier = Modifier.fillMaxSize(),
                 route = route
@@ -161,6 +163,9 @@ fun appModule() = module {
     single {
         LoginClient()
     }
+    single {
+        ShareClient()
+    }
 }
 
 fun HttpClientConfig<*>.configure() {
@@ -172,6 +177,7 @@ internal expect fun HttpClientConfig<*>.configureForPlatform()
 
 expect fun initStore(): KVault
 
+expect @Composable fun Modifier.ComposeSetting():Modifier
 
 
 
@@ -197,6 +203,9 @@ fun Module.repositoryList(){
     single {
         ModifierInformationRepository(get())
     }
+    single {
+        WeatherRepository(get())
+    }
 }
 
 fun Module.viewModel(){
@@ -217,6 +226,9 @@ fun Module.viewModel(){
     }
     viewModelDefinition {
         PersonViewModel(get(),get(),get())
+    }
+    viewModelDefinition {
+        WeatherViewModel(get())
     }
     viewModelDefinition {
         ReleasePageViewModel(get(),get())
@@ -281,3 +293,16 @@ class LoginClient(
         configure()
     }
 )
+class ShareClient(
+    val client : HttpClient = HttpClient{
+        install(ContentNegotiation) {
+            json()
+        }
+        install(Logging)
+        install(HttpRedirect) {
+            checkHttpMethod = false
+        }
+        configure()
+    }
+)
+

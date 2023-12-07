@@ -19,6 +19,7 @@ import org.koin.core.scope.Scope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import androidx.compose.ui.interop.LocalUIViewController
@@ -76,6 +77,10 @@ actual fun initStore(): KVault{
 
 //ios main
 
+
+actual @Composable fun Modifier.ComposeSetting(): Modifier{
+    return this
+}
 
 actual class ImagePicker(
     private val rootController: UIViewController

@@ -210,6 +210,16 @@ fun PersonalInformationInPerson(
             },
             fontSize = 10.sp
         )
+        Text(
+            text = when(userData.value){
+                is NetworkResult.Success<UserData> -> "🗺️ ${(userData.value as NetworkResult.Success<UserData>).data.data!!.location}"
+                is NetworkResult.Error<UserData> -> "加载失败"
+                is NetworkResult.UnSend<UserData> -> "加载中"
+                is NetworkResult.Loading<UserData> -> "加载中"
+                else -> "加载失败"
+            },
+            fontSize = 10.sp
+        )
     }
 }
 

@@ -64,7 +64,6 @@ fun Ribbon(
                         .clip(RoundedCornerShape(10.dp))
                         .clickable {
                             viewModel.enterFunction(Functions.values()[it].route)
-
                         }
                         .padding(10.dp)
                 ){
@@ -138,5 +137,7 @@ private fun Carousel(
 }
 
 enum class Functions(val route:Route,val functionName: String,val painter: ImageResource){
-    QRCODE(route = Route.QRCode(),functionName = "二维码生成", painter = MR.images.feedback)
+    QRCODE(route = Route.QRCode(),functionName = "二维码生成", painter = MR.images.feedback),
+    WebView(route = Route.OwnWebView("https://welcome.fzuhelper.w2fzu.com/#/"),functionName = "新生宝典", painter = MR.images.login),
+    Weather(route = Route.Weather(),functionName = "天气", painter = MR.images.close)
 }

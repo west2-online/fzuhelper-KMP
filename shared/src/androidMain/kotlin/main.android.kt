@@ -6,8 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -30,6 +32,10 @@ import javax.net.ssl.X509TrustManager
 actual fun getPlatformName(): String = "Android"
 
 @Composable fun MainView() = App()
+
+actual @Composable fun Modifier.ComposeSetting(): Modifier {
+    return this.safeContentPadding()
+}
 
 @Composable
 actual fun BackHandler(isEnabled: Boolean, onBack: () -> Unit) {

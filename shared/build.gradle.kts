@@ -92,8 +92,8 @@ kotlin {
 
                 //加密库
                 implementation("dev.whyoleg.cryptography:cryptography-core:0.2.0")
-                //webview
-                api("io.github.kevinnzou:compose-webview-multiplatform:1.7.4")
+//                //webview
+                implementation("io.github.kevinnzou:compose-webview-multiplatform:1.7.4")
             }
         }
         val androidMain by getting {

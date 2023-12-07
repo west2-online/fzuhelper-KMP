@@ -1,5 +1,6 @@
 package ui.route
 
+import ComposeSetting
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.koin.compose.koinInject
 import ui.compose.Authentication.Assembly
 import ui.compose.Feedback.FeedbackScreen
 import ui.compose.Main.MainScreen
@@ -24,14 +26,15 @@ import ui.compose.PERSON.PersonScreen
 import ui.compose.QRCode.QRCodeScreen
 import ui.compose.Release.ReleasePageScreen
 import ui.compose.SplashPage.SplashPage
+import ui.compose.Weather.WeatherScreen
+import ui.compose.Webview.OwnWebViewScreen
 import ui.util.compose.colorPicker.ColorPicker
 
 @Composable
 fun RouteHost(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.ComposeSetting(),
     route:RouteState
 ){
-
     Crossfade(modifier = modifier, targetState = route.currentPage.value) {
         it?.content?.invoke()
     }
@@ -47,14 +50,32 @@ interface Route{
 //            NewsDetail()
         }
     ): Route
-
-
     class ModifierInformation(
         val userId:Int,
         val userData: Data,
         override val route: String = "modifer",
         override val content: @Composable (  ) -> Unit = {
             ModifierInformationScreen(userId = userId, userData = userData)
+        }
+    ) : Route
+    class OwnWebView(
+        val start:String,
+        override val route: String = "webview",
+        override val content: @Composable () -> Unit = {
+            val routeState = koinInject<RouteState>()
+            OwnWebViewScreen(
+                back = {
+                    routeState.back()
+                },
+                start = start
+            )
+        }
+    ) : Route
+
+    class Weather(
+        override val route: String = "weather",
+        override val content: @Composable () -> Unit = {
+            WeatherScreen()
         }
     ) : Route
 
@@ -66,7 +87,6 @@ interface Route{
             MainScreen()
         }
     ) : Route
-
     class ReleasePage (
         val token: String,
         override val route: String = "ReleasePage",
