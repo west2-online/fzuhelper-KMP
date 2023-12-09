@@ -1,6 +1,6 @@
 package ui.compose.Weather
 
-import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -57,7 +57,7 @@ fun WeatherScreen(
             val pageState = rememberPagerState {
                 weatherData.data.forecast.size
             }
-            val currentPage = animateIntAsState(pageState.currentPage)
+            val currentPage = animateFloatAsState(pageState.currentPage.toFloat())
             Column {
                 PreviewForSevenDays(
                     modifier = Modifier
@@ -151,7 +151,7 @@ fun PreviewForSevenDays(
     weatherDataList: List<Forecast>,
     modifier: Modifier,
     click: (Int) -> Unit = {},
-    current: Int = 0
+    current: Float = 0f
 ){
     Column(
         modifier = Modifier
@@ -325,7 +325,7 @@ fun PreviewForSevenDays(
                     modifier = Modifier.weight(1f)
                         .wrapContentHeight()
                         .background(
-                            if( index == current) Color.Gray else Color.Transparent
+                            if( index == current.toInt() ) Color.Gray else Color.Transparent
                         ),
                     text = item.date,
                     fontSize = 8.sp,

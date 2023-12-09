@@ -25,6 +25,7 @@ import ui.compose.ModifierInformation.ModifierInformationScreen
 import ui.compose.PERSON.PersonScreen
 import ui.compose.QRCode.QRCodeScreen
 import ui.compose.Release.ReleasePageScreen
+import ui.compose.SchoolMap.SchoolMapScreen
 import ui.compose.SplashPage.SplashPage
 import ui.compose.Weather.WeatherScreen
 import ui.compose.Webview.OwnWebViewScreen
@@ -50,6 +51,17 @@ interface Route{
 //            NewsDetail()
         }
     ): Route
+
+    class SchoolMap(
+        override val route: String = "schoolMap",
+        override val content: @Composable () -> Unit = {
+            SchoolMapScreen(
+                modifier = Modifier,
+                url = "https://pic1.zhimg.com/80/v2-ae48979cee947ee6cae729ef14bc144b_1440w.webp?source=2c26e567",
+                onClick = { -> }
+            )
+        }
+    ):Route
     class ModifierInformation(
         val userId:Int,
         val userData: Data,
@@ -58,6 +70,7 @@ interface Route{
             ModifierInformationScreen(userId = userId, userData = userData)
         }
     ) : Route
+
     class OwnWebView(
         val start:String,
         override val route: String = "webview",
@@ -87,8 +100,8 @@ interface Route{
             MainScreen()
         }
     ) : Route
+
     class ReleasePage (
-        val token: String,
         override val route: String = "ReleasePage",
         override val content: @Composable (  ) -> Unit = {
             ReleasePageScreen(
@@ -113,9 +126,7 @@ interface Route{
                 modifier = Modifier
                     .fillMaxSize()
                     .padding( all = 10.dp )
-            ) {
-
-            }
+            )
         }
     ):Route
 
