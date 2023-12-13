@@ -38,7 +38,7 @@ import repository.WeatherRepository
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.ModifierInformation.ModifierInformationViewModel
-import ui.compose.PERSON.PersonViewModel
+import ui.compose.Person.PersonViewModel
 import ui.compose.Post.NewViewModel
 import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Ribbon.RibbonViewModel

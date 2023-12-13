@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.cash.paging.compose.collectAsLazyPagingItems
 import org.koin.compose.koinInject
+import ui.compose.Report.ReportType
 import ui.util.compose.EasyToast
 import ui.util.compose.rememberToastState
 
@@ -38,10 +39,13 @@ fun NewScreen(
                         viewModel.currentItem.value = NewItem.NewDetail(it)
                     },
                     navigateToRelease = {
-                        viewModel.navigateToRelease("")
+                        viewModel.navigateToRelease()
                     },
                     state = state,
                     postListFlow = viewModel.postListFlow.collectAsLazyPagingItems(),
+                    navigateToReport = {
+                        viewModel.navigateToReport(ReportType.PostReportType(id = it.Id.toString(),data = it))
+                    }
                 )
             }
             is NewItem.NewDetail ->{
@@ -71,7 +75,10 @@ fun NewScreen(
                               viewModel.submitComment(parentId,it.id.toInt(),tree,content,image)
                             },
                             commentSubmitState = viewModel.commentSubmitState.collectAsState(),
-                            toastState = toastState
+                            toastState = toastState,
+                            commentReport = {
+                                viewModel.navigateToReport(it)
+                            }
                         )
                     }
                 }

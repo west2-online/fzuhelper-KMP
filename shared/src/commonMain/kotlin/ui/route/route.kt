@@ -22,14 +22,15 @@ import ui.compose.Feedback.FeedbackScreen
 import ui.compose.Main.MainScreen
 import ui.compose.Massage.MassageScreen
 import ui.compose.ModifierInformation.ModifierInformationScreen
-import ui.compose.PERSON.PersonScreen
+import ui.compose.Person.PersonScreen
 import ui.compose.QRCode.QRCodeScreen
 import ui.compose.Release.ReleasePageScreen
+import ui.compose.Report.ReportScreen
+import ui.compose.Report.ReportType
 import ui.compose.SchoolMap.SchoolMapScreen
 import ui.compose.SplashPage.SplashPage
 import ui.compose.Weather.WeatherScreen
 import ui.compose.Webview.OwnWebViewScreen
-import ui.util.compose.colorPicker.ColorPicker
 
 @Composable
 fun RouteHost(
@@ -170,8 +171,21 @@ interface Route{
 
     class Test(
         override val route: String = "Test",
+        val reportType: ReportType,
         override val content: @Composable () -> Unit = {
-            ColorPicker()
+            ReportScreen(
+                type = reportType
+            )
+        }
+    ):Route
+
+    class Report(
+        override val route: String = "report",
+        private val reportType: ReportType,
+        override val content: @Composable () -> Unit = {
+            ReportScreen(
+                type = reportType
+            )
         }
     ):Route
 }

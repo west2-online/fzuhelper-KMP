@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.CommentSubmitStatus
 import repository.PostRepository
+import ui.compose.Report.ReportType
 import ui.route.Route
 import ui.route.RouteState
 import ui.util.flow.catchWithMassage
@@ -131,8 +132,14 @@ class NewViewModel(
             }
         }
     }
-    fun navigateToRelease(token:String){
-        routeState.navigateWithoutPop(Route.ReleasePage(token))
+    fun navigateToRelease(){
+        routeState.navigateWithoutPop(Route.ReleasePage())
+    }
+
+    fun navigateToReport(type: ReportType){
+        routeState.navigateWithoutPop(Route.Report(
+            reportType = type
+        ))
     }
 }
 

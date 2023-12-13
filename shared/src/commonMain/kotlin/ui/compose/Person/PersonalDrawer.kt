@@ -1,4 +1,4 @@
-package ui.compose.PERSON
+package ui.compose.Person
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -117,6 +117,15 @@ fun Functions(
                     routeState.navigateWithoutPop(Route.Person())
                 },
                 "个人资料"
+            )
+        }
+        item {
+            FunctionsItem(
+                painterResource(MR.images.eye),
+                {
+//                    routeState.navigateWithoutPop(Route.Test())
+                },
+                "测试"
             )
         }
         item {

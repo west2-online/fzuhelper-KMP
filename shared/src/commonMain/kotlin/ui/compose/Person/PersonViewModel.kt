@@ -1,4 +1,4 @@
-package ui.compose.PERSON
+package ui.compose.Person
 
 import com.liftric.kvault.KVault
 import data.Person.UserData

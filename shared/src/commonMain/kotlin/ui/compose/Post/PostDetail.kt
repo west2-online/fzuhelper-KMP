@@ -8,10 +8,12 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -92,6 +94,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.example.library.MR
+import ui.compose.Report.ReportType
 import ui.util.compose.Toast
 import ui.util.compose.shimmerLoadingAnimation
 import ui.util.network.CollectWithContent
@@ -113,6 +116,7 @@ fun NewsDetail(
     submitComment: (parentId: Int, postId: Int, tree: String, content: String, image: ByteArray?) -> Unit,
     commentSubmitState: State<NetworkResult<String>>,
     toastState: Toast,
+    commentReport:(type:ReportType)->Unit
 ) {
     val data = postCommentPreview.collectAsLazyPagingItems()
     val isRefresh = remember{
@@ -127,11 +131,11 @@ fun NewsDetail(
             .collect {
                 isRefresh.value = true
                 delay(1000)
+                getPostById(id)
                 data.refresh()
                 isRefresh.value = false
             }
     }
-
 
     LaunchedEffect(commentSubmitState.value.key){
         if(!commentSubmitState.value.showToast){
@@ -208,6 +212,13 @@ fun NewsDetail(
                                         }
                                     }
                                 }
+                                Interaction(
+                                    modifier = Modifier
+                                        .padding( top = 5.dp )
+                                        .fillMaxWidth(0.6f)
+                                        .wrapContentHeight(),
+                                    likeNumber = postById.data.Post.LikeNum
+                                )
                             }
                         },
                         loading = {
@@ -233,6 +244,11 @@ fun NewsDetail(
                                 show.value = it.MainComment
                             }
                         }
+                    },
+                    report = {
+                        commentReport.invoke(
+                            ReportType.CommentReportType(id,it.Id.toString(),it)
+                        )
                     }
                 )
             }
@@ -390,6 +406,11 @@ fun NewsDetail(
                                                         SonComment = listOf()
                                                     ), click = {
                                                         commentState.value.setCommentAt(it)
+                                                    },
+                                                    report = {
+                                                        commentReport.invoke(
+                                                            ReportType.CommentReportType(id,it.Id.toString(),it)
+                                                        )
                                                     }
                                                 )
                                             }
@@ -537,7 +558,12 @@ fun NewsDetail(
                                             data = Data(
                                                 it,
                                                 listOf()
-                                            )
+                                            ),
+                                            report = {
+                                                commentReport.invoke(
+                                                    ReportType.CommentReportType(id,it.Id.toString(),it)
+                                                )
+                                            }
                                         )
                                     }
                                 }
@@ -707,19 +733,26 @@ fun LazyListScope.newsDetailItem(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CommentInNewsDetail(
     data: Data?,
-    click : ()->Unit ={}
+    click : ()->Unit ={},
+    report : (comment:MainComment)->Unit ={}
 ) {
     data?.let {
         Row(modifier = Modifier
             .padding(bottom = 10.dp)
             .animateContentSize()
             .clip(RoundedCornerShape(3.dp))
-            .clickable {
-                click()
-            }
+            .combinedClickable(
+                onClick = {
+                    click()
+                },
+                onLongClick = {
+                    report.invoke(data.MainComment)
+                }
+            )
             .padding(vertical = 5.dp)
         ){
             KamelImage(
@@ -833,7 +866,7 @@ fun ImageContent(
 @Composable
 fun CommentTree(
     data : data.post.PostCommentTree.Data,
-    click: (data.post.PostCommentTree.MainComment) -> Unit
+    click: (data.post.PostCommentTree.MainComment) -> Unit,
 ){
     val showParent = remember {
         mutableStateOf(false)

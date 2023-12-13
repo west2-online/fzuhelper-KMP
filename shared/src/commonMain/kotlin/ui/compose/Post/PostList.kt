@@ -76,7 +76,8 @@ fun NewsList(
 //    postListState: State<NetworkResult<PostList>>,
     state: LazyListState,
     postListFlow: LazyPagingItems<Data>,
-    navigateToRelease: () -> Unit
+    navigateToRelease: () -> Unit,
+    navigateToReport: (Data) -> Unit
 ){
     val isRefresh = remember{
         mutableStateOf(false)
@@ -95,25 +96,6 @@ fun NewsList(
     }
 
     Box(modifier = modifier){
-//        postListState.let { networkResultState ->
-//            networkResultState.CollectWithContent(
-//                success = { list ->
-//                    list.data?.let{ postList ->
-//                        LazyColumn(
-//                            modifier = modifier,
-//                            state = state
-//                        ){
-//                            items(postList.size){
-//                                NewsItem(
-//                                    navigateToNewsDetail = navigateToNewsDetail,
-//                                    post = postList[it]
-//                                )
-//                            }
-//                        }
-//                    }
-//                }
-//            )
-//        }
         postListFlow.let{ postList ->
             LazyColumn(
                 modifier = modifier,
@@ -125,7 +107,10 @@ fun NewsList(
                     postList[it]?.let {
                         NewsItem(
                             navigateToNewsDetail = navigateToNewsDetail,
-                            post = it
+                            post = it,
+                            navigateToReport = {
+                                navigateToReport.invoke(it)
+                            }
                         )
                     }
                 }
@@ -210,6 +195,7 @@ fun NewsList(
 @Composable
 fun NewsItem(
     navigateToNewsDetail: (String) -> Unit,
+    navigateToReport: (Data) -> Unit,
     post: Data,
     modifier: Modifier = Modifier
         .fillMaxWidth()
@@ -281,7 +267,6 @@ fun NewsItem(
 
                 )
             }
-
             Text(
                 modifier = Modifier
                     .padding(top = 10.dp)
@@ -308,7 +293,6 @@ fun NewsItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically
             ){
-
                 Text(
                     modifier = Modifier.weight(1f),
                     text = post.Time.toEasyTime(),
@@ -328,7 +312,10 @@ fun NewsItem(
                 modifier = Modifier
                     .fillMaxWidth(0.5f)
                     .wrapContentHeight(),
-                likeNumber = post.LikeNum
+                likeNumber = post.LikeNum,
+                report = {
+                    navigateToReport.invoke(post)
+                }
             )
             Divider(modifier = Modifier.padding( top = 3.dp ).fillMaxWidth(),thickness = 1.dp)
         }
@@ -382,7 +369,9 @@ fun PersonalInformationArea(
 @Composable
 fun Interaction(
     modifier: Modifier,
-    likeNumber :Int
+    likeNumber :Int,
+    report :()->Unit = {},
+    share:()->Unit = {}
 ){
     BottomNavigation(
         contentColor = Color.Transparent,
@@ -409,7 +398,9 @@ fun Interaction(
             label = { Text("举报",
                 fontSize = 10.sp) },
             selected = false,
-            onClick = { },
+            onClick = {
+                 report.invoke()
+            },
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
         )
