@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.koin.compose.koinInject
+import ui.compose.AboutUs.AboutUsScreen
 import ui.compose.Authentication.Assembly
 import ui.compose.Feedback.FeedbackScreen
 import ui.compose.Main.MainScreen
@@ -185,6 +186,16 @@ interface Route{
         override val content: @Composable () -> Unit = {
             ReportScreen(
                 type = reportType
+            )
+        }
+    ):Route
+
+    class AboutUs(
+        override val route: String = "aboutUs",
+        override val content: @Composable () -> Unit = {
+            AboutUsScreen(
+                modifier = Modifier
+                    .fillMaxSize()
             )
         }
     ):Route

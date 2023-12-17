@@ -30,6 +30,7 @@ kotlin {
     val koin_compose_version = "1.1.0"
     val ktor_version = "2.3.5"
     val serialization_version = "1.6.0"
+    val markdown_version = "0.10.0"
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -94,6 +95,8 @@ kotlin {
                 implementation("dev.whyoleg.cryptography:cryptography-core:0.2.0")
 //                //webview
                 implementation("io.github.kevinnzou:compose-webview-multiplatform:1.7.4")
+
+                implementation("com.mikepenz:multiplatform-markdown-renderer:${markdown_version}")
             }
         }
         val androidMain by getting {
