@@ -114,7 +114,7 @@ fun Functions(
             FunctionsItem(
                 painterResource(MR.images.eye),
                 {
-                    routeState.navigateWithoutPop(Route.Person())
+                    routeState.navigateWithoutPop(Route.Person(id = "1"))
                 },
                 "个人资料"
             )

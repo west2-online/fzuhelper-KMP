@@ -9,15 +9,27 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class PersonRepository(private val client: HttpClient) {
-    fun getUserData(): Flow<UserData> {
+    fun getUserDataMySelf(): Flow<UserData> {
         return flow {
             val userdata : UserData = client.get("/user/auth").body()
             emit(userdata)
         }
     }
-    fun getUserIdentity(): Flow<PersonIdentityData> {
+    fun getUserIdentityMySelf(): Flow<PersonIdentityData> {
         return flow {
             val userdata : PersonIdentityData = client.get("/user/identity").body()
+            emit(userdata)
+        }
+    }
+    fun getUserDataOther(id:String): Flow<UserData> {
+        return flow {
+            val userdata : UserData = client.get("/user/auth/${id}").body()
+            emit(userdata)
+        }
+    }
+    fun getUserIdentityOther(id:String): Flow<PersonIdentityData> {
+        return flow {
+            val userdata : PersonIdentityData = client.get("/user/identity/${id}").body()
             emit(userdata)
         }
     }

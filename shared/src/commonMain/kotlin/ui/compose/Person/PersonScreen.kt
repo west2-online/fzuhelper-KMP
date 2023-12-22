@@ -19,6 +19,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
@@ -54,15 +55,15 @@ import kotlin.random.Random
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun PersonScreen(
+    id:String? = null,
     modifier: Modifier = Modifier,
     viewModel: PersonViewModel = koinInject()
 ){
     val scope = rememberCoroutineScope()
     val userDataState = viewModel.userData.collectAsState()
     LaunchedEffect(Unit){
-        viewModel.getUserData()
+        viewModel.getUserData(id)
     }
-
     val toast = rememberToastState()
     LaunchedEffect(userDataState.value,userDataState.value.key){
         userDataState.value.logicWithType(
@@ -78,7 +79,7 @@ fun PersonScreen(
                 .fillMaxSize()
         ){
             viewModel.userData.collectAsState().CollectWithContent(
-                success = {
+                success = { userData ->
                     Column{
                         KamelImage(
                             resource = asyncPainterResource("https://picx.zhimg.com/80/v2-cee6c1a92831cd1566e4c5f9dd4a35f4_720w.webp?source=1def8aca"),
@@ -106,20 +107,22 @@ fun PersonScreen(
                                     .padding(start = 10.dp),
                                 viewModel.userData.collectAsState()
                             )
-                            Button(
-                                onClick = {
-                                    it.data?.let { it1 ->
-                                        viewModel.navigateToModifierInformation(
-                                            userId = it1.Id, userData = it
-                                        )
-                                    }
-                                },
-                                modifier = Modifier
-                                    .padding(horizontal = 5.dp)
-                            ) {
-                                Text(
-                                    "编辑个人信息",
-                                )
+                            id ?:run{
+                                Button(
+                                    onClick = {
+                                        userData.data?.let { it1 ->
+                                            viewModel.navigateToModifierInformation(
+                                                userId = it1.Id, userData = userData
+                                            )
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .padding(horizontal = 5.dp)
+                                ) {
+                                    Text(
+                                        "编辑个人信息",
+                                    )
+                                }
                             }
                         }
                     }
@@ -159,10 +162,9 @@ fun PersonScreen(
                         Surface(
                             modifier = Modifier
                                 .fillMaxSize()
-
                         ) {
                             LaunchedEffect(Unit){
-                                viewModel.getIdentityData()
+                                viewModel.getIdentityData(id)
                             }
                             viewModel.identityData.collectAsState().CollectWithContent(
                                 success = {
@@ -175,6 +177,9 @@ fun PersonScreen(
                                             IdentityLabel(it.Identity)
                                         }
                                     }
+                                },
+                                loading = {
+                                    CircularProgressIndicator()
                                 }
                             )
                         }
@@ -185,9 +190,6 @@ fun PersonScreen(
         EasyToast(toast = toast)
     }
 }
-
-//@Composable
-//fun PersonHeader()
 
 @Composable
 fun PersonalInformationInPerson(
@@ -221,8 +223,6 @@ fun PersonalInformationInPerson(
                     )
                 }
             }
-
-
         }
         Text(
             text = when(userData.value){
@@ -250,6 +250,17 @@ fun PersonalInformationInPerson(
         Text(
             text = when(userData.value){
                 is NetworkResult.Success<UserData> -> "🗺️ ${(userData.value as NetworkResult.Success<UserData>).data.data!!.location}"
+                is NetworkResult.Error<UserData> -> "加载失败"
+                is NetworkResult.UnSend<UserData> -> "加载中"
+                is NetworkResult.Loading<UserData> -> "加载中"
+                else -> "加载失败"
+            },
+            fontSize = 10.sp
+        )
+
+        Text(
+            text = when(userData.value){
+                is NetworkResult.Success<UserData> -> "\uD83E\uDDE0 ${(userData.value as NetworkResult.Success<UserData>).data.data!!.age}"
                 is NetworkResult.Error<UserData> -> "加载失败"
                 is NetworkResult.UnSend<UserData> -> "加载中"
                 is NetworkResult.Loading<UserData> -> "加载中"

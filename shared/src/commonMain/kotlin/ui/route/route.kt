@@ -116,8 +116,11 @@ interface Route{
 
     class Person (
         override val route: String = "person",
+        id: String? = null,
         override val content: @Composable () -> Unit = {
-           PersonScreen()
+           PersonScreen(
+               id
+           )
         }
     ) : Route
 

@@ -27,40 +27,80 @@ class PersonViewModel(
     private val _personIdentityData = CMutableStateFlow(MutableStateFlow<NetworkResult<PersonIdentityData>>(NetworkResult.UnSend()))
     val identityData = _personIdentityData.asStateFlow()
 
-    fun getUserData(){
-        viewModelScope.launch(Dispatchers.Default) {
-            personRepository.getUserData()
-                .catchWithMassage {
-                    _userData.reset(NetworkResult.Error(Throwable("获取失败")))
-                }
-                .collectWithMassage{ userData ->
-                    UserDataResult.values().filter {
-                        it.value == userData.code
-                    }.let {
-                        if(it.isNotEmpty()){
-                            _userData.value = it[0].toNetworkResult(userData)
-                            return@collectWithMassage
+    fun getUserData(id:String?){
+        id?:run {
+            viewModelScope.launch(Dispatchers.Default) {
+                personRepository.getUserDataMySelf()
+                    .catchWithMassage {
+                        _userData.reset(NetworkResult.Error(Throwable("获取失败")))
+                    }
+                    .collectWithMassage{ userData ->
+                        UserDataResult.values().filter {
+                            it.value == userData.code
+                        }.let {
+                            if(it.isNotEmpty()){
+                                _userData.reset(it[0].toNetworkResult(userData))
+                                return@collectWithMassage
+                            }
                         }
                     }
-                }
+            }
+        }
+        id?.let {
+            viewModelScope.launch(Dispatchers.Default) {
+                personRepository.getUserDataOther(it)
+                    .catchWithMassage {
+                        _userData.reset(NetworkResult.Error(Throwable("获取失败")))
+                    }
+                    .collectWithMassage{ userData ->
+                        UserDataResult.values().filter {
+                            it.value == userData.code
+                        }.let {
+                            if(it.isNotEmpty()){
+                                _userData.reset(it[0].toNetworkResult(userData))
+                                return@collectWithMassage
+                            }
+                        }
+                    }
+            }
         }
     }
-    fun getIdentityData(){
-        viewModelScope.launch(Dispatchers.Default) {
-            personRepository.getUserIdentity()
-                .catchWithMassage {
-                    _personIdentityData.reset(NetworkResult.Error(Throwable("获取失败")))
-                }
-                .collectWithMassage{ userData ->
-                    IdentityDataResult.values().filter {
-                        it.value == userData.code
-                    }.let {
-                        if(it.isNotEmpty()){
-                            _personIdentityData.value = it[0].toNetworkResult(userData)
-                            return@collectWithMassage
+    fun getIdentityData(id:String?){
+        id?:run {
+            viewModelScope.launch(Dispatchers.Default) {
+                personRepository.getUserIdentityMySelf()
+                    .catchWithMassage {
+                        _personIdentityData.reset(NetworkResult.Error(Throwable("获取失败")))
+                    }
+                    .collectWithMassage{ userData ->
+                        IdentityDataResult.values().filter {
+                            it.value == userData.code
+                        }.let {
+                            if(it.isNotEmpty()){
+                                _personIdentityData.reset(it[0].toNetworkResult(userData))
+                                return@collectWithMassage
+                            }
                         }
                     }
-                }
+            }
+        }
+        id?.let {
+            viewModelScope.launch(Dispatchers.Default) {
+                personRepository.getUserIdentityOther(it)
+                    .catchWithMassage {
+                        _personIdentityData.reset(NetworkResult.Error(Throwable("获取失败")))
+                    }
+                    .collectWithMassage{ userData ->
+                        IdentityDataResult.values().filter {
+                            it.value == userData.code
+                        }.let {
+                            if(it.isNotEmpty()){
+                                _personIdentityData.reset(it[0].toNetworkResult(userData))
+                                return@collectWithMassage
+                            }
+                        }
+                    }
+            }
         }
     }
     fun navigateToModifierInformation(userId:Int,userData : UserData){
