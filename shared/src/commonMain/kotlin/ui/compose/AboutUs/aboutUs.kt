@@ -5,12 +5,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.compose.Markdown
 import ui.util.compose.loadAction
 
@@ -33,6 +35,7 @@ fun AboutUsScreen(
         Markdown(
             content = markdown,
             modifier = Modifier
+                .padding(bottom = 10.dp)
                 .fillMaxWidth(0.9f)
                 .wrapContentHeight()
         )

@@ -1,8 +1,11 @@
 package ui.compose.Person
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,9 +14,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
+import androidx.compose.material.Surface
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
@@ -21,8 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -31,9 +37,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import config.BaseUrlConfig
-import data.Person.UserData
+import data.Person.UserData.UserData
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import ui.util.compose.EasyToast
 import ui.util.compose.rememberToastState
@@ -41,14 +48,16 @@ import ui.util.compose.shimmerLoadingAnimation
 import ui.util.network.CollectWithContent
 import ui.util.network.NetworkResult
 import ui.util.network.logicWithType
+import kotlin.random.Random
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun PersonScreen(
     modifier: Modifier = Modifier,
     viewModel: PersonViewModel = koinInject()
 ){
+    val scope = rememberCoroutineScope()
     val userDataState = viewModel.userData.collectAsState()
     LaunchedEffect(Unit){
         viewModel.getUserData()
@@ -117,33 +126,61 @@ fun PersonScreen(
                 }
             )
             val items = listOf("发布","动态","身份")
-            val selectedItem = remember {
-                mutableStateOf(0)
-            }
             val pageState = rememberPagerState {
                 items.size
-            }
-            LaunchedEffect(selectedItem.value){
-                pageState.animateScrollToPage(selectedItem.value)
             }
             TabRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(),
-                selectedTabIndex = selectedItem.value,
+                selectedTabIndex = pageState.currentPage,
                 tabs = {
                     items.forEachIndexed { index, item ->
                         Tab(
                             text = {
                                  Text(item)
                             },
-                            selected = selectedItem.value == index,
-                            onClick = { selectedItem.value = index },
+                            selected = pageState.currentPage == index,
+                            onClick = {
+                                 scope.launch {
+                                     pageState.animateScrollToPage(index)
+                                 }
+                            },
                             selectedContentColor = Color.Magenta
                         )
                     }
                 }
             )
+            HorizontalPager(
+                pageState
+            ){
+                when(it){
+                    2 ->{
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxSize()
+
+                        ) {
+                            LaunchedEffect(Unit){
+                                viewModel.getIdentityData()
+                            }
+                            viewModel.identityData.collectAsState().CollectWithContent(
+                                success = {
+                                    FlowRow (
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(10.dp)
+                                    ){
+                                        it.data.forEach {
+                                            IdentityLabel(it.Identity)
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
         }
         EasyToast(toast = toast)
     }
@@ -237,3 +274,27 @@ fun State<NetworkResult<UserData>>.string(
         else -> "加载失败"
     }
 }
+
+
+@Composable
+fun IdentityLabel(
+    identity:String
+){
+    Box(
+        modifier = Modifier
+            .padding(end = 10.dp, bottom = 10.dp)
+            .wrapContentSize()
+            .clip(CircleShape)
+            .background(remember {
+                randomColor()
+            })
+            .padding(vertical = 4.dp, horizontal = 10.dp)
+    ){
+        Text(identity)
+    }
+}
+
+fun randomColor(): Color {
+    return Color(Random.nextInt(100,255),Random.nextInt(100,255),Random.nextInt(100,255))
+}
+

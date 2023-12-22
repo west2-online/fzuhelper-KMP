@@ -1,4 +1,4 @@
-package data.Person
+package data.Person.UserData
 
 import kotlinx.serialization.Serializable
 

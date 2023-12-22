@@ -40,7 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import asImageBitmap
-import data.Person.Data
+import data.Person.UserData.Data
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import org.example.library.MR
