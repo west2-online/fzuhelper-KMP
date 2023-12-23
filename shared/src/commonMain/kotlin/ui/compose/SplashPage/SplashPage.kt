@@ -1,5 +1,6 @@
 package ui.compose.SplashPage
 
+import MainViewState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -35,7 +36,7 @@ fun SplashPage(
     modifier: Modifier,
     viewModel:SplashPageViewModel = koinInject()
 ){
-
+    val mainViewState = koinInject<MainViewState>()
     val imageState = viewModel.imageState.collectAsState()
     val toast = rememberToastState()
 

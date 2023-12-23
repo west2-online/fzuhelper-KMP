@@ -38,7 +38,7 @@ actual @Composable fun Modifier.ComposeSetting(): Modifier {
 }
 
 @Composable
-actual fun BackHandler(isEnabled: Boolean, onBack: () -> Unit) {
+actual fun BackHandlerWithPlatform(isEnabled: Boolean, onBack: () -> Unit) {
     androidx.activity.compose.BackHandler(isEnabled, onBack)
 }
 

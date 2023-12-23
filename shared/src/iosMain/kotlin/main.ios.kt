@@ -43,7 +43,7 @@ actual fun getPlatformName(): String = "iOS"
 fun MainViewController() = ComposeUIViewController { App() }
 
 @Composable
-actual fun BackHandler(isEnabled: Boolean, onBack: () -> Unit) {
+actual fun BackHandlerWithPlatform(isEnabled: Boolean, onBack: () -> Unit) {
     LaunchedEffect(isEnabled) {
 //        store.events.collect {
 //            if(isEnabled) {

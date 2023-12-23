@@ -1,12 +1,24 @@
 package ui.route
 
+import BackHandler
 import ComposeSetting
+import MainViewState
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import data.Person.UserData.Data
@@ -38,20 +50,76 @@ fun RouteHost(
     modifier: Modifier = Modifier.ComposeSetting(),
     route:RouteState
 ){
-    Crossfade(modifier = modifier, targetState = route.currentPage.value) {
-        it?.content?.invoke()
+    val mainViewState = koinInject<MainViewState>()
+    Box(
+        modifier = modifier
+    ){
+        Crossfade(
+            modifier = Modifier
+                .fillMaxSize(),
+            targetState = route.currentPage.value
+        ) {
+
+            it?.let {
+                BackHandler(isEnabled = it.canBack){
+                    route.back()
+                }
+                it.content.invoke()
+            }
+
+        }
+        Crossfade(
+            mainViewState.showOrNot.value,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .offset(x = (-10).dp,y = 10.dp)
+                .size(50.dp),
+            animationSpec = tween(500),
+        ){
+            if(it){
+                FloatingActionButton(
+                    onClick = {
+                        mainViewState.showBackButton.last().invoke()
+                    },
+                    containerColor = MaterialTheme.colors.secondary,
+
+                ){
+                    Icon(Icons.Filled.KeyboardArrowLeft,null)
+                }
+            }
+//            AnimatedVisibility(
+//                mainViewState.showOrNot.value,
+//                modifier = Modifier
+//                    .offset( x = 10.dp , y = 10.dp)
+//                    .size(50.dp),
+//                exit = slideOutVertically(){
+//                    -20
+//                } + fadeOut()
+//            ){
+//                FloatingActionButton(
+//                    onClick = {
+//                        mainViewState.showBackButton.last().invoke()
+//                    },
+//                    containerColor = MaterialTheme.colors.secondary
+//                ){
+//                    Icon(Icons.Filled.KeyboardArrowLeft,null)
+//                }
+//            }
+        }
     }
 }
 
 interface Route{
     val route: String
     val content : @Composable ( ) -> Unit
+    val canBack : Boolean
     class RouteNewsDetail(
         val id: String,
         override val route: String,
         override val content : @Composable () -> Unit = {
 //            NewsDetail()
-        }
+        },
+        override val canBack: Boolean = true
     ): Route
 
     class SchoolMap(
@@ -62,15 +130,18 @@ interface Route{
                 url = "https://pic1.zhimg.com/80/v2-ae48979cee947ee6cae729ef14bc144b_1440w.webp?source=2c26e567",
                 onClick = { -> }
             )
-        }
+        },
+        override val canBack: Boolean = true
     ):Route
+
     class ModifierInformation(
         val userId:Int,
         val userData: Data,
         override val route: String = "modifer",
         override val content: @Composable (  ) -> Unit = {
             ModifierInformationScreen(userId = userId, userData = userData)
-        }
+        },
+        override val canBack: Boolean = true
     ) : Route
 
     class OwnWebView(
@@ -84,23 +155,25 @@ interface Route{
                 },
                 start = start
             )
-        }
+        },
+        override val canBack: Boolean = true
     ) : Route
 
     class Weather(
         override val route: String = "weather",
         override val content: @Composable () -> Unit = {
             WeatherScreen()
-        }
+        },
+        override val canBack: Boolean = true
     ) : Route
-
 
     class Main (
         val id: String ,
         override val route: String = "Main",
         override val content: @Composable (  ) -> Unit = {
             MainScreen()
-        }
+        },
+        override val canBack: Boolean = false
     ) : Route
 
     class ReleasePage (
@@ -111,7 +184,8 @@ interface Route{
                     .fillMaxSize()
                     .padding(horizontal = 10.dp)
             )
-        }
+        },
+        override val canBack: Boolean = true
     ) : Route
 
     class Person (
@@ -121,7 +195,8 @@ interface Route{
            PersonScreen(
                id
            )
-        }
+        },
+        override val canBack: Boolean = true
     ) : Route
 
     class Massage private constructor(
@@ -132,14 +207,16 @@ interface Route{
                     .fillMaxSize()
                     .padding( all = 10.dp )
             )
-        }
+        },
+        override val canBack: Boolean = true
     ):Route
 
     class LoginWithRegister(
         override val route: String = "loginWithRegister",
         override val content: @Composable () -> Unit = {
             Assembly(Modifier.fillMaxSize())
-        }
+        },
+        override val canBack: Boolean = false
     ):Route
 
     class Splash(
@@ -150,7 +227,8 @@ interface Route{
                     .fillMaxSize()
                     .padding(10.dp)
             )
-        }
+        },
+        override val canBack: Boolean = false
     ):Route
 
     class QRCode(
@@ -160,7 +238,8 @@ interface Route{
                 modifier = Modifier
                     .fillMaxSize()
             )
-        }
+        },
+        override val canBack: Boolean = true
     ):Route
 
     class Feedback(
@@ -170,7 +249,8 @@ interface Route{
                 modifier = Modifier
                     .fillMaxSize()
             )
-        }
+        },
+        override val canBack: Boolean = true
     ):Route
 
     class Test(
@@ -180,7 +260,8 @@ interface Route{
             ReportScreen(
                 type = reportType
             )
-        }
+        },
+        override val canBack: Boolean = true
     ):Route
 
     class Report(
@@ -190,7 +271,8 @@ interface Route{
             ReportScreen(
                 type = reportType
             )
-        }
+        },
+        override val canBack: Boolean = true
     ):Route
 
     class AboutUs(
@@ -200,7 +282,8 @@ interface Route{
                 modifier = Modifier
                     .fillMaxSize()
             )
-        }
+        },
+        override val canBack: Boolean = true
     ):Route
 }
 

@@ -1,6 +1,9 @@
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import com.liftric.kvault.KVault
@@ -57,14 +60,16 @@ fun App(){
         modules(appModule())
     }) {
         val route = koinInject<RouteState>()
+        val mainViewState = koinInject<MainViewState>()
         FuTalkTheme{
             RouteHost(
                 modifier = Modifier.fillMaxSize(),
                 route = route
             )
         }
-        BackHandler(route.canBack.value){
-            route.back()
+        BackHandlerWithPlatform(mainViewState.showOrNot.value || !route.canBack.value){
+//            route.back()
+            mainViewState.showBackButton.last().invoke()
         }
     }
 }
@@ -77,8 +82,23 @@ fun getMyString(): StringDesc {
 
 expect fun getPlatformName(): String
 
+
+
 @Composable
-expect fun BackHandler(isEnabled: Boolean, onBack: @Composable ()-> Unit)
+fun BackHandler(isEnabled: Boolean, onBack: ()-> Unit){
+    if(isEnabled){
+        val mainViewState = koinInject<MainViewState>()
+        DisposableEffect(Unit){
+            mainViewState.showBackButton.add(onBack)
+            onDispose {
+                mainViewState.showBackButton.removeLast()
+            }
+        }
+    }
+}
+
+@Composable
+expect fun BackHandlerWithPlatform(isEnabled: Boolean, onBack: ()-> Unit)
 
 expect inline fun <reified T : ViewModel> Module.viewModelDefinition(
     qualifier: Qualifier? = null,
@@ -146,6 +166,9 @@ fun appModule() = module {
             }
         }
         return@single client
+    }
+    single {
+        MainViewState()
     }
     repositoryList()
     viewModel()
@@ -305,4 +328,11 @@ class ShareClient(
         configure()
     }
 )
+
+class MainViewState{
+    val showBackButton = mutableStateListOf<(()->Unit)>()
+    val showOrNot = derivedStateOf {
+        showBackButton.size != 0
+    }
+}
 
