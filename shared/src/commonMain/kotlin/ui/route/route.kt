@@ -52,7 +52,6 @@ fun RouteHost(
     modifier: Modifier = Modifier.ComposeSetting(),
     route:RouteState
 ){
-
     val toast = koinInject<Toast>()
     val mainViewState = koinInject<MainViewState>()
     Column{
@@ -95,7 +94,6 @@ fun RouteHost(
         }
     }
     EasyToast(toast)
-
 }
 
 interface Route{
