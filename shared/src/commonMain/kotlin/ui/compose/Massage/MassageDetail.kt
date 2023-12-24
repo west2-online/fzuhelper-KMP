@@ -49,6 +49,7 @@ fun MassageDetail(
         back?.invoke()
     }
     val listState = rememberLazyListState()
+
 //    val preScrollStartOffset by remember { mutableStateOf(listState.firstVisibleItemScrollOffset) }
 //    val preItemIndex by remember { mutableStateOf(listState.firstVisibleItemIndex) }
 //    val isScrollDown = if (listState.firstVisibleItemIndex > preItemIndex) {
@@ -84,7 +85,6 @@ fun MassageDetail(
                 isShowTopBar.value = used.first > it.first || (used.first == it.first && used.second > it.second)
             }
     }
-
     Box(modifier){
         Column {
             LazyColumn(
@@ -132,7 +132,7 @@ fun MassageDetail(
         ) {
             Box(
                 modifier = Modifier
-                    .padding(10.dp)
+                    .fillMaxWidth()
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colors.primarySurface)

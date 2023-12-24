@@ -166,10 +166,7 @@ fun LazyItemScope.FunctionsItem(
         .padding( start = 10.dp )
 ){
     Row(
-        modifier = modifier
-            .clickable {
-                       onclick.invoke()
-            },
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ){
         Icon(

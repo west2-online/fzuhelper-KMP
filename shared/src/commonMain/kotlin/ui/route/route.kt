@@ -45,12 +45,15 @@ import ui.compose.SplashPage.SplashPage
 import ui.compose.Weather.WeatherScreen
 import ui.compose.Webview.OwnWebViewScreen
 import ui.util.compose.EasyToast
+import ui.util.compose.Toast
 
 @Composable
 fun RouteHost(
     modifier: Modifier = Modifier.ComposeSetting(),
     route:RouteState
 ){
+
+    val toast = koinInject<Toast>()
     val mainViewState = koinInject<MainViewState>()
     Column{
         Crossfade(
@@ -91,13 +94,16 @@ fun RouteHost(
 
         }
     }
-    EasyToast()
+    EasyToast(toast)
+
 }
 
 interface Route{
+
     val route: String
-    val content : @Composable ( ) -> Unit
+    val content : @Composable () -> Unit
     val canBack : Boolean
+
     class RouteNewsDetail(
         val id: String,
         override val route: String,
@@ -270,6 +276,7 @@ interface Route{
         },
         override val canBack: Boolean = true
     ):Route
+
 }
 
 class RouteState(start:Route){
