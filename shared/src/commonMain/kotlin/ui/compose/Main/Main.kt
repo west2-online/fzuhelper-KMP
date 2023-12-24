@@ -1,11 +1,15 @@
 package ui.compose.Main
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.rememberPagerState
@@ -21,29 +25,31 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.zip
 import ui.compose.Massage.MassageScreen
 import ui.compose.Person.PersonScreen
 import ui.compose.Person.PersonalDrawer
 import ui.compose.Post.NewScreen
-import ui.compose.Ribbon.Ribbon
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainScreen(
-
-){
-//    BackHandler(true){
-//        route.remove(route.last())
-//    }
+fun MainScreen(){
+    val visibility = remember {
+        mutableStateOf(true)
+    }
     Scaffold(
         drawerContent = {
             PersonalDrawer(
@@ -68,7 +74,7 @@ fun MainScreen(
                     pagerState.animateScrollToPage(selectedItem)
                 }
                 Box (
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = Modifier.fillMaxWidth().weight(1f).animateContentSize(),
                 ){
                     HorizontalPager(
                         state = pagerState,
@@ -79,21 +85,49 @@ fun MainScreen(
                            modifier = Modifier
                                .fillMaxSize()
                        ){
-                           MainItems.values()[it].content(scope)
+                           MainItems.values()[it].content(scope,visibility)
                        }
                     }
                 }
-                BottomNavigation{
-                    MainItems.values().forEachIndexed { index, item ->
-                        BottomNavigationItem(
-                            icon = { Icon(item.imageVector, contentDescription = null) },
-                            label = { Text(item.tag) },
-                            selected = selectedItem == index,
-                            onClick = { selectedItem = index },
-                            selectedContentColor = MaterialTheme.colors.primaryVariant
-                        )
+//                AnimatedVisibility(
+//                    visibility.value,
+//                    exit = slideOutVertically {
+//                        fullHeight ->  fullHeight + 20
+//                    }
+//                ){
+//
+//                }
+                Row (
+                    modifier = Modifier
+                        .animateContentSize()
+                        .fillMaxWidth()
+                        .composed {
+                            if(!true){
+                                this.height(0.dp)
+                            }else{
+                                this.wrapContentHeight()
+                            }
+                        }
+                ){
+                    BottomNavigation(
+                        modifier = Modifier
+                            .weight(1f)
+                    ){
+                        MainItems.values().forEachIndexed { index, item ->
+                            BottomNavigationItem(
+                                icon = { Icon(item.imageVector, contentDescription = null) },
+                                label = { Text(item.tag) },
+                                selected = selectedItem == index,
+                                onClick = {
+                                    selectedItem = index
+                                    visibility.value = true
+                              },
+                                selectedContentColor = MaterialTheme.colors.primaryVariant
+                            )
+                        }
                     }
                 }
+
             }
         },
         modifier = Modifier
@@ -104,42 +138,91 @@ fun MainScreen(
 enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
     val tag : String,
     val imageVector: ImageVector,
-    val content : @Composable PagerScope.() -> Unit = {}
+    val content : @Composable PagerScope.(MutableState<Boolean>) -> Unit = {}
 ){
     @OptIn(ExperimentalFoundationApi::class)
     NEWS(
         "主页",
         Icons.Filled.Home,
-        content = {
-            NewScreen(
-                Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 10.dp),
-            )
+        content = {showState ->
+            Box{
+                val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
+                val first = androidx.compose.runtime.mutableStateOf(
+                    Pair(
+                        lazyListState.firstVisibleItemIndex,
+                        lazyListState.firstVisibleItemScrollOffset
+                    )
+                )
+
+                DisposableEffect(Unit) {
+                    first.value =  Pair(lazyListState.firstVisibleItemIndex,lazyListState.firstVisibleItemScrollOffset)
+                    onDispose {
+                        showState.value = true
+                    }
+                }
+
+                NewScreen(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 10.dp),
+                    state = lazyListState
+                )
+
+                LaunchedEffect(lazyListState) {
+                    snapshotFlow { lazyListState.firstVisibleItemIndex }
+                        .zip(snapshotFlow { lazyListState.firstVisibleItemScrollOffset }) { index, offset ->
+                            Pair(index, offset)
+                        }
+                        .collect {
+                            val used = first.value
+                            if (used != it) {
+                                first.value = it
+                            }
+                            showState.value =
+                                used.first > it.first || (used.first == it.first && used.second > it.second)
+                        }
+                }
+            }
         }
     ),
     @OptIn(ExperimentalFoundationApi::class)
     ACTION(
         "功能",
         Icons.Filled.Share,
-        content = {
-            Ribbon(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(10.dp)
-            )
+        content = {showState ->
+            Box {
+                DisposableEffect(Unit) {
+                    showState.value = true
+                    onDispose {
+                        showState.value = true
+                    }
+                }
+                ui.compose.Ribbon.Ribbon(
+                    modifier = androidx.compose.ui.Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
+                )
+            }
         }
     ),
     @OptIn(ExperimentalFoundationApi::class)
     MASSAGE(
         "消息",
         Icons.Filled.Email,
-        content = {
-            MassageScreen(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(10.dp)
-            )
+        content = {showState ->
+            Box {
+                DisposableEffect(Unit) {
+                    showState.value = true
+                    onDispose {
+                        showState.value = true
+                    }
+                }
+                MassageScreen(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
+                )
+            }
         }
     ),
     @OptIn(ExperimentalFoundationApi::class)

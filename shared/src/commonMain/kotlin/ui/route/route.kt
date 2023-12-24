@@ -4,22 +4,22 @@ import BackHandler
 import ComposeSetting
 import MainViewState
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import data.Person.UserData.Data
 import kotlinx.coroutines.CoroutineScope
@@ -51,60 +51,80 @@ fun RouteHost(
     route:RouteState
 ){
     val mainViewState = koinInject<MainViewState>()
-    Box(
-        modifier = modifier
-    ){
-        Crossfade(
-            modifier = Modifier
-                .fillMaxSize(),
-            targetState = route.currentPage.value
-        ) {
-
-            it?.let {
-                BackHandler(isEnabled = it.canBack){
-                    route.back()
-                }
-                it.content.invoke()
-            }
-
-        }
+    Column{
         Crossfade(
             mainViewState.showOrNot.value,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .offset(x = (-10).dp,y = 10.dp)
-                .size(50.dp),
-            animationSpec = tween(500),
         ){
             if(it){
-                FloatingActionButton(
-                    onClick = {
-                        mainViewState.showBackButton.last().invoke()
-                    },
-                    containerColor = MaterialTheme.colors.secondary,
-
-                ){
-                    Icon(Icons.Filled.KeyboardArrowLeft,null)
+                Row {
+                    Icon(
+                        imageVector = Icons.Filled.KeyboardArrowLeft,
+                        null,
+                        modifier = Modifier
+                            .size(45.dp)
+                            .padding(4.dp)
+                            .clip(CircleShape)
+                            .clickable {
+                                mainViewState.showBackButton.lastOrNull()?.invoke()
+                            },
+                    )
                 }
             }
-//            AnimatedVisibility(
-//                mainViewState.showOrNot.value,
-//                modifier = Modifier
-//                    .offset( x = 10.dp , y = 10.dp)
-//                    .size(50.dp),
-//                exit = slideOutVertically(){
-//                    -20
-//                } + fadeOut()
-//            ){
+        }
+//        Crossfade(
+//            mainViewState.showOrNot.value,
+//            modifier = Modifier
+//                .align(Alignment.TopEnd)
+//                .offset(x = (-10).dp, y = 10.dp)
+//                .size(50.dp),
+//            animationSpec = tween(500),
+//        ) {
+//            if (it) {
 //                FloatingActionButton(
 //                    onClick = {
 //                        mainViewState.showBackButton.last().invoke()
 //                    },
-//                    containerColor = MaterialTheme.colors.secondary
-//                ){
-//                    Icon(Icons.Filled.KeyboardArrowLeft,null)
+//                    containerColor = MaterialTheme.colors.secondary,
+//
+//                    ) {
+//                    Icon(Icons.Filled.KeyboardArrowLeft, null)
 //                }
 //            }
+////            AnimatedVisibility(
+////                mainViewState.showOrNot.value,
+////                modifier = Modifier
+////                    .offset( x = 10.dp , y = 10.dp)
+////                    .size(50.dp),
+////                exit = slideOutVertically(){
+////                    -20
+////                } + fadeOut()
+////            ){
+////                FloatingActionButton(
+////                    onClick = {
+////                        mainViewState.showBackButton.last().invoke()
+////                    },
+////                    containerColor = MaterialTheme.colors.secondary
+////                ){
+////                    Icon(Icons.Filled.KeyboardArrowLeft,null)
+////                }
+////            }
+//        }
+        Box(
+            modifier = modifier
+        ) {
+            Crossfade(
+                modifier = Modifier
+                    .fillMaxSize(),
+                targetState = route.currentPage.value
+            ) {
+                it?.let {
+                    BackHandler(isEnabled = it.canBack) {
+                        route.back()
+                    }
+                    it.content.invoke()
+                }
+            }
+
         }
     }
 }

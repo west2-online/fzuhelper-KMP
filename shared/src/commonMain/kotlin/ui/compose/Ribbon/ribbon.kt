@@ -137,7 +137,7 @@ private fun Carousel(
 }
 
 enum class Functions(val route:Route,val functionName: String,val painter: ImageResource){
-    QRCODE(route = Route.QRCode(),functionName = "二维码生成", painter = MR.images.feedback),
+    QRCODE(route = Route.QRCode(),functionName = "二维码生成", painter = MR.images.qrcode),
     WebView(route = Route.OwnWebView("https://welcome.fzuhelper.w2fzu.com/#/"),functionName = "新生宝典", painter = MR.images.login),
     Weather(route = Route.Weather(),functionName = "天气", painter = MR.images.close),
     Map(route = Route.SchoolMap(),functionName = "天气", painter = MR.images.close),

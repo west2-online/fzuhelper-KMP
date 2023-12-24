@@ -4,6 +4,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,14 +20,15 @@ import ui.util.compose.rememberToastState
 @Composable
 fun NewScreen(
     modifier: Modifier = Modifier,
-    viewModel:NewViewModel = koinInject()
+    viewModel:NewViewModel = koinInject(),
+    state: LazyListState = rememberLazyListState()
 ){
 
 //    LaunchedEffect(Unit){
 //        viewModel.getPostByPage("1")
 //    }
     val toastState = rememberToastState()
-    val state = rememberLazyListState()
+
     Crossfade(
         viewModel.currentItem.value
     ){
