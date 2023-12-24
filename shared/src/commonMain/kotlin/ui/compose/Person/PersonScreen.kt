@@ -189,6 +189,7 @@ fun PersonScreen(
         }
         EasyToast(toast = toast)
     }
+
 }
 
 @Composable

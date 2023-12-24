@@ -44,6 +44,7 @@ import ui.compose.SchoolMap.SchoolMapScreen
 import ui.compose.SplashPage.SplashPage
 import ui.compose.Weather.WeatherScreen
 import ui.compose.Webview.OwnWebViewScreen
+import ui.util.compose.EasyToast
 
 @Composable
 fun RouteHost(
@@ -71,44 +72,7 @@ fun RouteHost(
                 }
             }
         }
-//        Crossfade(
-//            mainViewState.showOrNot.value,
-//            modifier = Modifier
-//                .align(Alignment.TopEnd)
-//                .offset(x = (-10).dp, y = 10.dp)
-//                .size(50.dp),
-//            animationSpec = tween(500),
-//        ) {
-//            if (it) {
-//                FloatingActionButton(
-//                    onClick = {
-//                        mainViewState.showBackButton.last().invoke()
-//                    },
-//                    containerColor = MaterialTheme.colors.secondary,
-//
-//                    ) {
-//                    Icon(Icons.Filled.KeyboardArrowLeft, null)
-//                }
-//            }
-////            AnimatedVisibility(
-////                mainViewState.showOrNot.value,
-////                modifier = Modifier
-////                    .offset( x = 10.dp , y = 10.dp)
-////                    .size(50.dp),
-////                exit = slideOutVertically(){
-////                    -20
-////                } + fadeOut()
-////            ){
-////                FloatingActionButton(
-////                    onClick = {
-////                        mainViewState.showBackButton.last().invoke()
-////                    },
-////                    containerColor = MaterialTheme.colors.secondary
-////                ){
-////                    Icon(Icons.Filled.KeyboardArrowLeft,null)
-////                }
-////            }
-//        }
+
         Box(
             modifier = modifier
         ) {
@@ -127,6 +91,7 @@ fun RouteHost(
 
         }
     }
+    EasyToast()
 }
 
 interface Route{

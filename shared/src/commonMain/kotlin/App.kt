@@ -9,8 +9,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import com.liftric.kvault.KVault
 import config.BaseUrlConfig
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
-import dev.icerock.moko.resources.desc.Resource
-import dev.icerock.moko.resources.desc.StringDesc
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.DefaultRequest
@@ -22,7 +20,8 @@ import io.ktor.client.statement.HttpReceivePipeline
 import io.ktor.http.headers
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.pipeline.PipelinePhase
-import org.example.library.MR
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.koin.core.definition.Definition
@@ -51,7 +50,7 @@ import ui.route.Route
 import ui.route.RouteHost
 import ui.route.RouteState
 import ui.util.compose.FuTalkTheme
-
+import ui.util.compose.Toast
 
 
 @Composable
@@ -67,21 +66,16 @@ fun App(){
                 route = route
             )
         }
-        BackHandlerWithPlatform(mainViewState.showOrNot.value || !route.canBack.value){
-//            route.back()
-            mainViewState.showBackButton.last().invoke()
+        BackHandlerWithPlatform(mainViewState.showOrNot.value){
+            mainViewState.showBackButton.lastOrNull()?.invoke()
+            mainViewState.showBackButton.lastOrNull()?: run {
+
+            }
         }
     }
 }
-//fun getMyPluralDesc(quantity: Int): StringDesc {
-//    return StringDesc.Plural(MR.plurals.my_string, quantity)
-//}
-fun getMyString(): StringDesc {
-    return StringDesc.Resource(MR.strings.my_string)
-}
 
 expect fun getPlatformName(): String
-
 
 @Composable
 fun BackHandler(isEnabled: Boolean, onBack: ()-> Unit){
@@ -126,8 +120,6 @@ fun appModule() = module {
             ){
                 val kVault = get<KVault>()
                 val token : String? = kVault.string(forKey = "token")
-                println("token in clint data: ${token}")
-                println()
                 token?.let {
                     headers.append("Authorization",token)
                 }
@@ -187,6 +179,10 @@ fun appModule() = module {
     }
     single {
         ShareClient()
+    }
+    single {
+        val scope = CoroutineScope(Job())
+        return@single Toast(scope)
     }
 }
 
@@ -285,16 +281,6 @@ expect class PlatformContext
 expect fun getPlatformContext(): PlatformContext
 
 
-suspend fun KVault.token(routeState: RouteState,block:suspend (token:String)->Unit) {
-    val token = this.string("token")
-    if(token == null ){
-        routeState.reLogin()
-    }
-    else{
-        block.invoke(token)
-    }
-}
-
 class LoginClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
@@ -333,5 +319,6 @@ class MainViewState{
     val showOrNot = derivedStateOf {
         showBackButton.size != 0
     }
+
 }
 
