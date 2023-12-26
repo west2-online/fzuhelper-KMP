@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import com.liftric.kvault.KVault
@@ -68,9 +69,7 @@ fun App(){
         }
         BackHandlerWithPlatform(mainViewState.showOrNot.value){
             mainViewState.showBackButton.lastOrNull()?.invoke()
-            mainViewState.showBackButton.lastOrNull()?: run {
-
-            }
+            mainViewState.showBackButton.lastOrNull()?: run {}
         }
     }
 }
@@ -301,6 +300,7 @@ class LoginClient(
         configure()
     }
 )
+
 class ShareClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
@@ -319,6 +319,20 @@ class MainViewState{
     val showOrNot = derivedStateOf {
         showBackButton.size != 0
     }
+    val itemForSelect = mutableStateOf<List<SelectItem>?>(null)
+    val expanded = mutableStateOf(true)
+    val showOrNotSelectList = derivedStateOf {
+        itemForSelect.value != null
+    }
 
+    val title = mutableStateOf<String?>(null)
 }
+
+data class SelectItem(
+    val text : String,
+    val click : ()->Unit,
+)
+
+
+
 

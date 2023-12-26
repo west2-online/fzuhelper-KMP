@@ -143,4 +143,5 @@ enum class Functions(val route:Route,val functionName: String,val painter: Image
     Map(route = Route.SchoolMap(),functionName = "天气", painter = MR.images.close),
 //    Test(route = Route.Test(),functionName = "测试", painter = MR.images.close)
     AboutUs(route = Route.AboutUs(),functionName = "关于我们", painter = MR.images.FuTalk),
+    Manage(route = Route.Manage(),functionName = "管理", painter = MR.images.not_solved),
 }
