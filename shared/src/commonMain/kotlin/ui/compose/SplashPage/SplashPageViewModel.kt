@@ -23,7 +23,7 @@ class SplashPageViewModel(
 
     fun navigateToMain(){
 //        route.removeLast()
-        routeState.navigateWithPop(Route.Main("1"))
+        routeState.navigateWithPop(Route.Main())
     }
 
     fun getSplashPageImage(){

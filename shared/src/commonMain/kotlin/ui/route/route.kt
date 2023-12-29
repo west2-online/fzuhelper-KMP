@@ -211,7 +211,6 @@ interface Route {
     ) : Route
 
     class Main (
-        val id: String ,
         override val route: String = "主页",
         override val content: @Composable (RouteViewState) -> Unit = {
             MainScreen()

@@ -1,15 +1,15 @@
 package ui.compose.Main
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.rememberPagerState
@@ -24,6 +24,10 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.zip
@@ -89,45 +93,58 @@ fun MainScreen(){
                        }
                     }
                 }
-//                AnimatedVisibility(
-//                    visibility.value,
-//                    exit = slideOutVertically {
-//                        fullHeight ->  fullHeight + 20
-//                    }
-//                ){
-//
-//                }
-                Row (
+
+                BottomNavigation(
                     modifier = Modifier
-                        .animateContentSize()
                         .fillMaxWidth()
-                        .composed {
-                            if(!true){
-                                this.height(0.dp)
-                            }else{
-                                this.wrapContentHeight()
-                            }
-                        }
-                ){
-                    BottomNavigation(
-                        modifier = Modifier
-                            .weight(1f)
-                    ){
-                        MainItems.values().forEachIndexed { index, item ->
-                            BottomNavigationItem(
-                                icon = { Icon(item.imageVector, contentDescription = null) },
-                                label = { Text(item.tag) },
-                                selected = selectedItem == index,
-                                onClick = {
-                                    selectedItem = index
-                                    visibility.value = true
-                              },
-                                selectedContentColor = MaterialTheme.colors.primaryVariant
-                            )
-                        }
+                        .height(70.dp)
+                ) {
+                    MainItems.values().forEachIndexed { index, item ->
+                        BottomNavigationItem(
+                            icon = {
+                                val imageVector = remember(selectedItem ) {
+                                    mutableStateOf(
+                                        if(selectedItem == index){
+                                             item.selectImageVector
+                                        } else{
+                                             item.unSelectImageVector
+                                        }
+                                    )
+                                }
+                                Crossfade (
+                                    imageVector.value
+                                ){
+                                    Icon(
+                                        it,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .drawWithContent {
+                                                drawContent()
+                                            }
+                                    )
+                                }
+
+                            },
+                            label = { Text(item.tag) },
+                            selected = selectedItem == index,
+                            onClick = {
+                                selectedItem = index
+                                visibility.value = true
+                            },
+                            selectedContentColor = MaterialTheme.colors.primaryVariant,
+                            modifier = Modifier
+                                .animateContentSize()
+                                .then(
+                                    if(selectedItem == index){
+                                        Modifier.weight(1f)
+                                    }
+                                    else{
+                                        Modifier.width(50.dp)
+                                    }
+                                )
+                        )
                     }
                 }
-
             }
         },
         modifier = Modifier
@@ -137,13 +154,15 @@ fun MainScreen(){
 
 enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
     val tag : String,
-    val imageVector: ImageVector,
+    val unSelectImageVector: ImageVector,
+    val selectImageVector: ImageVector,
     val content : @Composable PagerScope.(MutableState<Boolean>) -> Unit = {}
 ){
     @OptIn(ExperimentalFoundationApi::class)
     NEWS(
         "主页",
-        Icons.Filled.Home,
+        unSelectImageVector = Icons.Outlined.Home,
+        selectImageVector = Icons.Filled.Home,
         content = {showState ->
             Box{
                 val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -188,7 +207,8 @@ enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
     @OptIn(ExperimentalFoundationApi::class)
     ACTION(
         "功能",
-        Icons.Filled.Share,
+        unSelectImageVector = Icons.Outlined.Share,
+        selectImageVector = Icons.Filled.Share,
         content = {showState ->
             Box {
                 DisposableEffect(Unit) {
@@ -208,7 +228,8 @@ enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
     @OptIn(ExperimentalFoundationApi::class)
     MASSAGE(
         "消息",
-        Icons.Filled.Email,
+        unSelectImageVector = Icons.Outlined.Email,
+        selectImageVector = Icons.Filled.Email,
         content = {showState ->
             Box {
                 DisposableEffect(Unit) {
@@ -228,7 +249,8 @@ enum class MainItems @OptIn(ExperimentalFoundationApi::class) constructor(
     @OptIn(ExperimentalFoundationApi::class)
     PERSON(
         "个人",
-        Icons.Filled.Person,
+        unSelectImageVector = Icons.Outlined.Person,
+        selectImageVector = Icons.Filled.Person,
         content = {
             PersonScreen()
         }
