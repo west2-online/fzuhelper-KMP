@@ -3,7 +3,7 @@ package ui.compose.Manage
 import SelectItem
 import TopBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import org.koin.compose.koinInject
 
@@ -12,7 +12,7 @@ fun ManageScreen(
     modifier: Modifier = Modifier
 ){
     val topBarState = koinInject<TopBarState>()
-    LaunchedEffect(Unit){
+    DisposableEffect(Unit){
         topBarState.registerItemForSelect(
             listOf(
                 SelectItem(
@@ -24,6 +24,9 @@ fun ManageScreen(
                 )
             )
         )
+        onDispose {
+            topBarState.registerItemForSelect(null)
+        }
     }
 }
 

@@ -166,7 +166,7 @@ interface Route {
     ): Route
 
     class SchoolMap(
-        override val route: String = "schoolMap",
+        override val route: String = "校园地图",
         override val content: @Composable (RouteViewState) -> Unit = {
             SchoolMapScreen(
                 modifier = Modifier,
@@ -180,7 +180,7 @@ interface Route {
     class ModifierInformation(
         val userId:Int,
         val userData: Data,
-        override val route: String = "modifer",
+        override val route: String = "修改个人信息",
         override val content: @Composable (RouteViewState) -> Unit = {
             ModifierInformationScreen(userId = userId, userData = userData)
         },
@@ -189,7 +189,7 @@ interface Route {
 
     class OwnWebView(
         val start:String,
-        override val route: String = "webview",
+        override val route: String = "",
         override val content: @Composable (RouteViewState) -> Unit = {
             val routeState = koinInject<RouteState>()
             OwnWebViewScreen(
@@ -203,7 +203,7 @@ interface Route {
     ) : Route
 
     class Weather(
-        override val route: String = "weather",
+        override val route: String = "天气",
         override val content: @Composable (RouteViewState) -> Unit = {
             WeatherScreen()
         },
@@ -212,7 +212,7 @@ interface Route {
 
     class Main (
         val id: String ,
-        override val route: String = "Main",
+        override val route: String = "主页",
         override val content: @Composable (RouteViewState) -> Unit = {
             MainScreen()
         },
@@ -220,7 +220,7 @@ interface Route {
     ) : Route
 
     class ReleasePage (
-        override val route: String = "ReleasePage",
+        override val route: String = "发布页",
         override val content: @Composable (RouteViewState) -> Unit = {
             ReleasePageScreen(
                 modifier = Modifier
@@ -232,7 +232,7 @@ interface Route {
     ) : Route
 
     class Person (
-        override val route: String = "person",
+        override val route: String = "个人页",
         id: String? = null,
         override val content: @Composable (RouteViewState) -> Unit = {
            PersonScreen(
@@ -243,7 +243,7 @@ interface Route {
     ) : Route
 
     class Massage private constructor(
-        override val route: String,
+        override val route: String = "信息",
         override val content: @Composable (RouteViewState) -> Unit = {
             MassageScreen(
                 modifier = Modifier
@@ -255,7 +255,7 @@ interface Route {
     ):Route
 
     class LoginWithRegister(
-        override val route: String = "loginWithRegister",
+        override val route: String = "登录注册",
         override val content: @Composable (RouteViewState) -> Unit = {
             Assembly(Modifier.fillMaxSize())
         },
@@ -263,7 +263,7 @@ interface Route {
     ):Route
 
     class Splash(
-        override val route: String = "Splash",
+        override val route: String = "开屏页",
         override val content: @Composable (RouteViewState) -> Unit = {
             SplashPage(
                 modifier = Modifier
@@ -275,7 +275,7 @@ interface Route {
     ):Route
 
     class QRCode(
-        override val route: String = "QRCode",
+        override val route: String = "二维码生成",
         override val content: @Composable (RouteViewState) -> Unit = {
             QRCodeScreen(
                 modifier = Modifier
@@ -286,7 +286,7 @@ interface Route {
     ):Route
 
     class Feedback(
-        override val route: String = "QRCode",
+        override val route: String = "反馈",
         override val content: @Composable (RouteViewState) -> Unit = {
             FeedbackScreen(
                 modifier = Modifier
@@ -297,7 +297,7 @@ interface Route {
     ):Route
 
     class Test(
-        override val route: String = "Test",
+        override val route: String = "测试",
         val reportType: ReportType,
         override val content: @Composable (RouteViewState) -> Unit = {
             ReportScreen(
@@ -308,7 +308,7 @@ interface Route {
     ):Route
 
     class Report(
-        override val route: String = "report",
+        override val route: String = "举报",
         private val reportType: ReportType,
         override val content: @Composable (RouteViewState) -> Unit = {
             ReportScreen(
@@ -319,7 +319,7 @@ interface Route {
     ):Route
 
     class AboutUs(
-        override val route: String = "aboutUs",
+        override val route: String = "关于我们",
         override val content: @Composable (RouteViewState) -> Unit = {
             AboutUsScreen(
                 modifier = Modifier
@@ -330,7 +330,7 @@ interface Route {
     ):Route
 
     class Manage(
-        override val route: String = "manage",
+        override val route: String = "管理社区",
         override val content: @Composable (RouteViewState) -> Unit = {
                 ManageScreen()
         },
