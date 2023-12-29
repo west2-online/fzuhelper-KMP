@@ -162,7 +162,7 @@ fun NewsDetail(
         mutableStateOf<CommentState>(CommentState())
     }
 
-    BackHandler(back!=null){
+    BackHandler(back != null){
         back?.invoke()
     }
 

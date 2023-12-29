@@ -1,5 +1,6 @@
 package ui.compose.Person
 
+import SystemAction
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -15,12 +16,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -129,6 +133,16 @@ fun Functions(
             )
         }
         item {
+            val systemAction = koinInject<SystemAction>()
+            FunctionsItem(
+                Icons.Filled.ExitToApp,
+                {
+                    systemAction.onFinish.invoke()
+                },
+                "退出程序"
+            )
+        }
+        item {
             FunctionsItem(
                 painterResource(MR.images.loginOut),
                 onclick = {
@@ -142,10 +156,6 @@ fun Functions(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
                     .background(Color(231, 64, 50))
-                    .clickable {
-                        kVault.clear()
-                        routeState.reLogin()
-                    }
                     .padding( start = 10.dp )
             )
         }
@@ -171,6 +181,42 @@ fun LazyItemScope.FunctionsItem(
     ){
         Icon(
             painter = painter,
+            "",
+            modifier = Modifier
+                .fillMaxHeight(0.4f)
+                .aspectRatio(1f)
+        )
+        Text(
+            text,
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 10.dp),
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            softWrap = false
+        )
+    }
+}
+
+@Composable
+fun LazyItemScope.FunctionsItem(
+    imageVector: ImageVector,
+    onclick :()->Unit = { },
+    text : String,
+    modifier: Modifier = Modifier
+        .padding(bottom = 10.dp)
+        .height(50.dp)
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(10.dp))
+        .clickable { onclick.invoke() }
+        .padding( start = 10.dp )
+){
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Icon(
+            imageVector = imageVector,
             "",
             modifier = Modifier
                 .fillMaxHeight(0.4f)

@@ -1,9 +1,7 @@
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -55,21 +53,22 @@ import ui.util.compose.Toast
 
 
 @Composable
-fun App(){
+fun App(
+    onBack: () -> Unit = {},
+    finish :() ->Unit = {}
+){
     KoinApplication(application = {
-        modules(appModule())
+        modules(appModule(
+            onBack,
+            finish
+        ))
     }) {
         val route = koinInject<RouteState>()
-        val mainViewState = koinInject<MainViewState>()
         FuTalkTheme{
             RouteHost(
                 modifier = Modifier.fillMaxSize(),
-                route = route
+                routeState = route
             )
-        }
-        BackHandlerWithPlatform(mainViewState.showOrNot.value){
-            mainViewState.showBackButton.lastOrNull()?.invoke()
-            mainViewState.showBackButton.lastOrNull()?: run {}
         }
     }
 }
@@ -78,15 +77,7 @@ expect fun getPlatformName(): String
 
 @Composable
 fun BackHandler(isEnabled: Boolean, onBack: ()-> Unit){
-    if(isEnabled){
-        val mainViewState = koinInject<MainViewState>()
-        DisposableEffect(Unit){
-            mainViewState.showBackButton.add(onBack)
-            onDispose {
-                mainViewState.showBackButton.removeLast()
-            }
-        }
-    }
+    BackHandlerWithPlatform(isEnabled,onBack)
 }
 
 @Composable
@@ -99,7 +90,13 @@ expect inline fun <reified T : ViewModel> Module.viewModelDefinition(
 
 expect fun ByteArray.asImageBitmap(): ImageBitmap
 
-fun appModule() = module {
+fun appModule(
+    onBack: () -> Unit,
+    onFinish :() ->Unit
+) = module {
+    single {
+        SystemAction(onBack,onFinish)
+    }
     single {
         val client = HttpClient{
             install(ContentNegotiation) {
@@ -108,8 +105,6 @@ fun appModule() = module {
             headers {
                 val kVault = get<KVault>()
                 val token : String? = kVault.string(forKey = "token")
-                println("token in clint data: ${token}")
-                println()
                 token?.let {
                     append("Authorization",token)
                 }
@@ -132,19 +127,7 @@ fun appModule() = module {
                 checkHttpMethod = false
             }
             configure()
-//            HttpResponseValidator{
-//                validateResponse{
-//                    val data = it
-//                    println("this is data ${data.bodyAsText()}")
-//                    it.ensureActive()
-//                }
-//            }
         }
-//        client.sendPipeline.intercept(HttpSendPipeline.State){
-//            val kVault = get<KVault>()
-//            val token : String? = kVault.string(forKey = "token")
-//            context.header("Authorization",token)
-//        }
         val authPhase = PipelinePhase("Auth")
         client.receivePipeline.insertPhaseBefore(HttpReceivePipeline.Before,authPhase)
         client.receivePipeline.intercept(authPhase){
@@ -158,7 +141,7 @@ fun appModule() = module {
         return@single client
     }
     single {
-        MainViewState()
+        TopBarState( get() )
     }
     repositoryList()
     viewModel()
@@ -186,7 +169,6 @@ fun appModule() = module {
 }
 
 fun HttpClientConfig<*>.configure() {
-    // TODO: Add common config
     configureForPlatform()
 }
 
@@ -195,8 +177,6 @@ internal expect fun HttpClientConfig<*>.configureForPlatform()
 expect fun initStore(): KVault
 
 expect @Composable fun Modifier.ComposeSetting():Modifier
-
-
 
 fun Module.repositoryList(){
     single {
@@ -255,9 +235,6 @@ fun Module.viewModel(){
     }
 }
 
-
-
-
 expect class ImagePickerFactory(context: PlatformContext) {
     @Composable
     fun createPicker(): ImagePicker
@@ -266,19 +243,16 @@ expect class ImagePickerFactory(context: PlatformContext) {
 expect class ImagePicker {
     @Composable
     fun registerPicker(onImagePicked: (ByteArray) -> Unit)
-
     fun pickImage()
 }
 
 @Composable
 expect fun rememberBitmapFromBytes(bytes: ByteArray?): ImageBitmap?
 
-
 expect class PlatformContext
 
 @Composable
 expect fun getPlatformContext(): PlatformContext
-
 
 class LoginClient(
     val client : HttpClient = HttpClient{
@@ -314,18 +288,17 @@ class ShareClient(
     }
 )
 
-class MainViewState{
-    val showBackButton = mutableStateListOf<(()->Unit)>()
-    val showOrNot = derivedStateOf {
-        showBackButton.size != 0
-    }
+class TopBarState(val routeState : RouteState){
     val itemForSelect = mutableStateOf<List<SelectItem>?>(null)
-    val expanded = mutableStateOf(true)
-    val showOrNotSelectList = derivedStateOf {
+    val expanded = mutableStateOf(false)
+    val itemForSelectShow = derivedStateOf {
         itemForSelect.value != null
     }
-
+    fun registerItemForSelect(list:List<SelectItem>?){
+        itemForSelect.value = list
+    }
     val title = mutableStateOf<String?>(null)
+
 }
 
 data class SelectItem(
@@ -333,6 +306,13 @@ data class SelectItem(
     val click : ()->Unit,
 )
 
+data class BackItem(
+    val label: String,
+    val click: () -> Unit
+)
 
 
-
+class SystemAction(
+    val onBack :() -> Unit,
+    val onFinish: () -> Unit
+)

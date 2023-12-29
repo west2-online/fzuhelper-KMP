@@ -2,7 +2,7 @@ package ui.route
 
 import BackHandler
 import ComposeSetting
-import MainViewState
+import TopBarState
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -23,9 +23,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,114 +64,102 @@ import ui.util.compose.Toast
 @Composable
 fun RouteHost(
     modifier: Modifier = Modifier.ComposeSetting(),
-    route:RouteState
+    routeState:RouteState
 ){
     val toast = koinInject<Toast>()
-    val mainViewState = koinInject<MainViewState>()
-    Column{
+    val topBarState = koinInject<TopBarState>()
+    Box(
+        modifier = modifier
+    ) {
         Crossfade(
-            mainViewState.showOrNot.value,
-        ){
-            if(it){
-                Row (
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(
-                        imageVector = Icons.Filled.KeyboardArrowLeft,
-                        null,
-                        modifier = Modifier
-                            .size(45.dp)
-                            .padding(4.dp)
-                            .clip(CircleShape)
-                            .clickable {
-                                mainViewState.showBackButton.lastOrNull()?.invoke()
-                            },
-                    )
-                    Box(modifier = Modifier.wrapContentHeight().weight(1f)){
-                        Crossfade(
-                            mainViewState.title.value
-                        ){
-                            it?.let { title ->
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = title,
-                                    textAlign = TextAlign.Center,
-                                    overflow = TextOverflow.Ellipsis
+            modifier = Modifier
+                .fillMaxSize(),
+            targetState = routeState.currentPage.value
+        ) {
+            it?.let { route ->
+                val routeViewState = remember {
+                    mutableStateOf(RouteViewState())
+                }
+                Column{
+                    Crossfade( routeState.canBack.value || topBarState.itemForSelectShow.value ){
+                        if (it) {
+                            Row ( verticalAlignment = Alignment.CenterVertically ){
+                                Icon(
+                                    imageVector = Icons.Filled.KeyboardArrowLeft,
+                                    null,
+                                    modifier = Modifier
+                                        .size(45.dp)
+                                        .padding(4.dp)
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            routeState.back()
+                                        },
                                 )
-                            }
-                        }
-
-                    }
-                    if(mainViewState.showOrNotSelectList.value){
-                        IconButton(
-                            onClick = { mainViewState.expanded.value = true },
-                        ) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
-                            DropdownMenu(
-                                expanded = mainViewState.expanded.value,
-                                onDismissRequest = {
-                                    mainViewState.expanded.value = false
+                                Box( modifier = Modifier.wrapContentHeight().weight(1f) ){
+                                    Crossfade(
+                                        route.route
+                                    ){
+                                        Text(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            text = it,
+                                            textAlign = TextAlign.Start,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
                                 }
-                            ){
-                                mainViewState.itemForSelect.value?.let {
-                                    it.forEach {
-                                        DropdownMenuItem(
-                                            onClick = {
-                                                it.click.invoke()
-                                            }
+                                Crossfade( topBarState.itemForSelectShow.value ){
+                                    if(it){
+                                        IconButton(
+                                            onClick = { topBarState.expanded.value = true },
                                         ){
-                                            Text(text = it.text)
+                                            Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
+                                            DropdownMenu(
+                                                expanded = topBarState.expanded.value,
+                                                onDismissRequest = {
+                                                    topBarState.expanded.value = false
+                                                }
+                                            ){
+                                                topBarState.itemForSelect.value?.let {
+                                                    it.forEach {
+                                                        DropdownMenuItem(
+                                                            onClick = {
+                                                                it.click.invoke()
+                                                            }
+                                                        ){
+                                                            Text(text = it.text)
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-
                     }
-                }
-            }
-        }
-        Box(
-            modifier = modifier
-        ) {
-            Crossfade(
-                modifier = Modifier
-                    .fillMaxSize(),
-                targetState = route.currentPage.value
-            ) {
-                it?.let {
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ){
                         BackHandler(isEnabled = it.canBack) {
-                            route.back()
+                            routeState.back()
                         }
-                        LaunchedEffect(Unit){
-                            mainViewState.expanded.value = false
-                            mainViewState.itemForSelect.value = null
-                            mainViewState.title.value = null
-                        }
-                        it.content.invoke()
-
+                        it.content.invoke(routeViewState.value)
                     }
                 }
             }
-
         }
     }
     EasyToast(toast)
 }
 
-interface Route{
-
+interface Route {
     val route: String
-    val content : @Composable () -> Unit
+    val content : @Composable (RouteViewState) -> Unit
     val canBack : Boolean
-
     class RouteNewsDetail(
         val id: String,
         override val route: String,
-        override val content : @Composable () -> Unit = {
+        override val content : @Composable (RouteViewState) -> Unit = {
 //            NewsDetail()
         },
         override val canBack: Boolean = true
@@ -177,7 +167,7 @@ interface Route{
 
     class SchoolMap(
         override val route: String = "schoolMap",
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             SchoolMapScreen(
                 modifier = Modifier,
                 url = "https://pic1.zhimg.com/80/v2-ae48979cee947ee6cae729ef14bc144b_1440w.webp?source=2c26e567",
@@ -191,7 +181,7 @@ interface Route{
         val userId:Int,
         val userData: Data,
         override val route: String = "modifer",
-        override val content: @Composable (  ) -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             ModifierInformationScreen(userId = userId, userData = userData)
         },
         override val canBack: Boolean = true
@@ -200,7 +190,7 @@ interface Route{
     class OwnWebView(
         val start:String,
         override val route: String = "webview",
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             val routeState = koinInject<RouteState>()
             OwnWebViewScreen(
                 back = {
@@ -214,7 +204,7 @@ interface Route{
 
     class Weather(
         override val route: String = "weather",
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             WeatherScreen()
         },
         override val canBack: Boolean = true
@@ -223,7 +213,7 @@ interface Route{
     class Main (
         val id: String ,
         override val route: String = "Main",
-        override val content: @Composable (  ) -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             MainScreen()
         },
         override val canBack: Boolean = false
@@ -231,7 +221,7 @@ interface Route{
 
     class ReleasePage (
         override val route: String = "ReleasePage",
-        override val content: @Composable (  ) -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             ReleasePageScreen(
                 modifier = Modifier
                     .fillMaxSize()
@@ -244,7 +234,7 @@ interface Route{
     class Person (
         override val route: String = "person",
         id: String? = null,
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
            PersonScreen(
                id
            )
@@ -254,7 +244,7 @@ interface Route{
 
     class Massage private constructor(
         override val route: String,
-        override val content: @Composable ( ) -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             MassageScreen(
                 modifier = Modifier
                     .fillMaxSize()
@@ -266,7 +256,7 @@ interface Route{
 
     class LoginWithRegister(
         override val route: String = "loginWithRegister",
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             Assembly(Modifier.fillMaxSize())
         },
         override val canBack: Boolean = false
@@ -274,7 +264,7 @@ interface Route{
 
     class Splash(
         override val route: String = "Splash",
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             SplashPage(
                 modifier = Modifier
                     .fillMaxSize()
@@ -286,7 +276,7 @@ interface Route{
 
     class QRCode(
         override val route: String = "QRCode",
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             QRCodeScreen(
                 modifier = Modifier
                     .fillMaxSize()
@@ -297,7 +287,7 @@ interface Route{
 
     class Feedback(
         override val route: String = "QRCode",
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             FeedbackScreen(
                 modifier = Modifier
                     .fillMaxSize()
@@ -309,7 +299,7 @@ interface Route{
     class Test(
         override val route: String = "Test",
         val reportType: ReportType,
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             ReportScreen(
                 type = reportType
             )
@@ -320,7 +310,7 @@ interface Route{
     class Report(
         override val route: String = "report",
         private val reportType: ReportType,
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             ReportScreen(
                 type = reportType
             )
@@ -330,7 +320,7 @@ interface Route{
 
     class AboutUs(
         override val route: String = "aboutUs",
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
             AboutUsScreen(
                 modifier = Modifier
                     .fillMaxSize()
@@ -341,11 +331,12 @@ interface Route{
 
     class Manage(
         override val route: String = "manage",
-        override val content: @Composable () -> Unit = {
+        override val content: @Composable (RouteViewState) -> Unit = {
                 ManageScreen()
         },
         override val canBack: Boolean = true
     ):Route
+
 }
 
 class RouteState(start:Route){
@@ -362,6 +353,7 @@ class RouteState(start:Route){
         }
         route.size != 1 && route.last() !is Route.LoginWithRegister
     }
+
     private val scope = CoroutineScope(Job())
     private val mutex = Mutex()
     fun back(){
@@ -386,6 +378,10 @@ class RouteState(start:Route){
         route.add(Route.LoginWithRegister())
     }
 }
+
+class RouteViewState(
+    val isShow: MutableState<Boolean> = mutableStateOf(false)
+)
 
 
 

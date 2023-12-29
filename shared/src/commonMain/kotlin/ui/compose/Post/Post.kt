@@ -24,11 +24,7 @@ fun NewScreen(
     state: LazyListState = rememberLazyListState()
 ){
 
-//    LaunchedEffect(Unit){
-//        viewModel.getPostByPage("1")
-//    }
     val toastState = rememberToastState()
-
     Crossfade(
         viewModel.currentItem.value
     ){

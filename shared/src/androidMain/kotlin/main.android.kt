@@ -31,7 +31,10 @@ import javax.net.ssl.X509TrustManager
 
 actual fun getPlatformName(): String = "Android"
 
-@Composable fun MainView() = App()
+@Composable fun MainView(
+    onBack: () -> Unit,
+    onFinish : ()->Unit,
+) = App(onBack,onFinish)
 
 actual @Composable fun Modifier.ComposeSetting(): Modifier {
     return this.safeContentPadding()
@@ -41,6 +44,7 @@ actual @Composable fun Modifier.ComposeSetting(): Modifier {
 actual fun BackHandlerWithPlatform(isEnabled: Boolean, onBack: () -> Unit) {
     androidx.activity.compose.BackHandler(isEnabled, onBack)
 }
+
 
 actual inline fun <reified T : ViewModel> Module.viewModelDefinition(
     qualifier: Qualifier?,
@@ -75,6 +79,8 @@ val trustAllCerts = arrayOf<X509TrustManager>(object : X509TrustManager {
     override fun checkServerTrusted(chain: Array<X509Certificate?>?, authType: String?) {}
     override fun getAcceptedIssuers(): Array<X509Certificate?> { return arrayOfNulls(0) }
 })
+
+
 
 val getSSLSocketFactory: SSLSocketFactory by lazy {
     val sslContext = SSLContext.getInstance("TLS")

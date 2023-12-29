@@ -1,7 +1,7 @@
 package ui.compose.Manage
 
-import MainViewState
 import SelectItem
+import TopBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -11,15 +11,17 @@ import org.koin.compose.koinInject
 fun ManageScreen(
     modifier: Modifier = Modifier
 ){
-    val mainViewState = koinInject<MainViewState>()
+    val topBarState = koinInject<TopBarState>()
     LaunchedEffect(Unit){
-        mainViewState.itemForSelect.value = listOf(
-            SelectItem(
-                text = "this is a test",
-                click = {
-                    mainViewState.expanded.value = false
-                    mainViewState.title.value = "this is "
-                }
+        topBarState.registerItemForSelect(
+            listOf(
+                SelectItem(
+                    text = "this is a test",
+                    click = {
+                        topBarState.expanded.value = false
+                        topBarState.title.value = "this is "
+                    }
+                )
             )
         )
     }
