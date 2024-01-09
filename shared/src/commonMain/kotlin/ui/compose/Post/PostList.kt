@@ -9,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -70,14 +69,13 @@ import ui.util.network.toEasyTime
 
 
 @Composable
-fun NewsList(
+fun PostList(
     modifier: Modifier = Modifier,
-    navigateToNewsDetail: (String) -> Unit,
-//    postListState: State<NetworkResult<PostList>>,
     state: LazyListState,
     postListFlow: LazyPagingItems<Data>,
     navigateToRelease: () -> Unit,
-    navigateToReport: (Data) -> Unit
+    navigateToReport: (Data) -> Unit,
+    navigateToNewsDetail: (String) -> Unit,
 ){
     val isRefresh = remember{
         mutableStateOf(false)
@@ -133,9 +131,10 @@ fun NewsList(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(10.dp)
+                                        .padding(4.dp)
                                         .clip(RoundedCornerShape(10.dp))
                                         .background(Color.Red)
+                                        .padding(10.dp)
                                 ){
                                     Text(
                                         modifier = Modifier
@@ -149,7 +148,6 @@ fun NewsList(
                         }
                     }
                 }
-
             }
         }
         AnimatedVisibility(
@@ -177,7 +175,6 @@ fun NewsList(
                 .size(50.dp)
                 .align(Alignment.BottomEnd),
             shape = CircleShape
-
         ){
             Icon(
                 modifier = Modifier
@@ -191,7 +188,7 @@ fun NewsList(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+
 @Composable
 fun NewsItem(
     navigateToNewsDetail: (String) -> Unit,

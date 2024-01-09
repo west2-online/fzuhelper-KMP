@@ -2,7 +2,6 @@ package data.post.PostComment
 
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class PostCommentListPreview(
     val code: Int,

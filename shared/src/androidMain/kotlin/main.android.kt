@@ -31,10 +31,6 @@ import javax.net.ssl.X509TrustManager
 
 actual fun getPlatformName(): String = "Android"
 
-@Composable fun MainView(
-    onBack: () -> Unit,
-    onFinish : ()->Unit,
-) = App(onBack,onFinish)
 
 actual @Composable fun Modifier.ComposeSetting(): Modifier {
     return this.safeContentPadding()
@@ -147,3 +143,4 @@ actual fun rememberBitmapFromBytes(bytes: ByteArray?): ImageBitmap? {
         }
     }
 }
+

@@ -1,6 +1,6 @@
-package ui.compose.Person
+package ui.compose.Main
 
-import SystemAction
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -31,17 +31,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.liftric.kvault.KVault
 import dev.icerock.moko.resources.compose.painterResource
+import di.SystemAction
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.example.library.MR
 import org.koin.compose.koinInject
-import ui.route.Route
-import ui.route.RouteState
+import ui.root.RootTarget
+import ui.root.getRootAction
 
 @Composable
-fun PersonalDrawer(
+fun MainDrawer(
     modifier: Modifier = Modifier,
-    kVault: KVault = koinInject()
+
 ){
     Column(
         modifier = modifier
@@ -89,9 +90,9 @@ fun PersonalInformation(
 @Composable
 fun Functions(
     modifier: Modifier = Modifier,
-    routeState: RouteState = koinInject(),
     kVault: KVault = koinInject()
 ){
+    val rootAction = getRootAction()
     LazyColumn(
         modifier = modifier
     ){
@@ -99,7 +100,7 @@ fun Functions(
             FunctionsItem(
                 painterResource(MR.images.feedback),
                 {
-                    routeState.navigateWithoutPop(Route.Feedback())
+                    rootAction.navigateToNewTarget(rootTarget = RootTarget.Feedback)
                 },
                 "反馈"
             )
@@ -108,7 +109,7 @@ fun Functions(
             FunctionsItem(
                 painterResource(MR.images.qrcode),
                 {
-                    routeState.navigateWithoutPop(Route.QRCode())
+                    rootAction.navigateToNewTarget(rootTarget = RootTarget.QRCode)
                 },
                 "二维码生成"
             )
@@ -118,7 +119,7 @@ fun Functions(
             FunctionsItem(
                 painterResource(MR.images.eye),
                 {
-                    routeState.navigateWithoutPop(Route.Person(id = "1"))
+                    rootAction.navigateToNewTarget(rootTarget = RootTarget.Person(null))
                 },
                 "个人资料"
             )
@@ -128,6 +129,7 @@ fun Functions(
                 painterResource(MR.images.eye),
                 {
 //                    routeState.navigateWithoutPop(Route.Test())
+                    rootAction.navigateToNewTarget(rootTarget = RootTarget.Person(null))
                 },
                 "测试"
             )
@@ -147,7 +149,7 @@ fun Functions(
                 painterResource(MR.images.loginOut),
                 onclick = {
                     kVault.clear()
-                    routeState.reLogin()
+                    rootAction.reLogin()
                 },
                 "退出登录",
                 modifier = Modifier

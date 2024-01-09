@@ -37,6 +37,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bumble.appyx.navigation.modality.BuildContext
+import com.bumble.appyx.navigation.node.Node
 import config.BaseUrlConfig
 import data.Person.UserData.UserData
 import io.kamel.image.KamelImage
@@ -310,3 +312,20 @@ fun randomColor(): Color {
     return Color(Random.nextInt(100,255),Random.nextInt(100,255),Random.nextInt(100,255))
 }
 
+
+
+
+class PersonRouteNode(
+    buildContext: BuildContext,
+    private val userId: String? = null
+) : Node(
+    buildContext = buildContext
+) {
+    @Composable
+    override fun View(modifier: Modifier) {
+        PersonScreen(
+            modifier = modifier,
+            id = userId
+        )
+    }
+}

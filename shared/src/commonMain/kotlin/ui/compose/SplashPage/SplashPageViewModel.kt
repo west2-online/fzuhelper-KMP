@@ -8,23 +8,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import repository.SplashRepository
-import ui.route.Route
-import ui.route.RouteState
 import ui.util.network.NetworkResult
 import ui.util.network.reset
 
 class SplashPageViewModel(
     private val splashRepository: SplashRepository,
     private val kVault: KVault,
-    private val routeState: RouteState
 ):ViewModel() {
     private val _imageState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val imageState = _imageState.asStateFlow()
-
-    fun navigateToMain(){
-//        route.removeLast()
-        routeState.navigateWithPop(Route.Main())
-    }
 
     fun getSplashPageImage(){
         viewModelScope.launch {

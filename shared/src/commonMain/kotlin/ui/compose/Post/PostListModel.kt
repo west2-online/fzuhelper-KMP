@@ -28,26 +28,21 @@ import kotlinx.coroutines.launch
 import repository.CommentSubmitStatus
 import repository.PostRepository
 import ui.compose.Report.ReportType
-import ui.route.Route
-import ui.route.RouteState
+import ui.root.RootAction
+import ui.root.RootTarget
 import ui.util.flow.catchWithMassage
 import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
 import ui.util.network.loginIfNotLoading
 import ui.util.network.reset
 
-class NewViewModel(
+class PostListModel(
     private val postRepository:PostRepository,
-    private val routeState:RouteState,
     private val kVault: KVault,
-    private val client: HttpClient
+    private val client: HttpClient,
+    private val rootAction: RootAction
 ):ViewModel() {
-    init {
-        println("newViewModel${this}")
-    }
-    val currentItem = mutableStateOf<NewItem>(NewItem.NewList())
-
-
+    val currentItem = mutableStateOf<PostItem>(PostItem.PostList())
     private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostById>>(NetworkResult.UnSend()))
     val currentPostDetail = _currentPostDetail.asStateFlow()
 
@@ -62,7 +57,7 @@ class NewViewModel(
                     return@LoadPageDataForPost client.get("/post/page/${it}").body<PostList>().data
                 }
             )
-        }.flow
+    }.flow
         .cachedIn(viewModelScope)
 
     private val _postCommentPreviewFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, data.post.PostComment.Data>?>(null))
@@ -73,7 +68,8 @@ class NewViewModel(
 
     private val _commentSubmitState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val commentSubmitState = _commentSubmitState.asStateFlow()
-    fun getPostCommentPreview(postId: String){
+
+    fun initPostCommentPreview(postId: String){
         viewModelScope.launch {
             _postCommentPreviewFlow.value = Pager(
                 PagingConfig(
@@ -83,7 +79,8 @@ class NewViewModel(
             ){
                 EasyPageSourceForCommentPreview(
                     backend = LoadPageDataForCommentPreview {
-                        return@LoadPageDataForCommentPreview client.get("post/comment/page/${it}/${postId}").body<PostCommentListPreview>().data
+                        return@LoadPageDataForCommentPreview client.get("post/comment/page/${it}/${postId}")
+                            .body<PostCommentListPreview>().data
                     }
                 )
             }
@@ -100,6 +97,7 @@ class NewViewModel(
             ){
                 EasyPageSourceForCommentTree(
                     backend = LoadPageDataForCommentTree {
+                        println("ssss")
                         return@LoadPageDataForCommentTree client.get("post/commentList/page/${it}/${treeStart}/${postId}").body<PostCommentTree>().data
                     }
                 )
@@ -116,7 +114,6 @@ class NewViewModel(
                 }
                 .collectWithMassage{
                     _currentPostDetail.reset(NetworkResult.Success(it))
-                    println(_currentPostDetail.value)
                 }
         }
     }
@@ -133,14 +130,12 @@ class NewViewModel(
         }
     }
     fun navigateToRelease(){
-        routeState.navigateWithoutPop(Route.ReleasePage())
+        rootAction.navigateToNewTarget(RootTarget.Release)
+    }
+    fun navigateToReport(type: ReportType){
+        rootAction.navigateToNewTarget(RootTarget.Report(type))
     }
 
-    fun navigateToReport(type: ReportType){
-        routeState.navigateWithoutPop(Route.Report(
-            reportType = type
-        ))
-    }
 }
 
 class LoadPageDataForPost(

@@ -12,15 +12,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.LoginRepository
 import repository.TokenData
-import ui.route.Route
-import ui.route.RouteState
+import ui.root.RootAction
+import ui.root.RootTarget
 import ui.util.flow.catchWithMassage
 import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
 import ui.util.network.reset
 
 
-class AuthenticationViewModel(private val loginRepository: LoginRepository, private val kVault: KVault, val routeState:RouteState) : ViewModel() {
+class AuthenticationViewModel(
+    private val loginRepository: LoginRepository,
+    private val kVault: KVault,
+    private val rootAction: RootAction
+) : ViewModel() {
     private val _captcha = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val captcha = _captcha.asStateFlow()
 
@@ -168,7 +172,7 @@ class AuthenticationViewModel(private val loginRepository: LoginRepository, priv
     private fun enterAuthor(){
         val token : String? = kVault.string(forKey = "token")
         token ?: return
-        routeState.navigateWithPop(Route.Splash())
+        rootAction.replaceNewTarget(RootTarget.Main)
     }
 
 }

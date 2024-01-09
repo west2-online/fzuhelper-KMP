@@ -38,7 +38,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
@@ -49,7 +48,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -58,6 +56,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -93,6 +93,9 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.example.library.MR
 import ui.compose.Report.ReportType
 import ui.util.compose.Toast
@@ -102,12 +105,10 @@ import ui.util.network.NetworkResult
 import ui.util.network.logicWithType
 import ui.util.network.toEasyTime
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun NewsDetail(
+fun PostDetail(
     id: String,
     modifier: Modifier = Modifier,
-    back: (() -> Unit)? = null,
     postState: State<NetworkResult<PostById>>,
     getPostById: (String) -> Unit,
     postCommentPreview: Flow<PagingData<Data>>,
@@ -116,13 +117,33 @@ fun NewsDetail(
     submitComment: (parentId: Int, postId: Int, tree: String, content: String, image: ByteArray?) -> Unit,
     commentSubmitState: State<NetworkResult<String>>,
     toastState: Toast,
-    commentReport:(type:ReportType)->Unit
+    commentReport:(type:ReportType)->Unit = {},
+    refreshCommentPReview:()->Unit = {}
 ) {
-    val data = postCommentPreview.collectAsLazyPagingItems()
+    val commentItems = postCommentPreview.collectAsLazyPagingItems()
     val isRefresh = remember{
         mutableStateOf(false)
     }
+    val scope = rememberCoroutineScope()
+    val commentState = rememberSaveable(
+        stateSaver = Saver<CommentState,String >(
+            restore = {
+                return@Saver Json.decodeFromString<CommentState>(it)
+            },
+            save = {
+                return@Saver Json.encodeToString(it.toCommentStateSerializable())
+            }
+        )
+    ) {
+        mutableStateOf<CommentState>(CommentState())
+    }
+
     val state = rememberLazyListState()
+
+    val show = remember{
+        mutableStateOf<MainComment?>(null)
+    }
+
     LaunchedEffect(state){
         snapshotFlow{ state.isScrollInProgress && !state.canScrollBackward }
             .filter {
@@ -131,8 +152,9 @@ fun NewsDetail(
             .collect {
                 isRefresh.value = true
                 delay(1000)
-                getPostById(id)
-                data.refresh()
+//                getPostById(id)
+                commentItems.refresh()
+                refreshCommentPReview()
                 isRefresh.value = false
             }
     }
@@ -150,27 +172,18 @@ fun NewsDetail(
             }
         )
     }
-    val show = remember {
-        mutableStateOf<MainComment?>(null)
-    }
+
     LaunchedEffect(show.value){
         show.value?.let {
             getPostCommentTree(it.Id.toString())
         }
     }
-    val commentState = remember {
-        mutableStateOf<CommentState>(CommentState())
-    }
-
-    BackHandler(back != null){
-        back?.invoke()
-    }
 
     LaunchedEffect(Unit){
         getPostById(id)
+        commentItems.refresh()
     }
 
-    val scope = rememberCoroutineScope()
     Box(modifier = Modifier
         .fillMaxSize()
     ){
@@ -206,7 +219,6 @@ fun NewsDetail(
                                         is FileData -> {
                                             ImageContent(it.fileName)
                                         }
-
                                         is ValueData -> {
                                             Text(it.value)
                                         }
@@ -235,12 +247,12 @@ fun NewsDetail(
                     modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp)
                 )
             }
-            items(data.itemCount) {
+            items(commentItems.itemCount) { it ->
                 CommentInNewsDetail(
-                    data[it],
+                    commentItems[it],
                     click = {
                         scope.launch {
-                            data[it]?.let {
+                            commentItems[it]?.let {
                                 show.value = it.MainComment
                             }
                         }
@@ -254,6 +266,7 @@ fun NewsDetail(
             }
         }
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -294,6 +307,7 @@ fun NewsDetail(
 
         }
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -455,6 +469,7 @@ fun NewsDetail(
             }
         }
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -670,6 +685,7 @@ fun NewsDetail(
             }
         }
     }
+
 }
 
 
@@ -1064,9 +1080,12 @@ fun CommentTree(
 }
 
 
-class CommentState (){
-    val isShow: MutableState<Boolean> = mutableStateOf(false)
+
+class CommentState (
+    val isShow: MutableState<Boolean> = mutableStateOf(false),
     val commentAt: MutableState<data.post.PostCommentTree.MainComment?> = mutableStateOf(null)
+){
+
     fun setCommentAt(mainComment: data.post.PostCommentTree.MainComment?){
         commentAt.value = mainComment
         isShow.value = true
@@ -1076,4 +1095,17 @@ class CommentState (){
         isShow.value = false
         commentAt.value = null
     }
+}
+
+@Serializable
+data class CommentStateSerializable(
+    val isShow :Boolean,
+    val commentAt:MainComment?
+)
+
+fun CommentState.toCommentStateSerializable():CommentStateSerializable{
+    return CommentStateSerializable(
+        isShow = this.isShow.value,
+        commentAt = this.commentAt.value
+    )
 }

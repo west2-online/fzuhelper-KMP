@@ -1,6 +1,5 @@
 package ui.compose.Person
 
-import com.liftric.kvault.KVault
 import data.Person.UserData.UserData
 import data.Person.identity.PersonIdentityData
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
@@ -10,8 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.PersonRepository
-import ui.route.Route
-import ui.route.RouteState
+import ui.root.RootAction
+import ui.root.RootTarget
 import ui.util.flow.catchWithMassage
 import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
@@ -19,8 +18,7 @@ import ui.util.network.reset
 
 class PersonViewModel(
     private val personRepository: PersonRepository,
-    private val routeState: RouteState,
-    private val kVault: KVault
+    private val rootAction: RootAction
 ):ViewModel() {
     private val _userData = CMutableStateFlow(MutableStateFlow<NetworkResult<UserData>>(NetworkResult.UnSend()))
     val userData = _userData.asStateFlow()
@@ -65,6 +63,7 @@ class PersonViewModel(
             }
         }
     }
+
     fun getIdentityData(id:String?){
         id?:run {
             viewModelScope.launch(Dispatchers.Default) {
@@ -103,16 +102,11 @@ class PersonViewModel(
             }
         }
     }
+
     fun navigateToModifierInformation(userId:Int,userData : UserData){
         userData.data?.let {
-            routeState.navigateWithoutPop(
-                Route.ModifierInformation(
-                    userId = userId,
-                    userData = it
-                )
-            )
+            rootAction.navigateToNewTarget(RootTarget.ModifierInformation(userData = userData.data))
         }
-
     }
 }
 

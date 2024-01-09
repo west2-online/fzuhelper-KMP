@@ -40,6 +40,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import asImageBitmap
+import com.bumble.appyx.navigation.modality.BuildContext
+import com.bumble.appyx.navigation.node.Node
 import data.Person.UserData.Data
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
@@ -51,9 +53,8 @@ import ui.util.network.toast
 
 @Composable
 fun ModifierInformationScreen(
-    modifier: Modifier = Modifier,
-    userId: Int,
     userData: Data,
+    modifier: Modifier = Modifier,
     viewModel :ModifierInformationViewModel = koinInject()
 ){
     val toast = rememberToastState()
@@ -246,6 +247,20 @@ fun ModifierInformationScreen(
             }
         }
         EasyToast(toast)
+    }
+}
+
+class ModifierInformationRouteNode(
+    private val userData: Data,
+    buildContext: BuildContext
+): Node(
+    buildContext
+){
+    @Composable
+    override fun View(modifier: Modifier) {
+        ModifierInformationScreen(
+            userData
+        )
     }
 }
 

@@ -3,30 +3,26 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.window.ComposeUIViewController
-import androidx.datastore.core.DataStore
 import com.liftric.kvault.KVault
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.darwin.DarwinClientEngineConfig
-import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.skia.Image
 import org.koin.core.definition.Definition
 import org.koin.core.definition.KoinDefinition
 import org.koin.core.module.Module
-import org.koin.core.parameter.ParametersHolder
 import org.koin.core.qualifier.Qualifier
-import org.koin.core.scope.Scope
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import androidx.compose.ui.interop.LocalUIViewController
+import com.bumble.appyx.navigation.integration.IosNodeHost
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.refTo
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.jetbrains.skia.Bitmap
-import org.jetbrains.skia.Image
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIImagePickerController
@@ -36,11 +32,28 @@ import platform.UIKit.UINavigationControllerDelegateProtocol
 import platform.UIKit.UIViewController
 import platform.darwin.NSObject
 import platform.posix.memcpy
+import ui.root.RootNode
+import ui.util.compose.FuTalkTheme
 
 
 actual fun getPlatformName(): String = "iOS"
 
-fun MainViewController() = ComposeUIViewController { App() }
+val backEvents: Channel<Unit> = Channel()
+
+fun MainViewController() = ComposeUIViewController { App()
+    FuTalkTheme {
+        IosNodeHost(
+            modifier = Modifier,
+            // See back handling section in the docs below!
+            onBackPressedEvents = backEvents.receiveAsFlow(),
+            integrationPoint = appyxV2IntegrationPoint
+        ) {
+            RootNode(
+                buildContext = it
+            )
+        }
+    }
+}
 
 @Composable
 actual fun BackHandlerWithPlatform(isEnabled: Boolean, onBack: () -> Unit) {

@@ -9,13 +9,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.PostRepository
 import repository.PostStatus
-import ui.route.RouteState
 import ui.util.flow.catchWithMassage
 import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
 import ui.util.network.reset
 
-class ReleasePageViewModel(private val releaseRepository: PostRepository, val routeState: RouteState):ViewModel() {
+class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewModel() {
     private val _newPostState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val newPostState = _newPostState.asStateFlow()
 

@@ -6,11 +6,15 @@ plugins {
 
 kotlin {
     androidTarget()
-
+    val appyx_version = "2.0.0-alpha09"
     sourceSets {
         val androidMain by getting {
             dependencies {
                 implementation(project(":shared"))
+                implementation("com.bumble.appyx:appyx-navigation-android:$appyx_version")
+                implementation("com.bumble.appyx:appyx-interactions-android:$appyx_version")
+                implementation("com.bumble.appyx:backstack-android:$appyx_version")
+                implementation("com.bumble.appyx:spotlight-android:$appyx_version")
             }
         }
     }

@@ -4,6 +4,7 @@ plugins {
     id("org.jetbrains.compose")
     id("dev.icerock.mobile.multiplatform-resources")
     kotlin("plugin.serialization") version "1.9.20"
+    id("kotlin-parcelize")
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
@@ -26,6 +27,7 @@ kotlin {
             export("dev.icerock.moko:mvvm-state:0.16.1")
         }
     }
+    val appyx_version = "2.0.0-alpha09"
     val koin_version = "3.5.0"
     val koin_compose_version = "1.1.0"
     val ktor_version = "2.3.5"
@@ -93,10 +95,18 @@ kotlin {
 
                 //加密库
                 implementation("dev.whyoleg.cryptography:cryptography-core:0.2.0")
-//                //webview
+//              //webview
                 implementation("io.github.kevinnzou:compose-webview-multiplatform:1.7.4")
 
                 implementation("com.mikepenz:multiplatform-markdown-renderer:${markdown_version}")
+
+                //appyx导航
+
+                implementation("com.bumble.appyx:appyx-navigation:$appyx_version")
+                implementation("com.bumble.appyx:appyx-interactions:$appyx_version")
+                implementation("com.bumble.appyx:backstack:$appyx_version")
+                implementation("com.bumble.appyx:spotlight:$appyx_version")
+//                api("com.bumble.appyx:utils-material3:$appyx_version")
             }
         }
         val androidMain by getting {
@@ -109,12 +119,16 @@ kotlin {
 
                 //koin
                 implementation("io.insert-koin:koin-android:$koin_version")
-
                 api("dev.icerock.moko:mvvm-livedata-material:0.16.1") // api mvvm-livedata, Material library android extensions
                 api("dev.icerock.moko:mvvm-livedata-glide:0.16.1") // api mvvm-livedata, Glide library android extensions
                 api("dev.icerock.moko:mvvm-livedata-swiperefresh:0.16.1") // api mvvm-livedata, SwipeRefreshLayout library android extensions
                 api("dev.icerock.moko:mvvm-databinding:0.16.1") // api mvvm-livedata, DataBinding support for Android
                 api("dev.icerock.moko:mvvm-viewbinding:0.16.1") // api mvvm-livedata, ViewBinding support for Android
+
+                implementation("com.bumble.appyx:appyx-navigation-android:$appyx_version")
+                implementation("com.bumble.appyx:appyx-interactions-android:$appyx_version")
+                implementation("com.bumble.appyx:backstack-android:$appyx_version")
+                implementation("com.bumble.appyx:spotlight-android:$appyx_version")
             }
         }
         val iosX64Main by getting
@@ -143,6 +157,8 @@ android {
     defaultConfig {
         minSdk = (findProperty("android.minSdk") as String).toInt()
     }
+
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

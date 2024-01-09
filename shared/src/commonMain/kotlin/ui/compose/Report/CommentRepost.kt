@@ -1,7 +1,10 @@
 package ui.compose.Report
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,10 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,8 +39,11 @@ import data.post.PostCommentTree.MainComment
 import data.post.PostList.Data
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import org.koin.compose.koinInject
 import ui.compose.Post.PersonalInformationAreaInList
+import ui.util.compose.rememberToastState
 import ui.util.compose.shimmerLoadingAnimation
+import ui.util.compose.toastBindNetworkResult
 import ui.util.network.toEasyTime
 
 @Composable
@@ -40,83 +52,130 @@ fun CommentRepost(
 //    postData :Data,
     commentData: MainComment
 ){
-    Column( modifier = modifier ){
-        Text("举报@", color = Color.Red,modifier = Modifier.padding(bottom = 10.dp))
-        Column (
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .border(1.dp, Color.Gray, RoundedCornerShape(5.dp))
-                .clip(RoundedCornerShape(5.dp))
-                .padding(10.dp)
-        ){
-            Row(modifier = Modifier
-                .padding(bottom = 10.dp)
-                .animateContentSize()
-                .clip(RoundedCornerShape(3.dp))
-                .padding(vertical = 5.dp)
-            ){
-                KamelImage(
-                    resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${commentData.User.avatar}"),
-                    null,
+    val viewModel = koinInject<ReportViewModel>()
+    val selectItem = remember {
+        mutableStateOf(0)
+    }
+    val reportResponseState = viewModel.reportResponse.collectAsState()
+    val toastState = rememberToastState()
+    toastBindNetworkResult(toastState,reportResponseState)
+    LazyColumn(
+        modifier = modifier
+    ){
+        item{
+            Column(modifier = modifier) {
+                Text("举报@", color = Color.Red, modifier = Modifier.padding(bottom = 10.dp))
+                Column(
                     modifier = Modifier
-                        .size(50.dp)
-                        .wrapContentSize(Alignment.TopCenter)
-                        .fillMaxSize(0.7f)
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(10)),
-                    contentScale = ContentScale.FillBounds,
-                    onLoading = {
-
-                        Box(modifier = Modifier
-                            .matchParentSize()
-                            .shimmerLoadingAnimation()
-                        )
-                    }
-                )
-                Column (
-                    modifier = Modifier
-                        .padding(end = 10.dp)
-                        .weight(1f)
+                        .fillMaxWidth()
                         .wrapContentHeight()
-                ){
-                    Text(commentData.User.username)
-                    Text(
-                        commentData.Time.toEasyTime(),
-                        fontSize = 10.sp
-                    )
-                    Text(
-                        commentData.Content,
-                        fontSize = 14.sp
-                    )
-                    commentData.Image.let {
-                        if (it!=""){
-                            KamelImage(
-                                resource = asyncPainterResource("${BaseUrlConfig.CommentImage}/${it}"),
-                                null,
-                                modifier = Modifier
-                                    .padding(vertical = 5.dp)
-                                    .fillMaxWidth(0.5f)
-                                    .wrapContentHeight()
-                                    .clip(RoundedCornerShape(3))
-                                    .animateContentSize(),
-                                contentScale = ContentScale.Inside,
-                                onLoading = {
-                                    Box(modifier = Modifier
+                        .border(1.dp, Color.Gray, RoundedCornerShape(5.dp))
+                        .clip(RoundedCornerShape(5.dp))
+                        .padding(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(bottom = 10.dp)
+                            .animateContentSize()
+                            .clip(RoundedCornerShape(3.dp))
+                            .padding(vertical = 5.dp)
+                    ) {
+                        KamelImage(
+                            resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${commentData.User.avatar}"),
+                            null,
+                            modifier = Modifier
+                                .size(50.dp)
+                                .wrapContentSize(Alignment.TopCenter)
+                                .fillMaxSize(0.7f)
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(10)),
+                            contentScale = ContentScale.FillBounds,
+                            onLoading = {
+
+                                Box(
+                                    modifier = Modifier
                                         .matchParentSize()
                                         .shimmerLoadingAnimation()
-                                    )
-                                }
+                                )
+                            }
+                        )
+                        Column(
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .weight(1f)
+                                .wrapContentHeight()
+                        ) {
+                            Text(commentData.User.username)
+                            Text(
+                                commentData.Time.toEasyTime(),
+                                fontSize = 10.sp
                             )
+                            Text(
+                                commentData.Content,
+                                fontSize = 14.sp
+                            )
+                            commentData.Image.let {
+                                if(it.isEmpty()){
+                                    return@let
+                                }
+                                KamelImage(
+                                    resource = asyncPainterResource("${BaseUrlConfig.CommentImage}/${it}"),
+                                    null,
+                                    modifier = Modifier
+                                        .padding(vertical = 5.dp)
+                                        .fillMaxWidth(0.5f)
+                                        .wrapContentHeight()
+                                        .clip(RoundedCornerShape(3))
+                                        .animateContentSize(),
+                                    contentScale = ContentScale.Inside,
+                                    onLoading = {
+                                        Box(
+                                            modifier = Modifier
+                                                .matchParentSize()
+                                                .shimmerLoadingAnimation()
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
-//        PostReportInCommentReport(
-//           modifier = Modifier
-//               .fillMaxWidth(),
-//            data = postData
-//        )
+        }
+        ReportLabel.values().forEachIndexed { index, reportLabel ->
+            item {
+                Box(
+                    modifier = Modifier
+                        .padding(bottom = 10.dp)
+                        .wrapContentHeight()
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(5.dp))
+                        .border(1.dp, Color.Gray, RoundedCornerShape(5.dp))
+                        .background(
+                            animateColorAsState(if (index == selectItem.value) MaterialTheme.colors.error else MaterialTheme.colors.surface).value
+                        )
+                        .clickable {
+                            selectItem.value = index
+                        }
+                        .padding(5.dp)
+                ) {
+                    Column {
+                        Text(reportLabel.reason)
+                        Text(reportLabel.description, fontSize = 10.sp)
+                    }
+                }
+            }
+        }
+        item {
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth(0.4f),
+                onClick = {
+                    viewModel.reportComment(commentId = commentData.Id.toString(), selectItem.value, postId = commentData.PostId.toString())
+                }
+            ) {
+                Text("举报")
+            }
         }
     }
 }

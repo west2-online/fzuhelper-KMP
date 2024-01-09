@@ -16,6 +16,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,6 +33,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import ui.util.network.NetworkResult
+import ui.util.network.toast
 
 data class ToastImp(
     val icon : ImageVector? = null,
@@ -80,6 +84,20 @@ inline fun rememberToastState(
     scope: CoroutineScope = rememberCoroutineScope()
 ): Toast = remember{
     Toast(scope)
+}
+
+@Composable
+inline fun toastBindNetworkResult(toastState:Toast,networkResult: State<NetworkResult<String>>){
+    LaunchedEffect(networkResult.value.key.value){
+        networkResult.value.toast(
+            success = {
+                toastState.addWarnToast(it)
+            },
+            error = {
+                toastState.addWarnToast(it.message.toString())
+            }
+        )
+    }
 }
 
 

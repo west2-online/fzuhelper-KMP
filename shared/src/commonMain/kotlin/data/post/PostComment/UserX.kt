@@ -1,8 +1,5 @@
 package data.post.PostComment
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class UserX(
     val Id: Int,
     val Identify: Int,

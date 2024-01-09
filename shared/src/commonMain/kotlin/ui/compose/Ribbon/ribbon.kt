@@ -28,6 +28,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bumble.appyx.navigation.modality.BuildContext
+import com.bumble.appyx.navigation.node.Node
 import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
@@ -36,13 +38,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
-import ui.route.Route
+import ui.root.RootAction
+import ui.root.RootTarget
 
 @Composable
 fun Ribbon(
     modifier: Modifier,
     viewModel: RibbonViewModel = koinInject()
 ){
+    val rootAction = koinInject<RootAction>()
     Column(
         modifier = modifier,
     ) {
@@ -63,7 +67,7 @@ fun Ribbon(
                         .aspectRatio(0.7f)
                         .clip(RoundedCornerShape(10.dp))
                         .clickable {
-                            viewModel.enterFunction(Functions.values()[it].route)
+                            rootAction.navigateToNewTarget(Functions.values()[it].rootNavTarget)
                         }
                         .padding(10.dp)
                 ){
@@ -136,12 +140,33 @@ private fun Carousel(
     }
 }
 
-enum class Functions(val route:Route,val functionName: String,val painter: ImageResource){
-    QRCODE(route = Route.QRCode(),functionName = "二维码生成", painter = MR.images.qrcode),
-    WebView(route = Route.OwnWebView("https://welcome.fzuhelper.w2fzu.com/#/"),functionName = "新生宝典", painter = MR.images.login),
-    Weather(route = Route.Weather(),functionName = "天气", painter = MR.images.close),
-    Map(route = Route.SchoolMap(),functionName = "天气", painter = MR.images.close),
-//    Test(route = Route.Test(),functionName = "测试", painter = MR.images.close)
-    AboutUs(route = Route.AboutUs(),functionName = "关于我们", painter = MR.images.FuTalk),
-    Manage(route = Route.Manage(),functionName = "管理", painter = MR.images.not_solved),
+enum class Functions(
+
+    val functionName: String,
+    val painter: ImageResource,
+    val rootNavTarget:RootTarget
+){
+    QRCODE(  functionName = "二维码生成", painter = MR.images.qrcode,rootNavTarget = RootTarget.QRCode),
+    WebView( functionName = "新生宝典", painter = MR.images.login,rootNavTarget = RootTarget.AboutUs),
+    Weather(  functionName = "天气", painter = MR.images.close,rootNavTarget = RootTarget.Weather),
+    Map(  functionName = "地图", painter = MR.images.close,rootNavTarget = RootTarget.Weather),
+    Test(functionName = "测试", painter = MR.images.close,rootNavTarget = RootTarget.AboutUs),
+    AboutUs(functionName = "关于我们", painter = MR.images.FuTalk , rootNavTarget = RootTarget.AboutUs),
+    Manage(functionName = "管理", painter = MR.images.not_solved,rootNavTarget = RootTarget.AboutUs),
+    Feedback(functionName = "反馈", painter = MR.images.feedback2,rootNavTarget = RootTarget.Feedback),
+}
+
+class RibbonRouteNode(
+    buildContext:BuildContext
+):Node(
+    buildContext = buildContext
+){
+    @Composable
+    override fun View(modifier: Modifier) {
+        Ribbon(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(10.dp)
+        )
+    }
 }

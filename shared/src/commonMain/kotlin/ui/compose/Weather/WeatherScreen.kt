@@ -37,6 +37,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bumble.appyx.navigation.modality.BuildContext
+import com.bumble.appyx.navigation.node.Node
 import data.weather.Forecast
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -62,7 +64,7 @@ fun WeatherScreen(
                 PreviewForSevenDays(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(2f),
+                        .aspectRatio(2.4f),
                     weatherDataList = weatherData.data.forecast,
                     current = currentPage.value,
                     click = {
@@ -177,6 +179,7 @@ fun PreviewForSevenDays(
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(vertical = 10.dp)
             ) {
                 val number = weatherDataList.size
                 if (number == 0) {
@@ -333,5 +336,17 @@ fun PreviewForSevenDays(
                 )
             }
         }
+    }
+}
+
+
+class WeatherRouteNode(
+    buildContext:BuildContext
+):Node(
+    buildContext = buildContext
+){
+    @Composable
+    override fun View(modifier: Modifier) {
+        WeatherScreen()
     }
 }

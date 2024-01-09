@@ -56,6 +56,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import asImageBitmap
+import com.bumble.appyx.navigation.modality.BuildContext
+import com.bumble.appyx.navigation.node.Node
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import kotlinx.coroutines.launch
@@ -91,7 +93,6 @@ fun ReleasePageScreen(
             }
         )
     }
-
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
     var preview by remember {
@@ -689,4 +690,17 @@ fun ReleasePageItemImageForShow(
             }
         }
     )
+}
+
+class ReleaseRouteNode(
+    buildContext: BuildContext
+): Node(
+    buildContext = buildContext
+){
+    @Composable
+    override fun View(modifier: Modifier) {
+        ReleasePageScreen(
+            modifier = modifier
+        )
+    }
 }

@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.flow
 import ui.compose.Release.ReleasePageItem
 
 class PostRepository(private val client: HttpClient) {
+
     fun newPost(releasePageItemList:List<ReleasePageItem>,title : String): Flow<NewPostResponse> {
         return flow {
             val response = client.post("/post/new") {
@@ -56,6 +57,7 @@ class PostRepository(private val client: HttpClient) {
             emit(response)
         }
     }
+
     fun getPostById(id:String): Flow<PostById> {
         return flow {
             val response = client.get("/post/id/${id}").body<PostById>()
@@ -94,7 +96,6 @@ class PostRepository(private val client: HttpClient) {
                 headers.append("parentId", parentId.toString())
                 headers.append("postId", postId.toString())
                 headers.append("tree", tree)
-//                headers.append("content", content.normalize(Form.NFD))
             }.body<PostCommentNew>()
             emit(response)
         }

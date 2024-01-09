@@ -59,7 +59,7 @@ import io.kamel.image.asyncPainterResource
 @Composable
 fun MassageList(
     modifier: Modifier,
-    navigateToMassageDetail:(String)->Unit,
+    navigateToMassageDetail:((String)->Unit) = {},
 ) {
     var isExpanded by remember {
         mutableStateOf(false)

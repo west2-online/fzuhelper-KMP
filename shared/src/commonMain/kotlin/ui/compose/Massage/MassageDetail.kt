@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.zip
 @Composable
 fun MassageDetail(
     modifier: Modifier = Modifier,
-    back:(()->Unit)?
+    back:(()->Unit)? = null
 ){
     BackHandler(back!=null){
         back?.invoke()

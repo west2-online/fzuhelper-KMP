@@ -1,7 +1,8 @@
 package repository
 
-import LoginClient
+
 import data.register.AuthenticationResponse
+import di.LoginClient
 import io.ktor.client.call.body
 import io.ktor.client.request.cookie
 import io.ktor.client.request.forms.submitForm
