@@ -121,12 +121,12 @@ fun PostDetail(
     refreshCommentPreview:()->Unit = {}
 ) {
     val commentItems = postCommentPreview.collectAsLazyPagingItems()
-    val isRefresh = remember{ mutableStateOf(false) }
+    val isRefresh = rememberSaveable{ mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val commentState = rememberSaveable(
         stateSaver = Saver<CommentState,String >(
             restore = {
-                return@Saver Json.decodeFromString<CommentState>(it)
+                return@Saver Json.decodeFromString<CommentStateSerializable>(it).toCommentState()
             },
             save = {
                 return@Saver Json.encodeToString(it.toCommentStateSerializable())
@@ -136,7 +136,16 @@ fun PostDetail(
         mutableStateOf<CommentState>(CommentState())
     }
     val state = rememberLazyListState()
-    val currentMainComment = remember{ mutableStateOf<Comment?>(null) }
+    val currentMainComment = rememberSaveable(
+        stateSaver = Saver<Comment?,String >(
+            restore = {
+                return@Saver Json.decodeFromString<Comment>(it)
+            },
+            save = {
+                return@Saver Json.encodeToString(it)
+            }
+        )
+    ){ mutableStateOf<Comment?>(null) }
 
     //下拉刷新
     LaunchedEffect(state){
@@ -1101,5 +1110,12 @@ fun CommentState.toCommentStateSerializable():CommentStateSerializable{
     return CommentStateSerializable(
         isShow = this.isShow.value,
         commentAt = this.commentAt.value
+    )
+}
+
+fun CommentStateSerializable.toCommentState():CommentState{
+    return CommentState(
+        isShow = mutableStateOf(this.isShow),
+        commentAt = mutableStateOf(this.commentAt)
     )
 }
