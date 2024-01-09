@@ -34,7 +34,8 @@ import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.ModifierInformation.ModifierInformationViewModel
 import ui.compose.Person.PersonViewModel
-import ui.compose.Post.PostListModel
+import ui.compose.Post.PostDetailViewModel
+import ui.compose.Post.PostListViewModel
 import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Report.ReportViewModel
 import ui.compose.Ribbon.RibbonViewModel
@@ -234,13 +235,16 @@ fun Module.viewModel(){
         SplashPageViewModel(get(),get())
     }
     single {
-        PostListModel(get(),get(),get(),get())
+        PostListViewModel(get(),get(),get(),get())
     }
     single {
         FeedBackViewModel(get())
     }
     single {
         ReportViewModel(get())
+    }
+    single {
+        PostDetailViewModel(get(),get(),get())
     }
     viewModelDefinition {
         PersonViewModel(get(),get())

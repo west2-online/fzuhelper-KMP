@@ -35,8 +35,8 @@ import com.bumble.appyx.navigation.node.ParentNode
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import com.bumble.appyx.utils.multiplatform.RawValue
-import data.post.PostCommentTree.MainComment
 import data.post.PostList.Data
+import data.post.share.Comment
 import org.koin.compose.koinInject
 import ui.util.compose.rememberToastState
 import ui.util.compose.toastBindNetworkResult
@@ -130,9 +130,9 @@ sealed class ReportType{
 
     data class CommentReportType(
         val commentId: String,
-        val postId : String,
+        val postId: String,
 //        val data: Data,
-        val comment:MainComment
+        val comment: Comment
     ): ReportType()
 
 }

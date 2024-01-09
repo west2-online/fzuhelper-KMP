@@ -1,4 +1,4 @@
-package data.post.PostCommentTree
+package data.post.PostCommentPreview
 
 import data.post.share.Comment
 import kotlinx.serialization.Serializable
@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Data(
     val MainComment: Comment,
-    val ParentComment: Comment
+    val SonComment: List<Comment>
 )
