@@ -2,8 +2,8 @@ package repository
 
 import data.post.NewPostResponse
 import data.post.PostById.PostById
-import data.post.PostComment.PostCommentListPreview
 import data.post.PostCommentNew.PostCommentNew
+import data.post.PostCommentPreview.PostCommentPreview
 import data.post.PostList.PostList
 import doist.x.normalize.Form
 import doist.x.normalize.normalize
@@ -101,9 +101,9 @@ class PostRepository(private val client: HttpClient) {
         }
     }
 
-    fun getCommentPreview(page:Int,postId: Int):Flow<PostCommentListPreview>{
+    fun getCommentPreview(page:Int,postId: Int):Flow<PostCommentPreview>{
         return flow {
-            val response = client.get("/post/comment/page/${page}/${postId}").body<PostCommentListPreview>()
+            val response = client.get("/post/comment/page/${page}/${postId}").body<PostCommentPreview>()
             emit(response)
         }
     }

@@ -79,8 +79,8 @@ import data.post.PostById.FileData
 import data.post.PostById.PostById
 import data.post.PostById.PostContent
 import data.post.PostById.ValueData
-import data.post.PostComment.Data
-import data.post.PostCommentTree.MainComment
+import data.post.PostCommentPreview.Data
+import data.post.share.Comment
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import io.kamel.image.KamelImage
@@ -102,8 +102,8 @@ import ui.util.compose.Toast
 import ui.util.compose.shimmerLoadingAnimation
 import ui.util.network.CollectWithContent
 import ui.util.network.NetworkResult
-import ui.util.network.logicWithType
 import ui.util.network.toEasyTime
+import ui.util.network.toast
 
 @Composable
 fun PostDetail(
@@ -118,12 +118,10 @@ fun PostDetail(
     commentSubmitState: State<NetworkResult<String>>,
     toastState: Toast,
     commentReport:(type:ReportType)->Unit = {},
-    refreshCommentPReview:()->Unit = {}
+    refreshCommentPreview:()->Unit = {}
 ) {
     val commentItems = postCommentPreview.collectAsLazyPagingItems()
-    val isRefresh = remember{
-        mutableStateOf(false)
-    }
+    val isRefresh = remember{ mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val commentState = rememberSaveable(
         stateSaver = Saver<CommentState,String >(
@@ -137,13 +135,10 @@ fun PostDetail(
     ) {
         mutableStateOf<CommentState>(CommentState())
     }
-
     val state = rememberLazyListState()
+    val currentMainComment = remember{ mutableStateOf<Comment?>(null) }
 
-    val show = remember{
-        mutableStateOf<MainComment?>(null)
-    }
-
+    //下拉刷新
     LaunchedEffect(state){
         snapshotFlow{ state.isScrollInProgress && !state.canScrollBackward }
             .filter {
@@ -153,17 +148,13 @@ fun PostDetail(
                 isRefresh.value = true
                 delay(1000)
 //                getPostById(id)
-                commentItems.refresh()
-                refreshCommentPReview()
+                refreshCommentPreview()
                 isRefresh.value = false
             }
     }
 
     LaunchedEffect(commentSubmitState.value.key){
-        if(!commentSubmitState.value.showToast){
-            return@LaunchedEffect
-        }
-        commentSubmitState.value.logicWithType(
+        commentSubmitState.value.toast(
             success = {
                 toastState.addToast(it)
             },
@@ -173,17 +164,18 @@ fun PostDetail(
         )
     }
 
-    LaunchedEffect(show.value){
-        show.value?.let {
+    LaunchedEffect(currentMainComment.value){
+        currentMainComment.value?.let {
             getPostCommentTree(it.Id.toString())
         }
     }
 
     LaunchedEffect(Unit){
         getPostById(id)
-        commentItems.refresh()
+        refreshCommentPreview()
     }
 
+    //主要的帖子和评论
     Box(modifier = Modifier
         .fillMaxSize()
     ){
@@ -247,13 +239,13 @@ fun PostDetail(
                     modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp)
                 )
             }
-            items(commentItems.itemCount) { it ->
+            items(commentItems.itemCount) { index ->
                 CommentInNewsDetail(
-                    commentItems[it],
+                    commentItems[index],
                     click = {
                         scope.launch {
-                            commentItems[it]?.let {
-                                show.value = it.MainComment
+                            commentItems[index]?.let {
+                                currentMainComment.value = it.MainComment
                             }
                         }
                     },
@@ -267,6 +259,7 @@ fun PostDetail(
         }
     }
 
+    //下方的按钮和刷新的ui
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -304,16 +297,16 @@ fun PostDetail(
                         .size(30.dp)
                 )
             }
-
         }
     }
 
+    //获取详细的评论
     Box(
         modifier = Modifier
             .fillMaxSize()
     ){
         AnimatedVisibility(
-            visible = show.value != null,
+            visible = currentMainComment.value != null,
             exit = slideOutVertically {
                 return@slideOutVertically it
             },
@@ -323,8 +316,8 @@ fun PostDetail(
             modifier = Modifier
                 .fillMaxSize(),
         ){
-            BackHandler(show.value != null){
-                show.value = null
+            BackHandler(currentMainComment.value != null){
+                currentMainComment.value = null
             }
             Column(
                 modifier = Modifier
@@ -339,7 +332,7 @@ fun PostDetail(
                             remember { MutableInteractionSource() },
                             indication = null,
                             onClick = {
-                                show.value = null
+                                currentMainComment.value = null
                             }
                         )
                 )
@@ -392,7 +385,7 @@ fun PostDetail(
                                         CircleShape
                                     )
                                     .clickable {
-                                        show.value = null
+                                        currentMainComment.value = null
                                     }
                                     .wrapContentSize(Alignment.Center)
                                     .fillMaxSize(0.6f)
@@ -413,7 +406,7 @@ fun PostDetail(
                                             modifier = Modifier
                                                 .animateContentSize()
                                         ) {
-                                            show.value?.let {
+                                            currentMainComment.value?.let {
                                                 CommentInNewsDetail(
                                                     data = Data(
                                                         MainComment = it,
@@ -438,7 +431,7 @@ fun PostDetail(
                                     }
                                     items(commentTree.itemCount) {
                                         commentTree[it]?.let { comment ->
-                                            CommentTree(
+                                            CommentTreeItem(
                                                 comment,
                                                 click = {
                                                     commentState.value.setCommentAt(it)
@@ -470,6 +463,7 @@ fun PostDetail(
         }
     }
 
+    //帖子评论
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -754,7 +748,7 @@ fun LazyListScope.newsDetailItem(
 fun CommentInNewsDetail(
     data: Data?,
     click : ()->Unit ={},
-    report : (comment:MainComment)->Unit ={}
+    report : (comment: Comment)->Unit ={}
 ) {
     data?.let {
         Row(modifier = Modifier
@@ -880,9 +874,9 @@ fun ImageContent(
 }
 
 @Composable
-fun CommentTree(
+fun CommentTreeItem(
     data : data.post.PostCommentTree.Data,
-    click: (data.post.PostCommentTree.MainComment) -> Unit,
+    click: (Comment) -> Unit,
 ){
     val showParent = remember {
         mutableStateOf(false)
@@ -1083,10 +1077,10 @@ fun CommentTree(
 
 class CommentState (
     val isShow: MutableState<Boolean> = mutableStateOf(false),
-    val commentAt: MutableState<data.post.PostCommentTree.MainComment?> = mutableStateOf(null)
+    val commentAt: MutableState<Comment?> = mutableStateOf(null)
 ){
 
-    fun setCommentAt(mainComment: data.post.PostCommentTree.MainComment?){
+    fun setCommentAt(mainComment: Comment?){
         commentAt.value = mainComment
         isShow.value = true
     }
@@ -1100,7 +1094,7 @@ class CommentState (
 @Serializable
 data class CommentStateSerializable(
     val isShow :Boolean,
-    val commentAt:MainComment?
+    val commentAt: Comment?
 )
 
 fun CommentState.toCommentStateSerializable():CommentStateSerializable{

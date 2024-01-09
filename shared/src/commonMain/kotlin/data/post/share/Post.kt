@@ -1,4 +1,4 @@
-package data.post.PostCommentTree
+package data.post.share
 
 import kotlinx.serialization.Serializable
 
@@ -8,9 +8,9 @@ data class Post(
     val Id: Int,
     val LikeNum: Int,
     val LittleDescribe: String,
-    val status: Int,
+    val Status: Int,
     val Time: String,
     val Title: String,
-    val User: UserX,
+    val User: User,
     val UserId: Int
 )

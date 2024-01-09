@@ -35,7 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import config.BaseUrlConfig
-import data.post.PostCommentTree.MainComment
+import data.post.share.Comment
 import data.post.PostList.Data
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -50,7 +50,7 @@ import ui.util.network.toEasyTime
 fun CommentRepost(
     modifier: Modifier = Modifier,
 //    postData :Data,
-    commentData: MainComment
+    commentData: Comment
 ){
     val viewModel = koinInject<ReportViewModel>()
     val selectItem = remember {

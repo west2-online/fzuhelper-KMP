@@ -1,51 +1,31 @@
 package ui.compose.Post
 
-import androidx.compose.runtime.mutableStateOf
 import app.cash.paging.Pager
 import app.cash.paging.PagingConfig
 import app.cash.paging.PagingSource
 import app.cash.paging.PagingState
 import app.cash.paging.cachedIn
 import com.liftric.kvault.KVault
-import data.post.PostById.PostById
-import data.post.PostComment.PostCommentListPreview
 import data.post.PostCommentNew.PostCommentNew
-import data.post.PostCommentTree.PostCommentTree
 import data.post.PostList.Data
 import data.post.PostList.PostList
-import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
-import doist.x.normalize.Form
-import doist.x.normalize.normalize
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import repository.CommentSubmitStatus
 import repository.PostRepository
 import ui.compose.Report.ReportType
 import ui.root.RootAction
 import ui.root.RootTarget
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
-import ui.util.network.loginIfNotLoading
-import ui.util.network.reset
 
-class PostListModel(
+class PostListViewModel(
     private val postRepository:PostRepository,
     private val kVault: KVault,
     private val client: HttpClient,
     private val rootAction: RootAction
 ):ViewModel() {
-    val currentItem = mutableStateOf<PostItem>(PostItem.PostList())
-    private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostById>>(NetworkResult.UnSend()))
-    val currentPostDetail = _currentPostDetail.asStateFlow()
-
     var postListFlow = Pager(
             PagingConfig(
                 pageSize = 10,
@@ -60,78 +40,10 @@ class PostListModel(
     }.flow
         .cachedIn(viewModelScope)
 
-    private val _postCommentPreviewFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, data.post.PostComment.Data>?>(null))
-    var postCommentPreviewFlow = _postCommentPreviewFlow.asStateFlow()
-
-    private val _postCommentTreeFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, data.post.PostCommentTree.Data>?>(null))
-    var postCommentTreeFlow = _postCommentTreeFlow.asStateFlow()
-
-    private val _commentSubmitState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
-    val commentSubmitState = _commentSubmitState.asStateFlow()
-
-    fun initPostCommentPreview(postId: String){
-        viewModelScope.launch {
-            _postCommentPreviewFlow.value = Pager(
-                PagingConfig(
-                    pageSize = 10,
-                    prefetchDistance = 2
-                ),
-            ){
-                EasyPageSourceForCommentPreview(
-                    backend = LoadPageDataForCommentPreview {
-                        return@LoadPageDataForCommentPreview client.get("post/comment/page/${it}/${postId}")
-                            .body<PostCommentListPreview>().data
-                    }
-                )
-            }
-        }
-    }
-
-    fun getPostCommentTree(treeStart: String,postId:String){
-        viewModelScope.launch {
-            _postCommentTreeFlow.value = Pager(
-                PagingConfig(
-                    pageSize = 10,
-                    prefetchDistance = 2
-                ),
-            ){
-                EasyPageSourceForCommentTree(
-                    backend = LoadPageDataForCommentTree {
-                        println("ssss")
-                        return@LoadPageDataForCommentTree client.get("post/commentList/page/${it}/${treeStart}/${postId}").body<PostCommentTree>().data
-                    }
-                )
-            }
-        }
-    }
-    fun getPostById(id: String){
-        viewModelScope.launch (Dispatchers.IO){
-            _currentPostDetail.reset(NetworkResult.Loading())
-            postRepository.getPostById(id = id)
-                .catchWithMassage {
-                    println(it.message)
-                    _currentPostDetail.reset(NetworkResult.Error(Throwable("帖子获取失败")))
-                }
-                .collectWithMassage{
-                    _currentPostDetail.reset(NetworkResult.Success(it))
-                }
-        }
-    }
-    fun submitComment(parentId:Int,postId:Int,tree:String,content:String,image:ByteArray?){
-        viewModelScope.launch {
-            _commentSubmitState.loginIfNotLoading {
-                postRepository.postNewComment(parentId,postId,tree,content.normalize(Form.NFC),image)
-                    .catchWithMassage {
-                        _commentSubmitState.reset(NetworkResult.Error(Throwable("评论失败，稍后再试")))
-                    }.collectWithMassage{
-                        _commentSubmitState.reset(it.toNetworkResult())
-                    }
-            }
-        }
-    }
     fun navigateToRelease(){
         rootAction.navigateToNewTarget(RootTarget.Release)
     }
+
     fun navigateToReport(type: ReportType){
         rootAction.navigateToNewTarget(RootTarget.Report(type))
     }
@@ -181,18 +93,12 @@ class EasyPageSourceForPost(
     }
 
     override fun getRefreshKey(state: PagingState<Int, Data>): Int? {
-        // Try to find the page key of the closest page to anchorPosition from
-        // either the prevKey or the nextKey; you need to handle nullability
-        // here.
-        //  * prevKey == null -> anchorPage is the first page.
-        //  * nextKey == null -> anchorPage is the last page.
-        //  * both prevKey and nextKey are null -> anchorPage is the
-        //    initial page, so return null.
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
         }
     }
+
 }
 
 
@@ -200,9 +106,9 @@ class EasyPageSourceForPost(
 
 
 class LoadPageDataForCommentPreview(
-    val getResult : suspend (page:Int) -> List<data.post.PostComment.Data>?
+    val getResult : suspend (page:Int) -> List<data.post.PostCommentPreview.Data>?
 ) {
-    suspend fun searchUsers(page: Int): PageLoadDataForCommentPreview {
+    suspend fun searchCommentPreview(page: Int): PageLoadDataForCommentPreview {
         val response = getResult(page)
         return PageLoadDataForCommentPreview(
             response,
@@ -217,23 +123,23 @@ class LoadPageDataForCommentPreview(
 
 
 data class PageLoadDataForCommentPreview(
-    val result : List<data.post.PostComment.Data>?,
+    val result : List<data.post.PostCommentPreview.Data>?,
     val nextPageNumber: Int?
 )
 
 
 class EasyPageSourceForCommentPreview(
     private val backend: LoadPageDataForCommentPreview,
-) : PagingSource<Int,data.post.PostComment.Data>() {
+) : PagingSource<Int,data.post.PostCommentPreview.Data>() {
     override suspend fun load(
         params: LoadParams<Int>
-    ): LoadResult<Int, data.post.PostComment.Data> {
+    ): LoadResult<Int, data.post.PostCommentPreview.Data> {
         return try {
             val page = params.key ?: 1
-            val response = backend.searchUsers(page)
+            val response = backend.searchCommentPreview(page)
             LoadResult.Page(
                 data = response.result!!,
-                prevKey = null, // Only paging forward.
+                prevKey = null,
                 nextKey = response.nextPageNumber
             )
         } catch (e: Exception) {
@@ -241,14 +147,7 @@ class EasyPageSourceForCommentPreview(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int,  data.post.PostComment.Data>): Int? {
-        // Try to find the page key of the closest page to anchorPosition from
-        // either the prevKey or the nextKey; you need to handle nullability
-        // here.
-        //  * prevKey == null -> anchorPage is the first page.
-        //  * nextKey == null -> anchorPage is the last page.
-        //  * both prevKey and nextKey are null -> anchorPage is the
-        //    initial page, so return null.
+    override fun getRefreshKey(state: PagingState<Int,  data.post.PostCommentPreview.Data>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
@@ -261,7 +160,7 @@ class EasyPageSourceForCommentPreview(
 class LoadPageDataForCommentTree(
     val getResult : suspend (page:Int) -> List<data.post.PostCommentTree.Data>?
 ) {
-    suspend fun searchUsers(page: Int): PageLoadDataForCommentTree {
+    suspend fun searchCommentTree(page: Int): PageLoadDataForCommentTree {
         val response = getResult(page)
         return PageLoadDataForCommentTree(
             response,
@@ -289,7 +188,7 @@ class EasyPageSourceForCommentTree(
     ): LoadResult<Int,data.post.PostCommentTree.Data> {
         return try {
             val page = params.key ?: 1
-            val response = backend.searchUsers(page)
+            val response = backend.searchCommentTree(page)
             LoadResult.Page(
                 data = response.result!!,
                 prevKey = null, // Only paging forward.
@@ -301,13 +200,6 @@ class EasyPageSourceForCommentTree(
     }
 
     override fun getRefreshKey(state: PagingState<Int,data.post.PostCommentTree.Data>): Int? {
-        // Try to find the page key of the closest page to anchorPosition from
-        // either the prevKey or the nextKey; you need to handle nullability
-        // here.
-        //  * prevKey == null -> anchorPage is the first page.
-        //  * nextKey == null -> anchorPage is the last page.
-        //  * both prevKey and nextKey are null -> anchorPage is the
-        //    initial page, so return null.
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)

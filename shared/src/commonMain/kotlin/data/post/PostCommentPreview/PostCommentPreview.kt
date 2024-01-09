@@ -1,9 +1,9 @@
-package data.post.PostComment
+package data.post.PostCommentPreview
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PostCommentListPreview(
+data class PostCommentPreview(
     val code: Int,
     val `data`: List<Data>,
     val msg: String

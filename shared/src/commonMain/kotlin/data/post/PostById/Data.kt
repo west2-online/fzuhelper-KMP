@@ -1,5 +1,6 @@
 package data.post.PostById
 
+import data.post.share.Post
 import kotlinx.serialization.Serializable
 
 @Serializable
