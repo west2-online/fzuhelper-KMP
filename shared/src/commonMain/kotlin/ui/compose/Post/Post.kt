@@ -118,7 +118,6 @@ class PostRouteTarget(
         ),
         visualisation = { BackStackSlider(it) }
     ).apply {
-
         postIdForSave?.let {
             this.push(PostNav.PostDetailNav(it))
         }

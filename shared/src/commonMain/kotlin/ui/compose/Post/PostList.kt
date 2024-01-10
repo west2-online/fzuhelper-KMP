@@ -102,10 +102,10 @@ fun PostList(
                 items(
                     postList.itemCount,
                 ){
-                    postList[it]?.let {
+                    postList[it]?.let { postData ->
                         NewsItem(
                             navigateToNewsDetail = navigateToNewsDetail,
-                            post = it,
+                            post = postData,
                             navigateToReport = {
                                 navigateToReport.invoke(it)
                             }
@@ -314,6 +314,27 @@ fun NewsItem(
                     navigateToReport.invoke(post)
                 }
             )
+            if( post.Status == 1 ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(10))
+                        .padding(vertical = 10.dp)
+                ){
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .animateContentSize(),
+                        maxLines = lines,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 10.sp,
+                        text = "该帖遭到较多举报，请谨慎看待",
+                        color = Color.Red
+                    )
+                }
+            }
             Divider(modifier = Modifier.padding( top = 3.dp ).fillMaxWidth(),thickness = 1.dp)
         }
 

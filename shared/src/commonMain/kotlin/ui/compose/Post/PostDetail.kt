@@ -139,9 +139,15 @@ fun PostDetail(
     val currentMainComment = rememberSaveable(
         stateSaver = Saver<Comment?,String >(
             restore = {
+                if(it == "null"){
+                    return@Saver null
+                }
                 return@Saver Json.decodeFromString<Comment>(it)
             },
             save = {
+                it?:let {
+                    return@Saver "null"
+                }
                 return@Saver Json.encodeToString(it)
             }
         )
@@ -192,6 +198,7 @@ fun PostDetail(
             modifier = modifier,
             state = state
         ) {
+            //帖子
             item {
                 Box(
                     modifier = Modifier
@@ -243,13 +250,15 @@ fun PostDetail(
                     )
                 }
             }
+            //分界线
             item {
                 Divider(
                     modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp)
                 )
             }
+            //对帖子的直接评论
             items(commentItems.itemCount) { index ->
-                CommentInNewsDetail(
+                CommentInPostDetail(
                     commentItems[index],
                     click = {
                         scope.launch {
@@ -268,7 +277,7 @@ fun PostDetail(
         }
     }
 
-    //下方的按钮和刷新的ui
+    //下方的评论按钮和刷新的ui
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -360,6 +369,7 @@ fun PostDetail(
                             .padding(10.dp)
                     ) {
                         val commentTree = postCommentTree.value?.flow?.collectAsLazyPagingItems()
+                        //刷新和下拉按钮
                         Row(
                             horizontalArrangement = Arrangement.End,
                             modifier = Modifier
@@ -416,8 +426,8 @@ fun PostDetail(
                                                 .animateContentSize()
                                         ) {
                                             currentMainComment.value?.let {
-                                                CommentInNewsDetail(
-                                                    data = Data(
+                                                CommentInPostDetail(
+                                                    commentGroup = Data(
                                                         MainComment = it,
                                                         SonComment = listOf()
                                                     ), click = {
@@ -439,11 +449,11 @@ fun PostDetail(
                                         )
                                     }
                                     items(commentTree.itemCount) {
-                                        commentTree[it]?.let { comment ->
+                                        commentTree[it]?.let { commentIndex ->
                                             CommentTreeItem(
-                                                comment,
-                                                click = {
-                                                    commentState.value.setCommentAt(it)
+                                                commentIndex,
+                                                click = { comment ->
+                                                    commentState.value.setCommentAt(comment)
                                                 }
                                             )
                                         }
@@ -572,8 +582,8 @@ fun PostDetail(
                                         Text(
                                             text = "回复@"
                                         )
-                                        CommentInNewsDetail(
-                                            data = Data(
+                                        CommentInPostDetail(
+                                            commentGroup = Data(
                                                 it,
                                                 listOf()
                                             ),
@@ -754,12 +764,12 @@ fun LazyListScope.newsDetailItem(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CommentInNewsDetail(
-    data: Data?,
+fun CommentInPostDetail(
+    commentGroup: Data?,
     click : ()->Unit ={},
     report : (comment: Comment)->Unit ={}
 ) {
-    data?.let {
+    commentGroup?.let {
         Row(modifier = Modifier
             .padding(bottom = 10.dp)
             .animateContentSize()
@@ -769,13 +779,14 @@ fun CommentInNewsDetail(
                     click()
                 },
                 onLongClick = {
-                    report.invoke(data.MainComment)
+                    report.invoke(commentGroup.MainComment)
                 }
             )
             .padding(vertical = 5.dp)
         ){
+            //头像
             KamelImage(
-                resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${data.MainComment.User.avatar}"),
+                resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${commentGroup.MainComment.User.avatar}"),
                 null,
                 modifier = Modifier
                     .size(50.dp)
@@ -798,16 +809,16 @@ fun CommentInNewsDetail(
                     .weight(1f)
                     .wrapContentHeight()
             ){
-                Text(data.MainComment.User.username)
+                Text(commentGroup.MainComment.User.username)
                 Text(
-                    data.MainComment.Time.toEasyTime(),
+                    commentGroup.MainComment.Time.toEasyTime(),
                     fontSize = 10.sp
                 )
                 Text(
-                    data.MainComment.Content,
+                    commentGroup.MainComment.Content,
                     fontSize = 14.sp
                 )
-                data.MainComment.Image.let {
+                commentGroup.MainComment.Image.let {
                     if (it!=""){
                         KamelImage(
                             resource = asyncPainterResource("${BaseUrlConfig.CommentImage}/${it}"),
@@ -828,8 +839,7 @@ fun CommentInNewsDetail(
                         )
                     }
                 }
-
-                if(data.SonComment.isNotEmpty()){
+                if(commentGroup.SonComment.isNotEmpty()){
                     Surface (
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier
@@ -840,7 +850,7 @@ fun CommentInNewsDetail(
                             modifier = Modifier
                                 .padding(10.dp)
                         ){
-                            data.SonComment.forEach {
+                            commentGroup.SonComment.forEach {
                                 Text(
                                     "${ it.User.username }: ${ it.Content }",
                                     maxLines = 2,
@@ -853,6 +863,26 @@ fun CommentInNewsDetail(
                                 )
                             }
                         }
+                    }
+                }
+                if( commentGroup.MainComment.Status == 1 ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .clip(RoundedCornerShape(10))
+                            .padding(vertical = 10.dp)
+                    ){
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .animateContentSize(),
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 10.sp,
+                            text = "该评论遭到较多举报，请谨慎看待",
+                            color = Color.Red
+                        )
                     }
                 }
             }
@@ -882,21 +912,20 @@ fun ImageContent(
     }
 }
 
+//在评论树中的item
 @Composable
 fun CommentTreeItem(
     data : data.post.PostCommentTree.Data,
     click: (Comment) -> Unit,
 ){
-    val showParent = remember {
-        mutableStateOf(false)
-    }
+    val showParent = remember { mutableStateOf(false) }
     val rotate: Float by animateFloatAsState(if (showParent.value) 180f else 0f)
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize()
     ){
-        data.MainComment.let {
+        data.MainComment.let { comment ->
             Column{
                 Row(
                     modifier = Modifier
@@ -909,7 +938,7 @@ fun CommentTreeItem(
                         .padding(vertical = 5.dp)
                 ) {
                     KamelImage(
-                        resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${it.User.avatar}"),
+                        resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${comment.User.avatar}"),
                         null,
                         modifier = Modifier
                             .size(50.dp)
@@ -939,7 +968,7 @@ fun CommentTreeItem(
                                 modifier = Modifier
                                     .weight(1f)
                             ){
-                                Text(it.User.username)
+                                Text(comment.User.username)
                                 Text("回复@${data.ParentComment.User.username}", fontSize = 10.sp)
                             }
                             Row (
@@ -967,17 +996,16 @@ fun CommentTreeItem(
                                         .clip(CircleShape)
                                 )
                             }
-
                         }
                         Text(
-                            it.Time.toEasyTime(),
+                            comment.Time.toEasyTime(),
                             fontSize = 10.sp
                         )
                         Text(
-                            it.Content,
+                            comment.Content,
                             fontSize = 14.sp
                         )
-                        it.Image.let {
+                        comment.Image.let {
                             if (it != "") {
                                 KamelImage(
                                     resource = asyncPainterResource("${BaseUrlConfig.CommentImage}/${it}"),
@@ -1003,76 +1031,102 @@ fun CommentTreeItem(
                             showParent.value,
                             modifier = Modifier
                         ){
-                            data.ParentComment.let {
-                                Row(
-                                    modifier = Modifier
-                                        .padding(bottom = 10.dp)
-                                        .animateContentSize()
-                                        .clip(RoundedCornerShape(5.dp))
-                                        .border(
-                                            width = 1.dp,
-                                            shape = RoundedCornerShape(3.dp),
-                                            brush = Brush.linearGradient(listOf(Color(174, 174, 174),Color(174, 174, 174)))
-                                        )
-                                        .padding(vertical = 5.dp)
-                                ) {
-                                    KamelImage(
-                                        resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${it.User.avatar}"),
-                                        null,
+                            Surface {
+                                data.ParentComment.let {
+                                    Row(
                                         modifier = Modifier
-                                            .size(50.dp)
-                                            .wrapContentSize(Alignment.TopCenter)
-                                            .fillMaxSize(0.7f)
-                                            .aspectRatio(1f)
-                                            .clip(RoundedCornerShape(10)),
-                                        contentScale = ContentScale.FillBounds,
-                                        onLoading = {
-                                            Box(
-                                                modifier = Modifier
-                                                    .matchParentSize()
-                                                    .shimmerLoadingAnimation()
+                                            .padding(bottom = 10.dp)
+                                            .animateContentSize()
+                                            .clip(RoundedCornerShape(5.dp))
+                                            .border(
+                                                width = (0.5).dp,
+                                                shape = RoundedCornerShape(3.dp),
+                                                brush = Brush.linearGradient(listOf(Color.Gray,Color.Gray))
                                             )
-                                        }
-                                    )
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(end = 10.dp)
-                                            .weight(1f)
-                                            .wrapContentHeight()
+//                                            .shadow(
+//                                                1.dp,
+//                                                shape = RoundedCornerShape(3.dp),
+//                                            )
+                                            .padding(vertical = 5.dp)
                                     ) {
-                                        Text(it.User.username)
-                                        Text(
-                                            it.Time.toEasyTime(),
-                                            fontSize = 10.sp
-                                        )
-                                        Text(
-                                            it.Content,
-                                            fontSize = 14.sp
-                                        )
-                                        it.Image.let {
-                                            if (it != "") {
-                                                KamelImage(
-                                                    resource = asyncPainterResource("${BaseUrlConfig.CommentImage}/${it}"),
-                                                    null,
+                                        KamelImage(
+                                            resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${it.User.avatar}"),
+                                            null,
+                                            modifier = Modifier
+                                                .size(50.dp)
+                                                .wrapContentSize(Alignment.TopCenter)
+                                                .fillMaxSize(0.7f)
+                                                .aspectRatio(1f)
+                                                .clip(RoundedCornerShape(10)),
+                                            contentScale = ContentScale.FillBounds,
+                                            onLoading = {
+                                                Box(
                                                     modifier = Modifier
-                                                        .padding(vertical = 5.dp)
-                                                        .fillMaxWidth(0.5f)
-                                                        .wrapContentHeight()
-                                                        .clip(RoundedCornerShape(3))
-                                                        .animateContentSize(),
-                                                    contentScale = ContentScale.Inside,
-                                                    onLoading = {
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .matchParentSize()
-                                                                .shimmerLoadingAnimation()
-                                                        )
-                                                    }
+                                                        .matchParentSize()
+                                                        .shimmerLoadingAnimation()
                                                 )
+                                            }
+                                        )
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(end = 10.dp)
+                                                .weight(1f)
+                                                .wrapContentHeight()
+                                        ) {
+                                            Text(it.User.username)
+                                            Text(
+                                                it.Time.toEasyTime(),
+                                                fontSize = 10.sp
+                                            )
+                                            Text(
+                                                it.Content,
+                                                fontSize = 14.sp
+                                            )
+                                            it.Image.let {
+                                                if (it != "") {
+                                                    KamelImage(
+                                                        resource = asyncPainterResource("${BaseUrlConfig.CommentImage}/${it}"),
+                                                        null,
+                                                        modifier = Modifier
+                                                            .padding(vertical = 5.dp)
+                                                            .fillMaxWidth(0.5f)
+                                                            .wrapContentHeight()
+                                                            .clip(RoundedCornerShape(3))
+                                                            .animateContentSize(),
+                                                        contentScale = ContentScale.Inside,
+                                                        onLoading = {
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .matchParentSize()
+                                                                    .shimmerLoadingAnimation()
+                                                            )
+                                                        }
+                                                    )
+                                                }
                                             }
                                         }
                                     }
                                 }
+                            }
+                        }
+                        if( comment.Status == 1 ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                                    .clip(RoundedCornerShape(10))
+                                    .padding(vertical = 5.dp)
+                            ){
+                                Text(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .animateContentSize(),
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 10.sp,
+                                    text = "该评论遭到较多举报，请谨慎看待",
+                                    color = Color.Red
+                                )
                             }
                         }
                     }
