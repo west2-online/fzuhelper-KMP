@@ -16,15 +16,19 @@ import ui.util.network.reset
 class ReportViewModel(
     private val repository: ReportRepository
 ):ViewModel() {
-    private val _reportResponse = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
-    val reportResponse = _reportResponse.asStateFlow()
+    private val _reportCommentResponse = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    val reportCommentResponse = _reportCommentResponse.asStateFlow()
+
+    private val _reportPostResponse = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    val reportPostResponse = _reportPostResponse.asStateFlow()
+
     fun reportComment(commentId:String,typeId:Int,postId:String){
         viewModelScope.launchInDefault {
             repository.reportComment(commentId, typeId, postId)
                 .catchWithMassage {
-                    _reportResponse.reset(NetworkResult.Error(Throwable("举报失败")))
+                    _reportCommentResponse.reset(NetworkResult.Error(Throwable("举报失败")))
                 }.collectWithMassage {
-                    _reportResponse.reset(it.toNetworkResult())
+                    _reportCommentResponse.reset(it.toNetworkResult())
                 }
         }
     }
@@ -33,9 +37,9 @@ class ReportViewModel(
         viewModelScope.launchInDefault {
             repository.reportPost(typeId, postId)
                 .catchWithMassage {
-                    _reportResponse.reset(NetworkResult.Error(Throwable("举报失败")))
+                    _reportPostResponse.reset(NetworkResult.Error(Throwable("举报失败")))
                 }.collectWithMassage {
-
+                    _reportPostResponse.reset(it.toNetworkResult())
                 }
         }
     }

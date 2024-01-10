@@ -35,6 +35,7 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
 import ui.compose.Post.PersonalInformationAreaInList
+import ui.util.compose.EasyToast
 import ui.util.compose.rememberToastState
 import ui.util.compose.toastBindNetworkResult
 
@@ -47,10 +48,9 @@ fun PostReport(
     val selectItem = remember {
         mutableStateOf(0)
     }
-    val reportResponseState = viewModel.reportResponse.collectAsState()
+    val reportResponseState = viewModel.reportPostResponse.collectAsState()
     val toastState = rememberToastState()
     toastBindNetworkResult(toastState,reportResponseState)
-
     LazyColumn(
         modifier = modifier,
         horizontalAlignment = Alignment.End
@@ -159,5 +159,5 @@ fun PostReport(
             }
         }
     }
-
+    EasyToast(toastState)
 }

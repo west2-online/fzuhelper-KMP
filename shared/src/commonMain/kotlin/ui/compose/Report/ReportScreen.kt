@@ -50,7 +50,7 @@ fun ReportScreen(
     val selectItem = remember {
         mutableStateOf(0)
     }
-    val reportResponseState = viewModel.reportResponse.collectAsState()
+    val reportResponseState = viewModel.reportCommentResponse.collectAsState()
     val toastState = rememberToastState()
     toastBindNetworkResult(toastState,reportResponseState)
     Column (

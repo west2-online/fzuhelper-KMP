@@ -91,7 +91,7 @@ inline fun toastBindNetworkResult(toastState:Toast,networkResult: State<NetworkR
     LaunchedEffect(networkResult.value.key.value){
         networkResult.value.toast(
             success = {
-                toastState.addWarnToast(it)
+                toastState.addToast(it)
             },
             error = {
                 toastState.addWarnToast(it.message.toString())

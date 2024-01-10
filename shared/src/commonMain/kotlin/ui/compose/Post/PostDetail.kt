@@ -900,7 +900,6 @@ fun ImageContent(
             .wrapContentHeight()
             .animateContentSize()
     ){
-//        "static/post/${it.fileName}"
         KamelImage(
             resource = asyncPainterResource("${BaseUrlConfig.PostImage}/${imageData}"),
             null,
@@ -1043,10 +1042,6 @@ fun CommentTreeItem(
                                                 shape = RoundedCornerShape(3.dp),
                                                 brush = Brush.linearGradient(listOf(Color.Gray,Color.Gray))
                                             )
-//                                            .shadow(
-//                                                1.dp,
-//                                                shape = RoundedCornerShape(3.dp),
-//                                            )
                                             .padding(vertical = 5.dp)
                                     ) {
                                         KamelImage(

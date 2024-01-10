@@ -148,7 +148,7 @@ enum class Functions(
 ){
     QRCODE(  functionName = "二维码生成", painter = MR.images.qrcode,rootNavTarget = RootTarget.QRCode),
     WebView( functionName = "新生宝典", painter = MR.images.login,rootNavTarget = RootTarget.AboutUs),
-    Weather(  functionName = "天气", painter = MR.images.close,rootNavTarget = RootTarget.Weather),
+    Weather(  functionName = "天气", painter = MR.images.cloud,rootNavTarget = RootTarget.Weather),
     Map(  functionName = "地图", painter = MR.images.close,rootNavTarget = RootTarget.Weather),
     Test(functionName = "测试", painter = MR.images.close,rootNavTarget = RootTarget.AboutUs),
     AboutUs(functionName = "关于我们", painter = MR.images.FuTalk , rootNavTarget = RootTarget.AboutUs),

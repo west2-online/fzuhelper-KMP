@@ -5,6 +5,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,12 +36,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import config.BaseUrlConfig
-import data.post.share.Comment
 import data.post.PostList.Data
+import data.post.share.Comment
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
 import ui.compose.Post.PersonalInformationAreaInList
+import ui.util.compose.EasyToast
 import ui.util.compose.rememberToastState
 import ui.util.compose.shimmerLoadingAnimation
 import ui.util.compose.toastBindNetworkResult
@@ -56,14 +58,17 @@ fun CommentRepost(
     val selectItem = remember {
         mutableStateOf(0)
     }
-    val reportResponseState = viewModel.reportResponse.collectAsState()
+    val reportResponseState = viewModel.reportCommentResponse.collectAsState()
     val toastState = rememberToastState()
     toastBindNetworkResult(toastState,reportResponseState)
     LazyColumn(
         modifier = modifier
     ){
         item{
-            Column(modifier = modifier) {
+            Column(
+                modifier = Modifier
+                    .padding(bottom = 10.dp)
+            ) {
                 Text("举报@", color = Color.Red, modifier = Modifier.padding(bottom = 10.dp))
                 Column(
                     modifier = Modifier
@@ -167,17 +172,22 @@ fun CommentRepost(
             }
         }
         item {
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth(0.4f),
-                onClick = {
-                    viewModel.reportComment(commentId = commentData.Id.toString(), selectItem.value, postId = commentData.PostId.toString())
+            Row (
+                horizontalArrangement = Arrangement.End
+            ){
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth(0.4f),
+                    onClick = {
+                        viewModel.reportComment(commentId = commentData.Id.toString(), selectItem.value, postId = commentData.PostId.toString())
+                    }
+                ) {
+                    Text("举报")
                 }
-            ) {
-                Text("举报")
             }
         }
     }
+    EasyToast(toastState)
 }
 
 @Composable
