@@ -38,7 +38,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -65,7 +64,7 @@ import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.util.compose.EasyToast
 import ui.util.compose.rememberToastState
-import ui.util.network.logicWithType
+import ui.util.compose.toastBindNetworkResult
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -74,32 +73,16 @@ fun ReleasePageScreen(
     viewModel: ReleasePageViewModel = koinInject()
 ){
     val toastState = rememberToastState()
-    val releasePageItems = remember {
-        mutableStateListOf<ReleasePageItem>()
-    }
-    val title = remember {
-        mutableStateOf("")
-    }
+    val releasePageItems = remember { mutableStateListOf<ReleasePageItem>() }
+    val title = remember { mutableStateOf("") }
     val newPostState = viewModel.newPostState.collectAsState()
-    LaunchedEffect(newPostState.value,newPostState.value.key.value){
-        newPostState.value.logicWithType(
-            success = {
-                toastState.addToast("发布成功")
-                releasePageItems.clear()
-                title.value = ""
-            },
-            error = {
-                toastState.addToast("发布失败", Color.Red)
-            }
-        )
-    }
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
-    var preview by remember {
-        mutableStateOf(false)
-    }
+    var preview by remember { mutableStateOf(false) }
+    toastBindNetworkResult(toastState,viewModel.newPostState.collectAsState())
     Column (
-        modifier = modifier
+        modifier = Modifier
+            .padding(10.dp)
     ){
         Crossfade(
             preview,
@@ -107,14 +90,14 @@ fun ReleasePageScreen(
                 .fillMaxWidth()
                 .weight(11f)
                 .padding(top = 10.dp)
-        ){
-            if (preview) {
-                LazyColumn (
+        ){ isPreview ->
+            if (isPreview) {
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxSize(),
                     state = lazyListState
-                ){
-                    item{
+                ) {
+                    item {
                         Column(modifier) {
                             Box(
                                 modifier = Modifier
@@ -132,15 +115,15 @@ fun ReleasePageScreen(
                             )
                         }
                     }
-                    val list = releasePageItems.toList().sortedBy {
+                    releasePageItems.toList().sortedBy {
                         it.order.value
                     }.filter {
-                        return@filter when(it){
+                        return@filter when (it) {
                             is ReleasePageItem.TextItem -> it.text.value != ""
                             is ReleasePageItem.ImageItem -> it.image.value != null
                             else -> false
                         }
-                    }.forEachIndexed { index, releasePageItem ->
+                    }.forEachIndexed { _, releasePageItem ->
                         item {
                             Box(
                                 modifier = Modifier
@@ -148,9 +131,9 @@ fun ReleasePageScreen(
                                     .fillMaxWidth()
                                     .wrapContentHeight()
                                     .padding(10.dp)
-                            ){
-                                when(releasePageItem){
-                                    is ReleasePageItem.TextItem ->{
+                            ) {
+                                when (releasePageItem) {
+                                    is ReleasePageItem.TextItem -> {
                                         ReleasePageItemTextForShow(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -159,7 +142,8 @@ fun ReleasePageScreen(
                                             text = releasePageItem.text,
                                         )
                                     }
-                                    is ReleasePageItem.ImageItem ->{
+
+                                    is ReleasePageItem.ImageItem -> {
                                         ReleasePageItemImageForShow(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -174,21 +158,28 @@ fun ReleasePageScreen(
                         }
                     }
                 }
-            }else{
-                LazyColumn (
+            } else {
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxSize(),
                     state = lazyListState
-                ){
+                ) {
                     item {
                         Column(
                             modifier = Modifier
                                 .padding(bottom = 10.dp)
-                        ){
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .wrapContentHeight(),
+                                    .wrapContentHeight()
+                                    .animateContentSize(
+                                        finishedListener = { init, target ->
+                                            scope.launch {
+                                                lazyListState.animateScrollBy(target.height.toFloat() - init.height.toFloat())
+                                            }
+                                        }
+                                    ),
                                 content = {
                                     TextField(
                                         value = title.value,
@@ -197,14 +188,7 @@ fun ReleasePageScreen(
                                         },
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .wrapContentHeight()
-                                            .animateContentSize(
-                                                finishedListener = { init,target ->
-                                                    scope.launch {
-                                                        lazyListState.animateScrollBy((target.height - init.height).toFloat())
-                                                    }
-                                                }
-                                            ),
+                                            .wrapContentHeight(),
                                         label = {
                                             Text("标题")
                                         }
@@ -217,13 +201,13 @@ fun ReleasePageScreen(
                         it.order.value
                     }.forEachIndexed { index, releasePageItem ->
                         item {
-                            Card (
+                            Card(
                                 modifier = Modifier
                                     .padding(bottom = 10.dp)
                                     .fillMaxWidth()
                                     .wrapContentHeight(),
                                 shape = RoundedCornerShape(5),
-                            ){
+                            ) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -234,9 +218,9 @@ fun ReleasePageScreen(
                                                 lazyListState.animateScrollBy((targetValue.height - initialValue.height).dp.value)
                                             }
                                         }
-                                ){
-                                    when(releasePageItem){
-                                        is ReleasePageItem.TextItem ->{
+                                ) {
+                                    when (releasePageItem) {
+                                        is ReleasePageItem.TextItem -> {
                                             ReleasePageItemText(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
@@ -249,11 +233,13 @@ fun ReleasePageScreen(
                                                     releasePageItems.removeAt(index)
                                                 },
                                                 moveDown = {
-                                                    releasePageItem.order.value = releasePageItem.order.value - 1
+                                                    releasePageItem.order.value =
+                                                        releasePageItem.order.value - 1
                                                 }
                                             )
                                         }
-                                        is ReleasePageItem.ImageItem ->{
+
+                                        is ReleasePageItem.ImageItem -> {
                                             ReleasePageItemImage(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
@@ -429,7 +415,6 @@ interface ReleasePageItem{
             order.value = theOrder
         }
         var text = mutableStateOf<String>("")
-
     }
     class ImageItem(
         theOrder:Int

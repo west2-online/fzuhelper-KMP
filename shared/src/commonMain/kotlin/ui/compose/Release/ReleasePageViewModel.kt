@@ -1,5 +1,6 @@
 package ui.compose.Release
 
+import data.post.NewPostResponse
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.Dispatchers
@@ -12,6 +13,7 @@ import repository.PostStatus
 import ui.util.flow.catchWithMassage
 import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
+import ui.util.network.loginIfNotLoading
 import ui.util.network.reset
 
 class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewModel() {
@@ -21,42 +23,54 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
     //发布新的帖子
     fun newPost(releasePageItemList:List<ReleasePageItem>,title:String){
         viewModelScope.launch(Dispatchers.IO){
-            if(newPostState.value is NetworkResult.Loading){
-                return@launch
-            }
-            val list = releasePageItemList.filter {
-                when(it){
-                    is ReleasePageItem.TextItem -> {
-                        return@filter it.text.value != ""
-                    }
-                    is ReleasePageItem.ImageItem -> {
-                        return@filter it.image.value != null
-                    }
-                    else -> {
-                        return@filter false
+            _newPostState.loginIfNotLoading{
+                val list = releasePageItemList.filter {
+                    when(it){
+                        is ReleasePageItem.TextItem -> {
+                            return@filter it.text.value != ""
+                        }
+                        is ReleasePageItem.ImageItem -> {
+                            return@filter it.image.value != null
+                        }
+                        else -> {
+                            return@filter false
+                        }
                     }
                 }
-            }
-            if (list.isEmpty()){
-                _newPostState.reset(NetworkResult.Error(Throwable("数据错误")))
-                return@launch
-            }
-            releaseRepository.newPost(
-                list,
-                title = title
-            ).catchWithMassage {
-                _newPostState.reset(NetworkResult.Error(Throwable("发布失败")))
-            }.collectWithMassage { newPostResponse ->
-                PostStatus.values().find {
-                    it.value == newPostResponse.code
-                }?.let {
-                    if( it.value == PostStatus.ThePostWasPublishedSuccessfullyInPost.value){
-                        _newPostState.reset(NetworkResult.Success("发布成功"))
-                        return@let
-                    }
+                if (list.isEmpty()){
+                    _newPostState.reset(NetworkResult.Error(Throwable("帖子不得为空")))
+                    return@loginIfNotLoading
+                }
+                if (title.isEmpty()){
+                    _newPostState.reset(NetworkResult.Error(Throwable("标题不得为空")))
+                    return@loginIfNotLoading
+                }
+                releaseRepository.newPost(
+                    releasePageItemList = list,
+                    title = title
+                ).catchWithMassage {
                     _newPostState.reset(NetworkResult.Error(Throwable("发布失败")))
+                }.collectWithMassage { newPostResponse ->
+                    _newPostState.reset(newPostResponse.toNetworkResult())
                 }
             }
+        }
+    }
+
+}
+
+fun NewPostResponse.toNetworkResult():NetworkResult<String>{
+    val status = PostStatus.values().find {
+        it.value == this.code
+    }
+    status?:let {
+        return NetworkResult.Error(Throwable("发布失败"))
+    }
+    return status.let {
+        when(status.value){
+            0 -> NetworkResult.Error(Throwable(status.translation))
+            4 -> NetworkResult.Success("发布成功")
+            else -> NetworkResult.Error(Throwable("发布失败"))
         }
     }
 }
