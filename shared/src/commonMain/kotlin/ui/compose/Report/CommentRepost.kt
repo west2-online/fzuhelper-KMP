@@ -51,7 +51,6 @@ import ui.util.network.toEasyTime
 @Composable
 fun CommentRepost(
     modifier: Modifier = Modifier,
-//    postData :Data,
     commentData: Comment
 ){
     val viewModel = koinInject<ReportViewModel>()

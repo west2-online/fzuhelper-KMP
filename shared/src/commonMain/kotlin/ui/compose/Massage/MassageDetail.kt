@@ -75,7 +75,6 @@ fun MassageDetail(
                 Pair(index,offset)
             }
             .map {
-                println(it.toString()+" "+first.value)
                 it
             }.collect {
                 val used = first.value

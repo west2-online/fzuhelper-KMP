@@ -137,7 +137,6 @@ class PostRouteTarget(
                     navigateToNewsDetail = {
                         backStack.push(PostNav.PostDetailNav(it))
                         postIdForSave = it
-                        println(postIdForSave)
                     }
             )
         }

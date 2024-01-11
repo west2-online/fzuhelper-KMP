@@ -80,7 +80,6 @@ class AuthenticationViewModel(
                             _registerState.reset(it.first().toNetworkResult())
                         }
                     }
-                    println(authenticationResponse)
                 }
         }
     }

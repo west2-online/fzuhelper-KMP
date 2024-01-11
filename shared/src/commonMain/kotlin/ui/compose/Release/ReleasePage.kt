@@ -157,11 +157,6 @@ fun ReleasePageScreen(
                                                 .wrapContentHeight()
                                                 .animateItemPlacement(),
                                             text = releasePageItem.text,
-                                            overflow = {
-                                                scope.launch {
-                                                    lazyListState.animateScrollBy(it.toFloat())
-                                                }
-                                            }
                                         )
                                     }
                                     is ReleasePageItem.ImageItem ->{
@@ -205,7 +200,9 @@ fun ReleasePageScreen(
                                             .wrapContentHeight()
                                             .animateContentSize(
                                                 finishedListener = { init,target ->
-                                                    println(target.height - init.height)
+                                                    scope.launch {
+                                                        lazyListState.animateScrollBy((target.height - init.height).toFloat())
+                                                    }
                                                 }
                                             ),
                                         label = {
@@ -640,11 +637,6 @@ fun ReleasePageItemImage(
 @Composable
 fun ReleasePageItemTextForShow(
     modifier: Modifier,
-    onValueChange:(String)->Unit = {},
-    overflow:(Int)->Unit = {},
-    delete:()->Unit = {},
-    moveUp:()->Unit = {},
-    moveDown: () -> Unit = {},
     text : State<String>
 ){
 

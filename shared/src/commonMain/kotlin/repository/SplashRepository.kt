@@ -11,7 +11,6 @@ class SplashRepository(private val client:HttpClient) {
     fun getOpenImage(): Flow<Splash> {
          return flow {
              val response :Splash = client.get("/Images/Openpage").body()
-             println(response)
              emit(response)
          }
     }

@@ -5,9 +5,10 @@ import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import repository.SplashRepository
+import ui.util.flow.catchWithMassage
+import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
 import ui.util.network.reset
 
@@ -21,15 +22,12 @@ class SplashPageViewModel(
     fun getSplashPageImage(){
         viewModelScope.launch {
             splashRepository.getOpenImage()
-                .catch {
+                .catchWithMassage {
                     _imageState.reset(
                         NetworkResult.Error(Throwable("获取错误"))
                     )
-                    println("ssssssssssssss")
-                    println(it.message)
                 }
-                .collect{ splashData ->
-                    println()
+                .collectWithMassage{ splashData ->
                     GetResult.values().filter {
                         it.value == splashData.code
                     }.let { listGetResult ->
@@ -52,7 +50,6 @@ enum class GetResult(val value: Int, val description: String) {
     GetError(1, "发生错误"),
 }
 fun GetResult.toNetWorkResult(data: String?): NetworkResult<String> {
-    println("sssssssss"+data.toString())
     return when(this.value){
         1 -> NetworkResult.Error<String>(Throwable(this.description))
         0 -> NetworkResult.Success<String>(data.toString())
