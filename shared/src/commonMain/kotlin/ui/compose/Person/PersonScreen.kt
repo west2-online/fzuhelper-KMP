@@ -175,7 +175,7 @@ fun PersonScreen(
                                             .fillMaxSize()
                                             .padding(10.dp)
                                     ){
-                                        it.data.forEach {
+                                        it.data?.forEach {
                                             IdentityLabel(it.Identity)
                                         }
                                     }
