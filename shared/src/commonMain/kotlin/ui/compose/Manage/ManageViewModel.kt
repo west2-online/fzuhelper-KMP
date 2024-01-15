@@ -1,0 +1,107 @@
+package ui.compose.Manage
+
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.paging.Pager
+import androidx.paging.PagingSource
+import app.cash.paging.PagingConfig
+import app.cash.paging.cachedIn
+import data.Manage.PostReportPage.PostReportContextData
+import data.Manage.PostReportPage.PostReportForResponseList
+import data.post.PostById.PostById
+import data.post.PostById.PostData
+import dev.icerock.moko.mvvm.viewmodel.ViewModel
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import ui.util.flow.launchInDefault
+import ui.util.network.NetworkResult
+
+class ManageViewModel(
+    val client : HttpClient
+):ViewModel() {
+    var postReportPageList = Pager(
+        PagingConfig(
+            pageSize = 10,
+            prefetchDistance = 2
+        ),
+    ){
+        EasyPageSourceForPostReport(
+            backend = LoadReportPageData {
+                val postReportDataList = mutableListOf<PostReportData>()
+                val postReportData = client.get("/manage/post/list/${it}").body<PostReportForResponseList>()
+                postReportData.data.forEach { postReportContextData ->
+                    val postById  = client.get("/post/id/${postReportContextData.Post.Id}").body<PostById>()
+                    postReportDataList.add(PostReportData(
+                        postReportContextData = postReportContextData,
+                        postData = postById.data
+                    ))
+                }
+                return@LoadReportPageData postReportDataList.toList()
+            }
+        )
+    }.flow
+    .cachedIn(viewModelScope)
+
+    fun daelPost(reportState:MutableState<NetworkResult<String>>,postId:Int,status:Boolean){
+        viewModelScope.launchInDefault {
+            (if(status) 0 else 2)
+        }
+
+    }
+}
+
+class PostReportData(
+    val postReportContextData: PostReportContextData,
+    val postData: PostData,
+    val state: MutableState<NetworkResult<String>> = mutableStateOf<NetworkResult<String>>(NetworkResult.UnSend())
+)
+
+data class PageLoadDataForPostReport(
+    val result : List<PostReportData>?,
+    val nextPageNumber: Int?
+)
+
+class EasyPageSourceForPostReport(
+    private val backend: LoadReportPageData,
+) : PagingSource<Int, PostReportData>() {
+    override suspend fun load(
+        params: LoadParams<Int>
+    ): LoadResult<Int, PostReportData> {
+        return try {
+            val page = params.key ?: 1
+            val response = backend.searchPostReport(page)
+            LoadResult.Page(
+                data = response.result!!,
+                prevKey = null, // Only paging forward.
+                nextKey = response.nextPageNumber
+            )
+        } catch (e: Exception) {
+            LoadResult.Error(Throwable("加载失败"))
+        }
+    }
+
+    override fun getRefreshKey(state: androidx.paging.PagingState<Int, PostReportData>): Int? {
+        return state.anchorPosition?.let { anchorPosition ->
+            val anchorPage = state.closestPageToPosition(anchorPosition)
+            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+        }
+    }
+
+}
+
+class LoadReportPageData(
+    val getResult : suspend (page:Int) -> List<PostReportData>?
+) {
+    suspend fun searchPostReport(page: Int): PageLoadDataForPostReport {
+        val response = getResult(page)
+        return PageLoadDataForPostReport(
+            response,
+            when{
+                response!!.isEmpty() -> null
+                response.size < 10 -> null
+                else -> ( page + 1 )
+            }
+        )
+    }
+}

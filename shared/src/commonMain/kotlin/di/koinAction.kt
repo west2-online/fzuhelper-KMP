@@ -32,6 +32,7 @@ import repository.SplashRepository
 import repository.WeatherRepository
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.Feedback.FeedBackViewModel
+import ui.compose.Manage.ManageViewModel
 import ui.compose.ModifierInformation.ModifierInformationViewModel
 import ui.compose.Person.PersonViewModel
 import ui.compose.Post.PostDetailViewModel
@@ -245,6 +246,9 @@ fun Module.viewModel(){
     }
     single {
         PostDetailViewModel(get(),get(),get())
+    }
+    single {
+        ManageViewModel(get())
     }
     viewModelDefinition {
         PersonViewModel(get(),get())

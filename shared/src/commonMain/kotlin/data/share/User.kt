@@ -1,4 +1,4 @@
-package data.post.share
+package data.share
 
 import kotlinx.serialization.Serializable
 

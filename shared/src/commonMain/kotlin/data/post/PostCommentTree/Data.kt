@@ -1,6 +1,6 @@
 package data.post.PostCommentTree
 
-import data.post.share.Comment
+import data.share.Comment
 import kotlinx.serialization.Serializable
 
 @Serializable

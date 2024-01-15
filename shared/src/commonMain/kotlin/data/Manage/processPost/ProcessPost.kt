@@ -1,10 +1,10 @@
-package data.post.PostById
+package data.Manage.processPost
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PostById(
+data class ProcessPost(
     val code: Int,
-    val `data`: PostData,
+    val `data`: String?,
     val msg: String
 )

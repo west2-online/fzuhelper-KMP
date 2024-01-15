@@ -1,6 +1,9 @@
 package ui.root
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -29,6 +32,7 @@ import ui.compose.AboutUs.AboutUsRouteNode
 import ui.compose.Authentication.AuthenticationRouteNode
 import ui.compose.Feedback.FeedbackAssemblyNode
 import ui.compose.Main.MainRouteNode
+import ui.compose.Manage.ManageRouteNode
 import ui.compose.Massage.MassageRouteNode
 import ui.compose.ModifierInformation.ModifierInformationRouteNode
 import ui.compose.Person.PersonRouteNode
@@ -85,6 +89,9 @@ sealed class RootTarget : Parcelable {
 
     @Parcelize
     data object Feedback : RootTarget()
+
+    @Parcelize
+    data object Manage : RootTarget()
 }
 
 class RootNode(
@@ -107,7 +114,7 @@ class RootNode(
             is RootTarget.Authentication -> AuthenticationRouteNode(buildContext)
             is RootTarget.Feedback -> FeedbackAssemblyNode(buildContext)
             is RootTarget.Main -> MainRouteNode(buildContext)
-
+            is RootTarget.Manage -> ManageRouteNode(buildContext)
             is RootTarget.Massage -> MassageRouteNode(buildContext)
             is RootTarget.ModifierInformation -> ModifierInformationRouteNode(interactionTarget.userData,buildContext)
             is RootTarget.Person -> PersonRouteNode(buildContext,userId = interactionTarget.userId)
@@ -149,11 +156,17 @@ class RootNode(
                 systemAction = systemAction
             ))
         }) {
-            AppyxComponent(
-                appyxComponent = backStack,
-                modifier = Modifier.fillMaxSize(),
-                clipToBounds = false
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colors.background)
+            ){
+                AppyxComponent(
+                    appyxComponent = backStack,
+                    modifier = Modifier.fillMaxSize(),
+                    clipToBounds = false
+                )
+            }
         }
     }
 

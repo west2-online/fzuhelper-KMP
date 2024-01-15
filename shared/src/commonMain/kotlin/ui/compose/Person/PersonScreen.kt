@@ -151,7 +151,6 @@ fun PersonScreen(
                                      pageState.animateScrollToPage(index)
                                  }
                             },
-                            selectedContentColor = Color.Magenta
                         )
                     }
                 }

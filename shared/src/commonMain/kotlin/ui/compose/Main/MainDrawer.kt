@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
@@ -77,48 +77,50 @@ fun MainDrawer(
 
 ){
 
-    Column(
+    LazyColumn(
         modifier = modifier
     ){
-        val angle = Animatable(270f)
-        LaunchedEffect(Unit){
-            angle.animateTo(getPassedRange()*360f*(-1.0f))
-        }
-        Row (
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colors.primary.copy(
-                    alpha = 0.5f
-                ))
-                .padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Canvas(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(10.dp))
-            ){
-                drawArc(
-                    brush = Brush.linearGradient(colors = listOf(Color.Green, Color.Blue, Color.Red)),
-                    startAngle = 270f,
-                    sweepAngle = angle.value,
-                    useCenter = false,
-                    size = Size(size.height - size.height/3,size.height - size.height/3),
-                    style = Stroke(30f, cap = StrokeCap.Round),
-                    topLeft = Offset(size.height/6,size.height/6)
-                )
+        item{
+            val angle = Animatable(270f)
+            LaunchedEffect(Unit){
+                angle.animateTo(getPassedRange()*360f*(-1.0f))
             }
-            Text("今年已过 ${(getPassedRange()*100).toInt()}%，继续加油！\uD83E\uDD17")
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colors.primary)
+                    .padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(10.dp))
+                ){
+                    drawArc(
+                        brush = Brush.linearGradient(colors = listOf(Color.Green, Color.Blue, Color.Red)),
+                        startAngle = 270f,
+                        sweepAngle = angle.value,
+                        useCenter = false,
+                        size = Size(size.height - size.height/3,size.height - size.height/3),
+                        style = Stroke(30f, cap = StrokeCap.Round),
+                        topLeft = Offset(size.height/6,size.height/6)
+                    )
+                }
+                Text("今年已过 ${(getPassedRange()*100).toInt()}%，继续加油！\uD83E\uDD17")
+            }
         }
-        Functions(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-        )
+        item{
+            Functions(
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+            )
+        }
     }
 }
 
@@ -158,87 +160,72 @@ fun Functions(
     kVault: KVault = koinInject()
 ){
     val rootAction = getRootAction()
-    LazyColumn(
+    Column(
         modifier = modifier
     ){
-        item {
-            Divider(
-                modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .fillMaxWidth()
-                    .padding(10.dp)
-            )
-        }
-        item {
-            FunctionsItem(
-                painterResource(MR.images.feedback),
-                {
-                    rootAction.navigateToNewTarget(rootTarget = RootTarget.Feedback)
-                },
-                "反馈"
-            )
-        }
-        item {
-            FunctionsItem(
-                painterResource(MR.images.qrcode),
-                {
-                    rootAction.navigateToNewTarget(rootTarget = RootTarget.QRCode)
-                },
-                "二维码生成"
-            )
-
-        }
-        item {
-            FunctionsItem(
-                painterResource(MR.images.eye),
-                {
-                    rootAction.navigateToNewTarget(rootTarget = RootTarget.Person(null))
-                },
-                "个人资料"
-            )
-        }
-        item {
-            FunctionsItem(
-                painterResource(MR.images.eye),
-                {
+        Divider(
+            modifier = Modifier
+                .padding(vertical = 10.dp)
+                .fillMaxWidth()
+                .padding(10.dp)
+        )
+        FunctionsItem(
+            painterResource(MR.images.feedback),
+            {
+                rootAction.navigateToNewTarget(rootTarget = RootTarget.Feedback)
+            },
+            "反馈"
+        )
+        FunctionsItem(
+            painterResource(MR.images.qrcode),
+            {
+                rootAction.navigateToNewTarget(rootTarget = RootTarget.QRCode)
+            },
+            "二维码生成"
+        )
+        FunctionsItem(
+            painterResource(MR.images.eye),
+            {
+                rootAction.navigateToNewTarget(rootTarget = RootTarget.Person(null))
+            },
+            "个人资料"
+        )
+        FunctionsItem(
+            painterResource(MR.images.eye),
+            {
 //                    routeState.navigateWithoutPop(Route.Test())
-                    rootAction.navigateToNewTarget(rootTarget = RootTarget.Person(null))
-                },
-                "测试"
-            )
-        }
-        item {
-            val systemAction = koinInject<SystemAction>()
-            FunctionsItem(
-                Icons.Filled.ExitToApp,
-                {
-                    systemAction.onFinish.invoke()
-                },
-                "退出程序"
-            )
-        }
-        item {
-            FunctionsItem(
-                painterResource(MR.images.loginOut),
-                onclick = {
-                    kVault.clear()
-                    rootAction.reLogin()
-                },
-                "退出登录",
-                modifier = Modifier
-                    .padding(bottom = 10.dp)
-                    .height(50.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(231, 64, 50))
-                    .padding( start = 10.dp )
-            )
-        }
+                rootAction.navigateToNewTarget(rootTarget = RootTarget.Person(null))
+            },
+            "测试"
+        )
+        val systemAction = koinInject<SystemAction>()
+        FunctionsItem(
+            Icons.Filled.ExitToApp,
+            {
+                systemAction.onFinish.invoke()
+            },
+            "退出程序"
+        )
+        FunctionsItem(
+            painterResource(MR.images.loginOut),
+            onclick = {
+                kVault.clear()
+                rootAction.reLogin()
+            },
+            "退出登录",
+            modifier = Modifier
+                .padding(bottom = 10.dp)
+                .height(50.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color(231, 64, 50))
+                .padding( start = 10.dp )
+        )
     }
 }
 
 @Composable
-fun LazyItemScope.FunctionsItem(
+fun FunctionsItem(
     painter: Painter,
     onclick :()->Unit = { },
     text : String,
@@ -274,7 +261,7 @@ fun LazyItemScope.FunctionsItem(
 }
 
 @Composable
-fun LazyItemScope.FunctionsItem(
+fun FunctionsItem(
     imageVector: ImageVector,
     onclick :()->Unit = { },
     text : String,

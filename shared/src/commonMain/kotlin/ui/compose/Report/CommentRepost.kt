@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import config.BaseUrlConfig
 import data.post.PostList.Data
-import data.post.share.Comment
+import data.share.Comment
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject

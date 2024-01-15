@@ -1,10 +1,10 @@
 package data.post.PostById
 
-import data.post.share.Post
+import data.share.Post
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Data(
+data class PostData(
     val Post: Post,
     val fileData: List<FileData>?,
     val valueData: List<ValueData>?

@@ -80,7 +80,7 @@ import data.post.PostById.PostById
 import data.post.PostById.PostContent
 import data.post.PostById.ValueData
 import data.post.PostCommentPreview.Data
-import data.post.share.Comment
+import data.share.Comment
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import io.kamel.image.KamelImage

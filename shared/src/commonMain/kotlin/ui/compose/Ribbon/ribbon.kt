@@ -152,7 +152,7 @@ enum class Functions(
     Map(  functionName = "地图", painter = MR.images.close,rootNavTarget = RootTarget.Weather),
     Test(functionName = "测试", painter = MR.images.close,rootNavTarget = RootTarget.AboutUs),
     AboutUs(functionName = "关于我们", painter = MR.images.FuTalk , rootNavTarget = RootTarget.AboutUs),
-    Manage(functionName = "管理", painter = MR.images.not_solved,rootNavTarget = RootTarget.AboutUs),
+    Manage(functionName = "管理", painter = MR.images.not_solved,rootNavTarget = RootTarget.Manage),
     Feedback(functionName = "反馈", painter = MR.images.feedback2,rootNavTarget = RootTarget.Feedback),
 }
 
