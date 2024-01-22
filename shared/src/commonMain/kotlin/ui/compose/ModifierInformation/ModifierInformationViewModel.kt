@@ -16,13 +16,14 @@ import ui.util.network.NetworkResult
 import ui.util.network.loginIfNotLoading
 import ui.util.network.reset
 
-
 class ModifierInformationViewModel(val repository : ModifierInformationRepository) :ViewModel(){
+
     private val _modifierUserdataState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val modifierUserdataState = _modifierUserdataState.asStateFlow()
 
     private val _modifierAvatarState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val modifierAvatarState = _modifierAvatarState.asStateFlow()
+
     fun modifierUserdata(username:String, age:String, grade:String, location:String){
         viewModelScope.launch {
             _modifierUserdataState.loginIfNotLoading{
@@ -35,6 +36,7 @@ class ModifierInformationViewModel(val repository : ModifierInformationRepositor
             }
         }
     }
+
     fun modifierUserAvatar(imageByteArray: ByteArray){
         viewModelScope.launch {
             _modifierAvatarState.loginIfNotLoading {
@@ -47,6 +49,7 @@ class ModifierInformationViewModel(val repository : ModifierInformationRepositor
             }
         }
     }
+
 }
 
 fun ModifierData.toNetworkResult():NetworkResult<String>{

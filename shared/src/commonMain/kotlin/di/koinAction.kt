@@ -23,6 +23,7 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import repository.FeedbackRepository
 import repository.LoginRepository
+import repository.ManageRepository
 import repository.ModifierInformationRepository
 import repository.NewRepository
 import repository.PersonRepository
@@ -224,6 +225,9 @@ fun Module.repositoryList(){
     single {
         ReportRepository(get())
     }
+    single {
+        ManageRepository(get())
+    }
 }
 fun Module.viewModel(){
     viewModelDefinition {
@@ -248,7 +252,7 @@ fun Module.viewModel(){
         PostDetailViewModel(get(),get(),get())
     }
     single {
-        ManageViewModel(get())
+        ManageViewModel(get(),get())
     }
     viewModelDefinition {
         PersonViewModel(get(),get())

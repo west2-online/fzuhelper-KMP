@@ -32,6 +32,7 @@ class ModifierInformationRepository(val client: HttpClient) {
             emit(response)
         }
     }
+
     fun modifierAvatar(byteArray: ByteArray):Flow<ModifierAvatar>{
         return flow {
             val response : ModifierAvatar = client.post("/user/avatarUpdate"){
@@ -41,7 +42,7 @@ class ModifierInformationRepository(val client: HttpClient) {
                             append("data",byteArray,
                                 Headers.build {
                                     append("isImage", "true")
-                                    append("Content-Disposition", "form-data; name=\"file\"; filename=\"${1}\"")
+                                    append("Content-Disposition", "form-data")
                                 }
                             )
                         }

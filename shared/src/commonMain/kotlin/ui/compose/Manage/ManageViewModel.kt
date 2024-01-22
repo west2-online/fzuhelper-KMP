@@ -1,7 +1,5 @@
 package ui.compose.Manage
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.paging.Pager
 import androidx.paging.PagingSource
 import app.cash.paging.PagingConfig
@@ -14,12 +12,21 @@ import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.coroutines.flow.MutableStateFlow
+import repository.ManageRepository
+import repository.toNetworkResult
+import ui.util.flow.catchWithMassage
+import ui.util.flow.collectWithMassage
 import ui.util.flow.launchInDefault
 import ui.util.network.NetworkResult
+import ui.util.network.loginIfNotLoading
+import ui.util.network.reset
 
 class ManageViewModel(
-    val client : HttpClient
+    val client : HttpClient,
+    val repository: ManageRepository
 ):ViewModel() {
+
     var postReportPageList = Pager(
         PagingConfig(
             pageSize = 10,
@@ -43,18 +50,31 @@ class ManageViewModel(
     }.flow
     .cachedIn(viewModelScope)
 
-    fun daelPost(reportState:MutableState<NetworkResult<String>>,postId:Int,status:Boolean){
+    fun dealPost(reportState:MutableStateFlow<NetworkResult<String>>, postId:Int, result:PostProcessResult){
         viewModelScope.launchInDefault {
-            (if(status) 0 else 2)
+            reportState.loginIfNotLoading {
+                repository.processPost(postId,result.value)
+                    .catchWithMassage {
+                        reportState.reset(NetworkResult.Error(Throwable("操作失败")))
+                    }.collectWithMassage {
+                        reportState.reset(it.toNetworkResult())
+                    }
+            }
         }
 
     }
+
+}
+
+enum class PostProcessResult(val value : Int){
+    BanPost(2),
+    PassPost(0)
 }
 
 class PostReportData(
     val postReportContextData: PostReportContextData,
     val postData: PostData,
-    val state: MutableState<NetworkResult<String>> = mutableStateOf<NetworkResult<String>>(NetworkResult.UnSend())
+    val state: MutableStateFlow<NetworkResult<String>> = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
 )
 
 data class PageLoadDataForPostReport(

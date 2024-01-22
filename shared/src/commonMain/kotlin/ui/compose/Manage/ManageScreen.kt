@@ -1,6 +1,7 @@
 package ui.compose.Manage
 
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,19 +31,25 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
 import app.cash.paging.compose.collectAsLazyPagingItems
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
@@ -60,10 +67,15 @@ import data.post.PostById.PostContent
 import data.post.PostById.ValueData
 import di.SelectItem
 import di.TopBarState
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import ui.compose.Post.ImageContent
 import ui.compose.Post.PersonalInformationAreaInDetail
 import ui.compose.Post.Time
+import ui.util.compose.EasyToast
+import ui.util.compose.rememberToastState
+import ui.util.compose.toastBindNetworkResult
+import ui.util.network.NetworkResult
 
 @Composable
 fun ManageScreen(
@@ -130,9 +142,9 @@ class ManageRouteNode(
                         .weight(1f)
                         .fillMaxHeight()
                 ){
-                    val viewModel = koinInject<ManageViewModel>().postReportPageList.collectAsLazyPagingItems()
+                    val lazyPagingItems = koinInject<ManageViewModel>().postReportPageList.collectAsLazyPagingItems()
                     IconButton(onClick = {
-                        viewModel.refresh()
+                        lazyPagingItems.refresh()
                     }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Localized description")
                     }
@@ -189,13 +201,23 @@ class ManagePostReport(
     override fun View(modifier: Modifier) {
         val viewModel = koinInject<ManageViewModel>()
         val postReportPageList = viewModel.postReportPageList.collectAsLazyPagingItems()
+        val horizontalPage = rememberPagerState {
+            postReportPageList.itemCount
+        }
         HorizontalPager(
-            state = rememberPagerState {
-                postReportPageList.itemCount
-            },
+            state = horizontalPage,
             modifier = Modifier.fillMaxSize()
         ) {
+
             postReportPageList[it]!!.let { postReportData ->
+                val postReportDealState = postReportData.state.collectAsState()
+                LaunchedEffect(postReportPageList.loadState,postReportDealState.value){
+                    if(postReportPageList.loadState.refresh == LoadState.Loading && postReportDealState.value is NetworkResult.Success){
+                        horizontalPage.animateScrollToPage(horizontalPage.currentPage+1)
+                    }
+                }
+                val toast = rememberToastState()
+                toastBindNetworkResult(toast,postReportData.state.collectAsState())
                 postReportData.let {
                     it.postData.let { postById ->
                         Surface(
@@ -238,44 +260,119 @@ class ManagePostReport(
                                             }
                                         }
                                 }
-                                Row(
-                                    modifier = Modifier
-                                        .wrapContentHeight()
-                                        .fillMaxWidth(1f)
-                                        .padding(vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Button(
-                                        modifier = Modifier,
-                                        onClick = {
-
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            contentColor = MaterialTheme.colors.surface,
-                                            backgroundColor = MaterialTheme.colors.error
-                                        )
-                                    ) {
-                                        Text("封禁")
-                                    }
-                                    Spacer(modifier = Modifier.width(100.dp))
-                                    Button(
-                                        modifier = Modifier,
-                                        onClick = {
-
+                                Crossfade(postReportData.state.value){state ->
+                                    when(state){
+                                        is NetworkResult.UnSend -> {
+                                            Row(
+                                                modifier = Modifier
+                                                    .wrapContentHeight()
+                                                    .fillMaxWidth(1f)
+                                                    .padding(vertical = 10.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.Center
+                                            ) {
+                                                Button(
+                                                    modifier = Modifier,
+                                                    onClick = {
+                                                        viewModel.dealPost(postReportData.state,postById.Post.Id,PostProcessResult.PassPost)
+                                                    },
+                                                    colors = ButtonDefaults.buttonColors(
+                                                        contentColor = MaterialTheme.colors.surface,
+                                                        backgroundColor = MaterialTheme.colors.error
+                                                    )
+                                                ) {
+                                                    Text("封禁")
+                                                }
+                                                Spacer(modifier = Modifier.width(100.dp))
+                                                Button(
+                                                    modifier = Modifier,
+                                                    onClick = {
+                                                        viewModel.dealPost(postReportData.state,postById.Post.Id,PostProcessResult.BanPost)
+                                                    }
+                                                ) {
+                                                    Text("举报无效")
+                                                }
+                                            }
                                         }
-                                    ) {
-                                        Text("举报无效")
+                                        is NetworkResult.Error -> {
+                                            Row(
+                                                modifier = Modifier
+                                                    .wrapContentHeight()
+                                                    .fillMaxWidth(1f)
+                                                    .padding(vertical = 10.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.Center
+                                            ) {
+                                                Button(
+                                                    modifier = Modifier,
+                                                    onClick = {
+                                                        viewModel.dealPost(postReportData.state,postById.Post.Id,PostProcessResult.PassPost)
+                                                    },
+                                                    colors = ButtonDefaults.buttonColors(
+                                                        contentColor = MaterialTheme.colors.surface,
+                                                        backgroundColor = MaterialTheme.colors.error
+                                                    )
+                                                ) {
+                                                    Text("封禁")
+                                                }
+                                                Spacer(modifier = Modifier.width(100.dp))
+                                                Button(
+                                                    modifier = Modifier,
+                                                    onClick = {
+                                                        viewModel.dealPost(postReportData.state,postById.Post.Id,PostProcessResult.BanPost)
+                                                    }
+                                                ) {
+                                                    Text("举报无效")
+                                                }
+                                            }
+                                        }
+                                        else -> {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.Center,
+                                                modifier = Modifier
+                                                    .padding(bottom = 30.dp)
+                                                    .fillMaxWidth()
+                                                    .height(75.dp)
+                                            ){
+                                                val scope = rememberCoroutineScope()
+                                                Button(
+                                                   onClick = {
+                                                       scope.launch {
+                                                           horizontalPage.animateScrollToPage(
+                                                               horizontalPage.currentPage+1
+                                                           )
+                                                       }
+
+                                                   }
+                                                ){
+                                                    Icon(
+                                                        modifier = Modifier
+                                                            .fillMaxHeight(0.5f)
+                                                            .aspectRatio(1f),
+                                                        imageVector = Icons.Filled.Done,
+                                                        contentDescription = "",
+                                                        tint = Color.Green
+                                                    )
+                                                    Text(
+                                                        modifier = Modifier,
+                                                        text = "下一项"
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+                EasyToast()
             }
         }
     }
 }
+
 
 class ManageCommentReport(
     buildContext: BuildContext
