@@ -180,14 +180,12 @@ class ManagePostReport(
         val viewModel = koinInject<ManageViewModel>()
         val postReportPageList = viewModel.postReportPageList.collectAsLazyPagingItems()
 
-        val horizontalPage = rememberPagerState {
-            postReportPageList.itemCount
-        }
+        val horizontalPage = rememberPagerState { postReportPageList.itemCount }
         HorizontalPager(
             state = horizontalPage,
             modifier = Modifier.fillMaxSize()
         ) { pageIndex ->
-            postReportPageList[pageIndex]!!.let { postReportData ->
+            postReportPageList[pageIndex]?.let { postReportData ->
                 val postReportDealState = postReportData.state.collectAsState()
                 LaunchedEffect(postReportPageList.loadState,postReportDealState.value){
                     if(postReportPageList.loadState.refresh != LoadState.Loading && postReportDealState.value is NetworkResult.Success){
