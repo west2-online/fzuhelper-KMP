@@ -248,22 +248,22 @@ class ManagePostReport(
                                     "#不当内容:${postReportData.postReportContextData.InappropriateContent}"
                                 )
                                 Label(
-                                    "政治敏感:${postReportData.postReportContextData.PoliticallySensitive}"
+                                    "#政治敏感:${postReportData.postReportContextData.PoliticallySensitive}"
                                 )
                                 Label(
-                                    "信息滥用:${postReportData.postReportContextData.SpamAndAbuse}"
+                                    "#信息滥用:${postReportData.postReportContextData.SpamAndAbuse}"
                                 )
                                 Label(
-                                    "未经授权的广告:${postReportData.postReportContextData.UnauthorizedAdvertisement}"
+                                    "#未经授权的广告:${postReportData.postReportContextData.UnauthorizedAdvertisement}"
                                 )
                                 Label(
-                                    "隐私问题:${postReportData.postReportContextData.PrivacyIssue}"
+                                    "#隐私问题:${postReportData.postReportContextData.PrivacyIssue}"
                                 )
                                 Label(
-                                    "违反社区准则:${postReportData.postReportContextData.ViolateCommunityGuidelines}"
+                                    "#违反社区准则:${postReportData.postReportContextData.ViolateCommunityGuidelines}"
                                 )
                                 Label(
-                                    "恶意行为:${postReportData.postReportContextData.MaliciousBehavior}"
+                                    "#恶意行为:${postReportData.postReportContextData.MaliciousBehavior}"
                                 )
                             }
                             Crossfade(postReportData.state.value){state ->
