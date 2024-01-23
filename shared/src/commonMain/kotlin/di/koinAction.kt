@@ -180,8 +180,6 @@ fun appModule(
     }
     single {
         val kVault = get<KVault>()
-        val token : String? = kVault.string(forKey = "token")
-//        RouteState( if( token == null ) Route.LoginWithRegister() else Route.Splash())
     }
     single {
         LoginClient()
