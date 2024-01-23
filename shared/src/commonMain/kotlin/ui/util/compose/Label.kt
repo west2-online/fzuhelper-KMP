@@ -40,7 +40,6 @@ fun Label(
         modifier = Modifier
             .wrapContentSize()
             .padding(end = 5.dp, bottom = 5.dp),
-        backgroundColor = Color(224, 244, 255),
         shape = RoundedCornerShape(20)
     ) {
 //        val string: String = stringResource(MR.strings.my_string)
