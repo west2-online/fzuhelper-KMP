@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import config.BaseUrlConfig
-import data.Person.UserData.UserData
+import data.person.UserData.UserData
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch

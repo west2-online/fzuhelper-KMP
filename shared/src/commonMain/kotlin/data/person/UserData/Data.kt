@@ -1,4 +1,4 @@
-package data.Person.UserData
+package data.person.UserData
 
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize

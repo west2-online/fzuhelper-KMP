@@ -5,11 +5,11 @@ import app.cash.paging.Pager
 import app.cash.paging.PagingConfig
 import app.cash.paging.PagingState
 import app.cash.paging.cachedIn
-import data.Feedback.FeedbackDetailComment.FeedbackDetailComment
-import data.Feedback.FeedbackList.FeedbackList
-import data.Feedback.FeelbackDetail.Data
-import data.Feedback.FeelbackDetail.FeedbackDetail
-import data.Feedback.SubmitNewFeedBack.FeedbackSubmit
+import data.feedback.FeedbackDetailComment.FeedbackDetailComment
+import data.feedback.FeedbackList.FeedbackList
+import data.feedback.FeelbackDetail.Data
+import data.feedback.FeelbackDetail.FeedbackDetail
+import data.feedback.SubmitNewFeedBack.FeedbackSubmit
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.call.body
@@ -154,7 +154,7 @@ fun FeedbackDetailComment.toNetworkResult():NetworkResult<String>{
 
 
 class LoadFeedBackPageData(
-    val getResult : suspend (page:Int) -> List<data.Feedback.FeedbackList.Data>?
+    val getResult : suspend (page:Int) -> List<data.feedback.FeedbackList.Data>?
 ) {
     suspend fun searchFeedbacks(page: Int): FeedbackPageData {
         val response = getResult(page)
@@ -171,17 +171,17 @@ class LoadFeedBackPageData(
 
 
 data class FeedbackPageData(
-    val result : List<data.Feedback.FeedbackList.Data>?,
+    val result : List<data.feedback.FeedbackList.Data>?,
     val nextPageNumber: Int?
 )
 
 
 class EasyFeedbackPageSource(
     private val backend: LoadFeedBackPageData,
-) : PagingSource<Int, data.Feedback.FeedbackList.Data>() {
+) : PagingSource<Int, data.feedback.FeedbackList.Data>() {
     override suspend fun load(
         params: LoadParams<Int>
-    ): LoadResult<Int, data.Feedback.FeedbackList.Data> {
+    ): LoadResult<Int, data.feedback.FeedbackList.Data> {
         return try {
             val page = params.key ?: 1
             val response = backend.searchFeedbacks(page)
@@ -195,7 +195,7 @@ class EasyFeedbackPageSource(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, data.Feedback.FeedbackList.Data>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, data.feedback.FeedbackList.Data>): Int? {
         // Try to find the page key of the closest page to anchorPosition from
         // either the prevKey or the nextKey; you need to handle nullability
         // here.

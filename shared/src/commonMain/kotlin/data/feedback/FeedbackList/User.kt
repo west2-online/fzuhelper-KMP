@@ -1,4 +1,4 @@
-package data.Feedback.FeelbackDetail
+package data.feedback.FeedbackList
 
 import kotlinx.serialization.Serializable
 

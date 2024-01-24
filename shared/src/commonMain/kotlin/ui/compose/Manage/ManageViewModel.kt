@@ -4,8 +4,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingSource
 import app.cash.paging.PagingConfig
 import app.cash.paging.cachedIn
-import data.Manage.PostReportPage.PostReportContextData
-import data.Manage.PostReportPage.PostReportForResponseList
+import data.manage.postReportPage.PostReportContextData
+import data.manage.postReportPage.PostReportForResponseList
 import data.post.PostById.PostById
 import data.post.PostById.PostData
 import data.share.Comment

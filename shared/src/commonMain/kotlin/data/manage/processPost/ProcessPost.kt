@@ -1,10 +1,10 @@
-package data.Feedback.FeelbackDetail
+package data.manage.processPost
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class FeedbackDetail(
+data class ProcessPost(
     val code: Int,
-    val `data`: Data,
+    val `data`: String?,
     val msg: String
 )

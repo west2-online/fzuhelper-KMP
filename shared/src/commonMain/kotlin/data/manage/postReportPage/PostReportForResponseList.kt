@@ -1,4 +1,4 @@
-package data.Manage.PostReportPage
+package data.manage.postReportPage
 
 import kotlinx.serialization.Serializable
 

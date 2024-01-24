@@ -1,7 +1,7 @@
 package ui.compose.Person
 
-import data.Person.UserData.UserData
-import data.Person.identity.PersonIdentityData
+import data.person.UserData.UserData
+import data.person.identity.PersonIdentityData
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.Dispatchers

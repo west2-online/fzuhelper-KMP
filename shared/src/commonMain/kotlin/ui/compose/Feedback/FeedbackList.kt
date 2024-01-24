@@ -40,8 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.cash.paging.compose.LazyPagingItems
 import config.BaseUrlConfig.UserAvatar
-import data.Feedback.FeedbackList.Data
-import data.Feedback.FeedbackList.User
+import data.feedback.FeedbackList.Data
+import data.feedback.FeedbackList.User
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource

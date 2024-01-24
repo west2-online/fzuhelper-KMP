@@ -20,7 +20,7 @@ import com.bumble.appyx.navigation.node.ParentNode
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import com.bumble.appyx.utils.multiplatform.RawValue
-import data.Person.UserData.Data
+import data.person.UserData.Data
 import di.SystemAction
 import di.appModule
 import initStore

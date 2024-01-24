@@ -1,8 +1,8 @@
 package repository
 
-import data.Feedback.FeedbackDetailComment.FeedbackDetailComment
-import data.Feedback.FeelbackDetail.FeedbackDetail
-import data.Feedback.SubmitNewFeedBack.FeedbackSubmit
+import data.feedback.FeedbackDetailComment.FeedbackDetailComment
+import data.feedback.FeelbackDetail.FeedbackDetail
+import data.feedback.SubmitNewFeedBack.FeedbackSubmit
 import doist.x.normalize.Form
 import doist.x.normalize.normalize
 import io.ktor.client.HttpClient

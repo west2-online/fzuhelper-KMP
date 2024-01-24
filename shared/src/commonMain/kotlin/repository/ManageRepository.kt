@@ -1,6 +1,6 @@
 package repository
 
-import data.Manage.processPost.ProcessPost
+import data.manage.processPost.ProcessPost
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitForm

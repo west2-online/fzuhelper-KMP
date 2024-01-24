@@ -45,10 +45,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import config.BaseUrlConfig
-import data.Feedback.FeelbackDetail.Data
-import data.Feedback.FeelbackDetail.FeedbackComment
-import data.Feedback.FeelbackDetail.FeedbackStatu
-import data.Feedback.FeelbackDetail.User
+import data.feedback.FeelbackDetail.Data
+import data.feedback.FeelbackDetail.FeedbackComment
+import data.feedback.FeelbackDetail.FeedbackStatu
+import data.feedback.FeelbackDetail.User
 import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage

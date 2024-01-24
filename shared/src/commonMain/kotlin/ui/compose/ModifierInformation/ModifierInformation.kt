@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import asImageBitmap
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
-import data.Person.UserData.Data
+import data.person.UserData.Data
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import org.example.library.MR

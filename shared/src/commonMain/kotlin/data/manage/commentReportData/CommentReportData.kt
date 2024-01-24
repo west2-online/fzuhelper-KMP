@@ -1,16 +1,15 @@
-package data.Manage.PostReportPage
+package data.manage.commentReportData
 
-import data.share.Post
-
+import data.share.Comment
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PostReportContextData(
+data class CommentReportContextData(
     val CopyrightIssue: Int,
     val InappropriateContent: Int,
     val MaliciousBehavior: Int,
     val PoliticallySensitive: Int,
-    val Post: Post,
+    val Comment: Comment,
     val PrivacyIssue: Int,
     val SpamAndAbuse: Int,
     val UnauthorizedAdvertisement: Int,
