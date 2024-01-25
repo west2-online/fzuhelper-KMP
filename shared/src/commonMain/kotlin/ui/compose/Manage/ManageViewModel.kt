@@ -116,7 +116,6 @@ class ManageViewModel(
                     .catchWithMassage {
                         reportState.reset(NetworkResult.Error(Throwable("操作失败")))
                     }.collectWithMassage {
-                        println("sss")
                         reportState.reset(it.toNetworkResult())
                     }
             }
