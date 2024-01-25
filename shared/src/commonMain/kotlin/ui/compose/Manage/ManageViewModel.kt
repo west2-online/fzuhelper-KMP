@@ -4,8 +4,11 @@ import androidx.paging.Pager
 import androidx.paging.PagingSource
 import app.cash.paging.PagingConfig
 import app.cash.paging.cachedIn
+import data.manage.commentReportData.CommentReportContextData
+import data.manage.commentReportData.CommentReportForResponseList
 import data.manage.postReportPage.PostReportContextData
 import data.manage.postReportPage.PostReportForResponseList
+import data.post.CommentById.CommentById
 import data.post.PostById.PostById
 import data.post.PostById.PostData
 import data.share.Comment
@@ -57,23 +60,41 @@ class ManageViewModel(
             prefetchDistance = 2
         ),
     ){
-        EasyPageSourceForPostReport(
-            backend = LoadPostReportPageData {
-                val postReportDataList = mutableListOf<PostReportData>()
-                val postReportData = client.get("/manage/post/list/${it}").body<PostReportForResponseList>()
-                postReportData.data.forEach { postReportContextData ->
-                    val postById  = client.get("/post/id/${postReportContextData.Post.Id}").body<PostById>()
-                    postReportDataList.add(PostReportData(
-                        postReportContextData = postReportContextData,
-                        postData = postById.data
-                    ))
+        EasyPageSourceForCommentReport(
+            backend = LoadCommentReportPageData {
+//                val commentReportDataList = mutableListOf<CommentReportData>()
+//                val commentReportData = client.get("/manage/comment/list/${it}").body<CommentReportForResponseList>()
+//                commentReportData.data.forEach { commentReportContextData ->
+//                    val comment  = client.get("/post/comment/id/${commentReportContextData.Comment.Id}").body<CommentById>()
+//                    commentReportDataList.add(
+//                        CommentReportData(
+//                            commentReportContextData = commentReportContextData,
+//                            comment = comment.data
+//                        )
+//                    )
+//                }
+
+                try {
+                    val commentReportDataList = mutableListOf<CommentReportData>()
+                    val commentReportData = client.get("/manage/comment/list/${it}").body<CommentReportForResponseList>()
+                    commentReportData.data.forEach { commentReportContextData ->
+                        val comment  = client.get("/post/comment/${commentReportContextData.Comment.Id}").body<CommentById>()
+                        commentReportDataList.add(
+                            CommentReportData(
+                                commentReportContextData = commentReportContextData,
+                                comment = comment.data
+                            )
+                        )
+                    }
+                    return@LoadCommentReportPageData commentReportDataList.toList()
+                }catch (e:Exception){
+                    println("this is error${e.message}")
+                    return@LoadCommentReportPageData listOf()
                 }
-                return@LoadPostReportPageData postReportDataList.toList()
             }
         )
     }.flow
         .cachedIn(viewModelScope)
-
 
     fun dealPost(reportState:MutableStateFlow<NetworkResult<String>>, postId:Int, result:PostProcessResult){
         viewModelScope.launchInDefault {
@@ -86,7 +107,20 @@ class ManageViewModel(
                     }
             }
         }
+    }
 
+    fun dealComment(reportState:MutableStateFlow<NetworkResult<String>>,commentId: Int, postId:Int, result:CommentProcessResult){
+        viewModelScope.launchInDefault {
+            reportState.loginIfNotLoading {
+                repository.processComment(commentId,postId,result.value)
+                    .catchWithMassage {
+                        reportState.reset(NetworkResult.Error(Throwable("操作失败")))
+                    }.collectWithMassage {
+                        println("sss")
+                        reportState.reset(it.toNetworkResult())
+                    }
+            }
+        }
     }
 
 }
@@ -96,6 +130,11 @@ enum class PostProcessResult(val value : Int){
     PassPost(0)
 }
 
+enum class CommentProcessResult(val value : Int){
+    BanComment(2),
+    PassComment(0)
+}
+
 class PostReportData(
     val postReportContextData: PostReportContextData,
     val postData: PostData,
@@ -103,8 +142,8 @@ class PostReportData(
 )
 
 class CommentReportData(
-    val postReportContextData: PostReportContextData,
-    val postData: Comment,
+    val commentReportContextData: CommentReportContextData,
+    val comment: Comment,
     val state: MutableStateFlow<NetworkResult<String>> = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
 )
 

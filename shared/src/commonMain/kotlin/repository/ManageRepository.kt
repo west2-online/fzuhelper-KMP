@@ -25,6 +25,20 @@ class ManageRepository(
         }
 
     }
+
+    fun processComment(commentId:Int,postId:Int, status: Int): Flow<ProcessPost> {
+        return flow<ProcessPost> {
+            val result = client.submitForm(
+                "/manage/comment/process",
+                formParameters = parameters{
+                    append("commentId",commentId.toString())
+                    append("status",status.toString())
+                    append("postId",postId.toString())
+                }
+            ).body<ProcessPost>()
+            emit(result)
+        }
+    }
 }
 
 enum class ProcessPostStatus(val value: Int, val describe: String) {
