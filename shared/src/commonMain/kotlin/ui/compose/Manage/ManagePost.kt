@@ -67,7 +67,6 @@ class ManagePost(
     override fun View(modifier: Modifier) {
         val viewModel = koinInject<ManageViewModel>()
         val postReportPageList = viewModel.postReportPageList.collectAsLazyPagingItems()
-
         val horizontalPage = rememberPagerState { postReportPageList.itemCount }
         HorizontalPager(
             state = horizontalPage,

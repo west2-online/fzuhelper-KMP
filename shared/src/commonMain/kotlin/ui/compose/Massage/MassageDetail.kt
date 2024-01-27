@@ -104,7 +104,6 @@ fun MassageDetail(
                             .fillMaxWidth()
                             .wrapContentHeight()
                             .animateContentSize()
-
                     ) {
                         TextWithLink()
                     }
@@ -183,8 +182,7 @@ fun TextWithLink(
     modifier: Modifier = Modifier
 ){
     Column (
-        modifier = modifier
-           ,
+        modifier = modifier,
         horizontalAlignment = Alignment.End
     ) {
         Text("sssssssssssssssssssssssssssssssssssssssssssssssss")

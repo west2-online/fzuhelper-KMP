@@ -57,6 +57,7 @@ import ui.util.compose.shimmerLoadingAnimation
 import ui.util.network.NetworkResult
 import ui.util.network.toEasyTime
 
+//管理评论举报页面
 class ManageCommentReport(
     buildContext: BuildContext
 ): Node(
@@ -222,7 +223,7 @@ class ManageCommentReport(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+//评论展示页面
 @Composable
 fun CommentInReportDetail(
     comment: Comment,

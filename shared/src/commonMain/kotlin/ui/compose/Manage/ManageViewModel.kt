@@ -26,11 +26,14 @@ import ui.util.network.NetworkResult
 import ui.util.network.loginIfNotLoading
 import ui.util.network.reset
 
+/*
+管理界面的ViewModel
+ */
 class ManageViewModel(
     val client : HttpClient,
     val repository: ManageRepository
 ):ViewModel() {
-
+    // 帖子举报分页数据
     var postReportPageList = Pager(
         PagingConfig(
             pageSize = 10,
@@ -54,6 +57,7 @@ class ManageViewModel(
     }.flow
     .cachedIn(viewModelScope)
 
+    //评论举报分页数据
     var commentReportPageList = Pager(
         PagingConfig(
             pageSize = 10,
@@ -62,18 +66,6 @@ class ManageViewModel(
     ){
         EasyPageSourceForCommentReport(
             backend = LoadCommentReportPageData {
-//                val commentReportDataList = mutableListOf<CommentReportData>()
-//                val commentReportData = client.get("/manage/comment/list/${it}").body<CommentReportForResponseList>()
-//                commentReportData.data.forEach { commentReportContextData ->
-//                    val comment  = client.get("/post/comment/id/${commentReportContextData.Comment.Id}").body<CommentById>()
-//                    commentReportDataList.add(
-//                        CommentReportData(
-//                            commentReportContextData = commentReportContextData,
-//                            comment = comment.data
-//                        )
-//                    )
-//                }
-
                 try {
                     val commentReportDataList = mutableListOf<CommentReportData>()
                     val commentReportData = client.get("/manage/comment/list/${it}").body<CommentReportForResponseList>()
@@ -96,6 +88,7 @@ class ManageViewModel(
     }.flow
         .cachedIn(viewModelScope)
 
+    //处理帖子
     fun dealPost(reportState:MutableStateFlow<NetworkResult<String>>, postId:Int, result:PostProcessResult){
         viewModelScope.launchInDefault {
             reportState.loginIfNotLoading {
@@ -108,7 +101,7 @@ class ManageViewModel(
             }
         }
     }
-
+    //处理评论
     fun dealComment(reportState:MutableStateFlow<NetworkResult<String>>,commentId: Int, postId:Int, result:CommentProcessResult){
         viewModelScope.launchInDefault {
             reportState.loginIfNotLoading {
