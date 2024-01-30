@@ -44,6 +44,9 @@ sealed class ManageScreenNav:Parcelable{
 
     @Parcelize
     data object ManagePost:ManageScreenNav()
+
+    @Parcelize
+    data object ManageOpenImage:ManageScreenNav()
 }
 
 class ManageRouteNode(
@@ -63,6 +66,7 @@ class ManageRouteNode(
         return when(interactionTarget){
             is ManageScreenNav.ManageComment -> ManageCommentReport(buildContext)
             is ManageScreenNav.ManagePost -> ManagePost(buildContext)
+            is ManageScreenNav.ManageOpenImage -> ManageOpenImage(buildContext)
         }
     }
 
@@ -117,6 +121,12 @@ class ManageRouteNode(
                             expanded = false
                         }) {
                             Text("管理评论")
+                        }
+                        DropdownMenuItem(onClick = {
+                            backStack.replace(ManageScreenNav.ManageOpenImage)
+                            expanded = false
+                        }) {
+                            Text("管理开屏页")
                         }
                     }
                 }

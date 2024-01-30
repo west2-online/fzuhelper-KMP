@@ -12,11 +12,13 @@ import data.post.CommentById.CommentById
 import data.post.PostById.PostById
 import data.post.PostById.PostData
 import data.share.Comment
+import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import repository.ManageRepository
 import repository.toNetworkResult
 import ui.util.flow.catchWithMassage
@@ -88,6 +90,26 @@ class ManageViewModel(
     }.flow
         .cachedIn(viewModelScope)
 
+    private var _openImageList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<String>>>(NetworkResult.UnSend()))
+    var openImageList = _openImageList.asStateFlow()
+
+    fun getOpenImage(){
+        viewModelScope.launchInDefault {
+            _openImageList.loginIfNotLoading {
+                repository.getImageList()
+                    .catchWithMassage {
+                        _openImageList.reset(NetworkResult.Error(Throwable("获取失败")))
+                    }.collectWithMassage {
+                        _openImageList.reset(it.toNetworkResult())
+                    }
+            }
+        }
+    }
+
+    fun refresh(){
+        getOpenImage()
+
+    }
     //处理帖子
     fun dealPost(reportState:MutableStateFlow<NetworkResult<String>>, postId:Int, result:PostProcessResult){
         viewModelScope.launchInDefault {

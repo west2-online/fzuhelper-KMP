@@ -49,20 +49,6 @@ fun MassageDetail(
         back?.invoke()
     }
     val listState = rememberLazyListState()
-
-//    val preScrollStartOffset by remember { mutableStateOf(listState.firstVisibleItemScrollOffset) }
-//    val preItemIndex by remember { mutableStateOf(listState.firstVisibleItemIndex) }
-//    val isScrollDown = if (listState.firstVisibleItemIndex > preItemIndex) {
-//        //第一个可见item的index大于开始滚动时第一个可见item的index，说明往下滚动了
-//        true
-//    } else if (listState.firstVisibleItemIndex < preItemIndex) {
-//        //第一个可见item的index小于开始滚动时第一个可见item的index，说明往上滚动了
-//        false
-//    } else {
-//        //第一个可见item的index等于开始滚动时第一个可见item的index,对比item offset
-//        listState.firstVisibleItemScrollOffset > preScrollStartOffset
-//    }
-
     val isShowTopBar = remember {
         mutableStateOf(true)
     }
@@ -108,7 +94,6 @@ fun MassageDetail(
                         TextWithLink()
                     }
                 }
-
             }
             TextField(
                 value = "",
