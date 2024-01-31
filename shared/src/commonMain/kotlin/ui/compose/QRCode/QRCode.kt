@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
@@ -84,7 +85,6 @@ fun QRCodeScreen(
             shape = QrLogoShape.circle()
             size = 0.2f
         }
-
         shapes {
             ball = QrBallShape.circle()
             darkPixel = QrPixelShape.roundCorners()
@@ -162,7 +162,7 @@ fun QRCodeScreen(
                         .padding( bottom = 10.dp )
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .background(Color(215, 215, 237))
+                        .background(MaterialTheme.colors.surface)
                         .padding(10.dp)
                 ) {
                     Text(
@@ -201,7 +201,7 @@ fun QRCodeScreen(
                         .padding( bottom = 10.dp )
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .background(Color(215, 215, 237))
+                        .background(MaterialTheme.colors.surface)
                         .padding(10.dp)
                 ) {
                     Text(
@@ -239,7 +239,7 @@ fun QRCodeScreen(
                         .padding( bottom = 10.dp )
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .background(Color(215, 215, 237))
+                        .background(MaterialTheme.colors.surface)
                         .padding(10.dp)
                 ) {
                     Text(
