@@ -1,6 +1,9 @@
 package ui.compose.Manage
 
+import ImagePickerFactory
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,15 +28,19 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import asImageBitmap
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import config.BaseUrlConfig
 import dev.icerock.moko.resources.compose.painterResource
+import getPlatformContext
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
@@ -56,6 +63,15 @@ class ManageOpenImage(
         val pageState = rememberPagerState {
             2
         }
+        val imageByteArray = remember {
+            mutableStateOf<ByteArray?>(null)
+        }
+        val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
+        imagePicker.registerPicker(
+            onImagePicked = {
+                imageByteArray.value = it
+            }
+        )
         val scope = rememberCoroutineScope()
         Column(
             modifier = Modifier
@@ -105,9 +121,23 @@ class ManageOpenImage(
                             }
                         )
                     }
-
                     1 -> {
-
+                        imageByteArray.value?: Icon(
+                           painter = painterResource(MR.images.image),
+                            "",
+                            modifier = Modifier
+                                .size(50.dp)
+                                .clickable {
+                                    imagePicker.pickImage()
+                                }
+                        )
+                        imageByteArray.value?.let {
+                            Image(
+                                bitmap = it.asImageBitmap(),
+                                "",
+                                modifier = Modifier
+                            )
+                        }
                     }
                 }
             }
