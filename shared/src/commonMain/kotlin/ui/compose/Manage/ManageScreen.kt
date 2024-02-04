@@ -72,6 +72,7 @@ class ManageRouteNode(
 
     @Composable
     override fun View(modifier: Modifier){
+        val viewModel = koinInject<ManageViewModel>()
         Column {
             TopAppBar(
                 modifier = Modifier
@@ -89,6 +90,7 @@ class ManageRouteNode(
                     IconButton(onClick = {
                         lazyPagingItemsForComment.refresh()
                         lazyPagingItemsForPost.refresh()
+                        viewModel.refresh()
                     }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Localized description")
                     }

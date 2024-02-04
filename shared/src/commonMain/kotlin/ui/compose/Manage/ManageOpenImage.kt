@@ -5,7 +5,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -99,6 +101,9 @@ class ManageOpenImage(
                                                 it,
                                                 refresh = {
                                                     manageViewModel.refresh()
+                                                },
+                                                delete = {
+                                                    manageViewModel.deleteOpenImage(it)
                                                 }
                                             )
                                         }
@@ -122,21 +127,56 @@ class ManageOpenImage(
                         )
                     }
                     1 -> {
-                        imageByteArray.value?: Icon(
-                           painter = painterResource(MR.images.image),
-                            "",
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clickable {
-                                    imagePicker.pickImage()
-                                }
-                        )
-                        imageByteArray.value?.let {
-                            Image(
-                                bitmap = it.asImageBitmap(),
+                        Box(modifier = Modifier.fillMaxSize().padding(10.dp)){
+                            imageByteArray.value?: Icon(
+                                painter = painterResource(MR.images.image),
                                 "",
                                 modifier = Modifier
+                                    .size(50.dp)
+                                    .clickable {
+                                        imagePicker.pickImage()
+                                    }
                             )
+                            imageByteArray.value?.let {
+                                Column (
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ){
+                                    Image(
+                                        bitmap = it.asImageBitmap(),
+                                        "",
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.8f)
+                                            .aspectRatio(0.56f),
+                                        contentScale = ContentScale.FillBounds
+                                    )
+                                    Row (
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .padding(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(20.dp,Alignment.CenterHorizontally)
+                                    ){
+                                        Button(
+                                            onClick = {
+                                                imagePicker.pickImage()
+                                            }
+                                        ){
+                                            Text("重选")
+                                        }
+                                        Button(
+                                            onClick = {},
+                                            modifier = Modifier,
+                                            contentPadding = PaddingValues(horizontal = 40.dp)
+                                        ){
+                                            Text("添加")
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -205,7 +245,8 @@ class ManageOpenImage(
 @Composable
 fun OpenImageShow(
     string: String,
-    refresh:()->Unit
+    refresh:()->Unit,
+    delete:()->Unit
 ){
     Row(
         modifier = Modifier
@@ -228,14 +269,7 @@ fun OpenImageShow(
         ) {
             Button(
                 onClick = {
-                    refresh.invoke()
-                }
-            ){
-                Text("删除该开屏页")
-            }
-            Button(
-                onClick = {
-                    refresh.invoke()
+                    delete.invoke()
                 }
             ){
                 Text("删除该开屏页")

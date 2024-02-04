@@ -25,7 +25,7 @@ import ui.util.flow.catchWithMassage
 import ui.util.flow.collectWithMassage
 import ui.util.flow.launchInDefault
 import ui.util.network.NetworkResult
-import ui.util.network.loginIfNotLoading
+import ui.util.network.logicIfNotLoading
 import ui.util.network.reset
 
 /*
@@ -93,9 +93,11 @@ class ManageViewModel(
     private var _openImageList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<String>>>(NetworkResult.UnSend()))
     var openImageList = _openImageList.asStateFlow()
 
+    private var _openImageDelete = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    var openImageDelete = _openImageDelete.asStateFlow()
     fun getOpenImage(){
         viewModelScope.launchInDefault {
-            _openImageList.loginIfNotLoading {
+            _openImageList.logicIfNotLoading {
                 repository.getImageList()
                     .catchWithMassage {
                         _openImageList.reset(NetworkResult.Error(Throwable("获取失败")))
@@ -108,12 +110,12 @@ class ManageViewModel(
 
     fun refresh(){
         getOpenImage()
-
     }
+
     //处理帖子
     fun dealPost(reportState:MutableStateFlow<NetworkResult<String>>, postId:Int, result:PostProcessResult){
         viewModelScope.launchInDefault {
-            reportState.loginIfNotLoading {
+            reportState.logicIfNotLoading {
                 repository.processPost(postId,result.value)
                     .catchWithMassage {
                         reportState.reset(NetworkResult.Error(Throwable("操作失败")))
@@ -126,7 +128,7 @@ class ManageViewModel(
     //处理评论
     fun dealComment(reportState:MutableStateFlow<NetworkResult<String>>,commentId: Int, postId:Int, result:CommentProcessResult){
         viewModelScope.launchInDefault {
-            reportState.loginIfNotLoading {
+            reportState.logicIfNotLoading {
                 repository.processComment(commentId,postId,result.value)
                     .catchWithMassage {
                         reportState.reset(NetworkResult.Error(Throwable("操作失败")))
@@ -136,7 +138,21 @@ class ManageViewModel(
             }
         }
     }
-
+    //删除开屏页
+    fun deleteOpenImage(openImageName : String){
+        viewModelScope.launchInDefault {
+            _openImageDelete.logicIfNotLoading {
+                repository.deleteOpenImage(openImageName)
+                    .catchWithMassage {
+                        _openImageDelete.reset(NetworkResult.Error(Throwable("删除失败")))
+                        refresh()
+                    }.collectWithMassage {
+                        _openImageDelete.reset(it.toNetworkResult())
+                        refresh()
+                    }
+            }
+        }
+    }
 }
 
 enum class PostProcessResult(val value : Int){

@@ -177,7 +177,7 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.unSend(){
     this.reset(NetworkResult.UnSend())
 }
 
-suspend fun <T> MutableStateFlow<NetworkResult<T>>.loginIfNotLoading(
+suspend fun <T> MutableStateFlow<NetworkResult<T>>.logicIfNotLoading(
     block: suspend () -> Unit
 ){
     if(this.value !is NetworkResult.Loading){

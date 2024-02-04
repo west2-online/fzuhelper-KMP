@@ -13,7 +13,7 @@ import repository.PostStatus
 import ui.util.flow.catchWithMassage
 import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
-import ui.util.network.loginIfNotLoading
+import ui.util.network.logicIfNotLoading
 import ui.util.network.reset
 
 class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewModel() {
@@ -23,7 +23,7 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
     //发布新的帖子
     fun newPost(releasePageItemList:List<ReleasePageItem>,title:String){
         viewModelScope.launch(Dispatchers.IO){
-            _newPostState.loginIfNotLoading{
+            _newPostState.logicIfNotLoading{
                 val list = releasePageItemList.filter {
                     when(it){
                         is ReleasePageItem.TextItem -> {
@@ -39,11 +39,11 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
                 }
                 if (list.isEmpty()){
                     _newPostState.reset(NetworkResult.Error(Throwable("帖子不得为空")))
-                    return@loginIfNotLoading
+                    return@logicIfNotLoading
                 }
                 if (title.isEmpty()){
                     _newPostState.reset(NetworkResult.Error(Throwable("标题不得为空")))
-                    return@loginIfNotLoading
+                    return@logicIfNotLoading
                 }
                 releaseRepository.newPost(
                     releasePageItemList = list,

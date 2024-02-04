@@ -13,7 +13,7 @@ import repository.ModifierInformationRepository
 import ui.util.flow.catchWithMassage
 import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
-import ui.util.network.loginIfNotLoading
+import ui.util.network.logicIfNotLoading
 import ui.util.network.reset
 
 class ModifierInformationViewModel(val repository : ModifierInformationRepository) :ViewModel(){
@@ -26,7 +26,7 @@ class ModifierInformationViewModel(val repository : ModifierInformationRepositor
 
     fun modifierUserdata(username:String, age:String, grade:String, location:String){
         viewModelScope.launch {
-            _modifierUserdataState.loginIfNotLoading{
+            _modifierUserdataState.logicIfNotLoading{
                 repository.modifierUserData(username, age, grade, location)
                     .catchWithMassage {
                         _modifierUserdataState.reset(NetworkResult.Error(Throwable("修改失败")))
@@ -39,7 +39,7 @@ class ModifierInformationViewModel(val repository : ModifierInformationRepositor
 
     fun modifierUserAvatar(imageByteArray: ByteArray){
         viewModelScope.launch {
-            _modifierAvatarState.loginIfNotLoading {
+            _modifierAvatarState.logicIfNotLoading {
                 repository.modifierAvatar(imageByteArray)
                     .catchWithMassage {
                         _modifierAvatarState.reset(NetworkResult.Error(Throwable("修改失败")))

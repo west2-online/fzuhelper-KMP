@@ -10,7 +10,7 @@ import repository.WeatherRepository
 import ui.util.flow.catchWithMassage
 import ui.util.flow.collectWithMassage
 import ui.util.network.NetworkResult
-import ui.util.network.loginIfNotLoading
+import ui.util.network.logicIfNotLoading
 import ui.util.network.reset
 
 class WeatherViewModel(
@@ -21,7 +21,7 @@ class WeatherViewModel(
 
     fun getFuZhouWeather(){
         viewModelScope.launch {
-            _weatherDataOfFuZhou.loginIfNotLoading {
+            _weatherDataOfFuZhou.logicIfNotLoading {
                 repository.getWeatherOfFuZhou()
                     .catchWithMassage {
                         _weatherDataOfFuZhou.reset(NetworkResult.Error(Throwable("获取失败")))

@@ -26,7 +26,7 @@ import ui.util.flow.catchWithMassage
 import ui.util.flow.collectWithMassage
 import ui.util.flow.launchInDefault
 import ui.util.network.NetworkResult
-import ui.util.network.loginIfNotLoading
+import ui.util.network.logicIfNotLoading
 import ui.util.network.reset
 
 class PostDetailViewModel(
@@ -80,7 +80,7 @@ class PostDetailViewModel(
 
     fun submitComment(parentId:Int,postId:Int,tree:String,content:String,image:ByteArray?){
         viewModelScope.launchInDefault {
-            _commentSubmitState.loginIfNotLoading {
+            _commentSubmitState.logicIfNotLoading {
                 postRepository.postNewComment(parentId,postId,tree,content.normalize(Form.NFC),image)
                     .catchWithMassage {
                         _commentSubmitState.reset(NetworkResult.Error(Throwable("评论失败，稍后再试")))

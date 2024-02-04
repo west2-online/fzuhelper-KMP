@@ -1,5 +1,6 @@
 package repository
 
+import data.manage.openImageDelete.OpenImageDelete
 import data.manage.openImageList.OpenImageList
 import data.manage.processPost.ProcessPost
 import io.ktor.client.HttpClient
@@ -47,6 +48,19 @@ class ManageRepository(
             emit(result)
         }
     }
+
+    fun deleteOpenImage(imageName:String):Flow<OpenImageDelete>{
+        return flow {
+            val result = client.submitForm(
+                "/manage/openImage/delete",
+                formParameters = parameters{
+                    append("imageName",imageName)
+                }
+            ).body<OpenImageDelete>()
+            emit(result)
+        }
+    }
+
 }
 
 enum class ProcessPostStatus(val value: Int, val describe: String) {
@@ -89,6 +103,32 @@ fun OpenImageList.toNetworkResult():NetworkResult<List<String>>{
         return when(it){
             GetImageStatus.FailedToGetTheImageList -> NetworkResult.Error(Throwable("获取失败"))
             GetImageStatus.TheListOfImagesWasObtained -> NetworkResult.Success(this.data)
+        }
+    }
+}
+
+enum class DeletionResult(val value: Int, val description: String) {
+    TheInformationToBeDeletedIsIncomplete(0, "删除信息不完整"),
+    ThePictureYouWantToDeleteNotExist(1, "要删除的图片不存在"),
+    RemovedUnknownErrors(2, "移除时发生未知错误"),
+    DeletionFailed(3, "删除失败"),
+    TheDeletionIsSuccessful(4, "删除成功")
+}
+
+fun OpenImageDelete.toNetworkResult():NetworkResult<String>{
+    val result = DeletionResult.values().find {
+        this.code == it.value
+    }
+    result ?:let {
+        return NetworkResult.Error(Throwable("操作失败"))
+    }
+    result.let {
+        return when(it){
+            DeletionResult.TheInformationToBeDeletedIsIncomplete -> NetworkResult.Error(Throwable(it.description))
+            DeletionResult.ThePictureYouWantToDeleteNotExist -> NetworkResult.Error(Throwable(it.description))
+            DeletionResult.RemovedUnknownErrors -> NetworkResult.Error(Throwable(it.description))
+            DeletionResult.DeletionFailed -> NetworkResult.Error(Throwable(it.description))
+            DeletionResult.TheDeletionIsSuccessful -> NetworkResult.Success(it.description)
         }
     }
 }
