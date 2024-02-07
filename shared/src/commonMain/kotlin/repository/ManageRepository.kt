@@ -1,12 +1,17 @@
 package repository
 
+import data.manage.openImageAdd.OpenImageAdd
 import data.manage.openImageDelete.OpenImageDelete
 import data.manage.openImageList.OpenImageList
 import data.manage.processPost.ProcessPost
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitForm
+import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.http.parameters
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -61,6 +66,21 @@ class ManageRepository(
         }
     }
 
+    fun addNewOpenImage(openImage: ByteArray): Flow<OpenImageAdd> {
+        return flow {
+            val response = client.submitFormWithBinaryData(
+                url = "/manage/openImage/add",
+                formData = formData {
+                    append("slashPage", openImage, Headers.build {
+                        append(HttpHeaders.ContentType, "image/png")
+                        append(HttpHeaders.ContentDisposition, "filename=\"ktor_logo.png\"")
+                    })
+                }
+            ).body<OpenImageAdd>()
+            emit(response)
+        }
+
+    }
 }
 
 enum class ProcessPostStatus(val value: Int, val describe: String) {
@@ -128,7 +148,31 @@ fun OpenImageDelete.toNetworkResult():NetworkResult<String>{
             DeletionResult.ThePictureYouWantToDeleteNotExist -> NetworkResult.Error(Throwable(it.description))
             DeletionResult.RemovedUnknownErrors -> NetworkResult.Error(Throwable(it.description))
             DeletionResult.DeletionFailed -> NetworkResult.Error(Throwable(it.description))
-            DeletionResult.TheDeletionIsSuccessful -> NetworkResult.Success(it.description)
+            DeletionResult.TheDeletionIsSuccessful -> NetworkResult.Success("删除成功")
         }
     }
 }
+enum class OpenImageAddResult(val value: Int, val description: String) {
+    SplashPageFormParseFileFailed(0, "闪屏页面表单解析文件失败"),
+    SplashPageFileParsingFailed(1, "闪屏页面文件解析失败"),
+    SlashPageSaveFailed(2, "开屏页面无法保存评论图片"),
+    SlashPageSaveSuccess(3, "斜杠页面保存失败");
+}
+
+fun OpenImageAdd.toNetworkResult():NetworkResult<String>{
+    val result = OpenImageAddResult.values().find {
+        this.code == it.value
+    }
+    result ?:let {
+        return NetworkResult.Error(Throwable("操作失败"))
+    }
+    result.let {
+        return when(it){
+            OpenImageAddResult.SplashPageFormParseFileFailed -> NetworkResult.Error(Throwable("操作失败"))
+            OpenImageAddResult.SplashPageFileParsingFailed -> NetworkResult.Error(Throwable("操作失败"))
+            OpenImageAddResult.SlashPageSaveFailed -> NetworkResult.Error(Throwable("操作失败"))
+            OpenImageAddResult.SlashPageSaveSuccess -> NetworkResult.Success("操作成功")
+        }
+    }
+}
+

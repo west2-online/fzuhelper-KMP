@@ -95,6 +95,10 @@ class ManageViewModel(
 
     private var _openImageDelete = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     var openImageDelete = _openImageDelete.asStateFlow()
+
+    private var _openImageAdd = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    var openImageAdd = _openImageAdd.asStateFlow()
+
     fun getOpenImage(){
         viewModelScope.launchInDefault {
             _openImageList.logicIfNotLoading {
@@ -149,6 +153,19 @@ class ManageViewModel(
                     }.collectWithMassage {
                         _openImageDelete.reset(it.toNetworkResult())
                         refresh()
+                    }
+            }
+        }
+    }
+    //添加新的开屏页
+    fun addOpenImage(openImage:ByteArray){
+        viewModelScope.launchInDefault {
+            _openImageAdd.logicIfNotLoading {
+                repository.addNewOpenImage(openImage)
+                    .catchWithMassage {
+                        _openImageAdd.reset(NetworkResult.Error(Throwable("添加失败")))
+                    }.collectWithMassage {
+                        _openImageAdd.reset(it.toNetworkResult())
                     }
             }
         }
