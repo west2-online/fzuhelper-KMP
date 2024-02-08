@@ -15,6 +15,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import ui.compose.Release.ReleasePageItem
@@ -34,7 +35,10 @@ class PostRepository(private val client: HttpClient) {
                                             Headers.build {
                                                 append("order", index.toString())
                                                 append("isImage", "true")
-                                                append("Content-Disposition", "form-data; name=\"file\"; filename=\"${index}\"")
+                                                append(HttpHeaders.ContentType, "image/png")
+                                                append(HttpHeaders.ContentDisposition, "filename=${index}")
+
+//                                                append("Content-Disposition", "form-data; name=\"file\"; filename=\"${index}\"")
                                             }
                                         )
                                     }
