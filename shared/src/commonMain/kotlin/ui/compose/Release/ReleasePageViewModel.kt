@@ -1,6 +1,6 @@
 package ui.compose.Release
 
-import data.post.NewPostResponse
+import data.post.PostNew.NewPostResponse
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.Dispatchers

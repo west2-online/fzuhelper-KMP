@@ -1,4 +1,4 @@
-package data.post
+package data.post.PostNew
 
 import kotlinx.serialization.Serializable
 

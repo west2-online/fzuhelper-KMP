@@ -1,10 +1,10 @@
 package repository
 
-import data.post.NewPostResponse
 import data.post.PostById.PostById
 import data.post.PostCommentNew.PostCommentNew
 import data.post.PostCommentPreview.PostCommentPreview
 import data.post.PostList.PostList
+import data.post.PostNew.NewPostResponse
 import doist.x.normalize.Form
 import doist.x.normalize.normalize
 import io.ktor.client.HttpClient
@@ -38,21 +38,21 @@ class PostRepository(private val client: HttpClient) {
                                             }
                                         )
                                     }
-
                                     is ReleasePageItem.TextItem -> {
                                         append( index.toString(),item.text.value.normalize(Form.NFKD),
                                             Headers.build {
                                                 append("order", index.toString())
+                                                append("isText", "true")
                                                 append("Content-Type", "text/plain")
                                             })
                                     }
                                 }
                             }
+                            append("title",title.normalize(Form.NFKD))
                         },
                         boundary = "WebAppBoundary"
                     )
                 )
-                headers.append("title",title.normalize(Form.NFKD))
             }.body<NewPostResponse>()
             emit(response)
         }
