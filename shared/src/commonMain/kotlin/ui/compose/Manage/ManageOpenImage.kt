@@ -45,6 +45,7 @@ import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
@@ -52,6 +53,7 @@ import ui.util.compose.EasyToast
 import ui.util.compose.rememberToastState
 import ui.util.compose.toastBindNetworkResult
 import ui.util.network.CollectWithContent
+import ui.util.network.NetworkResult
 
 class ManageOpenImage(
     buildContext: BuildContext
@@ -135,6 +137,14 @@ class ManageOpenImage(
                         }
                         1 -> {
                             Box(modifier = Modifier.fillMaxSize().padding(10.dp)){
+                                LaunchedEffect(Unit){
+                                    manageViewModel.openImageAdd
+                                        .filter {
+                                            it is NetworkResult.Success<String>
+                                        }.collect{
+                                            imageByteArray.value = null
+                                        }
+                                }
                                 val toastState = rememberToastState()
                                 toastBindNetworkResult(toastState,manageViewModel.openImageAdd.collectAsState())
                                 imageByteArray.value?: Icon(
@@ -146,6 +156,7 @@ class ManageOpenImage(
                                             imagePicker.pickImage()
                                         }
                                 )
+
                                 imageByteArray.value?.let {
                                     Column (
                                         modifier = Modifier

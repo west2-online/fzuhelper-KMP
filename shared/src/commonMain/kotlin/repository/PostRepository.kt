@@ -37,8 +37,6 @@ class PostRepository(private val client: HttpClient) {
                                                 append("isImage", "true")
                                                 append(HttpHeaders.ContentType, "image/png")
                                                 append(HttpHeaders.ContentDisposition, "filename=${index}")
-
-//                                                append("Content-Disposition", "form-data; name=\"file\"; filename=\"${index}\"")
                                             }
                                         )
                                     }
