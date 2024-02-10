@@ -34,7 +34,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
@@ -47,6 +46,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -115,9 +115,7 @@ fun ReleasePageScreen(
                             )
                         }
                     }
-                    releasePageItems.toList().sortedBy {
-                        it.order.value
-                    }.filter {
+                    releasePageItems.toList().filter {
                         return@filter when (it) {
                             is ReleasePageItem.TextItem -> it.text.value != ""
                             is ReleasePageItem.ImageItem -> it.image.value != null
@@ -197,9 +195,7 @@ fun ReleasePageScreen(
                             )
                         }
                     }
-                    releasePageItems.toList().sortedBy {
-                        it.order.value
-                    }.forEachIndexed { index, releasePageItem ->
+                    releasePageItems.toList().forEachIndexed { index, releasePageItem ->
                         item {
                             Card(
                                 modifier = Modifier
@@ -233,8 +229,10 @@ fun ReleasePageScreen(
                                                     releasePageItems.removeAt(index)
                                                 },
                                                 moveDown = {
-                                                    releasePageItem.order.value =
-                                                        releasePageItem.order.value - 1
+                                                    releasePageItems.downOrder(index)
+                                                },
+                                                moveUp = {
+                                                    releasePageItems.upOrder(index)
                                                 }
                                             )
                                         }
@@ -252,6 +250,12 @@ fun ReleasePageScreen(
                                                 image = releasePageItem.image,
                                                 delete = {
                                                     releasePageItems.removeAt(index)
+                                                },
+                                                moveDown = {
+                                                    releasePageItems.downOrder(index)
+                                                },
+                                                moveUp = {
+                                                    releasePageItems.upOrder(index)
                                                 }
                                             )
                                         }
@@ -286,24 +290,15 @@ fun ReleasePageScreen(
                             .fillMaxSize(0.75f)
                             .clip(CircleShape)
                             .clickable {
-                                releasePageItems.add(ReleasePageItem.TextItem(
-                                        if(releasePageItems.isNotEmpty()){
-                                            releasePageItems.maxBy {
-                                                it.order.value
-                                            }.order.value
-                                        }else{
-                                            0
-                                        }
-                                    )
-                                )
                                 scope.launch{
+                                    releasePageItems.add(ReleasePageItem.TextItem())
                                     lazyListState.animateScrollToItem(releasePageItems.size - 1)
                                 }
                             }
                             .wrapContentSize(Alignment.Center)
                             .fillMaxSize(0.7f)
                         ,
-                        painter = painterResource(MR.images.text),
+                        painter = painterResource(MR.images.pencil_plus),
                         contentDescription = null
                     )
                 }
@@ -317,16 +312,7 @@ fun ReleasePageScreen(
                             .clip(CircleShape)
                             .clickable {
                                 scope.launch{
-                                    releasePageItems.add(ReleasePageItem.ImageItem(
-                                            if(releasePageItems.isNotEmpty()){
-                                                releasePageItems.maxBy {
-                                                    it.order.value
-                                                }.order.value
-                                            }else{
-                                                0
-                                            }
-                                        )
-                                    )
+                                    releasePageItems.add(ReleasePageItem.ImageItem())
                                     lazyListState.animateScrollToItem(releasePageItems.size - 1)
                                 }
                             }
@@ -338,24 +324,47 @@ fun ReleasePageScreen(
                     )
                 }
                 item{
-                    Icon(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(1f)
-                            .wrapContentSize(Alignment.Center)
-                            .fillMaxSize(0.75f)
-                            .clip(CircleShape)
-                            .clickable {
-                                scope.launch{
-                                   preview = !preview
-                                }
-                            }
-                            .wrapContentSize(Alignment.Center)
-                            .fillMaxSize(0.7f)
-                        ,
-                        painter = painterResource(MR.images.eye),
-                        contentDescription = null
-                    )
+                    Crossfade(preview){
+                        if(it){
+                            Icon(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .aspectRatio(1f)
+                                    .wrapContentSize(Alignment.Center)
+                                    .fillMaxSize(0.75f)
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        scope.launch{
+                                            preview = !preview
+                                        }
+                                    }
+                                    .wrapContentSize(Alignment.Center)
+                                    .fillMaxSize(0.7f)
+                                ,
+                                painter = painterResource(MR.images.eye),
+                                contentDescription = null
+                            )
+                        }else{
+                            Icon(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .aspectRatio(1f)
+                                    .wrapContentSize(Alignment.Center)
+                                    .fillMaxSize(0.75f)
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        scope.launch{
+                                            preview = !preview
+                                        }
+                                    }
+                                    .wrapContentSize(Alignment.Center)
+                                    .fillMaxSize(0.7f)
+                                ,
+                                painter = painterResource(MR.images.eye_outline),
+                                contentDescription = null
+                            )
+                        }
+                    }
                 }
             }
             FloatingActionButton(
@@ -408,21 +417,13 @@ fun ReleasePageScreen(
 }
 
 interface ReleasePageItem{
-    var order:MutableState<Int>
-    class TextItem(theOrder:Int) : ReleasePageItem{
-        override var order: MutableState<Int> = mutableStateOf(0)
-        init {
-            order.value = theOrder
-        }
+    class TextItem() : ReleasePageItem{
         var text = mutableStateOf<String>("")
     }
     class ImageItem(
-        theOrder:Int
+
     ) : ReleasePageItem{
-        override var order: MutableState<Int> = mutableStateOf(0)
-        init {
-            order.value = theOrder
-        }
+
         var image = mutableStateOf<ByteArray?>(null)
     }
 
@@ -572,11 +573,11 @@ fun ReleasePageItemImage(
                         .wrapContentSize(Alignment.Center)
                         .clip(RoundedCornerShape(10))
                         .clickable {
-                            delete.invoke()
+                            moveUp.invoke()
                         }
                         .fillMaxSize(0.7f)
                     ,
-                    imageVector = Icons.Filled.Info,
+                    imageVector = Icons.Filled.KeyboardArrowUp,
                     contentDescription = null
                 )
             }
@@ -588,11 +589,11 @@ fun ReleasePageItemImage(
                         .wrapContentSize(Alignment.Center)
                         .clip(RoundedCornerShape(10))
                         .clickable {
-                            delete.invoke()
+                            moveDown.invoke()
                         }
                         .fillMaxSize(0.7f)
                     ,
-                    imageVector = Icons.Filled.Delete,
+                    imageVector = Icons.Filled.KeyboardArrowDown,
                     contentDescription = null
                 )
             }
@@ -680,4 +681,22 @@ class ReleaseRouteNode(
             modifier = modifier
         )
     }
+}
+
+fun SnapshotStateList<ReleasePageItem>.upOrder(index:Int){
+    if(index == this.indexOf(this.first())){
+        return
+    }
+    val temp = this[index-1]
+    this[index-1] = this[index]
+    this[index] = temp
+}
+
+fun SnapshotStateList<ReleasePageItem>.downOrder(index:Int){
+    if(index == this.indexOf(this.last())){
+        return
+    }
+    val temp = this[index+1]
+    this[index+1] = this[index]
+    this[index] = temp
 }
