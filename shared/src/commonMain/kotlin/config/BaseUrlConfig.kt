@@ -8,5 +8,6 @@ object BaseUrlConfig {
     val UserAvatar = "${BaseUrl}/static/userAvatar"
     val CommentImage = "${BaseUrl}/static/comment"
     val PostImage = "${BaseUrl}/static/post"
+    val RibbonImage = "${BaseUrl}/static/ribbon"
     val openImage = "${BaseUrl}/openImage"
 }

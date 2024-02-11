@@ -29,6 +29,7 @@ import repository.NewRepository
 import repository.PersonRepository
 import repository.PostRepository
 import repository.ReportRepository
+import repository.RibbonRepository
 import repository.SplashRepository
 import repository.WeatherRepository
 import ui.compose.Authentication.AuthenticationViewModel
@@ -226,13 +227,16 @@ fun Module.repositoryList(){
     single {
         ManageRepository(get())
     }
+    single {
+        RibbonRepository(get())
+    }
 }
 fun Module.viewModel(){
     viewModelDefinition {
         AuthenticationViewModel( get(),get(),get())
     }
-    viewModelDefinition {
-        RibbonViewModel( get())
+    single {
+        RibbonViewModel( get(),get())
     }
     single {
         SplashPageViewModel(get(),get())

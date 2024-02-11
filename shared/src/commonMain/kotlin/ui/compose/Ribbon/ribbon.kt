@@ -2,22 +2,28 @@ package ui.compose.Ribbon
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
+import config.BaseUrlConfig
 import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
@@ -40,6 +47,7 @@ import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.root.RootAction
 import ui.root.RootTarget
+import ui.util.network.CollectWithContent
 
 @Composable
 fun Ribbon(
@@ -104,38 +112,76 @@ private fun Carousel(
     modifier: Modifier = Modifier,
     refreshCarousel:()->Unit = {},
 ) {
-    val data = listOf<String>(
-        "https://www.jetbrains.com/lp/compose-multiplatform/static/hero-desktop-a91cbf05d6f13666a61aba073a2e71bf.jpg",
-        "https://www.jetbrains.com/_assets/www/fleet/inc/overview-content/parts/heading-section/img/main1248.8e6d0b77d29fd84703f62206d15767ff.png",
-        "https://i1.wp.com/ugtechmag.com/wp-content/uploads/2018/05/kotlin-featured.png?fit=1200%2C630&ssl=1",
-        "https://tse2-mm.cn.bing.net/th/id/OIP-C.ndsvvkmLDtOMBtFXt20BzwHaD4?w=329&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7"
-    )
-    val pageState = rememberPagerState(
-        initialPage = 0,
-    ) {
-        data.size
+    val viewModel = koinInject<RibbonViewModel>()
+    LaunchedEffect(Unit){
+        viewModel.initRibbonList()
     }
-
-    val coroutineScope= rememberCoroutineScope()
-
-    LaunchedEffect(pageState.currentPage){
-        while (true){
-            delay(4000)
-            coroutineScope.launch {
-                pageState.animateScrollToPage((pageState.currentPage+1)%data.size)
-            }
-        }
-    }
-    HorizontalPager(
-        state = pageState,
-        modifier = modifier.background(Color.Blue)
+    Box(
+        modifier = modifier
     ){
-        KamelImage(
-            resource = asyncPainterResource(data[it]),
-            null,
-            modifier = Modifier
-                .fillMaxSize(),
-            contentScale = ContentScale.FillBounds
+        viewModel.ribbonList.collectAsState().CollectWithContent(
+            loading = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+            },
+            success = { ribbonDataList ->
+                val pageState = rememberPagerState(
+                    initialPage = 0,
+                ) {
+                    ribbonDataList.size
+                }
+                val coroutineScope = rememberCoroutineScope()
+
+                LaunchedEffect(pageState.currentPage) {
+                    while (true) {
+                        delay(4000)
+                        coroutineScope.launch {
+                            pageState.animateScrollToPage((pageState.currentPage + 1) % ribbonDataList.size)
+                        }
+                    }
+                }
+                HorizontalPager(
+                    state = pageState,
+                ) {
+                    KamelImage(
+                        resource = asyncPainterResource("${BaseUrlConfig.RibbonImage}/${ribbonDataList[it].Id}"),
+                        null,
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentScale = ContentScale.FillBounds
+                    )
+                }
+            },
+            error = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                               viewModel.getRibbonList()
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        painter = painterResource(MR.images.close),
+                        contentDescription = null,
+                        tint = Color.Red,
+                        modifier = Modifier
+                            .size(50.dp)
+                    )
+                    Text("加载失败", modifier = Modifier.padding(start = 10.dp))
+                }
+            },
+            unSend = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                )
+            }
         )
     }
 }
