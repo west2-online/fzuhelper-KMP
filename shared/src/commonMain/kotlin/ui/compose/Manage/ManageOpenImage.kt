@@ -147,60 +147,74 @@ class ManageOpenImage(
                                 }
                                 val toastState = rememberToastState()
                                 toastBindNetworkResult(toastState,manageViewModel.openImageAdd.collectAsState())
-                                imageByteArray.value?: Icon(
-                                    painter = painterResource(MR.images.image),
-                                    "",
-                                    modifier = Modifier
-                                        .size(50.dp)
-                                        .clickable {
-                                            imagePicker.pickImage()
-                                        }
-                                )
-
-                                imageByteArray.value?.let {
-                                    Column (
-                                        modifier = Modifier
-                                            .fillMaxSize(),
-                                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ){
-                                        Image(
-                                            bitmap = it.asImageBitmap(),
+                                manageViewModel.openImageAdd.collectAsState().CollectWithContent(
+                                    content = {
+                                        imageByteArray.value?: Icon(
+                                            painter = painterResource(MR.images.image),
                                             "",
                                             modifier = Modifier
-                                                .fillMaxWidth(0.8f)
-                                                .aspectRatio(0.56f),
-                                            contentScale = ContentScale.FillBounds
-                                        )
-                                        Row (
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .wrapContentHeight()
-                                                .padding(10.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(20.dp,Alignment.CenterHorizontally)
-                                        ){
-                                            Button(
-                                                onClick = {
+                                                .size(50.dp)
+                                                .clickable {
                                                     imagePicker.pickImage()
                                                 }
+                                        )
+                                        imageByteArray.value?.let {
+                                            Column (
+                                                modifier = Modifier
+                                                    .fillMaxSize(),
+                                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                                horizontalAlignment = Alignment.CenterHorizontally
                                             ){
-                                                Text("重选")
-                                            }
-                                            Button(
-                                                onClick = {
-                                                    imageByteArray.value?.let {
-                                                        manageViewModel.addOpenImage(it)
+                                                Image(
+                                                    bitmap = it.asImageBitmap(),
+                                                    "",
+                                                    modifier = Modifier
+                                                        .fillMaxWidth(0.8f)
+                                                        .aspectRatio(0.56f),
+                                                    contentScale = ContentScale.FillBounds
+                                                )
+                                                Row (
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .wrapContentHeight()
+                                                        .padding(10.dp),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(20.dp,Alignment.CenterHorizontally)
+                                                ){
+                                                    Button(
+                                                        onClick = {
+                                                            imagePicker.pickImage()
+                                                        }
+                                                    ){
+                                                        Text("重选")
                                                     }
-                                                },
-                                                modifier = Modifier,
-                                                contentPadding = PaddingValues(horizontal = 40.dp)
-                                            ){
-                                                Text("添加")
+                                                    Button(
+                                                        onClick = {
+                                                            imageByteArray.value?.let {
+                                                                manageViewModel.addOpenImage(it)
+                                                            }
+                                                        },
+                                                        modifier = Modifier,
+                                                        contentPadding = PaddingValues(horizontal = 40.dp)
+                                                    ){
+                                                        Text("添加")
+                                                    }
+                                                }
                                             }
                                         }
+                                    },
+                                    loading = {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                        ) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier
+                                                    .align(Alignment.Center)
+                                            )
+                                        }
                                     }
-                                }
+                                )
                                 EasyToast(toastState)
                             }
                         }
