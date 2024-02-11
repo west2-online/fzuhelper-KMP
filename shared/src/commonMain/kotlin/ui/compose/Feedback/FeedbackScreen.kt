@@ -147,7 +147,12 @@ class FeedbackAssemblyNode(
                     backStack.pop()
                 }
             )
-            is FeedbackTarget.FeedbackPost -> FeedbackPost(buildContext)
+            is FeedbackTarget.FeedbackPost -> FeedbackPost(
+                buildContext,
+                back = {
+                    backStack.pop()
+                }
+            )
         }
 
     @Composable
@@ -212,16 +217,14 @@ class FeedbackDetail(
 }
 
 class FeedbackPost(
-    buildContext: BuildContext
+    buildContext: BuildContext,
+    private val back:()->Unit
 ):Node(
     buildContext = buildContext
 ){
     @Composable
     override fun View(modifier: Modifier) {
         val viewModel: FeedBackViewModel = koinInject()
-        val currentItem = remember {
-            mutableStateOf<FeedbackItem>(FeedbackItem.Feedback())
-        }
         val toastState = rememberToastState()
         FeedbackPost(
             modifier = Modifier
@@ -232,7 +235,7 @@ class FeedbackPost(
             submitResult = viewModel.submitResult.collectAsState(),
             toastState = toastState,
             back = {
-                currentItem.value = FeedbackItem.Feedback()
+                back.invoke()
             }
         )
         EasyToast(toastState)
