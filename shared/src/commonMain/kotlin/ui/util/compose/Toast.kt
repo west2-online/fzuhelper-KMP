@@ -86,15 +86,17 @@ inline fun rememberToastState(
     Toast(scope)
 }
 
+
+
 @Composable
-inline fun toastBindNetworkResult(toastState:Toast,networkResult: State<NetworkResult<String>>){
+inline fun Toast.toastBindNetworkResult(networkResult: State<NetworkResult<String>>){
     LaunchedEffect(networkResult.value.key.value){
         networkResult.value.toast(
             success = {
-                toastState.addToast(it)
+                this@toastBindNetworkResult.addToast(it)
             },
             error = {
-                toastState.addWarnToast(it.message.toString())
+                this@toastBindNetworkResult.addWarnToast(it.message.toString())
             }
         )
     }

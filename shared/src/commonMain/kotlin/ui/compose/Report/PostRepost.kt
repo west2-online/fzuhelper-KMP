@@ -50,7 +50,7 @@ fun PostReport(
     }
     val reportResponseState = viewModel.reportPostResponse.collectAsState()
     val toastState = rememberToastState()
-    toastBindNetworkResult(toastState,reportResponseState)
+    toastState.toastBindNetworkResult(reportResponseState)
     LazyColumn(
         modifier = modifier,
         horizontalAlignment = Alignment.End

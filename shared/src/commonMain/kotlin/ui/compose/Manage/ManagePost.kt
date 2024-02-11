@@ -79,8 +79,8 @@ class ManagePost(
                         horizontalPage.animateScrollToPage(horizontalPage.currentPage+1)
                     }
                 }
-                val toast = rememberToastState()
-                toastBindNetworkResult(toast,postReportData.state.collectAsState())
+                val toastState = rememberToastState()
+                toastState.toastBindNetworkResult(viewModel.openImageDelete.collectAsState())
                 postReportData.postData.let { postById ->
                     Surface(
                         modifier = Modifier

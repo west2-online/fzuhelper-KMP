@@ -52,7 +52,7 @@ fun ReportScreen(
     }
     val reportResponseState = viewModel.reportCommentResponse.collectAsState()
     val toastState = rememberToastState()
-    toastBindNetworkResult(toastState,reportResponseState)
+    toastState.toastBindNetworkResult(reportResponseState)
     Column (
         modifier = Modifier
             .fillMaxSize()

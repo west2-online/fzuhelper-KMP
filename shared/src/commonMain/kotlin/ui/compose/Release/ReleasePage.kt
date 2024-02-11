@@ -75,11 +75,10 @@ fun ReleasePageScreen(
     val toastState = rememberToastState()
     val releasePageItems = remember { mutableStateListOf<ReleasePageItem>() }
     val title = remember { mutableStateOf("") }
-    val newPostState = viewModel.newPostState.collectAsState()
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
     var preview by remember { mutableStateOf(false) }
-    toastBindNetworkResult(toastState,viewModel.newPostState.collectAsState())
+    toastState.toastBindNetworkResult(viewModel.newPostState.collectAsState())
     Column (
         modifier = Modifier
             .padding(10.dp)
@@ -107,8 +106,10 @@ fun ReleasePageScreen(
                                     Text(
                                         text = title.value,
                                         modifier = Modifier
+                                            .padding(bottom = 5.dp)
                                             .fillMaxWidth()
-                                            .wrapContentHeight(),
+                                            .wrapContentHeight()
+                                            .padding(10.dp),
                                         fontSize = 20.sp
                                     )
                                 }
@@ -125,7 +126,7 @@ fun ReleasePageScreen(
                         item {
                             Box(
                                 modifier = Modifier
-                                    .padding(bottom = 10.dp)
+                                    .padding(bottom = 5.dp)
                                     .fillMaxWidth()
                                     .wrapContentHeight()
                                     .padding(10.dp)

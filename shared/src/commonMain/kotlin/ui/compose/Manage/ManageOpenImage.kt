@@ -94,7 +94,7 @@ class ManageOpenImage(
                     when (it) {
                         0 -> {
                             val toastState = rememberToastState()
-                            toastBindNetworkResult(toastState,manageViewModel.openImageDelete.collectAsState())
+                            toastState.toastBindNetworkResult(manageViewModel.openImageDelete.collectAsState())
                             manageViewModel.openImageList.collectAsState().CollectWithContent(
                                 success = {
                                     LazyColumn(
@@ -146,7 +146,7 @@ class ManageOpenImage(
                                         }
                                 }
                                 val toastState = rememberToastState()
-                                toastBindNetworkResult(toastState,manageViewModel.openImageAdd.collectAsState())
+                                toastState.toastBindNetworkResult(manageViewModel.openImageDelete.collectAsState())
                                 manageViewModel.openImageAdd.collectAsState().CollectWithContent(
                                     content = {
                                         imageByteArray.value?: Icon(
