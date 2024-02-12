@@ -92,7 +92,6 @@ kotlin {
                 implementation(compose.material3)
 
                 implementation("com.doist.x:normalize:1.0.5")
-                implementation("io.github.KevinnZou:compose-webview:0.33.3")
                 //加密库
                 implementation("dev.whyoleg.cryptography:cryptography-core:0.2.0")
 //              //webview

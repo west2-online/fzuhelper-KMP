@@ -47,6 +47,7 @@ import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.root.RootAction
 import ui.root.RootTarget
+import ui.root.tokenJump
 import ui.util.network.CollectWithContent
 
 @Composable
@@ -147,11 +148,21 @@ private fun Carousel(
                 HorizontalPager(
                     state = pageState,
                 ) {
+                    val scope = rememberCoroutineScope()
+                    val rootAction = koinInject<RootAction>()
                     KamelImage(
                         resource = asyncPainterResource("${BaseUrlConfig.RibbonImage}/${ribbonDataList[it].Id}"),
                         null,
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .fillMaxSize()
+                            .clickable {
+                                   tokenJump(
+                                       tokenForParse = ribbonDataList[it].Action,
+                                       scope = scope,
+                                       fail = {},
+                                       rootAction = rootAction
+                                   )
+                            },
                         contentScale = ContentScale.FillBounds
                     )
                 }

@@ -24,6 +24,7 @@ import data.person.UserData.Data
 import di.SystemAction
 import di.appModule
 import initStore
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.koin.compose.KoinApplication
@@ -43,7 +44,7 @@ import ui.compose.Report.ReportType
 import ui.compose.Ribbon.RibbonRouteNode
 import ui.compose.SplashPage.SplashPageRouteNode
 import ui.compose.Weather.WeatherRouteNode
-
+import ui.compose.Webview.WebViewRouteNode
 
 
 sealed class RootTarget : Parcelable {
@@ -92,6 +93,11 @@ sealed class RootTarget : Parcelable {
 
     @Parcelize
     data object Manage : RootTarget()
+
+    @Parcelize
+    class WebView(
+        val url :String
+    ) : RootTarget()
 }
 
 class RootNode(
@@ -122,10 +128,9 @@ class RootNode(
             is RootTarget.Release -> ReleaseRouteNode(buildContext)
             is RootTarget.Report -> ReportRouteNode(buildContext,interactionTarget.type)
             is RootTarget.Ribbon -> RibbonRouteNode(buildContext)
-
             is RootTarget.SplashPage -> SplashPageRouteNode(buildContext)
             is RootTarget.Weather -> WeatherRouteNode(buildContext)
-
+            is RootTarget.WebView -> WebViewRouteNode(buildContext,interactionTarget.url)
         }
 
     @Composable
@@ -183,4 +188,25 @@ interface RootAction{
 @Composable
 fun getRootAction(): RootAction {
     return koinInject<RootAction>()
+}
+
+fun tokenJump(
+    tokenForParse:String,
+    fail:CoroutineScope.()->Unit,
+    rootAction:RootAction,
+    scope: CoroutineScope
+){
+    val result = tokenForParse.split("_FuTalk.Action_")
+    if( result.size != 2 ){
+        fail.invoke(scope)
+        return
+    }
+    result.let {
+        val action = it[1]
+        val model = it[0]
+        when(model){
+            "WEBVIEW" -> rootAction.navigateToNewTarget(RootTarget.WebView(action))
+        }
+    }
+
 }
