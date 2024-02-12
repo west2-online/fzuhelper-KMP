@@ -92,11 +92,11 @@ kotlin {
                 implementation(compose.material3)
 
                 implementation("com.doist.x:normalize:1.0.5")
-
+                implementation("io.github.KevinnZou:compose-webview:0.33.3")
                 //加密库
                 implementation("dev.whyoleg.cryptography:cryptography-core:0.2.0")
 //              //webview
-                implementation("io.github.kevinnzou:compose-webview-multiplatform:1.7.4")
+                implementation("io.github.kevinnzou:compose-webview-multiplatform:1.8.8")
 
                 implementation("com.mikepenz:multiplatform-markdown-renderer:${markdown_version}")
 
