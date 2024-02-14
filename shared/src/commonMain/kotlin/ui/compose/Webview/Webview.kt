@@ -9,6 +9,7 @@ import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
 
+//自定义浏览器
 @Composable
 fun OwnWebViewScreen(
     start : String,
@@ -23,9 +24,6 @@ fun OwnWebViewScreen(
             this.allowFileAccess = true
         }
     }
-//    BackHandler(!webNavigation.canGoBack){
-//        back.invoke()
-//    }
     WebView(
         state,
         modifier = Modifier
