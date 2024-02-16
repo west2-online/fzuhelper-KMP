@@ -33,7 +33,7 @@ import platform.UIKit.UIViewController
 import platform.darwin.NSObject
 import platform.posix.memcpy
 import ui.root.RootNode
-import ui.util.compose.FuTalkTheme
+import util.compose.FuTalkTheme
 
 
 actual fun getPlatformName(): String = "iOS"

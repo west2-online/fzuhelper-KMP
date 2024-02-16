@@ -29,11 +29,11 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import ui.root.RootAction
 import ui.root.RootTarget
-import ui.util.compose.EasyToast
-import ui.util.compose.rememberToastState
-import ui.util.compose.shimmerLoadingAnimation
-import ui.util.network.CollectWithContent
-import ui.util.network.logicWithType
+import util.compose.EasyToast
+import util.compose.rememberToastState
+import util.compose.shimmerLoadingAnimation
+import util.network.CollectWithContent
+import util.network.logicWithType
 
 class SplashPageRouteNode(
     val buildContext: BuildContext

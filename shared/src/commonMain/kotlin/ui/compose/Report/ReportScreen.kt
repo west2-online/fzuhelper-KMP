@@ -38,8 +38,8 @@ import com.bumble.appyx.utils.multiplatform.RawValue
 import data.post.PostList.Data
 import data.share.Comment
 import org.koin.compose.koinInject
-import ui.util.compose.rememberToastState
-import ui.util.compose.toastBindNetworkResult
+import util.compose.rememberToastState
+import util.compose.toastBindNetworkResult
 
 @Composable
 fun ReportScreen(

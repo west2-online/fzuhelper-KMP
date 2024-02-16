@@ -1,4 +1,4 @@
-package ui.util.compose.colorPicker
+package util.compose.colorPicker
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable

@@ -1,4 +1,4 @@
-package ui.util.network
+package util.network
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.runtime.Composable
@@ -30,11 +30,13 @@ interface NetworkResult<T> {
         val error: Throwable,
         override var showToast: Boolean = true,
         override val key: MutableState<Int> = mutableStateOf(0)
-    ):NetworkResult<T>
+    ): NetworkResult<T>
 
-    class Loading<T>( override var showToast: Boolean = true,override val key: MutableState<Int> = mutableStateOf(0)):NetworkResult<T>
+    class Loading<T>( override var showToast: Boolean = true,override val key: MutableState<Int> = mutableStateOf(0)):
+        NetworkResult<T>
 
-    class UnSend<T>( override var showToast: Boolean = true,override val key: MutableState<Int> = mutableStateOf(0)) : NetworkResult<T>
+    class UnSend<T>( override var showToast: Boolean = true,override val key: MutableState<Int> = mutableStateOf(0)) :
+        NetworkResult<T>
 
 }
 
@@ -52,7 +54,7 @@ fun <T> State<NetworkResult<T>>.CollectWithContent(
         modifier = modifier
     ){
         when(it){
-            is NetworkResult.Success<T>->{
+            is NetworkResult.Success<T> ->{
                 if (success == null){
                     content.invoke()
                 }else{
@@ -60,7 +62,7 @@ fun <T> State<NetworkResult<T>>.CollectWithContent(
                 }
 
             }
-            is NetworkResult.Error<T>->{
+            is NetworkResult.Error<T> ->{
 
                 if (error == null){
                     content.invoke()
@@ -69,7 +71,7 @@ fun <T> State<NetworkResult<T>>.CollectWithContent(
                 }
 
             }
-            is NetworkResult.Loading<T>->{
+            is NetworkResult.Loading<T> ->{
                 if (loading == null){
                     content.invoke()
                 }else{
@@ -77,7 +79,7 @@ fun <T> State<NetworkResult<T>>.CollectWithContent(
                 }
 
             }
-            is NetworkResult.UnSend<T>->{
+            is NetworkResult.UnSend<T> ->{
                 if (unSend == null){
                     content.invoke()
                 }else{
@@ -99,22 +101,22 @@ suspend fun <T> NetworkResult<T>.getNetwork(
     block:suspend ()->Unit
 ){
     when(this){
-        is NetworkResult.Success<T>->{
+        is NetworkResult.Success<T> ->{
             if (success){
                 block.invoke()
             }
         }
-        is NetworkResult.Error<T>->{
+        is NetworkResult.Error<T> ->{
             if (error){
                 block.invoke()
             }
         }
-        is NetworkResult.Loading<T>->{
+        is NetworkResult.Loading<T> ->{
             if (loading){
                 block.invoke()
             }
         }
-        is NetworkResult.UnSend<T>->{
+        is NetworkResult.UnSend<T> ->{
             if (unSend){
                 block.invoke()
             }
@@ -186,7 +188,7 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.logicIfNotLoading(
     }
 }
 
-fun <T>NetworkResult<T>.logicWithType(
+fun <T> NetworkResult<T>.logicWithType(
     success: ((T) -> Unit)? = null,
     error: ((Throwable) -> Unit)? = null,
     unSend : (() -> Unit)? = null,
@@ -208,7 +210,7 @@ fun <T>NetworkResult<T>.logicWithType(
     }
 }
 
-suspend fun <T>NetworkResult<T>.toast(
+suspend fun <T> NetworkResult<T>.toast(
     success: ((T) -> Unit)? = null,
     error: ((Throwable) -> Unit)? = null,
     unSend : (() -> Unit)? = null,

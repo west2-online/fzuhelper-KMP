@@ -10,7 +10,7 @@ import com.bumble.appyx.navigation.integration.NodeHost
 import com.bumble.appyx.navigation.platform.AndroidLifecycle
 import di.SystemAction
 import ui.root.RootNode
-import ui.util.compose.FuTalkTheme
+import util.compose.FuTalkTheme
 
 class MainActivity : NodeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

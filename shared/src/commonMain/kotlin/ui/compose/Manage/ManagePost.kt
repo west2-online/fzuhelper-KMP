@@ -51,11 +51,11 @@ import org.koin.compose.koinInject
 import ui.compose.Post.ImageContent
 import ui.compose.Post.PersonalInformationAreaInDetail
 import ui.compose.Post.Time
-import ui.util.compose.EasyToast
-import ui.util.compose.Label
-import ui.util.compose.rememberToastState
-import ui.util.compose.toastBindNetworkResult
-import ui.util.network.NetworkResult
+import util.compose.EasyToast
+import util.compose.Label
+import util.compose.rememberToastState
+import util.compose.toastBindNetworkResult
+import util.network.NetworkResult
 
 class ManagePost(
     buildContext: BuildContext

@@ -7,16 +7,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.WeatherRepository
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.network.NetworkResult
-import ui.util.network.logicIfNotLoading
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.network.NetworkResult
+import util.network.logicIfNotLoading
+import util.network.reset
 
 class WeatherViewModel(
     val repository: WeatherRepository
 ):ViewModel(){
-    private val _weatherDataOfFuZhou = CMutableStateFlow(MutableStateFlow<NetworkResult<WeatherData>>(NetworkResult.UnSend()))
+    private val _weatherDataOfFuZhou = CMutableStateFlow(MutableStateFlow<NetworkResult<WeatherData>>(
+        NetworkResult.UnSend()))
     val weatherDataOfFuZhou = _weatherDataOfFuZhou.asStateFlow()
 
     fun getFuZhouWeather(){

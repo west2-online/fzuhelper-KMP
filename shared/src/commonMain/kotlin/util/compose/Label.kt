@@ -1,4 +1,4 @@
-package ui.util.compose
+package util.compose
 
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke

@@ -18,22 +18,25 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.FeedbackRepository
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.network.NetworkResult
-import ui.util.network.loading
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.network.NetworkResult
+import util.network.loading
+import util.network.reset
 
 class FeedBackViewModel(
     private val feedbackRepository: FeedbackRepository
 ):ViewModel() {
-    private val _submitResult = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _submitResult = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val submitResult = _submitResult.asStateFlow()
 
-    private val _detailResult = CMutableStateFlow(MutableStateFlow<NetworkResult<Data>>(NetworkResult.UnSend()))
+    private val _detailResult = CMutableStateFlow(MutableStateFlow<NetworkResult<Data>>(
+        NetworkResult.UnSend()))
     val detailResult = _detailResult.asStateFlow()
 
-    private val _commentResult = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _commentResult = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val commentResult = _commentResult.asStateFlow()
 
     fun submitNewFeedback(content : String,type: FeedbackType){
@@ -96,7 +99,7 @@ enum class SubmitStatus(val value: Int, val description: String) {
 
 
 
-fun FeedbackSubmit.toSubmitResult():NetworkResult<String>{
+fun FeedbackSubmit.toSubmitResult(): NetworkResult<String> {
     val response = SubmitStatus.values().findLast {
         it.value == this.code
     }
@@ -117,7 +120,7 @@ enum class FeedbackStatus(val value: Int, val description: String) {
 }
 
 
-fun FeedbackDetail.toDetailResult():NetworkResult<Data>{
+fun FeedbackDetail.toDetailResult(): NetworkResult<Data> {
     val response = SubmitStatus.values().findLast {
         it.value == this.code
     }
@@ -136,7 +139,7 @@ enum class CommentStatus(val value: Int, val description: String) {
 }
 
 
-fun FeedbackDetailComment.toNetworkResult():NetworkResult<String>{
+fun FeedbackDetailComment.toNetworkResult(): NetworkResult<String> {
     val response = SubmitStatus.values().findLast {
         it.value == this.code
     }

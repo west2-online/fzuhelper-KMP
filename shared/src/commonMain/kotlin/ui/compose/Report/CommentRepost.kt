@@ -42,11 +42,11 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
 import ui.compose.Post.PersonalInformationAreaInList
-import ui.util.compose.EasyToast
-import ui.util.compose.rememberToastState
-import ui.util.compose.shimmerLoadingAnimation
-import ui.util.compose.toastBindNetworkResult
-import ui.util.network.toEasyTime
+import util.compose.EasyToast
+import util.compose.rememberToastState
+import util.compose.shimmerLoadingAnimation
+import util.compose.toastBindNetworkResult
+import util.network.toEasyTime
 
 @Composable
 fun CommentRepost(

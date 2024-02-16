@@ -10,14 +10,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.PostRepository
 import repository.PostStatus
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.network.NetworkResult
-import ui.util.network.logicIfNotLoading
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.network.NetworkResult
+import util.network.logicIfNotLoading
+import util.network.reset
 
 class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewModel() {
-    private val _newPostState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _newPostState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val newPostState = _newPostState.asStateFlow()
 
     //发布新的帖子
@@ -59,7 +60,7 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
 
 }
 
-fun NewPostResponse.toNetworkResult():NetworkResult<String>{
+fun NewPostResponse.toNetworkResult(): NetworkResult<String> {
     val status = PostStatus.values().find {
         it.value == this.code
     }

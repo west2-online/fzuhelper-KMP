@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import com.mikepenz.markdown.compose.Markdown
-import ui.util.compose.loadAction
+import util.compose.loadAction
 
 @Composable
 fun AboutUsScreen(

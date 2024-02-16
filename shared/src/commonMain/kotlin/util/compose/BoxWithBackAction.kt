@@ -1,4 +1,4 @@
-package ui.util.compose
+package util.compose
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Surface

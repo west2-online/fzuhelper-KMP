@@ -22,8 +22,8 @@ import com.bumble.appyx.navigation.node.ParentNode
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import org.koin.compose.koinInject
-import ui.util.compose.EasyToast
-import ui.util.compose.rememberToastState
+import util.compose.EasyToast
+import util.compose.rememberToastState
 
 @Composable
 fun FeedbackScreen(

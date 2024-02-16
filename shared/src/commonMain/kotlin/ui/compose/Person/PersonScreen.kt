@@ -45,12 +45,12 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import ui.util.compose.EasyToast
-import ui.util.compose.rememberToastState
-import ui.util.compose.shimmerLoadingAnimation
-import ui.util.network.CollectWithContent
-import ui.util.network.NetworkResult
-import ui.util.network.logicWithType
+import util.compose.EasyToast
+import util.compose.rememberToastState
+import util.compose.shimmerLoadingAnimation
+import util.network.CollectWithContent
+import util.network.NetworkResult
+import util.network.logicWithType
 import kotlin.random.Random
 
 

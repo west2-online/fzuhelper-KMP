@@ -21,12 +21,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import repository.ManageRepository
 import repository.toNetworkResult
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.flow.launchInDefault
-import ui.util.network.NetworkResult
-import ui.util.network.logicIfNotLoading
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.flow.launchInDefault
+import util.network.NetworkResult
+import util.network.logicIfNotLoading
+import util.network.reset
 
 /*
 管理界面的ViewModel
@@ -90,13 +90,16 @@ class ManageViewModel(
     }.flow
         .cachedIn(viewModelScope)
 
-    private var _openImageList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<String>>>(NetworkResult.UnSend()))
+    private var _openImageList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<String>>>(
+        NetworkResult.UnSend()))
     var openImageList = _openImageList.asStateFlow()
 
-    private var _openImageDelete = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private var _openImageDelete = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     var openImageDelete = _openImageDelete.asStateFlow()
 
-    private var _openImageAdd = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private var _openImageAdd = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     var openImageAdd = _openImageAdd.asStateFlow()
 
     fun getOpenImage(){
@@ -130,7 +133,7 @@ class ManageViewModel(
         }
     }
     //处理评论
-    fun dealComment(reportState:MutableStateFlow<NetworkResult<String>>,commentId: Int, postId:Int, result:CommentProcessResult){
+    fun dealComment(reportState:MutableStateFlow<NetworkResult<String>>, commentId: Int, postId:Int, result:CommentProcessResult){
         viewModelScope.launchInDefault {
             reportState.logicIfNotLoading {
                 repository.processComment(commentId,postId,result.value)
@@ -185,13 +188,15 @@ enum class CommentProcessResult(val value : Int){
 class PostReportData(
     val postReportContextData: PostReportContextData,
     val postData: PostData,
-    val state: MutableStateFlow<NetworkResult<String>> = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
+    val state: MutableStateFlow<NetworkResult<String>> = MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend())
 )
 
 class CommentReportData(
     val commentReportContextData: CommentReportContextData,
     val comment: Comment,
-    val state: MutableStateFlow<NetworkResult<String>> = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
+    val state: MutableStateFlow<NetworkResult<String>> = MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend())
 )
 
 data class PageLoadDataForPostReport(

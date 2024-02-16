@@ -7,18 +7,19 @@ import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import repository.RibbonRepository
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.flow.launchInDefault
-import ui.util.network.NetworkResult
-import ui.util.network.logicIfNotLoading
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.flow.launchInDefault
+import util.network.NetworkResult
+import util.network.logicIfNotLoading
+import util.network.reset
 
 class RibbonViewModel(
     private val kVault: KVault,
     private val ribbonRepository: RibbonRepository
 ):ViewModel() {
-    private val _ribbonList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<RibbonData>>>(NetworkResult.UnSend()))
+    private val _ribbonList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<RibbonData>>>(
+        NetworkResult.UnSend()))
     val ribbonList = _ribbonList.asStateFlow()
 
     fun getRibbonList(){

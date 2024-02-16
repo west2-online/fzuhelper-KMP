@@ -1,4 +1,4 @@
-package ui.util.network
+package util.network
 
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone

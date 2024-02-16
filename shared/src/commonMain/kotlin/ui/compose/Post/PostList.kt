@@ -65,7 +65,7 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
-import ui.util.network.toEasyTime
+import util.network.toEasyTime
 
 
 @Composable

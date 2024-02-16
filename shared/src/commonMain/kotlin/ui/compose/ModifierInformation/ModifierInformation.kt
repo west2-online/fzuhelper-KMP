@@ -47,9 +47,9 @@ import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import org.example.library.MR
 import org.koin.compose.koinInject
-import ui.util.compose.EasyToast
-import ui.util.compose.rememberToastState
-import ui.util.network.toast
+import util.compose.EasyToast
+import util.compose.rememberToastState
+import util.network.toast
 
 @Composable
 fun ModifierInformationScreen(

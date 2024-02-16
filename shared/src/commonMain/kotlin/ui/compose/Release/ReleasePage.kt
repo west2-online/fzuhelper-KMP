@@ -62,9 +62,9 @@ import getPlatformContext
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
-import ui.util.compose.EasyToast
-import ui.util.compose.rememberToastState
-import ui.util.compose.toastBindNetworkResult
+import util.compose.EasyToast
+import util.compose.rememberToastState
+import util.compose.toastBindNetworkResult
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

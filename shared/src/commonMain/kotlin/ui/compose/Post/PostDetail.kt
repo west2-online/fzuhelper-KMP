@@ -98,12 +98,12 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.example.library.MR
 import ui.compose.Report.ReportType
-import ui.util.compose.Toast
-import ui.util.compose.shimmerLoadingAnimation
-import ui.util.network.CollectWithContent
-import ui.util.network.NetworkResult
-import ui.util.network.toEasyTime
-import ui.util.network.toast
+import util.compose.Toast
+import util.compose.shimmerLoadingAnimation
+import util.network.CollectWithContent
+import util.network.NetworkResult
+import util.network.toEasyTime
+import util.network.toast
 
 @Composable
 fun PostDetail(

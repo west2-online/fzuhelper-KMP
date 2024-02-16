@@ -45,7 +45,7 @@ import ui.compose.Ribbon.RibbonViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.compose.Weather.WeatherViewModel
 import ui.root.RootAction
-import ui.util.compose.Toast
+import util.compose.Toast
 import viewModelDefinition
 
 class LoginClient(

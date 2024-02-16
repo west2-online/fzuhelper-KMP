@@ -7,19 +7,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import repository.ReportRepository
 import repository.ReportStatus
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.flow.launchInDefault
-import ui.util.network.NetworkResult
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.flow.launchInDefault
+import util.network.NetworkResult
+import util.network.reset
 
 class ReportViewModel(
     private val repository: ReportRepository
 ):ViewModel() {
-    private val _reportCommentResponse = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _reportCommentResponse = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val reportCommentResponse = _reportCommentResponse.asStateFlow()
 
-    private val _reportPostResponse = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _reportPostResponse = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val reportPostResponse = _reportPostResponse.asStateFlow()
 
     fun reportComment(commentId:String,typeId:Int,postId:String){
@@ -45,7 +47,7 @@ class ReportViewModel(
     }
 }
 
-fun ReportResponse.toNetworkResult():NetworkResult<String>{
+fun ReportResponse.toNetworkResult(): NetworkResult<String> {
     val data = ReportStatus.values().find {
         it.value == this.code
     }

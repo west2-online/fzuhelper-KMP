@@ -46,7 +46,7 @@ import com.bumble.appyx.navigation.node.Node
 import data.weather.Forecast
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import ui.util.network.CollectWithContent
+import util.network.CollectWithContent
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

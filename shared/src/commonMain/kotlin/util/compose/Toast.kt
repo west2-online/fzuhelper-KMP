@@ -1,4 +1,4 @@
-package ui.util.compose
+package util.compose
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -33,8 +33,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import ui.util.network.NetworkResult
-import ui.util.network.toast
+import util.network.NetworkResult
+import util.network.toast
 
 data class ToastImp(
     val icon : ImageVector? = null,

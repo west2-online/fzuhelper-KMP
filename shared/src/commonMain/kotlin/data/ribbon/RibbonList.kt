@@ -1,7 +1,7 @@
 package data.ribbon
 
 import kotlinx.serialization.Serializable
-import ui.util.network.NetworkResult
+import util.network.NetworkResult
 
 @Serializable
 data class RibbonList(

@@ -56,11 +56,11 @@ import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import org.example.library.MR
-import ui.util.compose.Toast
-import ui.util.network.CollectWithContent
-import ui.util.network.NetworkResult
-import ui.util.network.toEasyTime
-import ui.util.network.toast
+import util.compose.Toast
+import util.network.CollectWithContent
+import util.network.NetworkResult
+import util.network.toEasyTime
+import util.network.toast
 
 const val SpaceWeight = 0.2f
 @Composable

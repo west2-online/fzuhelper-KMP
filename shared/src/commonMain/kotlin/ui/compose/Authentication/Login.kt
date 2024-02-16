@@ -45,9 +45,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
 import org.example.library.MR
-import ui.util.compose.EasyToast
-import ui.util.compose.rememberToastState
-import ui.util.network.NetworkResult
+import util.compose.EasyToast
+import util.compose.rememberToastState
+import util.network.NetworkResult
 
 @Composable
 fun Login(

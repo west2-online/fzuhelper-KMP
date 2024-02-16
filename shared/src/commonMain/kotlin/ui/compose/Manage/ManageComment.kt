@@ -52,10 +52,10 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import ui.util.compose.Label
-import ui.util.compose.shimmerLoadingAnimation
-import ui.util.network.NetworkResult
-import ui.util.network.toEasyTime
+import util.compose.Label
+import util.compose.shimmerLoadingAnimation
+import util.network.NetworkResult
+import util.network.toEasyTime
 
 //管理评论举报页面
 class ManageCommentReport(

@@ -54,10 +54,10 @@ import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
 import org.example.library.MR
 import repository.TokenData
-import ui.util.compose.EasyToast
-import ui.util.compose.Toast
-import ui.util.network.CollectWithContent
-import ui.util.network.NetworkResult
+import util.compose.EasyToast
+import util.compose.Toast
+import util.network.CollectWithContent
+import util.network.NetworkResult
 
 @Composable
 fun Register(

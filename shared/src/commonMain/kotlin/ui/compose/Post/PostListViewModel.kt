@@ -18,7 +18,7 @@ import repository.PostRepository
 import ui.compose.Report.ReportType
 import ui.root.RootAction
 import ui.root.RootTarget
-import ui.util.network.NetworkResult
+import util.network.NetworkResult
 
 class PostListViewModel(
     private val postRepository:PostRepository,
@@ -207,7 +207,7 @@ class EasyPageSourceForCommentTree(
     }
 }
 
-fun PostCommentNew.toNetworkResult():NetworkResult<String>{
+fun PostCommentNew.toNetworkResult(): NetworkResult<String> {
     val result = CommentSubmitStatus.values().find {
         it.value == this.code
     }

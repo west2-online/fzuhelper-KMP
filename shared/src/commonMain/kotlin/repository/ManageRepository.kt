@@ -15,7 +15,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.parameters
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import ui.util.network.NetworkResult
+import util.network.NetworkResult
 
 class ManageRepository(
     val client: HttpClient
@@ -90,7 +90,7 @@ enum class ProcessPostStatus(val value: Int, val describe: String) {
     TheProcessingWasSuccessful(3, "处理成功")
 }
 
-fun ProcessPost.toNetworkResult():NetworkResult<String>{
+fun ProcessPost.toNetworkResult(): NetworkResult<String> {
     val result = ProcessPostStatus.values().find {
         this.code == it.value
     }
@@ -112,7 +112,7 @@ enum class GetImageStatus(val value: Int, val describe: String) {
     TheListOfImagesWasObtained(1,"获取成功")
 }
 
-fun OpenImageList.toNetworkResult():NetworkResult<List<String>>{
+fun OpenImageList.toNetworkResult(): NetworkResult<List<String>> {
     val result = GetImageStatus.values().find {
         this.code == it.value
     }
@@ -135,7 +135,7 @@ enum class DeletionResult(val value: Int, val description: String) {
     TheDeletionIsSuccessful(4, "删除成功")
 }
 
-fun OpenImageDelete.toNetworkResult():NetworkResult<String>{
+fun OpenImageDelete.toNetworkResult(): NetworkResult<String> {
     val result = DeletionResult.values().find {
         this.code == it.value
     }
@@ -159,7 +159,7 @@ enum class OpenImageAddResult(val value: Int, val description: String) {
     SlashPageSaveSuccess(3, "斜杠页面保存失败");
 }
 
-fun OpenImageAdd.toNetworkResult():NetworkResult<String>{
+fun OpenImageAdd.toNetworkResult(): NetworkResult<String> {
     val result = OpenImageAddResult.values().find {
         this.code == it.value
     }

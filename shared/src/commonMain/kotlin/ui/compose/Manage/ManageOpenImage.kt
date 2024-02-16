@@ -49,11 +49,11 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
-import ui.util.compose.EasyToast
-import ui.util.compose.rememberToastState
-import ui.util.compose.toastBindNetworkResult
-import ui.util.network.CollectWithContent
-import ui.util.network.NetworkResult
+import util.compose.EasyToast
+import util.compose.rememberToastState
+import util.compose.toastBindNetworkResult
+import util.network.CollectWithContent
+import util.network.NetworkResult
 
 class ManageOpenImage(
     buildContext: BuildContext

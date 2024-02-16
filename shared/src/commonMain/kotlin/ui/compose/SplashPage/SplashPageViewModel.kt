@@ -7,16 +7,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.SplashRepository
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.network.NetworkResult
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.network.NetworkResult
+import util.network.reset
 
 class SplashPageViewModel(
     private val splashRepository: SplashRepository,
     private val kVault: KVault,
 ):ViewModel() {
-    private val _imageState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _imageState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val imageState = _imageState.asStateFlow()
 
     fun getSplashPageImage(){

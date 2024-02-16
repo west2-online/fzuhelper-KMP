@@ -1,4 +1,4 @@
-package ui.util.flow
+package util.flow
 
 import config.BaseUrlConfig
 import kotlinx.coroutines.CoroutineScope

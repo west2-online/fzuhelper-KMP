@@ -1,4 +1,4 @@
-package ui.util.compose
+package util.compose
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
@@ -92,7 +92,7 @@ fun FuTalkTheme(
     )
 }
 
-fun Colors.copy(theme:Theme): Colors {
+fun Colors.copy(theme: Theme): Colors {
     return this.copy(
         primary = theme.primary,
         primaryVariant = theme.primaryVariant,
@@ -139,7 +139,7 @@ interface Theme{
         override val background: Color,
         override val onBackground: Color ,
         override val isLight: Boolean = true
-    ):Theme
+    ): Theme
     class DarkTheme(
         override val primary: Color  ,
         override val onPrimary: Color ,
@@ -154,7 +154,7 @@ interface Theme{
         override val background: Color,
         override val onBackground: Color ,
         override val isLight: Boolean = true
-    ):Theme
+    ): Theme
 //    class LightTheme : Theme {
 //        override val primary: Color = Color( 11, 200, 242) // RGB(197, 225, 165)
 //        override val primaryVariant: Color = Color(51, 113, 243) // RGB(174, 213, 129)

@@ -22,12 +22,12 @@ import repository.PostRepository
 import ui.compose.Report.ReportType
 import ui.root.RootAction
 import ui.root.RootTarget
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.flow.launchInDefault
-import ui.util.network.NetworkResult
-import ui.util.network.logicIfNotLoading
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.flow.launchInDefault
+import util.network.NetworkResult
+import util.network.logicIfNotLoading
+import util.network.reset
 
 class PostDetailViewModel(
     private val client: HttpClient,
@@ -35,7 +35,8 @@ class PostDetailViewModel(
     private val rootAction: RootAction
 ):ViewModel() {
 
-    private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostById>>(NetworkResult.UnSend()))
+    private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostById>>(
+        NetworkResult.UnSend()))
     val currentPostDetail = _currentPostDetail.asStateFlow()
 
     private val _postCommentPreviewFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, Data>?>(null))
@@ -44,7 +45,8 @@ class PostDetailViewModel(
     private val _postCommentTreeFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, data.post.PostCommentTree.Data>?>(null))
     var postCommentTreeFlow = _postCommentTreeFlow.asStateFlow()
 
-    private val _commentSubmitState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _commentSubmitState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val commentSubmitState = _commentSubmitState.asStateFlow()
 
     fun initPostCommentPreview(postId: String){

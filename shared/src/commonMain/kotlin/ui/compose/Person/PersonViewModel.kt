@@ -11,18 +11,20 @@ import kotlinx.coroutines.launch
 import repository.PersonRepository
 import ui.root.RootAction
 import ui.root.RootTarget
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.network.NetworkResult
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.network.NetworkResult
+import util.network.reset
 
 class PersonViewModel(
     private val personRepository: PersonRepository,
     private val rootAction: RootAction
 ):ViewModel() {
-    private val _userData = CMutableStateFlow(MutableStateFlow<NetworkResult<UserData>>(NetworkResult.UnSend()))
+    private val _userData = CMutableStateFlow(MutableStateFlow<NetworkResult<UserData>>(
+        NetworkResult.UnSend()))
     val userData = _userData.asStateFlow()
-    private val _personIdentityData = CMutableStateFlow(MutableStateFlow<NetworkResult<PersonIdentityData>>(NetworkResult.UnSend()))
+    private val _personIdentityData = CMutableStateFlow(MutableStateFlow<NetworkResult<PersonIdentityData>>(
+        NetworkResult.UnSend()))
     val identityData = _personIdentityData.asStateFlow()
 
     fun getUserData(id:String?){
@@ -117,10 +119,10 @@ enum class UserDataResult(val value:Int,val descrie:String){
     SerialNumberFailedInUser(3,"序列号失败"),
 }
 
-fun UserDataResult.toNetworkResult(userData: UserData):NetworkResult<UserData>{
+fun UserDataResult.toNetworkResult(userData: UserData): NetworkResult<UserData> {
     return when(this.value){
-        0,2,3->NetworkResult.Error<UserData>(Throwable("获取失败"))
-        1->NetworkResult.Success<UserData>(userData)
+        0,2,3-> NetworkResult.Error<UserData>(Throwable("获取失败"))
+        1-> NetworkResult.Success<UserData>(userData)
         else -> NetworkResult.Error<UserData>(Throwable("未知错误"))
     }
 }
@@ -130,7 +132,7 @@ enum class IdentityDataResult(val value:Int,val descrie:String){
     TheIdentityInformationWasSuccessfullyObtained(1, "获取身份成功")
 }
 
-fun IdentityDataResult.toNetworkResult(personIdentityData: PersonIdentityData):NetworkResult<PersonIdentityData>{
+fun IdentityDataResult.toNetworkResult(personIdentityData: PersonIdentityData): NetworkResult<PersonIdentityData> {
     return when(this.value){
         0 -> NetworkResult.Error<PersonIdentityData>(Throwable("获取失败"))
         1 -> NetworkResult.Success<PersonIdentityData>(personIdentityData)

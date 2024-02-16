@@ -48,7 +48,8 @@ import org.koin.compose.koinInject
 import ui.root.RootAction
 import ui.root.RootTarget
 import ui.root.tokenJump
-import ui.util.network.CollectWithContent
+import util.math.takeover
+import util.network.CollectWithContent
 
 @Composable
 fun Ribbon(
@@ -141,7 +142,7 @@ private fun Carousel(
                     while (true) {
                         delay(4000)
                         coroutineScope.launch {
-                            pageState.animateScrollToPage((pageState.currentPage + 1) % ribbonDataList.size)
+                            pageState.animateScrollToPage((pageState.currentPage + 1).takeover(ribbonDataList.size)?:0 )
                         }
                     }
                 }

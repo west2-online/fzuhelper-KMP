@@ -10,18 +10,20 @@ import kotlinx.coroutines.launch
 import repository.ModifierAvatarStatus
 import repository.ModifierDataStatus
 import repository.ModifierInformationRepository
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.network.NetworkResult
-import ui.util.network.logicIfNotLoading
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.network.NetworkResult
+import util.network.logicIfNotLoading
+import util.network.reset
 
 class ModifierInformationViewModel(val repository : ModifierInformationRepository) :ViewModel(){
 
-    private val _modifierUserdataState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _modifierUserdataState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val modifierUserdataState = _modifierUserdataState.asStateFlow()
 
-    private val _modifierAvatarState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _modifierAvatarState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val modifierAvatarState = _modifierAvatarState.asStateFlow()
 
     fun modifierUserdata(username:String, age:String, grade:String, location:String){
@@ -52,7 +54,7 @@ class ModifierInformationViewModel(val repository : ModifierInformationRepositor
 
 }
 
-fun ModifierData.toNetworkResult():NetworkResult<String>{
+fun ModifierData.toNetworkResult(): NetworkResult<String> {
     val response = ModifierDataStatus.values().find {
         it.value == this.code
     }
@@ -66,7 +68,7 @@ fun ModifierData.toNetworkResult():NetworkResult<String>{
     return NetworkResult.Error(Throwable("修改失败"))
 }
 
-fun ModifierAvatar.toNetworkResult():NetworkResult<String>{
+fun ModifierAvatar.toNetworkResult(): NetworkResult<String> {
     val response = ModifierAvatarStatus.values().find {
         it.value == this.code
     }

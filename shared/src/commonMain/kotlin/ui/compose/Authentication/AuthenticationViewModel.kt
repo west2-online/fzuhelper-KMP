@@ -14,10 +14,10 @@ import repository.LoginRepository
 import repository.TokenData
 import ui.root.RootAction
 import ui.root.RootTarget
-import ui.util.flow.catchWithMassage
-import ui.util.flow.collectWithMassage
-import ui.util.network.NetworkResult
-import ui.util.network.reset
+import util.flow.catchWithMassage
+import util.flow.collectWithMassage
+import util.network.NetworkResult
+import util.network.reset
 
 
 class AuthenticationViewModel(
@@ -28,20 +28,25 @@ class AuthenticationViewModel(
     private val _captcha = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     val captcha = _captcha.asStateFlow()
 
-    private val _registerState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _registerState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val registerState = _registerState.asStateFlow()
 
-    private val _studentCaptcha = CMutableStateFlow(MutableStateFlow<NetworkResult<ImageBitmap>>(NetworkResult.UnSend()))
+    private val _studentCaptcha = CMutableStateFlow(MutableStateFlow<NetworkResult<ImageBitmap>>(
+        NetworkResult.UnSend()))
     val studentCaptcha = _studentCaptcha.asStateFlow()
 
-    private val _verifyStudentIDState = CMutableStateFlow(MutableStateFlow<NetworkResult<TokenData>>(NetworkResult.UnSend()))
+    private val _verifyStudentIDState = CMutableStateFlow(MutableStateFlow<NetworkResult<TokenData>>(
+        NetworkResult.UnSend()))
     val verifyStudentIDState = _verifyStudentIDState.asStateFlow()
 
 
-    private val _loginState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _loginState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val loginState = _loginState.asStateFlow()
 
-    private val _loginCaptcha = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    private val _loginCaptcha = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
     val loginCaptcha = _loginCaptcha.asStateFlow()
 
     fun getRegisterCaptcha(email:String){
@@ -207,7 +212,7 @@ enum class RegistrationStatus(val value: Int, val description: String,val descri
     TheEmailIsFormatErrorWhenAskFoCaptchaWhenLogin(24, "申请验证码时，邮箱格式错误")
 }
 
-fun RegistrationStatus.toNetworkResult():NetworkResult<String>{
+fun RegistrationStatus.toNetworkResult(): NetworkResult<String> {
     return when(this.value){
         0,1,24,12,20,11 -> if(this.descriptionForToast!=null) NetworkResult.Success(this.descriptionForToast) else NetworkResult.Success(this.description)
         else -> if(this.descriptionForToast!=null) NetworkResult.Error(Throwable(this.descriptionForToast)) else NetworkResult.Error(
