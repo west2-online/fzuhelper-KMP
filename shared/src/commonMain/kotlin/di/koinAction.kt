@@ -163,10 +163,18 @@ fun appModule(
         val authPhase = PipelinePhase("Auth")
         client.receivePipeline.insertPhaseBefore(HttpReceivePipeline.Before,authPhase)
         client.receivePipeline.intercept(authPhase){
-            if(it.status.value in 555..559){
+            if(it.status.value == 555){
                 val kVault = get<KVault>()
                 kVault.clear()
                 get<RootAction>().reLogin()
+            }
+            if(it.status.value == 556){
+                val kVault = get<KVault>()
+                kVault.clear()
+                get<RootAction>().reLogin()
+            }
+            if(it.status.value == 557){
+                get<RootAction>().navigateBack()
             }
         }
         return@single client

@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
 import com.bumble.appyx.components.backstack.operation.newRoot
+import com.bumble.appyx.components.backstack.operation.pop
 import com.bumble.appyx.components.backstack.operation.push
 import com.bumble.appyx.components.backstack.operation.replace
 import com.bumble.appyx.components.backstack.ui.fader.BackStackFader
@@ -142,6 +143,7 @@ class RootNode(
                     override fun navigateToNewTarget(rootTarget: RootTarget) {
                         scope.launch {
                             backStack.push(rootTarget)
+
                         }
                     }
 
@@ -149,8 +151,12 @@ class RootNode(
                         scope.launch {
                             backStack.replace(target = rootTarget)
                         }
+
                     }
 
+                    override fun navigateBack() {
+                        backStack.pop()
+                    }
                     override fun canBack() = backStack.canHandeBackPress()
 
                     override fun reLogin() {
@@ -181,6 +187,7 @@ class RootNode(
 interface RootAction{
     fun navigateToNewTarget(rootTarget : RootTarget)
     fun replaceNewTarget(rootTarget : RootTarget)
+    fun navigateBack()
     fun canBack():StateFlow<Boolean>
     fun reLogin()
 }
