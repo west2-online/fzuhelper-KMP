@@ -152,7 +152,7 @@ private fun Carousel(
                     val scope = rememberCoroutineScope()
                     val rootAction = koinInject<RootAction>()
                     KamelImage(
-                        resource = asyncPainterResource("${BaseUrlConfig.RibbonImage}/${ribbonDataList[it].Id}"),
+                        resource = asyncPainterResource("${BaseUrlConfig.RibbonImage}/${ribbonDataList[it].Image}"),
                         null,
                         modifier = Modifier
                             .fillMaxSize()

@@ -5,5 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class RibbonData(
     val Action: String,
-    val Id: Int
+    val Id: Int,
+    val Image : String
 )
