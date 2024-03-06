@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import app.cash.paging.compose.LazyPagingItems
+import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
 import config.BaseUrlConfig.PostImage
 import data.post.PostList.Data
@@ -66,6 +67,27 @@ import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import util.network.toEasyTime
+
+class PostListVoyagerScreen(
+    val modifier: Modifier = Modifier,
+    val state: LazyListState,
+    val postListFlow: LazyPagingItems<Data>,
+    val navigateToRelease: () -> Unit,
+    val navigateToReport: (Data) -> Unit,
+    val navigateToNewsDetail: (String) -> Unit,
+):Screen{
+    @Composable
+    override fun Content() {
+        PostList(
+            modifier = modifier,
+            state = state,
+            postListFlow = postListFlow,
+            navigateToRelease = navigateToRelease,
+            navigateToReport = navigateToReport,
+            navigateToNewsDetail  = navigateToNewsDetail,
+        )
+    }
+}
 
 
 @Composable

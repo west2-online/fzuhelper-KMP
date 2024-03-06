@@ -199,7 +199,6 @@ private fun Carousel(
 }
 
 enum class Functions(
-
     val functionName: String,
     val painter: ImageResource,
     val rootNavTarget:RootTarget

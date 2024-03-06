@@ -106,6 +106,26 @@ kotlin {
                 implementation("com.bumble.appyx:backstack:$appyx_version")
                 implementation("com.bumble.appyx:spotlight:$appyx_version")
 //                api("com.bumble.appyx:utils-material3:$appyx_version")
+                //voyager
+
+                val voyagerVersion = "1.0.0"
+
+                // Multiplatform
+
+                // Navigator
+                implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
+
+                // Screen Model
+                implementation("cafe.adriel.voyager:voyager-screenmodel:$voyagerVersion")
+
+                // BottomSheetNavigator
+                implementation("cafe.adriel.voyager:voyager-bottom-sheet-navigator:$voyagerVersion")
+
+                // TabNavigator
+                implementation("cafe.adriel.voyager:voyager-tab-navigator:$voyagerVersion")
+
+                // Transitions
+                implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
             }
         }
         val androidMain by getting {

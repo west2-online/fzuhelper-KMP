@@ -7,6 +7,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import cafe.adriel.voyager.navigator.Navigator
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
 import com.bumble.appyx.components.backstack.operation.newRoot
@@ -26,6 +27,7 @@ import di.SystemAction
 import di.appModule
 import initStore
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.koin.compose.KoinApplication
@@ -38,6 +40,7 @@ import ui.compose.Manage.ManageRouteNode
 import ui.compose.Massage.MassageRouteNode
 import ui.compose.ModifierInformation.ModifierInformationRouteNode
 import ui.compose.Person.PersonRouteNode
+import ui.compose.Post.PostVoyagerScreen
 import ui.compose.QRCode.QRCodeRouteNode
 import ui.compose.Release.ReleaseRouteNode
 import ui.compose.Report.ReportRouteNode
@@ -216,4 +219,42 @@ fun tokenJump(
         }
     }
 
+}
+
+@Composable
+fun RootUi(
+    systemAction: SystemAction
+){
+    val scope = rememberCoroutineScope()
+    KoinApplication(application = {
+        modules(appModule(
+            object : RootAction{
+                override fun navigateToNewTarget(rootTarget: RootTarget) {
+
+                }
+
+                override fun replaceNewTarget(rootTarget: RootTarget) {
+
+                }
+
+                override fun navigateBack() {
+
+                }
+                override fun canBack() = MutableStateFlow(true)
+
+                override fun reLogin() {
+                    initStore().clear()
+                }
+            },
+            systemAction = systemAction
+        ))
+    }) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background)
+        ){
+            Navigator(PostVoyagerScreen())
+        }
+    }
 }
