@@ -2,6 +2,7 @@ package di
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import cafe.adriel.voyager.navigator.Navigator
 import com.liftric.kvault.KVault
 import config.BaseUrlConfig
 import configureForPlatform
@@ -123,13 +124,17 @@ class SystemAction(
 
 fun appModule(
     rootAction: RootAction,
-    systemAction: SystemAction
+    systemAction: SystemAction,
+    navigator: Navigator
 ) = module {
     single {
         rootAction
     }
     single {
         systemAction
+    }
+    single {
+        navigator
     }
     single {
         val client = HttpClient{

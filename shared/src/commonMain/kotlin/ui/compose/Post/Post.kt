@@ -158,6 +158,8 @@ interface PostItem{
 }
 
 object PostVoyagerScreen : Tab {
+
+
     override val options: TabOptions
         @Composable
         get() {
@@ -171,9 +173,9 @@ object PostVoyagerScreen : Tab {
                 )
             }
         }
+
     @Composable
     override fun Content() {
-
         val toastState = rememberToastState()
         Box(
             modifier = Modifier
