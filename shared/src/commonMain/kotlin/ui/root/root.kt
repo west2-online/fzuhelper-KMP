@@ -40,7 +40,6 @@ import ui.compose.Manage.ManageRouteNode
 import ui.compose.Massage.MassageRouteNode
 import ui.compose.ModifierInformation.ModifierInformationRouteNode
 import ui.compose.Person.PersonRouteNode
-import ui.compose.Post.PostVoyagerScreen
 import ui.compose.QRCode.QRCodeRouteNode
 import ui.compose.Release.ReleaseRouteNode
 import ui.compose.Report.ReportRouteNode
@@ -245,7 +244,7 @@ fun RootUi(
                 .fillMaxSize()
                 .background(MaterialTheme.colors.background)
         ){
-            Navigator(PostVoyagerScreen())
+            Navigator(ui.compose.Main.Main)
         }
     }
 }

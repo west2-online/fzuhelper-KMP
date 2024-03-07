@@ -43,6 +43,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.tab.CurrentTab
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabNavigator
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
 import com.bumble.appyx.components.backstack.operation.replace
@@ -56,9 +60,11 @@ import com.bumble.appyx.utils.multiplatform.Parcelize
 import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.launch
 import org.example.library.MR
+import ui.compose.AboutUs.AboutUsVoyagerScreen
 import ui.compose.Massage.MassageRouteNode
 import ui.compose.Person.PersonRouteNode
 import ui.compose.Post.PostRouteTarget
+import ui.compose.Post.PostVoyagerScreen
 import ui.compose.Ribbon.RibbonRouteNode
 
 
@@ -66,19 +72,22 @@ enum class MainItems(
     val tag : String,
     val unSelectImageVector: ImageVector,
     val selectImageVector: ImageVector,
-    val correspondingNav:MainNav
+    val correspondingNav:MainNav,
+    val tab:Tab = PostVoyagerScreen
 ){
     POST(
         "主页",
         unSelectImageVector = Icons.Outlined.Home,
         selectImageVector = Icons.Filled.Home,
-        correspondingNav = MainNav.Post
+        correspondingNav = MainNav.Post,
+        PostVoyagerScreen
     ),
     ACTION(
         "功能",
         unSelectImageVector = Icons.Outlined.Share,
         selectImageVector = Icons.Filled.Share,
-        correspondingNav = MainNav.Action
+        correspondingNav = MainNav.Action,
+        AboutUsVoyagerScreen
     ),
     MASSAGE(
         "消息",
@@ -232,3 +241,89 @@ class MainRouteNode(
         )
     }
 }
+
+
+object Main : Screen{
+    @Composable
+    override fun Content() {
+        TabNavigator(PostVoyagerScreen) {
+            val scope = rememberCoroutineScope()
+            val scaffoldState = rememberScaffoldState()
+            Scaffold(
+                content = {
+                    CurrentTab()
+                },
+                bottomBar = {
+                    BottomNavigation {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(1f)
+                                .padding(10.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable{
+                                    scope.launch {
+                                        scaffoldState.drawerState.open()
+                                    }
+                                }
+                        ){
+                            Image(
+                                painter = painterResource(MR.images.FuTalk),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .align(Alignment.Center)
+                            )
+                        }
+                        MainItems.values().forEachIndexed { _, item ->
+                            BottomNavigationItem(
+                                icon = {
+                                    val imageVector = remember(it.current) {
+                                        mutableStateOf(
+                                            if( it.current == item.tab ){
+                                                item.selectImageVector
+                                            } else{
+                                                item.unSelectImageVector
+                                            }
+                                        )
+                                    }
+                                    Crossfade (
+                                        imageVector.value
+                                    ){
+                                        Icon(
+                                            it,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                        )
+                                    }
+                                },
+                                label = { Text(item.tag) },
+                                selected = it.current == item.tab,
+                                onClick = {
+                                    it.current = item.tab
+                                },
+                                selectedContentColor = MaterialTheme.colors.primaryVariant,
+                                modifier = Modifier
+                            )
+                        }
+                    }
+                },
+                drawerContent = {
+                    MainDrawer(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(all = 10.dp),
+                    )
+                },
+                scaffoldState = scaffoldState
+            )
+        }
+    }
+
+}
+
+
+
+
+
+

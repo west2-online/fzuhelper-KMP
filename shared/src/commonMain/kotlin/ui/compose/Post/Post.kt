@@ -4,12 +4,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import app.cash.paging.compose.collectAsLazyPagingItems
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.navigator.currentOrThrow
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
 import com.bumble.appyx.components.backstack.operation.push
@@ -20,6 +21,7 @@ import com.bumble.appyx.navigation.node.ParentNode
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import org.koin.compose.koinInject
+import ui.compose.Main.MainItems
 import ui.compose.Report.ReportType
 import util.compose.EasyToast
 import util.compose.rememberToastState
@@ -155,10 +157,23 @@ interface PostItem{
     class PostDetail(var id:String):PostItem
 }
 
-class PostVoyagerScreen(): Screen {
+object PostVoyagerScreen : Tab {
+    override val options: TabOptions
+        @Composable
+        get() {
+            val title = MainItems.POST.tag
+            val icon = rememberVectorPainter(MainItems.POST.selectImageVector)
+            return remember {
+                TabOptions(
+                    index = 0u,
+                    title = title,
+                    icon = icon
+                )
+            }
+        }
     @Composable
     override fun Content() {
-        val navigator = LocalNavigator.currentOrThrow
+
         val toastState = rememberToastState()
         Box(
             modifier = Modifier
@@ -174,12 +189,6 @@ class PostVoyagerScreen(): Screen {
                 navigateToReport = {
                     TODO()
                 },
-                navigateToNewsDetail = { postId ->
-                    navigator.push(PostDetailVoyagerScreen(
-                        id = postId,
-                        modifier = Modifier.fillMaxSize()
-                    ))
-                }
             ))
             EasyToast(toastState)
         }
