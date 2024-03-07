@@ -21,7 +21,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
+import ui.compose.Main.Main
 import ui.compose.Report.ReportType
+import ui.compose.SplashPage.SplashPageVoyagerScreen
 
 
 sealed class RootTarget : Parcelable {
@@ -86,6 +88,7 @@ interface RootAction{
     fun navigateBack()
     fun canBack():StateFlow<Boolean>
     fun reLogin()
+    fun navigateFormSplashToMainPage()
 }
 
 @Composable
@@ -121,7 +124,7 @@ fun RootUi(
             .fillMaxSize()
             .background(MaterialTheme.colors.background)
     ){
-        Navigator(ui.compose.Main.Main){ navigate ->
+        Navigator(SplashPageVoyagerScreen()){ navigate ->
             val scope = rememberCoroutineScope()
             KoinApplication(application = {
                 modules(appModule(
@@ -132,6 +135,9 @@ fun RootUi(
                         override fun canBack() = MutableStateFlow(true)
                         override fun reLogin() {
                             initStore().clear()
+                        }
+                        override fun navigateFormSplashToMainPage() {
+                            navigate.replaceAll(Main)
                         }
                     },
                     systemAction = systemAction,
