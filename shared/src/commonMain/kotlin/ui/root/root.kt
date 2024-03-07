@@ -135,6 +135,7 @@ class RootNode(
             is RootTarget.SplashPage -> SplashPageRouteNode(buildContext)
             is RootTarget.Weather -> WeatherRouteNode(buildContext)
             is RootTarget.WebView -> WebViewRouteNode(buildContext,interactionTarget.url)
+            else -> WebViewRouteNode(buildContext,"")
         }
 
     @Composable
@@ -218,7 +219,6 @@ fun tokenJump(
             "WEBVIEW" -> rootAction.navigateToNewTarget(RootTarget.WebView(action))
         }
     }
-
 }
 
 @Composable
@@ -229,19 +229,10 @@ fun RootUi(
     KoinApplication(application = {
         modules(appModule(
             object : RootAction{
-                override fun navigateToNewTarget(rootTarget: RootTarget) {
-
-                }
-
-                override fun replaceNewTarget(rootTarget: RootTarget) {
-
-                }
-
-                override fun navigateBack() {
-
-                }
+                override fun navigateToNewTarget(rootTarget: RootTarget) {}
+                override fun replaceNewTarget(rootTarget: RootTarget) {}
+                override fun navigateBack() {}
                 override fun canBack() = MutableStateFlow(true)
-
                 override fun reLogin() {
                     initStore().clear()
                 }
