@@ -61,14 +61,14 @@ import com.bumble.appyx.utils.multiplatform.Parcelize
 import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.launch
 import org.example.library.MR
+import ui.compose.Action.RibbonRouteNode
+import ui.compose.Action.ActionVoyagerScreen
 import ui.compose.Massage.MassageRouteNode
 import ui.compose.Massage.MassageVoyagerScreen
 import ui.compose.Person.PersonRouteNode
 import ui.compose.Person.PersonVoyagerScreen
 import ui.compose.Post.PostRouteTarget
 import ui.compose.Post.PostVoyagerScreen
-import ui.compose.Ribbon.RibbonRouteNode
-import ui.compose.Ribbon.RibbonVoyagerScreen
 
 
 enum class MainItems(
@@ -338,7 +338,7 @@ fun RowScope.BottomActionTab(){
         icon = {
             val imageVector = remember(currentTabNavigator.current) {
                 mutableStateOf(
-                    if( currentTabNavigator.current is RibbonVoyagerScreen ){
+                    if( currentTabNavigator.current is ActionVoyagerScreen ){
                         item.selectImageVector
                     } else{
                         item.unSelectImageVector
@@ -356,9 +356,9 @@ fun RowScope.BottomActionTab(){
             }
         },
         label = { Text(item.tag) },
-        selected = currentTabNavigator.current is RibbonVoyagerScreen,
+        selected = currentTabNavigator.current is ActionVoyagerScreen,
         onClick = {
-            currentTabNavigator.current = RibbonVoyagerScreen
+            currentTabNavigator.current = ActionVoyagerScreen
         },
         selectedContentColor = MaterialTheme.colors.primaryVariant,
         modifier = Modifier

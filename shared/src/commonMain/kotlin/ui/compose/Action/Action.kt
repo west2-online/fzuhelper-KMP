@@ -1,4 +1,4 @@
-package ui.compose.Ribbon
+package ui.compose.Action
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -54,7 +54,7 @@ import util.math.takeover
 import util.network.CollectWithContent
 
 @Composable
-fun Ribbon(
+fun Action(
     modifier: Modifier,
 ){
     val rootAction = koinInject<RootAction>()
@@ -115,7 +115,7 @@ private fun Carousel(
     modifier: Modifier = Modifier,
     refreshCarousel:()->Unit = {},
 ) {
-    val viewModel = koinInject<RibbonViewModel>()
+    val viewModel = koinInject<ActionViewModel>()
     LaunchedEffect(Unit){
         viewModel.initRibbonList()
     }
@@ -221,7 +221,7 @@ class RibbonRouteNode(
 ){
     @Composable
     override fun View(modifier: Modifier) {
-        Ribbon(
+        Action(
             modifier = modifier
                 .fillMaxSize()
                 .padding(10.dp)
@@ -229,7 +229,7 @@ class RibbonRouteNode(
     }
 }
 
-object RibbonVoyagerScreen : Tab {
+object ActionVoyagerScreen : Tab {
     override val options: TabOptions
         @Composable
         get(){
@@ -242,7 +242,7 @@ object RibbonVoyagerScreen : Tab {
 
     @Composable
     override fun Content() {
-        Ribbon(
+        Action(
             modifier = Modifier
                 .fillMaxSize()
         )

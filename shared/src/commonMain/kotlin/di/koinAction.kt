@@ -42,7 +42,7 @@ import ui.compose.Post.PostDetailViewModel
 import ui.compose.Post.PostListViewModel
 import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Report.ReportViewModel
-import ui.compose.Ribbon.RibbonViewModel
+import ui.compose.Action.ActionViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.compose.Weather.WeatherViewModel
 import ui.root.RootAction
@@ -249,7 +249,7 @@ fun Module.viewModel(){
         AuthenticationViewModel( get(),get(),get())
     }
     single {
-        RibbonViewModel( get(),get())
+        ActionViewModel( get(),get())
     }
     single {
         SplashPageViewModel(get(),get())

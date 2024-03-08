@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.screen.Screen
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import data.weather.Forecast
@@ -390,6 +391,13 @@ class WeatherRouteNode(
 ){
     @Composable
     override fun View(modifier: Modifier) {
+        WeatherScreen()
+    }
+}
+
+object WeatherVoyagerScreen:Screen{
+    @Composable
+    override fun Content() {
         WeatherScreen()
     }
 }
