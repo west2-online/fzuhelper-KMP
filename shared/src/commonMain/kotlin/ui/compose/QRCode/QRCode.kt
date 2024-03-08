@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import io.github.alexzhirkevich.qrose.options.QrBallShape
@@ -287,5 +288,15 @@ class QRCodeRouteNode(
             modifier = modifier
         )
 
+    }
+}
+
+object QRCodeVoyagerScreen:Screen{
+    @Composable
+    override fun Content() {
+        QRCodeScreen(
+            modifier = Modifier
+                .fillMaxSize()
+        )
     }
 }
