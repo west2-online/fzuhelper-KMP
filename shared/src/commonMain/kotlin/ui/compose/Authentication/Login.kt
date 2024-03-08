@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,8 +44,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.compose.painterResource
 import org.example.library.MR
+import org.koin.compose.koinInject
 import util.compose.EasyToast
 import util.compose.rememberToastState
 import util.network.NetworkResult
@@ -271,5 +276,32 @@ fun Login(
             }
         }
         EasyToast(toast)
+    }
+}
+
+class LoginVoyagerScreen: Screen {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val viewModel = koinInject<AuthenticationViewModel>()
+        Login(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
+            navigateToRegister = {
+                navigator.push(RegisterVoyagerScreen())
+            },
+            login = { userEmail,userPassword,captcha ->
+                viewModel.login(userEmail,userPassword,captcha)
+            },
+            loginState = viewModel.loginState.collectAsState(),
+            getCaptcha = { userEmail ->
+                viewModel.getLoginCaptcha(userEmail)
+            },
+            loginCaptcha = viewModel.loginCaptcha.collectAsState(),
+            cleanRegisterData = {
+                viewModel.cleanRegisterData()
+            }
+        )
     }
 }

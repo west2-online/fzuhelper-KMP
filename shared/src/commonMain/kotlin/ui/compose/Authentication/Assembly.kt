@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.Navigator
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
 import com.bumble.appyx.components.backstack.operation.replace
@@ -132,3 +134,12 @@ data class RegisterNode(
         )
     }
 }
+
+
+object LoginAndRegisterVoyagerScreen : Screen {
+    @Composable
+    override fun Content() {
+        Navigator(LoginVoyagerScreen())
+    }
+}
+

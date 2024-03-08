@@ -165,15 +165,11 @@ class SplashPageVoyagerScreen():Screen{
         Box(
             modifier = Modifier.fillMaxSize()
                 .clickable {
-//                    viewModel.navigateToMain()
                     token?.let {
-//                        rootAction.replaceNewTarget(RootTarget.Main)
-//                        navigator.replace(Main)
-//                        navigator
                         rootAction.navigateFormSplashToMainPage()
                     }
                     token?:let {
-//                        rootAction.replaceNewTarget(RootTarget.Authentication)
+                        rootAction.navigateFormSplashToLoginAndRegister()
                     }
                 }
         ){

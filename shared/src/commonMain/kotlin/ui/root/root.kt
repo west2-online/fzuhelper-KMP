@@ -1,12 +1,6 @@
 package ui.root
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
 import com.bumble.appyx.utils.multiplatform.Parcelable
@@ -21,9 +15,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
+import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
 import ui.compose.Main.Main
 import ui.compose.Report.ReportType
 import ui.compose.SplashPage.SplashPageVoyagerScreen
+import util.compose.FuTalkTheme
 
 
 sealed class RootTarget : Parcelable {
@@ -89,6 +85,7 @@ interface RootAction{
     fun canBack():StateFlow<Boolean>
     fun reLogin()
     fun navigateFormSplashToMainPage()
+    fun navigateFormSplashToLoginAndRegister()
 }
 
 @Composable
@@ -119,13 +116,8 @@ fun tokenJump(
 fun RootUi(
     systemAction: SystemAction
 ){
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.background)
-    ){
+    FuTalkTheme{
         Navigator(SplashPageVoyagerScreen()){ navigate ->
-            val scope = rememberCoroutineScope()
             KoinApplication(application = {
                 modules(appModule(
                     object : RootAction{
@@ -135,9 +127,13 @@ fun RootUi(
                         override fun canBack() = MutableStateFlow(true)
                         override fun reLogin() {
                             initStore().clear()
+                            navigate.replaceAll(LoginAndRegisterVoyagerScreen)
                         }
                         override fun navigateFormSplashToMainPage() {
                             navigate.replaceAll(Main)
+                        }
+                        override fun navigateFormSplashToLoginAndRegister() {
+                            navigate.replaceAll(LoginAndRegisterVoyagerScreen)
                         }
                     },
                     systemAction = systemAction,
