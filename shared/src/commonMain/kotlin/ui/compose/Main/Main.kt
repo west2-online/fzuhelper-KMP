@@ -61,8 +61,8 @@ import com.bumble.appyx.utils.multiplatform.Parcelize
 import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.launch
 import org.example.library.MR
-import ui.compose.Action.RibbonRouteNode
 import ui.compose.Action.ActionVoyagerScreen
+import ui.compose.Action.RibbonRouteNode
 import ui.compose.Massage.MassageRouteNode
 import ui.compose.Massage.MassageVoyagerScreen
 import ui.compose.Person.PersonRouteNode
@@ -246,7 +246,7 @@ class MainRouteNode(
 object Main : Screen{
     @Composable
     override fun Content() {
-        TabNavigator(PostVoyagerScreen) {
+        TabNavigator(PostVoyagerScreen) { tabNavigator ->
             val scope = rememberCoroutineScope()
             val scaffoldState = rememberScaffoldState()
             Scaffold(

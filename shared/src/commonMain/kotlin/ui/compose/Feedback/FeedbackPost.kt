@@ -1,8 +1,8 @@
 package ui.compose.Feedback
 
-import BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -14,12 +14,17 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
+import org.koin.compose.koinInject
+import util.compose.EasyToast
 import util.compose.Toast
+import util.compose.rememberToastState
 import util.network.NetworkResult
 import util.network.toast
 
@@ -27,13 +32,9 @@ import util.network.toast
 fun FeedbackPost(
     modifier: Modifier = Modifier,
     submit: (content: String, type: FeedbackType) -> Unit,
-    back: () -> Unit,
     toastState: Toast,
     submitResult: State<NetworkResult<String>>
 ){
-    BackHandler(true){
-        back.invoke()
-    }
     LaunchedEffect(submitResult.value.key.value){
         submitResult.value.toast(
             success = {
@@ -108,4 +109,22 @@ fun FeedbackPost(
 enum class FeedbackType(val describe:String,val code:Int){
     Bug("Bug 反馈", code = 0),
     Suggest("软件建议", code = 1)
+}
+
+class FeedbackPostVoyagerScreen():Screen{
+    @Composable
+    override fun Content() {
+        val viewModel: FeedBackViewModel = koinInject()
+        val toastState = rememberToastState()
+        FeedbackPost(
+            modifier = Modifier
+                .fillMaxSize(),
+            submit = { content, type ->
+                viewModel.submitNewFeedback(content, type)
+            },
+            submitResult = viewModel.submitResult.collectAsState(),
+            toastState = toastState,
+        )
+        EasyToast(toastState)
+    }
 }

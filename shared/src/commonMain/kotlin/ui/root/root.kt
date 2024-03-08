@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
+import ui.compose.Feedback.FeedbackListVoyagerScreen
 import ui.compose.Main.Main
 import ui.compose.Report.ReportType
 import ui.compose.SplashPage.SplashPageVoyagerScreen
@@ -86,6 +87,7 @@ interface RootAction{
     fun reLogin()
     fun navigateFormSplashToMainPage()
     fun navigateFormSplashToLoginAndRegister()
+    fun navigateFromActionToFeedback()
 }
 
 @Composable
@@ -135,6 +137,9 @@ fun RootUi(
                         override fun navigateFormSplashToLoginAndRegister() {
                             navigate.replaceAll(LoginAndRegisterVoyagerScreen)
                         }
+                        override fun navigateFromActionToFeedback() {
+                            navigate.push(FeedbackListVoyagerScreen())
+                        }
                     },
                     systemAction = systemAction,
                     navigator = navigate
@@ -144,5 +149,4 @@ fun RootUi(
             }
         }
     }
-
 }

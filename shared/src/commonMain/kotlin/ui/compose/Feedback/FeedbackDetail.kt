@@ -1,6 +1,5 @@
 package ui.compose.Feedback
 
-import BackHandler
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
@@ -33,6 +32,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
 import data.feedback.FeelbackDetail.Data
 import data.feedback.FeelbackDetail.FeedbackComment
@@ -56,7 +57,10 @@ import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import org.example.library.MR
+import org.koin.compose.koinInject
+import util.compose.EasyToast
 import util.compose.Toast
+import util.compose.rememberToastState
 import util.network.CollectWithContent
 import util.network.NetworkResult
 import util.network.toEasyTime
@@ -66,7 +70,6 @@ const val SpaceWeight = 0.2f
 @Composable
 fun FeedbackDetail(
     modifier: Modifier,
-    back: (() -> Unit)?,
     detailState: State<NetworkResult<Data>>,
     getDetailData: () -> Unit,
     toastState: Toast,
@@ -88,9 +91,6 @@ fun FeedbackDetail(
     }
     val comment = remember {
         mutableStateOf("")
-    }
-    BackHandler(back!=null){
-        back?.invoke()
     }
     detailState.CollectWithContent(
         success = {
@@ -246,11 +246,6 @@ fun FeedbackDetail(
 }
 
 @Composable
-fun FeedbackDetailItem(){
-
-}
-
-@Composable
 fun StateLabel(
     time :String = "",
     type : LabelType,
@@ -375,5 +370,29 @@ fun Numbering(
             modifier = Modifier
                 .padding(10.dp),
         )
+    }
+}
+
+class FeedbackDetailVoyagerScreen(
+    private val feedbackId : Int
+):Screen{
+    @Composable
+    override fun Content() {
+        val feedBackViewModel: FeedBackViewModel = koinInject()
+        val toastState = rememberToastState()
+        FeedbackDetail(
+            modifier = Modifier
+                .fillMaxSize(),
+            getDetailData = {
+                feedBackViewModel.getFeedbackDetail(feedbackId)
+            },
+            toastState = toastState,
+            postNewComment = { content ->
+                feedBackViewModel.postFeedbackDetailComment(content = content, id = feedbackId)
+            },
+            commentState = feedBackViewModel.commentResult.collectAsState(),
+            detailState = feedBackViewModel.detailResult.collectAsState(),
+        )
+        EasyToast(toastState)
     }
 }

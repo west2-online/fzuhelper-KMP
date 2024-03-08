@@ -39,6 +39,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.cash.paging.compose.LazyPagingItems
+import app.cash.paging.compose.collectAsLazyPagingItems
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import config.BaseUrlConfig.UserAvatar
 import data.feedback.FeedbackList.Data
 import data.feedback.FeedbackList.User
@@ -47,9 +51,12 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
+import org.koin.compose.koinInject
+import util.compose.EasyToast
 import util.compose.Label
 import util.compose.ThemeCard
 import util.compose.Toast
+import util.compose.rememberToastState
 import util.network.toEasyTime
 
 @Composable
@@ -221,5 +228,29 @@ fun DiscussInList(
             )
             Text(type.description)
         }
+    }
+}
+
+class FeedbackListVoyagerScreen(
+
+) :Screen{
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val viewModel: FeedBackViewModel = koinInject()
+        val toastState = rememberToastState()
+        FeedbackList(
+            modifier = Modifier
+                .fillMaxSize(),
+            navigateToDetail = { postId ->
+                navigator.push(FeedbackDetailVoyagerScreen(postId))
+            },
+            navigateToPost = {
+                navigator.push(FeedbackPostVoyagerScreen())
+            },
+            toastState = toastState,
+            feedbackListFlow = viewModel.postListFlow.collectAsLazyPagingItems()
+        )
+        EasyToast(toastState)
     }
 }

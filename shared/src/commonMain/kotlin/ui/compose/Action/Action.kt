@@ -48,7 +48,6 @@ import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.root.RootAction
-import ui.root.RootTarget
 import ui.root.tokenJump
 import util.math.takeover
 import util.network.CollectWithContent
@@ -61,6 +60,7 @@ fun Action(
     Column(
         modifier = modifier,
     ) {
+        val rootAction = koinInject<RootAction>()
         Carousel(
             modifier = Modifier
                 .fillMaxWidth()
@@ -78,7 +78,7 @@ fun Action(
                         .aspectRatio(0.7f)
                         .clip(RoundedCornerShape(10.dp))
                         .clickable {
-                            rootAction.navigateToNewTarget(Functions.values()[it].rootNavTarget)
+                            Functions.values()[it].navigator.invoke(rootAction)
                         }
                         .padding(10.dp)
                 ){
@@ -202,16 +202,16 @@ private fun Carousel(
 enum class Functions(
     val functionName: String,
     val painter: ImageResource,
-    val rootNavTarget:RootTarget
+    val navigator : (RootAction)->Unit
 ){
-    QRCODE(  functionName = "二维码生成", painter = MR.images.qrcode,rootNavTarget = RootTarget.QRCode),
-    WebView( functionName = "新生宝典", painter = MR.images.login,rootNavTarget = RootTarget.AboutUs),
-    Weather(  functionName = "天气", painter = MR.images.cloud,rootNavTarget = RootTarget.Weather),
-    Map(  functionName = "地图", painter = MR.images.close,rootNavTarget = RootTarget.Weather),
-    Test(functionName = "测试", painter = MR.images.close,rootNavTarget = RootTarget.AboutUs),
-    AboutUs(functionName = "关于我们", painter = MR.images.FuTalk , rootNavTarget = RootTarget.AboutUs),
-    Manage(functionName = "管理", painter = MR.images.not_solved,rootNavTarget = RootTarget.Manage),
-    Feedback(functionName = "反馈", painter = MR.images.feedback2,rootNavTarget = RootTarget.Feedback),
+    QRCODE(  functionName = "二维码生成", painter = MR.images.qrcode, {rootAction -> rootAction.navigateFromActionToFeedback() }),
+    WebView( functionName = "新生宝典", painter = MR.images.login, {rootAction -> }),
+    Weather(  functionName = "天气", painter = MR.images.cloud, {rootAction -> }),
+    Map(  functionName = "地图", painter = MR.images.close, {rootAction -> }),
+    Test(functionName = "测试", painter = MR.images.close, {rootAction -> }),
+    AboutUs(functionName = "关于我们", painter = MR.images.FuTalk ,  {rootAction -> }),
+    Manage(functionName = "管理", painter = MR.images.not_solved, {rootAction -> }),
+    Feedback(functionName = "反馈", painter = MR.images.feedback2, {rootAction -> rootAction.navigateFromActionToFeedback() }),
 }
 
 class RibbonRouteNode(

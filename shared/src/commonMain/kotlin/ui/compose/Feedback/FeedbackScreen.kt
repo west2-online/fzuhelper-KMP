@@ -10,6 +10,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import app.cash.paging.compose.collectAsLazyPagingItems
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.transitions.SlideTransition
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
 import com.bumble.appyx.components.backstack.operation.pop
@@ -59,9 +62,6 @@ fun FeedbackScreen(
                         FeedbackDetail(
                             modifier = Modifier
                                 .fillMaxSize(),
-                            back = {
-                                currentItem.value = FeedbackItem.Feedback()
-                            },
                             getDetailData = {
                                 viewModel.getFeedbackDetail(it.id)
                             },
@@ -84,9 +84,7 @@ fun FeedbackScreen(
                             },
                             submitResult = viewModel.submitResult.collectAsState(),
                             toastState = toastState,
-                            back = {
-                                currentItem.value = FeedbackItem.Feedback()
-                            }
+
                         )
                     }
                 }
@@ -140,7 +138,7 @@ class FeedbackAssemblyNode(
                     backStack.push(FeedbackTarget.FeedbackDetail(it))
                 }
             )
-            is FeedbackTarget.FeedbackDetail -> FeedbackDetail(
+            is FeedbackTarget.FeedbackDetail -> FeedbackDetailAppyx(
                 buildContext = buildContext,
                 feedbackId = interactionTarget.feedbackId,
                 back = {
@@ -187,7 +185,7 @@ class FeedbackList(
     }
 }
 
-class FeedbackDetail(
+class FeedbackDetailAppyx(
     val buildContext: BuildContext,
     private val feedbackId:Int,
     private val back: (() -> Unit)?,
@@ -201,7 +199,6 @@ class FeedbackDetail(
         FeedbackDetail(
             modifier = Modifier
                 .fillMaxSize(),
-            back = back,
             getDetailData = {
                 viewModel.getFeedbackDetail(feedbackId)
             },
@@ -234,10 +231,16 @@ class FeedbackPost(
             },
             submitResult = viewModel.submitResult.collectAsState(),
             toastState = toastState,
-            back = {
-                back.invoke()
-            }
         )
         EasyToast(toastState)
+    }
+}
+
+class FeedbackVoyagerScreen():Screen{
+    @Composable
+    override fun Content() {
+        Navigator(FeedbackListVoyagerScreen()){ navigator ->
+            SlideTransition(navigator = navigator)
+        }
     }
 }
