@@ -5,8 +5,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.Screen
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
@@ -34,20 +32,6 @@ fun OwnWebViewScreen(
     )
 }
 
-
-class WebViewRouteNode(
-    buildContext: BuildContext,
-    val url:String
-):Node(
-    buildContext = buildContext
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        OwnWebViewScreen(
-            url
-        )
-    }
-}
 
 class WebViewRouteScreen(
     val url:String

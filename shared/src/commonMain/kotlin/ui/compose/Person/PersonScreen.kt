@@ -40,8 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
 import config.BaseUrlConfig
 import data.person.UserData.UserData
 import io.kamel.image.KamelImage
@@ -315,22 +313,6 @@ fun randomColor(): Color {
 }
 
 
-
-
-class PersonRouteNode(
-    buildContext: BuildContext,
-    private val userId: String? = null
-) : Node(
-    buildContext = buildContext
-) {
-    @Composable
-    override fun View(modifier: Modifier) {
-        PersonScreen(
-            modifier = modifier,
-            id = userId
-        )
-    }
-}
 
 
 class PersonVoyagerScreen(

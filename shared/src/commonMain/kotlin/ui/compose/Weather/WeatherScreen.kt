@@ -42,8 +42,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
 import data.weather.Forecast
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -384,16 +382,6 @@ fun PreviewForSevenDays(
 }
 
 
-class WeatherRouteNode(
-    buildContext:BuildContext
-):Node(
-    buildContext = buildContext
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        WeatherScreen()
-    }
-}
 
 object WeatherVoyagerScreen:Screen{
     @Composable

@@ -17,7 +17,7 @@ import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import ui.compose.AboutUs.AboutUsVoyagerScreen
 import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
-import ui.compose.Feedback.FeedbackListVoyagerScreen
+import ui.compose.Feedback.FeedbackVoyagerScreen
 import ui.compose.Main.Main
 import ui.compose.Manage.ManageVoyagerScreen
 import ui.compose.QRCode.QRCodeVoyagerScreen
@@ -160,7 +160,7 @@ fun RootUi(
                         }
 
                         override fun navigateFromActionToFeedback() {
-                            navigate.push(FeedbackListVoyagerScreen())
+                            navigate.push(FeedbackVoyagerScreen())
                         }
 
                         override fun navigateFromActionToQRCodeScreen() {
@@ -190,7 +190,6 @@ fun RootUi(
                         override fun navigateFromAnywhereToWebView(url: String) {
                             navigate.push(WebViewVoyagerScreen(url))
                         }
-
                     },
                     systemAction = systemAction,
                     navigator = navigate

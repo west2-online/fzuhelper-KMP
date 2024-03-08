@@ -27,13 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
-import com.bumble.appyx.components.backstack.BackStack
-import com.bumble.appyx.components.backstack.BackStackModel
-import com.bumble.appyx.components.backstack.ui.fader.BackStackFader
-import com.bumble.appyx.navigation.composable.AppyxComponent
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
-import com.bumble.appyx.navigation.node.ParentNode
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import com.bumble.appyx.utils.multiplatform.RawValue
@@ -149,71 +142,6 @@ sealed class ReportTarget : Parcelable {
 
 }
 
-class ReportRouteNode(
-    buildContext: BuildContext,
-    type : ReportType,
-    private val backStack: BackStack<ReportTarget> = BackStack(
-        model = BackStackModel(
-            initialTarget = when(type){
-                is ReportType.PostReportType -> {
-                    ReportTarget.PostReportType(type)
-                }
-                is ReportType.CommentReportType -> {
-                    ReportTarget.CommentReportType(type)
-                }
-            },
-            savedStateMap = buildContext.savedStateMap,
-        ),
-        visualisation = { BackStackFader(it) }
-    )
-) : ParentNode<ReportTarget>(
-    buildContext = buildContext,
-    appyxComponent = backStack
-) {
-    override fun resolve(interactionTarget: ReportTarget, buildContext: BuildContext): Node =
-        when (interactionTarget) {
-            is ReportTarget.CommentReportType -> CommentReportTypeNode(buildContext,interactionTarget.type)
-            is ReportTarget.PostReportType ->  PostReportTypeNode(buildContext,interactionTarget.type)
-        }
-
-    @Composable
-    override fun View(modifier: Modifier) {
-        AppyxComponent(
-            backStack,
-            modifier = Modifier
-                .padding(10.dp)
-        )
-    }
-}
-
-
-class CommentReportTypeNode(
-    buildContext:BuildContext,
-    val type : ReportType.CommentReportType
-):Node(
-    buildContext = buildContext
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        CommentRepost(
-            commentData = type.comment
-        )
-    }
-}
-
-class PostReportTypeNode(
-    buildContext:BuildContext,
-    val type : ReportType.PostReportType
-):Node(
-    buildContext = buildContext
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        PostReport(
-            data = type.data
-        )
-    }
-}
 
 
 

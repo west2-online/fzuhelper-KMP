@@ -44,8 +44,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
 import io.github.alexzhirkevich.qrose.options.QrBallShape
 import io.github.alexzhirkevich.qrose.options.QrBrush
 import io.github.alexzhirkevich.qrose.options.QrFrameShape
@@ -276,20 +274,6 @@ fun QRCodeScreen(
     }
 }
 
-class QRCodeRouteNode(
-    buildContext: BuildContext
-):Node(
-    buildContext = buildContext
-){
-
-    @Composable
-    override fun View(modifier : Modifier){
-        QRCodeScreen(
-            modifier = modifier
-        )
-
-    }
-}
 
 object QRCodeVoyagerScreen:Screen{
     @Composable

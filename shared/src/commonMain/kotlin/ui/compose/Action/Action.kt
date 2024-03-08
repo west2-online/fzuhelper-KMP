@@ -36,8 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
 import config.BaseUrlConfig
 import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
@@ -214,20 +212,7 @@ enum class Functions(
     Feedback(functionName = "反馈", painter = MR.images.feedback2, { rootAction -> rootAction.navigateFromActionToFeedback() }),
 }
 
-class RibbonRouteNode(
-    buildContext:BuildContext
-):Node(
-    buildContext = buildContext
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        Action(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(10.dp)
-        )
-    }
-}
+
 
 object ActionVoyagerScreen : Tab {
     override val options: TabOptions

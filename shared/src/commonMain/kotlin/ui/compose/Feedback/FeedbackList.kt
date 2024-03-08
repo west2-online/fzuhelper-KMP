@@ -231,9 +231,7 @@ fun DiscussInList(
     }
 }
 
-class FeedbackListVoyagerScreen(
-
-) :Screen{
+class FeedbackListVoyagerScreen() :Screen{
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow

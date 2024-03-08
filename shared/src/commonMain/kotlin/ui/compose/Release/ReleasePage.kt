@@ -56,8 +56,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import asImageBitmap
 import cafe.adriel.voyager.core.screen.Screen
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import kotlinx.coroutines.launch
@@ -669,18 +667,6 @@ fun ReleasePageItemImageForShow(
     )
 }
 
-class ReleaseRouteNode(
-    buildContext: BuildContext
-): Node(
-    buildContext = buildContext
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        ReleasePageScreen(
-            modifier = modifier
-        )
-    }
-}
 
 class ReleaseRouteVoyagerScreen:Screen{
     @Composable

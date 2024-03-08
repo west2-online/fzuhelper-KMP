@@ -17,8 +17,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
 import com.mikepenz.markdown.compose.Markdown
 import ui.compose.Main.MainItems
 import util.compose.loadAction
@@ -78,16 +76,7 @@ https://github.com/Futalker/FuTalk_Apk
 
 """.trimIndent()
 
-class AboutUsRouteNode(
-    buildContext:BuildContext
-):Node(
-    buildContext = buildContext
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        AboutUsScreen(modifier)
-    }
-}
+
 
 object AboutUsVoyagerScreen:Tab{
     @Composable
