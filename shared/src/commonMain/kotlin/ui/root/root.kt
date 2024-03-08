@@ -23,6 +23,7 @@ import ui.compose.Manage.ManageVoyagerScreen
 import ui.compose.QRCode.QRCodeVoyagerScreen
 import ui.compose.Release.ReleaseRouteVoyagerScreen
 import ui.compose.Report.ReportType
+import ui.compose.Report.ReportVoyagerScreen
 import ui.compose.SplashPage.SplashPageVoyagerScreen
 import ui.compose.Weather.WeatherVoyagerScreen
 import util.compose.FuTalkTheme
@@ -98,6 +99,7 @@ interface RootAction{
     fun navigateFromActionToManage()
     fun navigateFromActionToWeather()
     fun navigateFormPostToRelease()
+    fun navigateFormPostToReport(type: ReportType)
 }
 
 @Composable
@@ -133,6 +135,7 @@ fun RootUi(
             KoinApplication(application = {
                 modules(appModule(
                     object : RootAction{
+
                         override fun navigateToNewTarget(rootTarget: RootTarget) {}
 
                         override fun replaceNewTarget(rootTarget: RootTarget) {}
@@ -173,9 +176,15 @@ fun RootUi(
                         override fun navigateFromActionToWeather() {
                             navigate.push(WeatherVoyagerScreen)
                         }
+
                         override fun navigateFormPostToRelease(){
                             navigate.push(ReleaseRouteVoyagerScreen())
                         }
+
+                        override fun navigateFormPostToReport(type: ReportType) {
+                            navigate.push(ReportVoyagerScreen(type))
+                        }
+
                     },
                     systemAction = systemAction,
                     navigator = navigate

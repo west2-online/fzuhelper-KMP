@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
 import data.post.PostList.Data
 import data.share.Comment
@@ -255,5 +256,16 @@ fun PostReportInCommentReport(
                 text = data.LittleDescribe?:""
             )
         }
+    }
+}
+
+class CommentReportVoyagerScreen(
+    val type : ReportType.CommentReportType
+): Screen {
+    @Composable
+    override fun Content() {
+        CommentRepost(
+            commentData = type.comment
+        )
     }
 }

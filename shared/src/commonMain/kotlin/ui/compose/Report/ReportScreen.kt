@@ -25,6 +25,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.Navigator
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
 import com.bumble.appyx.components.backstack.ui.fader.BackStackFader
@@ -214,6 +216,7 @@ class PostReportTypeNode(
 }
 
 
+
 enum class ReportLabel(val code : Int ,val reason: String, val description: String) {
     VIOLATE_COMMUNITY_GUIDELINES(1,"违反社区准则", "发布违反社区准则的内容，包括侮辱、歧视、仇恨言论、骚扰、虚假信息等不良行为"),
     INAPPROPRIATE_CONTENT(2,"色情或不适当内容", "发布成人内容、色情材料、淫秽或其他不适当的内容"),
@@ -223,4 +226,17 @@ enum class ReportLabel(val code : Int ,val reason: String, val description: Stri
     PRIVACY_ISSUE(6,"隐私问题", "公开他人的私人信息、违反隐私权的行为"),
     UNAUTHORIZED_ADVERTISEMENT(7,"不当宣传或广告", "发布未经授权的广告、垃圾邮件或其他形式的不当宣传"),
     MALICIOUS_BEHAVIOR(8,"恶意行为", "参与恶意行为，如网络欺凌、诽谤、虚假信息传播等")
+}
+
+
+class ReportVoyagerScreen(val type: ReportType):Screen{
+    @Composable
+    override fun Content() {
+        Navigator(
+            when(type){
+                is ReportType.CommentReportType -> CommentReportVoyagerScreen(type)
+                is ReportType.PostReportType -> PostRepostVoyagerScreen(type)
+            }
+        )
+    }
 }
