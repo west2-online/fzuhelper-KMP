@@ -26,6 +26,7 @@ import ui.compose.Report.ReportType
 import ui.compose.Report.ReportVoyagerScreen
 import ui.compose.SplashPage.SplashPageVoyagerScreen
 import ui.compose.Weather.WeatherVoyagerScreen
+import ui.compose.Webview.WebViewVoyagerScreen
 import util.compose.FuTalkTheme
 
 
@@ -100,6 +101,7 @@ interface RootAction{
     fun navigateFromActionToWeather()
     fun navigateFormPostToRelease()
     fun navigateFormPostToReport(type: ReportType)
+    fun navigateFromAnywhereToWebView(url:String)
 }
 
 @Composable
@@ -183,6 +185,10 @@ fun RootUi(
 
                         override fun navigateFormPostToReport(type: ReportType) {
                             navigate.push(ReportVoyagerScreen(type))
+                        }
+
+                        override fun navigateFromAnywhereToWebView(url: String) {
+                            navigate.push(WebViewVoyagerScreen(url))
                         }
 
                     },
