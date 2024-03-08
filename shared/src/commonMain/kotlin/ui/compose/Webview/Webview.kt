@@ -57,3 +57,14 @@ class WebViewRouteScreen(
         Text("this is a test")
     }
 }
+
+class WebViewVoyagerScreen(
+    val url : String
+):Screen{
+    @Composable
+    override fun Content() {
+        OwnWebViewScreen(
+            url
+        )
+    }
+}
