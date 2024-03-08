@@ -1,8 +1,8 @@
 package ui.root
 
 import androidx.compose.runtime.Composable
-import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.transitions.ScaleTransition
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import com.bumble.appyx.utils.multiplatform.RawValue
@@ -140,7 +140,7 @@ fun RootUi(
                     navigator = navigate
                 ))
             }) {
-                CurrentScreen()
+                ScaleTransition(navigate)
             }
         }
     }
