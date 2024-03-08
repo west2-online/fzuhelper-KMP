@@ -15,11 +15,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
+import ui.compose.AboutUs.AboutUsVoyagerScreen
 import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
 import ui.compose.Feedback.FeedbackListVoyagerScreen
 import ui.compose.Main.Main
+import ui.compose.Manage.ManageVoyagerScreen
+import ui.compose.QRCode.QRCodeVoyagerScreen
+import ui.compose.Release.ReleaseRouteVoyagerScreen
 import ui.compose.Report.ReportType
 import ui.compose.SplashPage.SplashPageVoyagerScreen
+import ui.compose.Weather.WeatherVoyagerScreen
 import util.compose.FuTalkTheme
 
 
@@ -88,6 +93,11 @@ interface RootAction{
     fun navigateFormSplashToMainPage()
     fun navigateFormSplashToLoginAndRegister()
     fun navigateFromActionToFeedback()
+    fun navigateFromActionToQRCodeScreen()
+    fun navigateFromActionToAboutUs()
+    fun navigateFromActionToManage()
+    fun navigateFromActionToWeather()
+    fun navigateFormPostToRelease()
 }
 
 @Composable
@@ -124,21 +134,47 @@ fun RootUi(
                 modules(appModule(
                     object : RootAction{
                         override fun navigateToNewTarget(rootTarget: RootTarget) {}
+
                         override fun replaceNewTarget(rootTarget: RootTarget) {}
+
                         override fun navigateBack() {}
+
                         override fun canBack() = MutableStateFlow(true)
+
                         override fun reLogin() {
                             initStore().clear()
                             navigate.replaceAll(LoginAndRegisterVoyagerScreen)
                         }
+
                         override fun navigateFormSplashToMainPage() {
                             navigate.replaceAll(Main)
                         }
+
                         override fun navigateFormSplashToLoginAndRegister() {
                             navigate.replaceAll(LoginAndRegisterVoyagerScreen)
                         }
+
                         override fun navigateFromActionToFeedback() {
                             navigate.push(FeedbackListVoyagerScreen())
+                        }
+
+                        override fun navigateFromActionToQRCodeScreen() {
+                            navigate.push(QRCodeVoyagerScreen)
+                        }
+
+                        override fun navigateFromActionToAboutUs() {
+                            navigate.push(AboutUsVoyagerScreen)
+                        }
+
+                        override fun navigateFromActionToManage() {
+                            navigate.push(ManageVoyagerScreen())
+                        }
+
+                        override fun navigateFromActionToWeather() {
+                            navigate.push(WeatherVoyagerScreen)
+                        }
+                        override fun navigateFormPostToRelease(){
+                            navigate.push(ReleaseRouteVoyagerScreen())
                         }
                     },
                     systemAction = systemAction,

@@ -204,14 +204,14 @@ enum class Functions(
     val painter: ImageResource,
     val navigator : (RootAction)->Unit
 ){
-    QRCODE(  functionName = "二维码生成", painter = MR.images.qrcode, {rootAction -> rootAction.navigateFromActionToFeedback() }),
-    WebView( functionName = "新生宝典", painter = MR.images.login, {rootAction -> }),
-    Weather(  functionName = "天气", painter = MR.images.cloud, {rootAction -> }),
-    Map(  functionName = "地图", painter = MR.images.close, {rootAction -> }),
-    Test(functionName = "测试", painter = MR.images.close, {rootAction -> }),
-    AboutUs(functionName = "关于我们", painter = MR.images.FuTalk ,  {rootAction -> }),
-    Manage(functionName = "管理", painter = MR.images.not_solved, {rootAction -> }),
-    Feedback(functionName = "反馈", painter = MR.images.feedback2, {rootAction -> rootAction.navigateFromActionToFeedback() }),
+    QRCODE(  functionName = "二维码生成", painter = MR.images.qrcode, { rootAction -> rootAction.navigateFromActionToQRCodeScreen() }),
+    WebView( functionName = "新生宝典", painter = MR.images.login, { rootAction -> }),
+    Weather(  functionName = "天气", painter = MR.images.cloud, { rootAction -> rootAction.navigateFromActionToWeather()}),
+    Map(  functionName = "地图", painter = MR.images.close, { rootAction -> }),
+    Test(functionName = "测试", painter = MR.images.close, { rootAction -> }),
+    AboutUs(functionName = "关于我们", painter = MR.images.FuTalk ,  { rootAction -> rootAction.navigateFromActionToAboutUs()}),
+    Manage(functionName = "管理", painter = MR.images.not_solved, { rootAction -> rootAction.navigateFromActionToManage()}),
+    Feedback(functionName = "反馈", painter = MR.images.feedback2, { rootAction -> rootAction.navigateFromActionToFeedback() }),
 }
 
 class RibbonRouteNode(
