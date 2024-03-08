@@ -55,6 +55,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import asImageBitmap
+import cafe.adriel.voyager.core.screen.Screen
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import dev.icerock.moko.resources.compose.painterResource
@@ -421,10 +422,7 @@ interface ReleasePageItem{
     class TextItem() : ReleasePageItem{
         var text = mutableStateOf<String>("")
     }
-    class ImageItem(
-
-    ) : ReleasePageItem{
-
+    class ImageItem() : ReleasePageItem{
         var image = mutableStateOf<ByteArray?>(null)
     }
 
@@ -680,6 +678,16 @@ class ReleaseRouteNode(
     override fun View(modifier: Modifier) {
         ReleasePageScreen(
             modifier = modifier
+        )
+    }
+}
+
+class ReleaseRouteVoyagerScreen:Screen{
+    @Composable
+    override fun Content() {
+        ReleasePageScreen(
+            modifier = Modifier
+                .fillMaxSize()
         )
     }
 }
