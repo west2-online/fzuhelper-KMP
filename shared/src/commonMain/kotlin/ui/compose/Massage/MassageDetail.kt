@@ -1,6 +1,5 @@
 package ui.compose.Massage
 
-import BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.screen.Screen
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.flow.map
@@ -43,11 +44,7 @@ import kotlinx.coroutines.flow.zip
 @Composable
 fun MassageDetail(
     modifier: Modifier = Modifier,
-    back:(()->Unit)? = null
 ){
-    BackHandler(back!=null){
-        back?.invoke()
-    }
     val listState = rememberLazyListState()
     val isShowTopBar = remember {
         mutableStateOf(true)
@@ -194,6 +191,18 @@ fun TextWithLink(
             "In FuZhou",
             modifier = Modifier.padding( ),
             fontSize = 10.sp
+        )
+    }
+}
+
+
+class MassageDetailVoyagerScreen: Screen {
+    @Composable
+    override fun Content() {
+        MassageDetail(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
         )
     }
 }

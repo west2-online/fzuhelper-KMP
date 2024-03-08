@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -53,6 +54,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 
@@ -254,4 +258,19 @@ enum class MassageLabel(val tag : String,val colorList : List<Color>){
 }
 fun getRandoms(): MassageLabel {
     return MassageLabel.values().random()
+}
+
+class MassageVoyagerList: Screen {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        MassageList(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
+            navigateToMassageDetail = {
+                navigator.push(MassageDetailVoyagerScreen())
+            }
+        )
+    }
 }

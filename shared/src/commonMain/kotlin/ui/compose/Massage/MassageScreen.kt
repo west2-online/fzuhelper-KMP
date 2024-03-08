@@ -8,6 +8,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.bumble.appyx.components.backstack.BackStack
 import com.bumble.appyx.components.backstack.BackStackModel
 import com.bumble.appyx.components.backstack.operation.pop
@@ -45,9 +48,6 @@ fun MassageScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(10.dp),
-                    back = {
-                        currentItem.value = MassageItem.MassageListItem()
-                    }
                 )
             }
         }
@@ -105,8 +105,7 @@ class MassageDetailNode(
         MassageDetail(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(10.dp),
-            back = back
+                .padding(10.dp)
         )
     }
 }
@@ -135,4 +134,25 @@ class MassageListNode(
 interface MassageItem{
     class MassageListItem:MassageItem
     class MassageDetailItem:MassageItem
+}
+
+
+object MassageVoyagerScreen: Tab {
+    override val options: TabOptions
+        @Composable
+        get(){
+            return remember {
+                TabOptions(
+                    index = 0u,
+                    title = ""
+                )
+            }
+        }
+
+    @Composable
+    override fun Content() {
+        Navigator(
+            MassageVoyagerList()
+        )
+    }
 }

@@ -62,6 +62,7 @@ import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import ui.compose.Massage.MassageRouteNode
+import ui.compose.Massage.MassageVoyagerScreen
 import ui.compose.Person.PersonRouteNode
 import ui.compose.Person.PersonVoyagerScreen
 import ui.compose.Post.PostRouteTarget
@@ -371,7 +372,7 @@ fun RowScope.BottomMassageTab(){
         icon = {
             val imageVector = remember(currentTabNavigator.current) {
                 mutableStateOf(
-                    if( currentTabNavigator.current is PostVoyagerScreen ){
+                    if( currentTabNavigator.current is MassageVoyagerScreen){
                         item.selectImageVector
                     } else{
                         item.unSelectImageVector
@@ -391,7 +392,7 @@ fun RowScope.BottomMassageTab(){
         label = { Text(item.tag) },
         selected = currentTabNavigator.current is PostVoyagerScreen,
         onClick = {
-            currentTabNavigator.current = PostVoyagerScreen
+            currentTabNavigator.current = MassageVoyagerScreen
         },
         selectedContentColor = MaterialTheme.colors.primaryVariant,
         modifier = Modifier
