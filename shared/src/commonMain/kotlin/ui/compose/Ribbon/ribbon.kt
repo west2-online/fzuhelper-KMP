@@ -34,6 +34,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.bumble.appyx.navigation.modality.BuildContext
 import com.bumble.appyx.navigation.node.Node
 import config.BaseUrlConfig
@@ -54,7 +56,6 @@ import util.network.CollectWithContent
 @Composable
 fun Ribbon(
     modifier: Modifier,
-    viewModel: RibbonViewModel = koinInject()
 ){
     val rootAction = koinInject<RootAction>()
     Column(
@@ -224,6 +225,26 @@ class RibbonRouteNode(
             modifier = modifier
                 .fillMaxSize()
                 .padding(10.dp)
+        )
+    }
+}
+
+object RibbonVoyagerScreen : Tab {
+    override val options: TabOptions
+        @Composable
+        get(){
+            return TabOptions(
+                index = 0u,
+                title = ""
+            )
+        }
+
+
+    @Composable
+    override fun Content() {
+        Ribbon(
+            modifier = Modifier
+                .fillMaxSize()
         )
     }
 }

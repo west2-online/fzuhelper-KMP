@@ -68,6 +68,7 @@ import ui.compose.Person.PersonVoyagerScreen
 import ui.compose.Post.PostRouteTarget
 import ui.compose.Post.PostVoyagerScreen
 import ui.compose.Ribbon.RibbonRouteNode
+import ui.compose.Ribbon.RibbonVoyagerScreen
 
 
 enum class MainItems(
@@ -337,7 +338,7 @@ fun RowScope.BottomActionTab(){
         icon = {
             val imageVector = remember(currentTabNavigator.current) {
                 mutableStateOf(
-                    if( currentTabNavigator.current is PostVoyagerScreen ){
+                    if( currentTabNavigator.current is RibbonVoyagerScreen ){
                         item.selectImageVector
                     } else{
                         item.unSelectImageVector
@@ -355,9 +356,9 @@ fun RowScope.BottomActionTab(){
             }
         },
         label = { Text(item.tag) },
-        selected = currentTabNavigator.current is PostVoyagerScreen,
+        selected = currentTabNavigator.current is RibbonVoyagerScreen,
         onClick = {
-            currentTabNavigator.current = PostVoyagerScreen
+            currentTabNavigator.current = RibbonVoyagerScreen
         },
         selectedContentColor = MaterialTheme.colors.primaryVariant,
         modifier = Modifier
