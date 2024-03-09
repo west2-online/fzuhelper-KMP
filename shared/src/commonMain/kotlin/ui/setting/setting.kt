@@ -7,42 +7,123 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.FadeTransition
 import cafe.adriel.voyager.transitions.ScaleTransition
 import cafe.adriel.voyager.transitions.SlideTransition
+import com.liftric.kvault.KVault
 import dev.icerock.moko.resources.FontResource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.example.library.MR
 import org.koin.compose.koinInject
+import util.flow.launchInDefault
 
-class Setting {
+const val FontToken = "Font"
+const val ThemeToken = "theme"
+const val Transition = "Transition"
 
-    private val _transitions = MutableStateFlow(PageTransitions.ScaleTransition)
+
+class Setting(
+    private val kVault: KVault,
+    private val _transitions: MutableStateFlow<PageTransitions> = MutableStateFlow(PageTransitions.ScaleTransition),
+    private val _theme: MutableStateFlow<ThemeStyle> = MutableStateFlow(ThemeStyle.ThemeOne),
+    private val _font: MutableStateFlow<Font> = MutableStateFlow(Font.MulishLight)
+) {
+
+    init {
+        initFont()
+        initTheme()
+        initTransition()
+    }
+
+    val scope = CoroutineScope(Job())
+
+
     val transitions = _transitions.asStateFlow()
-
-    private val _theme = MutableStateFlow(ThemeStyle.ThemeOne)
     val theme = _theme.asStateFlow()
-
-    private val _font = MutableStateFlow(ThemeFont.MulishLight)
     val font = _font.asStateFlow()
 
+    fun changeTransitions(pageTransitions : PageTransitions){
+        scope.launchInDefault {
+            saveTransitionToKValue(pageTransitions)
+        }
+        scope.launchInDefault {
+            _transitions.value = pageTransitions
+        }
+    }
+
+    fun changeTheme(theme : ThemeStyle){
+        scope.launchInDefault {
+            saveThemeToKValue(theme)
+        }
+        scope.launchInDefault {
+            _theme.value = theme
+        }
+    }
+
+    fun changeFont(font : Font){
+        scope.launchInDefault {
+            saveFontToKValue(font)
+        }
+        scope.launchInDefault {
+            _font.value = font
+        }
+    }
+
+    private fun saveThemeToKValue(theme : ThemeStyle){
+        kVault.set("theme",theme.serializable)
+    }
+
+    private fun saveFontToKValue(font : Font){
+        kVault.set("font",font.serializable)
+    }
+
+    private fun saveTransitionToKValue(transition : PageTransitions){
+        kVault.set("transition",transition.serializable)
+    }
+
+    private fun initTheme(){
+        val value = kVault.string(ThemeToken) ?: "ThemeOne"
+        val theme = ThemeStyle.values().find {
+            it.serializable == value
+        } ?: ThemeStyle.ThemeOne
+        _theme.value = theme
+    }
+
+    private fun initFont(){
+        val value = kVault.string(FontToken) ?: Font.values().first().serializable
+        val font = Font.values().find {
+            it.serializable == value
+        } ?: Font.values().first()
+        _font.value = font
+    }
+
+    private fun initTransition(){
+        val value = kVault.string(Transition) ?: PageTransitions.values().first().serializable
+        val transitions = PageTransitions.values().find {
+            it.serializable == value
+        } ?: PageTransitions.values().first()
+        _transitions.value = transitions
+    }
+
 }
 
 
-enum class PageTransitions{
-    FadeTransition,
-    SlideTransition,
-    ScaleTransition
+enum class PageTransitions(val serializable: String,val describe : String){
+    FadeTransition(serializable = "FadeTransition", describe = "淡入淡出过渡"),
+    SlideTransition(serializable = "SlideTransition", describe = "滑动过渡"),
+    ScaleTransition(serializable = "ScaleTransition", describe = "大小变换过渡")
 }
 
-enum class ThemeStyle{
-    ThemeOne,
-    ThemeTow,
-    ThemeThree
+enum class ThemeStyle(val serializable: String){
+    ThemeOne("ThemeOne"),
+    ThemeTow("ThemeTow"),
+    ThemeThree("ThemeThree")
 }
 
-enum class ThemeFont(val fontResource: FontResource){
-    MulishLight(MR.fonts.Mulish.light),
-    MadimiOne(MR.fonts.MadimiOne.regular),
-    EBG(MR.fonts.EBGaramond_wght.eBGaramond_wght)
+enum class Font(val serializable: String, val fontResource: FontResource){
+    MulishLight("MulishLight",MR.fonts.Mulish.light),
+    MadimiOne("MadimiOne",MR.fonts.MadimiOne.regular),
+    EBG("EBG",MR.fonts.EBGaramond_wght.eBGaramond_wght)
 }
 
 @Composable
@@ -83,8 +164,58 @@ fun ThemeStyle.toComposeTheme():ComposeTheme{
             backgroundInDarkTheme = Color(48, 48, 48),
             onBackgroundInDarkTheme = Color(255, 255, 255)
         )
-        ThemeStyle.ThemeTow -> TODO()
-        ThemeStyle.ThemeThree -> TODO()
+        ThemeStyle.ThemeTow -> ComposeTheme(
+            primaryInLightTheme = Color(212, 232, 248),
+            onPrimaryInLightTheme = Color(150, 177, 197),
+            primaryVariantInLightTheme = Color(79, 106, 128),
+            secondaryInLightTheme = Color(231, 249, 253),
+            onSecondaryInLightTheme = Color(177, 212, 220),
+            secondaryVariantInLightTheme = Color(157, 206, 218),
+            surfaceInLightTheme = Color(225, 239, 251),
+            onSurfaceInLightTheme = Color(0, 0, 0),
+            errorInLightTheme = Color(227, 107, 132),
+            onErrorInLightTheme = Color(96, 3, 22),
+            backgroundInLightTheme = Color(255, 255, 255),
+            onBackgroundInLightTheme = Color(0, 0, 0),
+            primaryInDarkTheme = Color(62, 63, 64),
+            onPrimaryInDarkTheme = Color(106, 108, 119),
+            primaryVariantInDarkTheme = Color(255, 255, 255),
+            secondaryInDarkTheme = Color(44, 44, 44),
+            onSecondaryInDarkTheme = Color(86, 91, 96),
+            secondaryVariantInDarkTheme = Color(255, 255, 255),
+            surfaceInDarkTheme = Color(43, 45, 48),
+            onSurfaceInDarkTheme = Color(255, 255, 255),
+            errorInDarkTheme = Color(255, 0, 51),
+            onErrorInDarkTheme = Color(0, 0, 0),
+            backgroundInDarkTheme = Color(48, 48, 48),
+            onBackgroundInDarkTheme = Color(255, 255, 255)
+        )
+        ThemeStyle.ThemeThree -> ComposeTheme(
+            primaryInLightTheme = Color(212, 232, 248),
+            onPrimaryInLightTheme = Color(150, 177, 197),
+            primaryVariantInLightTheme = Color(79, 106, 128),
+            secondaryInLightTheme = Color(231, 249, 253),
+            onSecondaryInLightTheme = Color(177, 212, 220),
+            secondaryVariantInLightTheme = Color(157, 206, 218),
+            surfaceInLightTheme = Color(225, 239, 251),
+            onSurfaceInLightTheme = Color(0, 0, 0),
+            errorInLightTheme = Color(227, 107, 132),
+            onErrorInLightTheme = Color(96, 3, 22),
+            backgroundInLightTheme = Color(255, 255, 255),
+            onBackgroundInLightTheme = Color(0, 0, 0),
+            primaryInDarkTheme = Color(62, 63, 64),
+            onPrimaryInDarkTheme = Color(106, 108, 119),
+            primaryVariantInDarkTheme = Color(255, 255, 255),
+            secondaryInDarkTheme = Color(44, 44, 44),
+            onSecondaryInDarkTheme = Color(86, 91, 96),
+            secondaryVariantInDarkTheme = Color(255, 255, 255),
+            surfaceInDarkTheme = Color(43, 45, 48),
+            onSurfaceInDarkTheme = Color(255, 255, 255),
+            errorInDarkTheme = Color(255, 0, 51),
+            onErrorInDarkTheme = Color(0, 0, 0),
+            backgroundInDarkTheme = Color(48, 48, 48),
+            onBackgroundInDarkTheme = Color(255, 255, 255)
+        )
     }
 }
 
@@ -101,7 +232,6 @@ class ComposeTheme(
     val onErrorInLightTheme  :Color,
     val backgroundInLightTheme  :Color,
     val onBackgroundInLightTheme   :Color,
-
     val primaryInDarkTheme   :Color,
     val onPrimaryInDarkTheme   :Color,
     val primaryVariantInDarkTheme   :Color,

@@ -250,7 +250,7 @@ fun ModifierInformationScreen(
 }
 
 
-class ModifierInformation(
+class ModifierInformationVoyagerScreen(
     private val userData: Data,
 ) :Screen{
     @Composable

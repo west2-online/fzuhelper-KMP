@@ -2,16 +2,11 @@ package ui.root
 
 import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.navigator.Navigator
-import com.bumble.appyx.utils.multiplatform.Parcelable
-import com.bumble.appyx.utils.multiplatform.Parcelize
-import com.bumble.appyx.utils.multiplatform.RawValue
 import data.person.UserData.Data
 import di.SystemAction
 import di.appModule
 import initStore
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import ui.compose.AboutUs.AboutUsVoyagerScreen
@@ -19,10 +14,12 @@ import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
 import ui.compose.Feedback.FeedbackVoyagerScreen
 import ui.compose.Main.Main
 import ui.compose.Manage.ManageVoyagerScreen
+import ui.compose.ModifierInformation.ModifierInformationVoyagerScreen
 import ui.compose.QRCode.QRCodeVoyagerScreen
 import ui.compose.Release.ReleaseRouteVoyagerScreen
 import ui.compose.Report.ReportType
 import ui.compose.Report.ReportVoyagerScreen
+import ui.compose.Setting.SettingVoyagerScreen
 import ui.compose.SplashPage.SplashPageVoyagerScreen
 import ui.compose.Weather.WeatherVoyagerScreen
 import ui.compose.Webview.WebViewVoyagerScreen
@@ -30,78 +27,22 @@ import ui.setting.SettingTransitions
 import util.compose.FuTalkTheme
 
 
-sealed class RootTarget : Parcelable {
-    @Parcelize
-    data object Main : RootTarget()
-
-    @Parcelize
-    data object AboutUs : RootTarget()
-
-    @Parcelize
-    data object Weather : RootTarget()
-
-    @Parcelize
-    data object Massage : RootTarget()
-
-    @Parcelize
-    data object Authentication : RootTarget()
-
-    @Parcelize
-    data object SplashPage : RootTarget()
-
-    @Parcelize
-    class ModifierInformation(val userData: @RawValue Data) : RootTarget()
-
-    @Parcelize
-    class Person(
-        val userId:String?
-    ) : RootTarget()
-
-    @Parcelize
-    data object QRCode : RootTarget()
-
-    @Parcelize
-    data object Release : RootTarget()
-
-    @Parcelize
-    class Report(
-        val type : @RawValue ReportType,
-    ) : RootTarget()
-
-    @Parcelize
-    data object Ribbon : RootTarget()
-
-    @Parcelize
-    data object Feedback : RootTarget()
-
-    @Parcelize
-    data object Manage : RootTarget()
-
-    @Parcelize
-    class WebView(
-        val url :String
-    ) : RootTarget()
-}
-
-
-
-
 interface RootAction{
-    fun navigateToNewTarget(rootTarget : RootTarget)
-    fun replaceNewTarget(rootTarget : RootTarget)
-    fun navigateBack()
-    fun canBack():StateFlow<Boolean>
     fun reLogin()
     fun navigateFormSplashToMainPage()
     fun navigateFormSplashToLoginAndRegister()
     fun navigateFromActionToFeedback()
     fun navigateFromActionToQRCodeScreen()
     fun navigateFromActionToAboutUs()
-    fun navigateFromActionToManage()
-    fun navigateFromActionToWeather()
-    fun navigateFormPostToRelease()
+    fun navigateFromAnywhereToManage()
+    fun navigateFromAnywhereToWeather()
+    fun navigateFormAnywhereToRelease()
     fun navigateFormPostToReport(type: ReportType)
     fun navigateFromAnywhereToWebView(url:String)
+    fun navigateFormAnywhereToSetting()
+    fun navigateFormAnywhereToMain()
+    fun navigateFormAnywhereToInformationModifier(userData: Data)
+    fun popManage()
 }
 
 @Composable
@@ -123,7 +64,7 @@ fun tokenJump(
     result.let {
         val action = it[1]
         when(it[0]){
-            "WEBVIEW" -> rootAction.navigateToNewTarget(RootTarget.WebView(action))
+            "WEBVIEW" -> {}
         }
     }
 }
@@ -137,14 +78,6 @@ fun RootUi(
             modules(
                 appModule(
                     object : RootAction{
-
-                        override fun navigateToNewTarget(rootTarget: RootTarget) {}
-
-                        override fun replaceNewTarget(rootTarget: RootTarget) {}
-
-                        override fun navigateBack() {}
-
-                        override fun canBack() = MutableStateFlow(true)
 
                         override fun reLogin() {
                             initStore().clear()
@@ -171,15 +104,15 @@ fun RootUi(
                             navigate.push(AboutUsVoyagerScreen)
                         }
 
-                        override fun navigateFromActionToManage() {
+                        override fun navigateFromAnywhereToManage() {
                             navigate.push(ManageVoyagerScreen())
                         }
 
-                        override fun navigateFromActionToWeather() {
+                        override fun navigateFromAnywhereToWeather() {
                             navigate.push(WeatherVoyagerScreen)
                         }
 
-                        override fun navigateFormPostToRelease(){
+                        override fun navigateFormAnywhereToRelease(){
                             navigate.push(ReleaseRouteVoyagerScreen())
                         }
 
@@ -189,6 +122,24 @@ fun RootUi(
 
                         override fun navigateFromAnywhereToWebView(url: String) {
                             navigate.push(WebViewVoyagerScreen(url))
+                        }
+
+                        override fun navigateFormAnywhereToSetting() {
+                            navigate.push(SettingVoyagerScreen())
+                        }
+
+                        override fun navigateFormAnywhereToMain() {
+                            navigate.push(Main)
+                        }
+
+                        override fun navigateFormAnywhereToInformationModifier(userData: Data) {
+                            navigate.push(ModifierInformationVoyagerScreen(userData = userData))
+                        }
+
+                        override fun popManage() {
+                            if (navigate.lastItem is ManageVoyagerScreen && navigate.canPop){
+                                navigate.pop()
+                            }
                         }
                     },
                     systemAction = systemAction,

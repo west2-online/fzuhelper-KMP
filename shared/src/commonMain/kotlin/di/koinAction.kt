@@ -132,7 +132,7 @@ fun appModule(
         rootAction
     }
     single {
-        Setting()
+        Setting(get())
     }
     single {
         systemAction
@@ -183,7 +183,7 @@ fun appModule(
                 get<RootAction>().reLogin()
             }
             if(it.status.value == 557){
-                get<RootAction>().navigateBack()
+                get<RootAction>().popManage()
             }
         }
         return@single client

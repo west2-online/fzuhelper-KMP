@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import repository.LoginRepository
 import repository.TokenData
 import ui.root.RootAction
-import ui.root.RootTarget
 import util.flow.catchWithMassage
 import util.flow.collectWithMassage
 import util.network.NetworkResult
@@ -176,7 +175,7 @@ class AuthenticationViewModel(
     private fun enterAuthor(){
         val token : String? = kVault.string(forKey = "token")
         token ?: return
-        rootAction.replaceNewTarget(RootTarget.Main)
+        rootAction.navigateFormAnywhereToMain()
     }
 
 }

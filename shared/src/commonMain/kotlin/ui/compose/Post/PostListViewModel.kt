@@ -17,7 +17,6 @@ import repository.CommentSubmitStatus
 import repository.PostRepository
 import ui.compose.Report.ReportType
 import ui.root.RootAction
-import ui.root.RootTarget
 import util.network.NetworkResult
 
 class PostListViewModel(
@@ -41,11 +40,11 @@ class PostListViewModel(
         .cachedIn(viewModelScope)
 
     fun navigateToRelease(){
-        rootAction.navigateToNewTarget(RootTarget.Release)
+        rootAction.navigateFormAnywhereToRelease()
     }
 
     fun navigateToReport(type: ReportType){
-        rootAction.navigateToNewTarget(RootTarget.Report(type))
+        rootAction.navigateFormPostToReport(type)
     }
 
 }

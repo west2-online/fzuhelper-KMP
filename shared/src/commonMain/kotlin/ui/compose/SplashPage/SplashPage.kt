@@ -27,7 +27,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import ui.root.RootAction
-import ui.root.RootTarget
 import util.compose.EasyToast
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation

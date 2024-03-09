@@ -51,7 +51,6 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.todayIn
 import org.example.library.MR
 import org.koin.compose.koinInject
-import ui.root.RootTarget
 import ui.root.getRootAction
 import kotlin.time.Duration.Companion.days
 
@@ -172,32 +171,32 @@ fun Functions(
         FunctionsItem(
             painterResource(MR.images.feedback),
             {
-                rootAction.navigateToNewTarget(rootTarget = RootTarget.Feedback)
+                rootAction.navigateFromActionToFeedback()
             },
             "反馈"
         )
         FunctionsItem(
             painterResource(MR.images.qrcode),
             {
-                rootAction.navigateToNewTarget(rootTarget = RootTarget.QRCode)
+                rootAction.navigateFromActionToQRCodeScreen()
             },
             "二维码生成"
         )
-        FunctionsItem(
-            painterResource(MR.images.eye),
-            {
-                rootAction.navigateToNewTarget(rootTarget = RootTarget.Person(null))
-            },
-            "个人资料"
-        )
-        FunctionsItem(
-            painterResource(MR.images.eye),
-            {
-//                    routeState.navigateWithoutPop(Route.Test())
-                rootAction.navigateToNewTarget(rootTarget = RootTarget.Person(null))
-            },
-            "测试"
-        )
+//        FunctionsItem(
+//            painterResource(MR.images.eye),
+//            {
+//                rootAction.navigateToNewTarget(rootTarget = RootTarget.Person(null))
+//            },
+//            "个人资料"
+//        )
+//        FunctionsItem(
+//            painterResource(MR.images.eye),
+//            {
+////                    routeState.navigateWithoutPop(Route.Test())
+//                rootAction.navigateToNewTarget(rootTarget = RootTarget.Person(null))
+//            },
+//            "测试"
+//        )
         val systemAction = koinInject<SystemAction>()
         FunctionsItem(
             Icons.Filled.ExitToApp,
