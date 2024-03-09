@@ -4,9 +4,11 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -88,34 +90,43 @@ object Main : Screen{
             val scaffoldState = rememberScaffoldState()
             Scaffold(
                 content = {
-                    CurrentTab()
-                },
-                bottomBar = {
-                    BottomNavigation {
+                    Column (
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ){
                         Box(
                             modifier = Modifier
-                                .fillMaxHeight()
+                                .fillMaxWidth()
                                 .weight(1f)
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable{
-                                    scope.launch {
-                                        scaffoldState.drawerState.open()
-                                    }
-                                }
                         ){
-                            Image(
-                                painter = painterResource(MR.images.FuTalk),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .align(Alignment.Center)
-                            )
+                            CurrentTab()
                         }
-                        BottomPostTab()
-                        BottomActionTab()
-                        BottomMassageTab()
-                        BottomPersonTab()
+                        BottomNavigation {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(1f)
+                                    .padding(10.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable{
+                                        scope.launch {
+                                            scaffoldState.drawerState.open()
+                                        }
+                                    }
+                            ){
+                                Image(
+                                    painter = painterResource(MR.images.FuTalk),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .align(Alignment.Center)
+                                )
+                            }
+                            BottomPostTab()
+                            BottomActionTab()
+                            BottomMassageTab()
+                            BottomPersonTab()
+                        }
                     }
                 },
                 drawerContent = {
