@@ -5,7 +5,7 @@ import androidx.compose.runtime.remember
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-
+import ui.setting.SettingTransitions
 
 
 object MassageVoyagerScreen: Tab {
@@ -24,6 +24,8 @@ object MassageVoyagerScreen: Tab {
     override fun Content() {
         Navigator(
             MassageVoyagerList()
-        )
+        ){ navigator ->
+            SettingTransitions(navigator)
+        }
     }
 }

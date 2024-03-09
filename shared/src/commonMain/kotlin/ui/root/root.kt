@@ -2,7 +2,6 @@ package ui.root
 
 import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.transitions.ScaleTransition
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import com.bumble.appyx.utils.multiplatform.RawValue
@@ -27,6 +26,7 @@ import ui.compose.Report.ReportVoyagerScreen
 import ui.compose.SplashPage.SplashPageVoyagerScreen
 import ui.compose.Weather.WeatherVoyagerScreen
 import ui.compose.Webview.WebViewVoyagerScreen
+import ui.setting.SettingTransitions
 import util.compose.FuTalkTheme
 
 
@@ -132,10 +132,10 @@ fun tokenJump(
 fun RootUi(
     systemAction: SystemAction
 ){
-    FuTalkTheme{
-        Navigator(SplashPageVoyagerScreen()){ navigate ->
-            KoinApplication(application = {
-                modules(appModule(
+    Navigator(SplashPageVoyagerScreen()){ navigate ->
+        KoinApplication(application = {
+            modules(
+                appModule(
                     object : RootAction{
 
                         override fun navigateToNewTarget(rootTarget: RootTarget) {}
@@ -193,9 +193,11 @@ fun RootUi(
                     },
                     systemAction = systemAction,
                     navigator = navigate
-                ))
-            }) {
-                ScaleTransition(navigate)
+                )
+            )
+        }) {
+            FuTalkTheme{
+                SettingTransitions(navigate)
             }
         }
     }

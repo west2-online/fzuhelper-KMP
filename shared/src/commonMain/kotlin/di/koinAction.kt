@@ -33,6 +33,7 @@ import repository.ReportRepository
 import repository.RibbonRepository
 import repository.SplashRepository
 import repository.WeatherRepository
+import ui.compose.Action.ActionViewModel
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.Manage.ManageViewModel
@@ -42,10 +43,10 @@ import ui.compose.Post.PostDetailViewModel
 import ui.compose.Post.PostListViewModel
 import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Report.ReportViewModel
-import ui.compose.Action.ActionViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.compose.Weather.WeatherViewModel
 import ui.root.RootAction
+import ui.setting.Setting
 import util.compose.Toast
 import viewModelDefinition
 
@@ -129,6 +130,9 @@ fun appModule(
 ) = module {
     single {
         rootAction
+    }
+    single {
+        Setting()
     }
     single {
         systemAction

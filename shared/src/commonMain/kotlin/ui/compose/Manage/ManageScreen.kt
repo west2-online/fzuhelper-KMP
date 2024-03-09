@@ -28,7 +28,7 @@ import app.cash.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import org.koin.compose.koinInject
-
+import ui.setting.SettingTransitions
 
 
 class ManageVoyagerScreen():Screen{
@@ -95,6 +95,7 @@ class ManageVoyagerScreen():Screen{
                         }
                     }
                 }
+                SettingTransitions(navigator)
             }
         }
     }

@@ -3,17 +3,13 @@
     <color name="primary_light">#D4E8F8</color>
     <color name="onPrimary_light">#96B1C5</color>
     <color name="primaryVariant_light">#4F6A80</color>
-
     <color name="secondary_light">#E7F9FD</color>
     <color name="onSecondary_light">#B1D4DC</color>
     <color name="secondaryVariant_light">#9DCEDA</color>
-
     <color name="surface_light">#E1EFFB</color>
     <color name="onSurface_light">#000000</color>
-
     <color name="error_light">#E36B84</color>
     <color name="onError_light">#600316</color>
-
     <color name="background_light">#FFFFFF</color>
     <color name="onBackground_light">#000000</color>
 
@@ -24,17 +20,13 @@
     <color name="primary_dark">#3E3F40</color>
     <color name="onPrimary_dark">#6A6C77</color>
     <color name="primaryVariant_dark">#FFFFFF</color>
-
     <color name="secondary_dark">#2C2C2C</color>
     <color name="onSecondary_dark">#565B60</color>
     <color name="secondaryVariant_dark">#FFFFFF</color>
-
     <color name="surface_dark">#2B2D30</color>
     <color name="onSurface_dark">#FFFFFF</color>
-
     <color name="error_dark">#533B40</color>
     <color name="onError_dark">#43101A</color>
-
     <color name="background_dark">#303030</color>
     <color name="onBackground_dark">#FFFFFF</color>
 </resources>

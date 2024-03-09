@@ -13,6 +13,7 @@ import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import org.koin.compose.koinInject
 import ui.compose.Main.MainItems
+import ui.setting.SettingTransitions
 import util.compose.EasyToast
 import util.compose.rememberToastState
 
@@ -51,7 +52,9 @@ object PostVoyagerScreen : Tab {
                 navigateToReport = {
                     TODO()
                 },
-            ))
+            )){ navigator ->
+                SettingTransitions(navigator)
+            }
             EasyToast(toastState)
         }
     }
