@@ -32,6 +32,9 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
 import ui.setting.SettingTransitions
+import util.compose.EasyToast
+import util.compose.rememberToastState
+import util.compose.toastBindNetworkResult
 import util.network.CollectWithContent
 
 
@@ -62,7 +65,6 @@ class MangeRibbonVoyagerScreen():Screen{
 @Composable
 fun RibbonImageShow(
     ribbonUrl: String,
-    refresh:()->Unit,
     delete:()->Unit
 ){
     Card(
@@ -95,7 +97,7 @@ fun RibbonImageShow(
                         delete.invoke()
                     }
                 ) {
-                    Text("删除该开屏页")
+                    Text("删除该轮播图")
                 }
             }
         }
@@ -106,42 +108,47 @@ class WorkWithExistingCarouselsVoyagerScreen():Screen{
     @Composable
     override fun Content() {
         val manageViewModel = koinInject<ManageViewModel>()
+        val toastState = rememberToastState()
         LaunchedEffect(Unit){
             manageViewModel.getRibbonData()
         }
-        Column (
-            modifier = Modifier
-                .fillMaxSize()
-        ){
-            manageViewModel.ribbonList.collectAsState().CollectWithContent(
-                success = { ribbonData ->
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    ) {
-                        items(ribbonData.size){ index ->
-                            ribbonData[index].let { ribbonData ->
-                                RibbonImageShow(ribbonUrl = ribbonData.Image, refresh = {}, delete = {
-                                    TODO()
-                                })
+        toastState.toastBindNetworkResult(manageViewModel.ribbonDelete.collectAsState())
+        Box(modifier = Modifier.fillMaxSize()){
+            Column (
+                modifier = Modifier
+                    .fillMaxSize()
+            ){
+                manageViewModel.ribbonList.collectAsState().CollectWithContent(
+                    success = { ribbonData ->
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            items(ribbonData.size){ index ->
+                                ribbonData[index].let { ribbonData ->
+                                    RibbonImageShow(ribbonUrl = ribbonData.Image, delete = {
+                                        manageViewModel.deleteRibbon(ribbonData.Image)
+                                    })
+                                }
                             }
                         }
+                    },
+                    loading = {
+                        Box(modifier = Modifier.fillMaxSize()){
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        }
+                    },
+                    error = {
+                        Box(modifier = Modifier.fillMaxSize()){
+                            Text(modifier = Modifier.align(Alignment.Center).clickable {
+                                manageViewModel.getRibbonData()
+                            }, text = "加载失败")
+                        }
                     }
-                },
-                loading = {
-                    Box(modifier = Modifier.fillMaxSize()){
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                    }
-                },
-                error = {
-                    Box(modifier = Modifier.fillMaxSize()){
-                        Text(modifier = Modifier.align(Alignment.Center).clickable {
-                            manageViewModel.getRibbonData()
-                        }, text = "加载失败")
-                    }
-                }
-            )
+                )
+            }
+            EasyToast(toastState)
         }
     }
 }

@@ -4,6 +4,7 @@ import data.manage.openImageAdd.OpenImageAdd
 import data.manage.openImageDelete.OpenImageDelete
 import data.manage.openImageList.OpenImageList
 import data.manage.processPost.ProcessPost
+import data.manage.ribbonDelete.RibbonDelete
 import data.manage.ribbonGet.GetRibbon
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -89,6 +90,18 @@ class ManageRepository(
         }
 
     }
+
+    fun deleteRibbon(imageName : String):Flow<RibbonDelete>{
+        return flow {
+            val result = client.submitForm(
+                "/manage/ribbon/delete",
+                formParameters = parameters{
+                    append("ribbon",imageName)
+                }
+            ).body<RibbonDelete>()
+            emit(result)
+        }
+    }
 }
 
 enum class ProcessPostStatus(val value: Int, val describe: String) {
@@ -160,6 +173,7 @@ fun OpenImageDelete.toNetworkResult(): NetworkResult<String> {
         }
     }
 }
+
 enum class OpenImageAddResult(val value: Int, val description: String) {
     SplashPageFormParseFileFailed(0, "闪屏页面表单解析文件失败"),
     SplashPageFileParsingFailed(1, "闪屏页面文件解析失败"),

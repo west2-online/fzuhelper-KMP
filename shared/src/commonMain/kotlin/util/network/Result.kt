@@ -171,6 +171,16 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.reset(newValue : NetworkResul
     this.value.showToast = false
 }
 
+suspend fun <T> MutableStateFlow<NetworkResult<T>>.intoLoading(){
+    val oldKey = this.value.key.value
+    val newKey = Random(0).nextInt(0,(oldKey+10))
+    this.value = NetworkResult.Loading<T>().apply {
+        key.value = newKey
+    }
+    delay(1500)
+    this.value.showToast = false
+}
+
 suspend fun <T> MutableStateFlow<NetworkResult<T>>.loading(){
     this.reset(NetworkResult.Loading())
 }
@@ -180,8 +190,10 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.unSend(){
 }
 
 suspend fun <T> MutableStateFlow<NetworkResult<T>>.logicIfNotLoading(
+    preAction: suspend ()->Unit = {},
     block: suspend () -> Unit
 ){
+    preAction.invoke()
     if(this.value !is NetworkResult.Loading){
         this.reset(NetworkResult.Loading())
         block.invoke()

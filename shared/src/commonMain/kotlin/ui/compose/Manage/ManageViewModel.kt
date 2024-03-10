@@ -108,10 +108,13 @@ class ManageViewModel(
         NetworkResult.UnSend()))
     var ribbonList = _ribbonList.asStateFlow()
 
+    private var _ribbonDelete = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
+    var ribbonDelete = _ribbonDelete.asStateFlow()
 
     fun getOpenImage(){
         viewModelScope.launchInDefault {
-            _openImageList.logicIfNotLoading {
+            _openImageList.logicIfNotLoading{
                 repository.getImageList()
                     .catchWithMassage {
                         _openImageList.reset(NetworkResult.Error(Throwable("获取失败")))
@@ -138,6 +141,7 @@ class ManageViewModel(
 
     fun refresh(){
         getOpenImage()
+        getRibbonData()
     }
 
     //处理帖子
@@ -195,6 +199,25 @@ class ManageViewModel(
         }
     }
 
+    fun deleteRibbon(imageName :String){
+        viewModelScope.launchInDefault {
+            _ribbonDelete.logicIfNotLoading (
+                preAction = {
+                    _ribbonList.reset(NetworkResult.UnSend())
+                }
+            ){
+                repository.deleteRibbon(imageName = imageName)
+                    .catchWithMassage {
+                        _ribbonDelete.reset(NetworkResult.Error(Throwable("删除失败")))
+                        refresh()
+                    }
+                    .collectWithMassage {
+                        _ribbonDelete.reset(it.toNetworkResult())
+                        refresh()
+                    }
+            }
+        }
+    }
 }
 
 enum class PostProcessResult(val value : Int){
