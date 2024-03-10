@@ -13,6 +13,8 @@ import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import org.koin.compose.koinInject
 import ui.compose.Main.MainItems
+import ui.compose.Report.ReportType
+import ui.root.RootAction
 import ui.setting.SettingTransitions
 import util.compose.EasyToast
 import util.compose.rememberToastState
@@ -38,6 +40,7 @@ object PostVoyagerScreen : Tab {
     @Composable
     override fun Content() {
         val toastState = rememberToastState()
+        val rootAction = koinInject<RootAction>()
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -47,10 +50,10 @@ object PostVoyagerScreen : Tab {
                 state = rememberLazyListState(),
                 postListFlow = koinInject<PostListViewModel>().postListFlow.collectAsLazyPagingItems(),
                 navigateToRelease = {
-                    TODO()
+                    rootAction.navigateFormAnywhereToRelease()
                 },
                 navigateToReport = {
-                    TODO()
+                    rootAction.navigateFormPostToReport(ReportType.PostReportType(id = it.Id.toString(),it))
                 },
             )){ navigator ->
                 SettingTransitions(navigator)
