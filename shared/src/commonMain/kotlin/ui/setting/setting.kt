@@ -18,8 +18,8 @@ import org.koin.compose.koinInject
 import util.flow.launchInDefault
 
 const val FontToken = "Font"
-const val ThemeToken = "theme"
-const val Transition = "Transition"
+const val ThemeToken = "Theme"
+const val TransitionToken = "Transition"
 
 
 class Setting(
@@ -28,14 +28,20 @@ class Setting(
     private val _theme: MutableStateFlow<ThemeStyle> = MutableStateFlow(ThemeStyle.ThemeOne),
     private val _font: MutableStateFlow<Font> = MutableStateFlow(Font.MulishLight)
 ) {
-
+    val scope = CoroutineScope(Job())
     init {
-        initFont()
-        initTheme()
-        initTransition()
+        scope.launchInDefault {
+            initFont()
+        }
+        scope.launchInDefault {
+            initTheme()
+        }
+        scope.launchInDefault {
+            initTransition()
+        }
     }
 
-    val scope = CoroutineScope(Job())
+
 
 
     val transitions = _transitions.asStateFlow()
@@ -70,19 +76,20 @@ class Setting(
     }
 
     private fun saveThemeToKValue(theme : ThemeStyle){
-        kVault.set("theme",theme.serializable)
+        kVault.set(ThemeToken,theme.serializable)
+//        println("save Theme : ${ok}")
     }
 
     private fun saveFontToKValue(font : Font){
-        kVault.set("font",font.serializable)
+        kVault.set(FontToken,font.serializable)
     }
 
     private fun saveTransitionToKValue(transition : PageTransitions){
-        kVault.set("transition",transition.serializable)
+        kVault.set(TransitionToken,transition.serializable)
     }
 
     private fun initTheme(){
-        val value = kVault.string(ThemeToken) ?: "ThemeOne"
+        val value = kVault.string(ThemeToken) ?: ThemeStyle.values().first().serializable
         val theme = ThemeStyle.values().find {
             it.serializable == value
         } ?: ThemeStyle.ThemeOne
@@ -98,7 +105,7 @@ class Setting(
     }
 
     private fun initTransition(){
-        val value = kVault.string(Transition) ?: PageTransitions.values().first().serializable
+        val value = kVault.string(TransitionToken) ?: PageTransitions.values().first().serializable
         val transitions = PageTransitions.values().find {
             it.serializable == value
         } ?: PageTransitions.values().first()
