@@ -4,6 +4,7 @@ import data.manage.openImageAdd.OpenImageAdd
 import data.manage.openImageDelete.OpenImageDelete
 import data.manage.openImageList.OpenImageList
 import data.manage.processPost.ProcessPost
+import data.manage.ribbonGet.GetRibbon
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.formData
@@ -36,6 +37,13 @@ class ManageRepository(
     fun getImageList(): Flow<OpenImageList> {
         return flow<OpenImageList> {
             val result = client.get("/manage/openImage/list").body<OpenImageList>()
+            emit(result)
+        }
+    }
+
+    fun getRibbonList(): Flow<GetRibbon> {
+        return flow<GetRibbon> {
+            val result = client.get("/manage/ribbon/list").body<GetRibbon>()
             emit(result)
         }
     }

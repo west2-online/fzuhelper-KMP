@@ -67,7 +67,7 @@ fun OpenImageShow(
             .aspectRatio(1f),
     ) {
         KamelImage(
-            resource = asyncPainterResource("${BaseUrlConfig.openImage}/${string}"),
+            resource = asyncPainterResource("${BaseUrlConfig.OpenImage}/${string}"),
             modifier = Modifier
                 .aspectRatio(0.56f)
                 .fillMaxHeight(),

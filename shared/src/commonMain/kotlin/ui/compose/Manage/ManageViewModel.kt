@@ -8,6 +8,7 @@ import data.manage.commentReportData.CommentReportContextData
 import data.manage.commentReportData.CommentReportForResponseList
 import data.manage.postReportPage.PostReportContextData
 import data.manage.postReportPage.PostReportForResponseList
+import data.manage.ribbonGet.RibbonData
 import data.post.CommentById.CommentById
 import data.post.PostById.PostById
 import data.post.PostById.PostData
@@ -102,6 +103,12 @@ class ManageViewModel(
         NetworkResult.UnSend()))
     var openImageAdd = _openImageAdd.asStateFlow()
 
+
+    private var _ribbonList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<RibbonData>>>(
+        NetworkResult.UnSend()))
+    var ribbonList = _ribbonList.asStateFlow()
+
+
     fun getOpenImage(){
         viewModelScope.launchInDefault {
             _openImageList.logicIfNotLoading {
@@ -110,6 +117,20 @@ class ManageViewModel(
                         _openImageList.reset(NetworkResult.Error(Throwable("获取失败")))
                     }.collectWithMassage {
                         _openImageList.reset(it.toNetworkResult())
+                    }
+            }
+        }
+    }
+
+
+    fun getRibbonData(){
+        viewModelScope.launchInDefault {
+            _ribbonList.logicIfNotLoading {
+                repository.getRibbonList()
+                    .catchWithMassage {
+                        _ribbonList.reset(NetworkResult.Error(Throwable("获取失败")))
+                    }.collectWithMassage {
+                        _ribbonList.reset(it.toNetworkResult())
                     }
             }
         }
@@ -173,6 +194,7 @@ class ManageViewModel(
             }
         }
     }
+
 }
 
 enum class PostProcessResult(val value : Int){

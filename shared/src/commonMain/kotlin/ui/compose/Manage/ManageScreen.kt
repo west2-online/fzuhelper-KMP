@@ -92,6 +92,12 @@ class ManageVoyagerScreen():Screen{
                             }) {
                                 Text("管理开屏页")
                             }
+                            DropdownMenuItem(onClick = {
+                                navigator.replaceAll(MangeRibbonVoyagerScreen())
+                                expanded = false
+                            }) {
+                                Text("管理轮播页")
+                            }
                         }
                     }
                 }

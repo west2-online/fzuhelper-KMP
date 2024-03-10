@@ -75,7 +75,7 @@ class SplashPageVoyagerScreen():Screen{
             imageState.CollectWithContent(
                 success = {
                     KamelImage(
-                        resource = asyncPainterResource("${BaseUrlConfig.openImage}/$it"),
+                        resource = asyncPainterResource("${BaseUrlConfig.OpenImage}/$it"),
                         null,
                         modifier = Modifier
                             .fillMaxSize(),
