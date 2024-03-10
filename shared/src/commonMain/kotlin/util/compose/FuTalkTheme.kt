@@ -21,6 +21,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import dev.icerock.moko.resources.compose.colorResource
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import org.example.library.MR
@@ -40,6 +41,11 @@ fun FuTalkTheme(
         }
     }
     val fontStyle = setting.font.collectAsState()
+
+    @Composable
+    fun getCurrentFont(): FontFamily {
+        return fontFamilyResource(fontStyle.value.fontResource)
+    }
 
     val primary by  animateColorAsState( if (!isSystemInDarkTheme())  composable.value.primaryInLightTheme else composable.value.primaryInDarkTheme)
     val onPrimary by  animateColorAsState( if (!isSystemInDarkTheme())  composable.value.onPrimaryInLightTheme else composable.value.onPrimaryInDarkTheme)
@@ -101,24 +107,21 @@ fun FuTalkTheme(
             isLight = isSystemInDarkTheme()
         ),
         content = content,
-        typography = MaterialTheme.typography.apply {
-            this.copy(
-                h1 = this.h1.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)) ,
-                h2 = this.h2.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                h3 = this.h3.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                h4 = this.h4.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                h5 = this.h5.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                h6 = this.h6.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                subtitle1 = this.subtitle1.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                subtitle2 = this.subtitle2.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                body1 = this.body1.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                body2 = this.body2.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                button = this.button.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                caption = this.caption.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource)),
-                overline = this.overline.copy(fontFamily = fontFamilyResource(fontStyle.value.fontResource))
-            )
-
-        }
+        typography = MaterialTheme.typography.copy(
+            h1 = MaterialTheme.typography.h1.copy(fontFamily = getCurrentFont()),
+            h2 = MaterialTheme.typography.h2.copy(fontFamily = getCurrentFont()),
+            h3 = MaterialTheme.typography.h3.copy(fontFamily = getCurrentFont()),
+            h4 = MaterialTheme.typography.h4.copy(fontFamily = getCurrentFont()),
+            h5 = MaterialTheme.typography.h5.copy(fontFamily = getCurrentFont()),
+            h6 = MaterialTheme.typography.h6.copy(fontFamily = getCurrentFont()),
+            subtitle1 = MaterialTheme.typography.subtitle1.copy(fontFamily = getCurrentFont()),
+            subtitle2 = MaterialTheme.typography.subtitle2.copy(fontFamily = getCurrentFont()),
+            body1 = MaterialTheme.typography.body1.copy(fontFamily = getCurrentFont()),
+            body2 = MaterialTheme.typography.body2.copy(fontFamily = getCurrentFont()),
+            button = MaterialTheme.typography.button.copy(fontFamily = getCurrentFont()),
+            caption = MaterialTheme.typography.caption.copy(fontFamily = getCurrentFont()),
+            overline = MaterialTheme.typography.overline.copy(fontFamily = getCurrentFont())
+        )
     )
 }
 
