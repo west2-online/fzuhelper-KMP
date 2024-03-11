@@ -1,10 +1,12 @@
 package ui.root
 
+import ImagePickerFactory
 import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.navigator.Navigator
 import data.person.UserData.Data
 import di.SystemAction
 import di.appModule
+import getPlatformContext
 import initStore
 import kotlinx.coroutines.CoroutineScope
 import org.koin.compose.KoinApplication
@@ -55,9 +57,7 @@ enum class TokeJump(val target:String,val verifyFunction:(String)->Boolean){
     }),
     WEB(target = "WEB", verifyFunction = {
 
-        val regexString = "^(http|https|ftp)\\://([a-zA-Z0-9\\.\\-]+(\\:[a-zA-Z0-9\\.&%\\\$\\-]+)*@)?((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-\n" +
-                "5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])|([a-zA-Z0-9\\-]+\\.)*[a-zA-Z0-9\\-]+\\.[a-zA-Z\n" +
-                "\\'\\\\/\\+&%\\\$#\\=~_\\-@]*)*\$"
+        val regexString = ""
         val regex = Regex(regexString)
         regex.matches(it)
     })
@@ -86,6 +86,7 @@ fun RootUi(
     systemAction: SystemAction
 ){
     Navigator(SplashPageVoyagerScreen()){ navigate ->
+        val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
         KoinApplication(application = {
             modules(
                 appModule(
@@ -155,7 +156,7 @@ fun RootUi(
                         }
                     },
                     systemAction = systemAction,
-                    navigator = navigate
+                    navigator = navigate,
                 )
             )
         }) {

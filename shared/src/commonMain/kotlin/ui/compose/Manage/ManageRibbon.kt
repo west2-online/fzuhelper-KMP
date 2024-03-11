@@ -2,7 +2,6 @@ package ui.compose.Manage
 
 
 import ImagePickerFactory
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,11 +14,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
@@ -27,9 +27,12 @@ import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -226,41 +229,36 @@ class PostNewRibbonVoyagerScreen():Screen{
                     }
             }
             val toastState = rememberToastState()
-            toastState.toastBindNetworkResult(manageViewModel.openImageDelete.collectAsState())
+            toastState.toastBindNetworkResult(manageViewModel.ribbonImageAdd.collectAsState())
             manageViewModel.ribbonImageAdd.collectAsState().CollectWithContent(
                 content = {
-                    imageByteArray.value?: Icon(
-                        painter = painterResource(MR.images.image),
-                        "",
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clickable {
-                                imagePicker.pickImage()
-                            }
-                    )
-                    imageByteArray.value?.let {
-                        Column (
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ){
+                        imageByteArray.value?: Icon(
+                            painter = painterResource(MR.images.image),
+                            "",
                             modifier = Modifier
-                                .fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ){
-                            Image(
-                                bitmap = it.asImageBitmap(),
-                                "",
+                                .size(50.dp)
+                                .clickable {
+                                    imagePicker.pickImage()
+                                }
+                        )
+                        imageByteArray.value?.let {
+                            Column (
                                 modifier = Modifier
-                                    .fillMaxWidth(1f)
-                                    .aspectRatio(0.5f),
-                                contentScale = ContentScale.FillBounds
-                            )
-                            Row (
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight()
-                                    .padding(10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(20.dp,Alignment.CenterHorizontally)
+                                    .fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ){
+                                Image(
+                                    bitmap = it.asImageBitmap(),
+                                    "",
+                                    modifier = Modifier
+                                        .fillMaxWidth(1f)
+                                        .aspectRatio(2f),
+                                    contentScale = ContentScale.FillBounds
+                                )
                                 Button(
                                     onClick = {
                                         imagePicker.pickImage()
@@ -268,70 +266,101 @@ class PostNewRibbonVoyagerScreen():Screen{
                                 ){
                                     Text("重选")
                                 }
-                                val currentTokenJump = remember {
-                                    mutableStateOf(TokeJump.Post)
-                                }
-                                val textForSend = remember{
-                                    mutableStateOf("")
-                                }
-                                Column {
-                                    TokeJump.values().forEach { tokenJump ->
-                                        val isSelect = remember {
-                                            derivedStateOf {
-                                                currentTokenJump.value == tokenJump
-                                            }
-                                        }
+                                Row (
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(20.dp,Alignment.CenterHorizontally)
+                                ){
+                                    val currentTokenJump = remember {
+                                        mutableStateOf(TokeJump.Post)
+                                    }
+                                    val textForSend = remember{
+                                        mutableStateOf("")
+                                    }
+                                    LazyColumn {
+                                        TokeJump.values().forEach { tokenJump ->
+                                            item{
+                                                val isSelect = remember {
+                                                    derivedStateOf {
+                                                        currentTokenJump.value == tokenJump
+                                                    }
+                                                }
 
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center,
-                                            modifier = Modifier
-                                                .wrapContentSize()
-                                                .padding(10.dp)
-                                        ){
-                                            Checkbox(
-                                                checked = isSelect.value,
-                                                onCheckedChange = {
-                                                    currentTokenJump.value = tokenJump
-                                                },
-                                                modifier = Modifier
-                                                    .padding(end = 10.dp)
-                                            )
-                                            AnimatedVisibility(
-                                                isSelect.value,
-                                                modifier = Modifier
-                                                    .weight(1f)
-                                            ){
-                                                TextField(
-                                                    value = textForSend.value,
-                                                    onValueChange = {
-                                                        textForSend.value = it
-                                                    },
-                                                    isError = tokenJump.verifyFunction.invoke(textForSend.value)
-                                                )
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.Center,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .wrapContentHeight()
+                                                        .padding(10.dp)
+                                                ) {
+                                                    Checkbox(
+                                                        checked = isSelect.value,
+                                                        onCheckedChange = {
+                                                            currentTokenJump.value = tokenJump
+                                                        }
+                                                    )
+                                                    Text(
+                                                        tokenJump.target,
+                                                        modifier = Modifier.padding(end = 10.dp)
+                                                    )
+                                                    Box(modifier = Modifier.weight(1f)) {
+                                                        androidx.compose.animation.AnimatedVisibility(
+                                                            isSelect.value,
+                                                            modifier = Modifier
+                                                        ) {
+                                                            TextField(
+                                                                value = textForSend.value,
+                                                                onValueChange = {
+                                                                    textForSend.value = it
+                                                                },
+                                                                isError = tokenJump.verifyFunction.invoke(
+                                                                    textForSend.value
+                                                                )
+                                                            )
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                Button(
-                                    onClick = {
-                                        if(imageByteArray.value == null){
-                                            toastState.addWarnToast("轮播图不得为空")
-                                            return@Button
-                                        }
-                                        if (currentTokenJump.value.verifyFunction(textForSend.value)){
-                                            toastState.addWarnToast("url不符合规范")
-                                        }
-                                        imageByteArray.value?.let {
-                                            manageViewModel.addRibbonImage(it,textForSend.value)
-                                        }
-                                    },
-                                    modifier = Modifier,
-                                    contentPadding = PaddingValues(horizontal = 40.dp)
-                                ){
-                                    Text("添加")
+                                    Button(
+                                        onClick = {
+                                            if(imageByteArray.value == null){
+                                                toastState.addWarnToast("轮播图不得为空")
+                                                return@Button
+                                            }
+                                            if (currentTokenJump.value.verifyFunction(textForSend.value)){
+                                                toastState.addWarnToast("url不符合规范")
+                                            }
+                                            imageByteArray.value?.let {
+                                                manageViewModel.addRibbonImage(it,textForSend.value)
+                                            }
+                                        },
+                                        modifier = Modifier,
+                                        contentPadding = PaddingValues(horizontal = 40.dp)
+                                    ){
+                                        Text("添加")
+                                    }
                                 }
                             }
+                        }
+                        FloatingActionButton(
+                            onClick = {
+
+                            },
+                            shape = CircleShape,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .offset(x = (-10).dp, (-10).dp)
+                        ){
+                            Icon(
+                                imageVector = Icons.Filled.Done,
+                                ""
+                            )
                         }
                     }
                 },

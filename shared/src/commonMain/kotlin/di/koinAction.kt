@@ -126,7 +126,7 @@ class SystemAction(
 fun appModule(
     rootAction: RootAction,
     systemAction: SystemAction,
-    navigator: Navigator
+    navigator: Navigator,
 ) = module {
     single {
         rootAction

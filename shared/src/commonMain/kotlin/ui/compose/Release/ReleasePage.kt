@@ -529,14 +529,15 @@ fun ReleasePageItemImage(
     image: State<ByteArray?>
 ){
     Column( modifier ) {
+        val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
+        imagePicker.registerPicker(onImagePicked)
         LazyRow(
             modifier = Modifier
                 .height(60.dp)
                 .padding(vertical = 5.dp)
         ) {
             item{
-                val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
-                imagePicker.registerPicker(onImagePicked)
+
                 Button(
                     {
                         imagePicker.pickImage()

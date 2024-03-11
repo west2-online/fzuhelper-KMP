@@ -75,25 +75,33 @@ class ManageVoyagerScreen():Screen{
                             onDismissRequest = { expanded = false },
                         ) {
                             DropdownMenuItem(onClick = {
-                                navigator.replaceAll(ManagePostVoyagerScreen)
+                                if(navigator.lastItem !is ManagePostVoyagerScreen ){
+                                    navigator.replaceAll(ManagePostVoyagerScreen)
+                                }
                                 expanded = false
                             }) {
                                 Text("管理帖子")
                             }
                             DropdownMenuItem(onClick = {
-                                navigator.replaceAll(ManageCommentVoyagerScreen)
+                                if(navigator.lastItem !is ManageCommentVoyagerScreen ){
+                                    navigator.replaceAll(ManageCommentVoyagerScreen)
+                                }
                                 expanded = false
                             }) {
                                 Text("管理评论")
                             }
                             DropdownMenuItem(onClick = {
-                                navigator.replaceAll(ManageOpenImageVoyagerScreen)
+                                if(navigator.lastItem !is ManageOpenImageVoyagerScreen ){
+                                    navigator.replaceAll(ManageOpenImageVoyagerScreen)
+                                }
                                 expanded = false
                             }) {
                                 Text("管理开屏页")
                             }
                             DropdownMenuItem(onClick = {
-                                navigator.replaceAll(MangeRibbonVoyagerScreen())
+                                if(navigator.lastItem !is MangeRibbonVoyagerScreen ){
+                                    navigator.replaceAll(MangeRibbonVoyagerScreen())
+                                }
                                 expanded = false
                             }) {
                                 Text("管理轮播页")
