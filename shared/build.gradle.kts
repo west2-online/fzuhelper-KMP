@@ -5,6 +5,7 @@ plugins {
     id("dev.icerock.mobile.multiplatform-resources")
     kotlin("plugin.serialization") version "1.9.20"
     id("kotlin-parcelize")
+    id("app.cash.sqldelight") version "2.0.1"
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
@@ -31,8 +32,9 @@ kotlin {
     val koin_version = "3.5.0"
     val koin_compose_version = "1.1.0"
     val ktor_version = "2.3.5"
-    val serialization_version = "1.6.0"
+    val serialization_version = "1.6.2"
     val markdown_version = "0.10.0"
+    val sqlDelightVersion = "2.0.1"
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -83,7 +85,7 @@ kotlin {
                 // QRcode 生成周期
                 implementation("io.github.alexzhirkevich:qrose:1.0.0-beta02")
 
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
                 //分页
                 implementation("app.cash.paging:paging-common:3.3.0-alpha02-0.4.0")
@@ -126,6 +128,9 @@ kotlin {
 
                 // Transitions
                 implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
+
+                //sqlDelight
+                implementation("app.cash.sqldelight:coroutines-extensions:$sqlDelightVersion")
             }
         }
         val androidMain by getting {
@@ -148,6 +153,7 @@ kotlin {
                 implementation("com.bumble.appyx:appyx-interactions-android:$appyx_version")
                 implementation("com.bumble.appyx:backstack-android:$appyx_version")
                 implementation("com.bumble.appyx:spotlight-android:$appyx_version")
+                implementation("app.cash.sqldelight:android-driver:$sqlDelightVersion")
             }
         }
         val iosX64Main by getting
@@ -159,6 +165,7 @@ kotlin {
             iosArm64Main.dependsOn(this)
             iosSimulatorArm64Main.dependsOn(this)
             dependencies {
+                implementation("app.cash.sqldelight:native-driver:$sqlDelightVersion")
                 implementation("io.ktor:ktor-client-darwin:$ktor_version")
             }
         }
@@ -195,3 +202,10 @@ multiplatformResources {
 //    multiplatformResourcesSourceSet = "commonClientMain"  // optional, default "commonMain"
 }
 
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("com.example")
+        }
+    }
+}
