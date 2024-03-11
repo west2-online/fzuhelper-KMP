@@ -104,6 +104,10 @@ class ManageViewModel(
     var openImageAdd = _openImageAdd.asStateFlow()
 
 
+    private var _ribbonImageAdd = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
+    var ribbonImageAdd = _ribbonImageAdd.asStateFlow()
+
     private var _ribbonList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<RibbonData>>>(
         NetworkResult.UnSend()))
     var ribbonList = _ribbonList.asStateFlow()
@@ -190,6 +194,21 @@ class ManageViewModel(
         viewModelScope.launchInDefault {
             _openImageAdd.logicIfNotLoading {
                 repository.addNewOpenImage(openImage)
+                    .catchWithMassage {
+                        _openImageAdd.reset(NetworkResult.Error(Throwable("添加失败")))
+                    }.collectWithMassage {
+                        _openImageAdd.reset(it.toNetworkResult())
+                    }
+            }
+        }
+    }
+
+
+    //添加新的开轮播图
+    fun addRibbonImage(ribbonImage:ByteArray,ribbonAction:String){
+        viewModelScope.launchInDefault {
+            _ribbonImageAdd.logicIfNotLoading {
+                repository.addNewRibbonImage(ribbonImage,ribbonAction)
                     .catchWithMassage {
                         _openImageAdd.reset(NetworkResult.Error(Throwable("添加失败")))
                     }.collectWithMassage {

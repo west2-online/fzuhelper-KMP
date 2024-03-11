@@ -6,6 +6,7 @@ import data.manage.openImageList.OpenImageList
 import data.manage.processPost.ProcessPost
 import data.manage.ribbonDelete.RibbonDelete
 import data.manage.ribbonGet.GetRibbon
+import data.manage.ribbonImageAdd.RibbonImageAdd
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.formData
@@ -100,6 +101,22 @@ class ManageRepository(
                 }
             ).body<RibbonDelete>()
             emit(result)
+        }
+    }
+
+    fun addNewRibbonImage(ribbonImage: ByteArray,ribbonAction:String): Flow<RibbonImageAdd> {
+        return flow {
+            val response = client.submitFormWithBinaryData(
+                url = "/manage/ribbon/add",
+                formData = formData {
+                    append("ribbon", ribbonImage, Headers.build {
+                        append(HttpHeaders.ContentType, "image/png")
+                        append(HttpHeaders.ContentDisposition, "filename=\"ktor_logo.png\"")
+                    })
+                    append("ribbonAction", ribbonAction)
+                }
+            ).body<RibbonImageAdd>()
+            emit(response)
         }
     }
 }
