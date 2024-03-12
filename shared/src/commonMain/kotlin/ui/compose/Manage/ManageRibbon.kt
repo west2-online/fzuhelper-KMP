@@ -7,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -66,7 +65,7 @@ import util.network.NetworkResult
 class MangeRibbonVoyagerScreen():Screen{
     @Composable
     override fun Content() {
-        Navigator(WorkWithExistingCarouselsVoyagerScreen()){ navigator ->
+        Navigator(WorkWithExistingCarouselsVoyagerScreen){ navigator ->
             Column {
                 Box(
                     modifier = Modifier
@@ -87,7 +86,7 @@ class MangeRibbonVoyagerScreen():Screen{
                         },
                         onClick = {
                             if (navigator.lastItem !is WorkWithExistingCarouselsVoyagerScreen){
-                                navigator.replaceAll(WorkWithExistingCarouselsVoyagerScreen())
+                                navigator.replaceAll(WorkWithExistingCarouselsVoyagerScreen)
                             }
                         },
                         label = {
@@ -102,11 +101,11 @@ class MangeRibbonVoyagerScreen():Screen{
                         },
                         onClick = {
                             if (navigator.lastItem !is PostNewRibbonVoyagerScreen){
-                                navigator.replaceAll(PostNewRibbonVoyagerScreen())
+                                navigator.replaceAll(PostNewRibbonVoyagerScreen)
                             }
                         },
                         label = {
-                            Text("管理已有轮播图")
+                            Text("添加新的轮播图")
                         }
                     )
                 }
@@ -157,7 +156,7 @@ fun RibbonImageShow(
     }
 }
 
-class WorkWithExistingCarouselsVoyagerScreen():Screen{
+object WorkWithExistingCarouselsVoyagerScreen:Screen{
     @Composable
     override fun Content() {
         val manageViewModel = koinInject<ManageViewModel>()
@@ -206,7 +205,7 @@ class WorkWithExistingCarouselsVoyagerScreen():Screen{
     }
 }
 
-class PostNewRibbonVoyagerScreen():Screen{
+object PostNewRibbonVoyagerScreen:Screen{
     @Composable
     override fun Content(){
         val manageViewModel = koinInject<ManageViewModel>()
@@ -244,123 +243,115 @@ class PostNewRibbonVoyagerScreen():Screen{
                                     imagePicker.pickImage()
                                 }
                         )
-                        imageByteArray.value?.let {
-                            Column (
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(10.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ){
-                                Image(
-                                    bitmap = it.asImageBitmap(),
-                                    "",
+                        imageByteArray.value?.let { imageByteArray ->
+                            val currentTokenJump = remember {
+                                mutableStateOf(TokeJump.Post)
+                            }
+                            val textForSend = remember {
+                                mutableStateOf("")
+                            }
+                            Box(modifier = Modifier.fillMaxSize()){
+                                Column(
                                     modifier = Modifier
-                                        .fillMaxWidth(1f)
-                                        .aspectRatio(2f),
-                                    contentScale = ContentScale.FillBounds
-                                )
-                                Button(
-                                    onClick = {
-                                        imagePicker.pickImage()
+                                        .fillMaxSize(),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Image(
+                                        bitmap = imageByteArray.asImageBitmap(),
+                                        "",
+                                        modifier = Modifier
+                                            .fillMaxWidth(1f)
+                                            .aspectRatio(2f),
+                                        contentScale = ContentScale.FillBounds
+                                    )
+                                    Button(
+                                        onClick = {
+                                            imagePicker.pickImage()
+                                        }
+                                    ) {
+                                        Text("重选")
                                     }
-                                ){
-                                    Text("重选")
-                                }
-                                Row (
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .padding(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(20.dp,Alignment.CenterHorizontally)
-                                ){
-                                    val currentTokenJump = remember {
-                                        mutableStateOf(TokeJump.Post)
-                                    }
-                                    val textForSend = remember{
-                                        mutableStateOf("")
-                                    }
-                                    LazyColumn {
-                                        TokeJump.values().forEach { tokenJump ->
-                                            item{
-                                                val isSelect = remember {
-                                                    derivedStateOf {
-                                                        currentTokenJump.value == tokenJump
-                                                    }
-                                                }
-
-                                                Row(
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.Center,
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .wrapContentHeight()
-                                                        .padding(10.dp)
-                                                ) {
-                                                    Checkbox(
-                                                        checked = isSelect.value,
-                                                        onCheckedChange = {
-                                                            currentTokenJump.value = tokenJump
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .padding(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(
+                                            20.dp,
+                                            Alignment.CenterHorizontally
+                                        )
+                                    ) {
+                                        LazyColumn {
+                                            TokeJump.values().forEach { tokenJump ->
+                                                item {
+                                                    val isSelect = remember {
+                                                        derivedStateOf {
+                                                            currentTokenJump.value == tokenJump
                                                         }
-                                                    )
-                                                    Text(
-                                                        tokenJump.target,
-                                                        modifier = Modifier.padding(end = 10.dp)
-                                                    )
-                                                    Box(modifier = Modifier.weight(1f)) {
-                                                        androidx.compose.animation.AnimatedVisibility(
-                                                            isSelect.value,
-                                                            modifier = Modifier
-                                                        ) {
-                                                            TextField(
-                                                                value = textForSend.value,
-                                                                onValueChange = {
-                                                                    textForSend.value = it
-                                                                },
-                                                                isError = tokenJump.verifyFunction.invoke(
-                                                                    textForSend.value
+                                                    }
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.Center,
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .wrapContentHeight()
+                                                            .padding(10.dp)
+                                                    ) {
+                                                        Checkbox(
+                                                            checked = isSelect.value,
+                                                            onCheckedChange = {
+                                                                currentTokenJump.value = tokenJump
+                                                            }
+                                                        )
+                                                        Text(
+                                                            tokenJump.target,
+                                                            modifier = Modifier.padding(end = 10.dp)
+                                                        )
+                                                        Box(modifier = Modifier.weight(1f)) {
+                                                            androidx.compose.animation.AnimatedVisibility(
+                                                                isSelect.value && tokenJump != TokeJump.Null,
+                                                                modifier = Modifier
+                                                            ) {
+                                                                TextField(
+                                                                    value = textForSend.value,
+                                                                    onValueChange = {
+                                                                        textForSend.value = it
+                                                                    },
+                                                                    isError = tokenJump.verifyFunction.invoke(
+                                                                        textForSend.value
+                                                                    )
                                                                 )
-                                                            )
+                                                            }
                                                         }
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                    Button(
-                                        onClick = {
-                                            if(imageByteArray.value == null){
-                                                toastState.addWarnToast("轮播图不得为空")
-                                                return@Button
-                                            }
-                                            if (currentTokenJump.value.verifyFunction(textForSend.value)){
-                                                toastState.addWarnToast("url不符合规范")
-                                            }
-                                            imageByteArray.value?.let {
-                                                manageViewModel.addRibbonImage(it,textForSend.value)
-                                            }
-                                        },
-                                        modifier = Modifier,
-                                        contentPadding = PaddingValues(horizontal = 40.dp)
-                                    ){
-                                        Text("添加")
-                                    }
+                                }
+                                FloatingActionButton(
+                                    onClick = {
+                                        val text = textForSend.value
+                                        if(currentTokenJump.value.verifyFunction(text)){
+                                            toastState.addWarnToast("跳转格式错误")
+                                            return@FloatingActionButton
+                                        }
+                                        val action = currentTokenJump.value.toActionString.invoke(text)
+                                        manageViewModel.addRibbonImage(ribbonImage = imageByteArray,ribbonAction = action)
+                                    },
+                                    shape = CircleShape,
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .offset(x = (-10).dp, (-10).dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Done,
+                                        ""
+                                    )
                                 }
                             }
-                        }
-                        FloatingActionButton(
-                            onClick = {
-
-                            },
-                            shape = CircleShape,
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .offset(x = (-10).dp, (-10).dp)
-                        ){
-                            Icon(
-                                imageVector = Icons.Filled.Done,
-                                ""
-                            )
                         }
                     }
                 },

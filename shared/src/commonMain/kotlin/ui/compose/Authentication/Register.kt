@@ -107,7 +107,7 @@ fun Register(
     )
     val isRegister by remember {
         derivedStateOf {
-            registerState.value is NetworkResult.Loading || captchaState.value is NetworkResult.Loading
+            registerState.value is NetworkResult.LoadingWithAction || captchaState.value is NetworkResult.LoadingWithAction
         }
     }
     val registerAble = remember {

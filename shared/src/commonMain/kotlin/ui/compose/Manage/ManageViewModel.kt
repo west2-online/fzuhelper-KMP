@@ -210,9 +210,9 @@ class ManageViewModel(
             _ribbonImageAdd.logicIfNotLoading {
                 repository.addNewRibbonImage(ribbonImage,ribbonAction)
                     .catchWithMassage {
-                        _openImageAdd.reset(NetworkResult.Error(Throwable("添加失败")))
+                        _ribbonImageAdd.reset(NetworkResult.Error(Throwable("添加失败")))
                     }.collectWithMassage {
-                        _openImageAdd.reset(it.toNetworkResult())
+                        _ribbonImageAdd.reset(it.toNetworkResult())
                     }
             }
         }

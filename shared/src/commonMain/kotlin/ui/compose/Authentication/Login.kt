@@ -79,7 +79,7 @@ fun Login(
     val toast = rememberToastState()
     val registerAble = remember {
         derivedStateOf {
-            loginState.value !is NetworkResult.Loading && userEmail != "" && userPassword!="" && captcha!=""
+            loginState.value !is NetworkResult.LoadingWithAction && userEmail != "" && userPassword!="" && captcha!=""
         }
     }
     DisposableEffect(Unit){
@@ -233,7 +233,7 @@ fun Login(
                             vertical = 10.dp,
                             horizontal = 20.dp
                         ),
-                        enabled = loginState.value !is NetworkResult.Loading
+                        enabled = loginState.value !is NetworkResult.LoadingWithAction
                     ) {
                         Icon(
                             painter = painterResource(MR.images.register),

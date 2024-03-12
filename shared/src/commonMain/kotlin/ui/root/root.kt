@@ -51,15 +51,27 @@ interface RootAction{
 fun getRootAction(): RootAction {
     return koinInject<RootAction>()
 }
-enum class TokeJump(val target:String,val verifyFunction:(String)->Boolean){
+enum class TokeJump(
+    val target:String,
+    val verifyFunction:(String)->Boolean,
+    val toActionString:(String)->String
+){
     Post(target = "POST", verifyFunction = {
         it.toIntOrNull() == null
+    }, toActionString = {
+        "POST-${it}"
     }),
     WEB(target = "WEB", verifyFunction = {
-
         val regexString = ""
         val regex = Regex(regexString)
         regex.matches(it)
+    }, toActionString = {
+        "WEB-${it}"
+    }),
+    Null(target = "NULL", verifyFunction = {
+        it == "null"
+    }, toActionString = {
+        "NULL"
     })
 }
 fun tokenJump(

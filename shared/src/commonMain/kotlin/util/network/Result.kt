@@ -32,7 +32,11 @@ interface NetworkResult<T> {
         override val key: MutableState<Int> = mutableStateOf(0)
     ): NetworkResult<T>
 
-    class Loading<T>( override var showToast: Boolean = true,override val key: MutableState<Int> = mutableStateOf(0)):
+    class LoadingWithAction<T>(override var showToast: Boolean = true, override val key: MutableState<Int> = mutableStateOf(0)):
+        NetworkResult<T>
+
+
+    class LoadingWithOutAction<T>(override var showToast: Boolean = true, override val key: MutableState<Int> = mutableStateOf(0)):
         NetworkResult<T>
 
     class UnSend<T>( override var showToast: Boolean = true,override val key: MutableState<Int> = mutableStateOf(0)) :
@@ -71,7 +75,7 @@ fun <T> State<NetworkResult<T>>.CollectWithContent(
                 }
 
             }
-            is NetworkResult.Loading<T> ->{
+            is NetworkResult.LoadingWithAction<T> ->{
                 if (loading == null){
                     content.invoke()
                 }else{
@@ -85,11 +89,20 @@ fun <T> State<NetworkResult<T>>.CollectWithContent(
                 }else{
                     unSend.invoke()
                 }
+            }
 
+            is NetworkResult.LoadingWithOutAction<T> ->{
+                if (loading == null){
+                    content.invoke()
+                }else{
+                    loading.invoke()
+                }
             }
         }
     }
 }
+
+
 
 
 
@@ -111,7 +124,7 @@ suspend fun <T> NetworkResult<T>.getNetwork(
                 block.invoke()
             }
         }
-        is NetworkResult.Loading<T> ->{
+        is NetworkResult.LoadingWithAction<T> ->{
             if (loading){
                 block.invoke()
             }
@@ -174,7 +187,7 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.reset(newValue : NetworkResul
 suspend fun <T> MutableStateFlow<NetworkResult<T>>.intoLoading(){
     val oldKey = this.value.key.value
     val newKey = Random(0).nextInt(0,(oldKey+10))
-    this.value = NetworkResult.Loading<T>().apply {
+    this.value = NetworkResult.LoadingWithAction<T>().apply {
         key.value = newKey
     }
     delay(1500)
@@ -182,7 +195,7 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.intoLoading(){
 }
 
 suspend fun <T> MutableStateFlow<NetworkResult<T>>.loading(){
-    this.reset(NetworkResult.Loading())
+    this.reset(NetworkResult.LoadingWithAction())
 }
 
 suspend fun <T> MutableStateFlow<NetworkResult<T>>.unSend(){
@@ -194,8 +207,8 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.logicIfNotLoading(
     block: suspend () -> Unit
 ){
     preAction.invoke()
-    if(this.value !is NetworkResult.Loading){
-        this.reset(NetworkResult.Loading())
+    if(this.value !is NetworkResult.LoadingWithAction){
+        this.reset(NetworkResult.LoadingWithAction())
         block.invoke()
     }
 }
@@ -213,11 +226,14 @@ fun <T> NetworkResult<T>.logicWithType(
         is NetworkResult.Error<T> -> {
             error?.invoke(this.error)
         }
-        is NetworkResult.Loading<T> -> {
+        is NetworkResult.LoadingWithAction<T> -> {
             loading?.invoke()
         }
         is NetworkResult.UnSend<T> -> {
             unSend?.invoke()
+        }
+        is NetworkResult.LoadingWithOutAction<T> ->{
+            loading?.invoke()
         }
     }
 }
