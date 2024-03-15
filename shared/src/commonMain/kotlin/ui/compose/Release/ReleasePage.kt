@@ -39,7 +39,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -523,9 +522,9 @@ fun ReleasePageItemText(
                             .clickable {
                                 openEmoji.value = !openEmoji.value
                             }
-                            .fillMaxSize(0.7f)
+                            .fillMaxSize(0.6f)
                         ,
-                        imageVector = Icons.Filled.Person,
+                        painter = painterResource(MR.images.emoji),
                         contentDescription = null
                     )
                 }
