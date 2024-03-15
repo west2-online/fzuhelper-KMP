@@ -21,6 +21,9 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +39,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -52,6 +56,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import asImageBitmap
@@ -220,7 +227,8 @@ fun ReleasePageScreen(
                                             ReleasePageItemText(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .wrapContentHeight(),
+                                                    .wrapContentHeight()
+                                                    .animateContentSize(),
                                                 text = releasePageItem.text,
                                                 onValueChange = {
                                                     releasePageItem.text.value = it
@@ -233,6 +241,9 @@ fun ReleasePageScreen(
                                                 },
                                                 moveUp = {
                                                     releasePageItems.upOrder(index)
+                                                },
+                                                onEmojiChange = {
+                                                    releasePageItem.text.value = releasePageItem.text.value + it
                                                 }
                                             )
                                         }
@@ -433,92 +444,148 @@ interface ReleasePageItem{
 fun ReleasePageItemText(
     modifier: Modifier,
     onValueChange:(String)->Unit = {},
+    onEmojiChange:(String)->Unit = {},
     overflow:(Int)->Unit = {},
     delete:()->Unit = {},
     moveUp:()->Unit = {},
     moveDown: () -> Unit = {},
-    text:State<String>
+    text:State<String>,
 ){
-    Column( modifier ) {
-        LazyRow(
-            modifier = Modifier
-                .height(60.dp)
-                .padding(vertical = 5.dp)
-        ) {
-            item{
-                Icon(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .wrapContentSize(Alignment.Center)
-                        .clip(RoundedCornerShape(10))
-                        .clickable {
-                            delete.invoke()
-                        }
-                        .padding(3.dp)
-                        .fillMaxSize(0.7f)
-                    ,
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = null
-                )
+    val openEmoji = remember{
+        mutableStateOf(false)
+    }
+
+    Column(
+        modifier = modifier
+    ){
+        Column( modifier ) {
+            LazyRow(
+                modifier = Modifier
+                    .height(60.dp)
+                    .padding(vertical = 5.dp)
+            ) {
+                item{
+                    Icon(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .wrapContentSize(Alignment.Center)
+                            .clip(RoundedCornerShape(10))
+                            .clickable {
+                                delete.invoke()
+                            }
+                            .padding(3.dp)
+                            .fillMaxSize(0.7f)
+                        ,
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = null
+                    )
+                }
+                item{
+                    Icon(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .wrapContentSize(Alignment.Center)
+                            .clip(RoundedCornerShape(10))
+                            .clickable {
+                                moveDown.invoke()
+                            }
+                            .fillMaxSize(0.7f)
+                        ,
+                        imageVector = Icons.Filled.KeyboardArrowDown,
+                        contentDescription = null
+                    )
+                }
+                item{
+                    Icon(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .wrapContentSize(Alignment.Center)
+                            .clip(RoundedCornerShape(10))
+                            .clickable {
+                                moveUp.invoke()
+                            }
+                            .fillMaxSize(0.7f)
+                        ,
+                        imageVector = Icons.Filled.KeyboardArrowUp,
+                        contentDescription = null
+                    )
+                }
+                item{
+                    Icon(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .wrapContentSize(Alignment.Center)
+                            .clip(RoundedCornerShape(10))
+                            .clickable {
+                                openEmoji.value = !openEmoji.value
+                            }
+                            .fillMaxSize(0.7f)
+                        ,
+                        imageVector = Icons.Filled.Person,
+                        contentDescription = null
+                    )
+                }
             }
-            item{
-                Icon(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .wrapContentSize(Alignment.Center)
-                        .clip(RoundedCornerShape(10))
-                        .clickable {
-                            moveDown.invoke()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                content = {
+                    TextField(
+                        value = TextFieldValue(text.value, TextRange(text.value.length)),
+                        onValueChange = { textFieldValue ->
+                            onValueChange.invoke(textFieldValue.text)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .animateContentSize(
+                                finishedListener = { init,target ->
+                                    println(target.height - init.height)
+                                    overflow.invoke(target.height - init.height)
+                                }
+                            )
+                    )
+                }
+            )
+        }
+        val textMeasureScope = rememberTextMeasurer()
+        val result = textMeasureScope.measure("\uD83D\uDE03")
+        Crossfade(openEmoji.value){
+            if(it){
+                LazyHorizontalGrid(
+                    rows = GridCells.Fixed(5),
+                    modifier = Modifier.height((result.size.height*5).dp).fillMaxWidth()
+                ){
+                    items(emojiList){
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(10))
+                                .clickable {
+                                    onEmojiChange.invoke(it)
+                                }
+                        ){
+                            Text(
+                                text = it,
+                                modifier = Modifier
+                                    .wrapContentSize()
+                                    .align(Alignment.Center)
+                            )
                         }
-                        .fillMaxSize(0.7f)
-                    ,
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = null
-                )
-            }
-            item{
-                Icon(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .wrapContentSize(Alignment.Center)
-                        .clip(RoundedCornerShape(10))
-                        .clickable {
-                            moveUp.invoke()
-                        }
-                        .fillMaxSize(0.7f)
-                    ,
-                    imageVector = Icons.Filled.KeyboardArrowUp,
-                    contentDescription = null
-                )
+
+                    }
+                }
             }
         }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            content = {
-                TextField(
-                    value = text.value,
-                    onValueChange = onValueChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .animateContentSize(
-                            finishedListener = { init,target ->
-                                println(target.height - init.height)
-                                overflow.invoke(target.height - init.height)
-                            }
-                        )
-                )
-            }
-        )
     }
 }
-
-
+val emojiList = listOf("😃","😄","😁","😆","😅","🤣","😂","🙂","😉","😊","😇","🥰","😍","🤩","😘","😗","😙","😏","😋","😛","😜","🤪","😝","🤗","🤭","🤫","🤔","🤤","🤠","🥳","😎","🤓","🧐","🙃","🤐","🤨","😐","😑","😶","😶","😒","🙄","😬","😮","🤥","😌","😔","😪","😴","😷","🤒","🤕","🤢","🤮","🤧","🥵","🥶","🥴","😵","😵","🤯","🥱","😕","😟","🙁","😮","😯","😲","😳","🥺","😦","😧","😨","😰","😥","😢","😭","😱","😖","😣","😞","😓","😩","😫","😤","😡","😠","🤬","👿")
 @Composable
 fun ReleasePageItemImage(
     modifier: Modifier,
