@@ -2,6 +2,7 @@ package di
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import cafe.adriel.voyager.navigator.Navigator
 import com.liftric.kvault.KVault
 import config.BaseUrlConfig
 import configureForPlatform
@@ -32,6 +33,7 @@ import repository.ReportRepository
 import repository.RibbonRepository
 import repository.SplashRepository
 import repository.WeatherRepository
+import ui.compose.Action.ActionViewModel
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.Manage.ManageViewModel
@@ -41,10 +43,10 @@ import ui.compose.Post.PostDetailViewModel
 import ui.compose.Post.PostListViewModel
 import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Report.ReportViewModel
-import ui.compose.Ribbon.RibbonViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.compose.Weather.WeatherViewModel
 import ui.root.RootAction
+import ui.setting.Setting
 import util.compose.Toast
 import viewModelDefinition
 
@@ -123,13 +125,20 @@ class SystemAction(
 
 fun appModule(
     rootAction: RootAction,
-    systemAction: SystemAction
+    systemAction: SystemAction,
+    navigator: Navigator,
 ) = module {
     single {
         rootAction
     }
     single {
+        Setting(get())
+    }
+    single {
         systemAction
+    }
+    single {
+        navigator
     }
     single {
         val client = HttpClient{
@@ -174,7 +183,7 @@ fun appModule(
                 get<RootAction>().reLogin()
             }
             if(it.status.value == 557){
-                get<RootAction>().navigateBack()
+                get<RootAction>().popManage()
             }
         }
         return@single client
@@ -244,7 +253,7 @@ fun Module.viewModel(){
         AuthenticationViewModel( get(),get(),get())
     }
     single {
-        RibbonViewModel( get(),get())
+        ActionViewModel( get(),get())
     }
     single {
         SplashPageViewModel(get(),get())

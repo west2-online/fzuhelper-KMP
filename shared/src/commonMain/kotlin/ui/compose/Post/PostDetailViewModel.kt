@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
 import repository.PostRepository
 import ui.compose.Report.ReportType
 import ui.root.RootAction
-import ui.root.RootTarget
 import util.flow.catchWithMassage
 import util.flow.collectWithMassage
 import util.flow.launchInDefault
@@ -36,7 +35,9 @@ class PostDetailViewModel(
 ):ViewModel() {
 
     private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostById>>(
-        NetworkResult.UnSend()))
+        NetworkResult.UnSend()
+    )
+    )
     val currentPostDetail = _currentPostDetail.asStateFlow()
 
     private val _postCommentPreviewFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, Data>?>(null))
@@ -69,14 +70,15 @@ class PostDetailViewModel(
 
     fun getPostById(id: String){
         viewModelScope.launch (Dispatchers.IO){
-            _currentPostDetail.reset(NetworkResult.Loading())
-            postRepository.getPostById(id = id)
-                .catchWithMassage {
-                    _currentPostDetail.reset(NetworkResult.Error(Throwable("帖子获取失败")))
-                }
-                .collectWithMassage{
-                    _currentPostDetail.reset(NetworkResult.Success(it))
-                }
+            _currentPostDetail.logicIfNotLoading {
+                postRepository.getPostById(id = id)
+                    .catchWithMassage {
+                        _currentPostDetail.reset(NetworkResult.Error(Throwable("帖子获取失败")))
+                    }
+                    .collectWithMassage{
+                        _currentPostDetail.reset(NetworkResult.Success(it))
+                    }
+            }
         }
     }
 
@@ -93,10 +95,12 @@ class PostDetailViewModel(
         }
     }
 
-    fun navigateToRelease(){ rootAction.navigateToNewTarget(RootTarget.Release) }
+    fun navigateToRelease(){
+        rootAction.navigateFormAnywhereToRelease()
+    }
 
     fun navigateToReport(type: ReportType){
-        rootAction.navigateToNewTarget(RootTarget.Report(type))
+        rootAction.navigateFormPostToReport(type)
     }
 
     fun getPostCommentTree(treeStart: String,postId:String){

@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,8 +52,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.compose.painterResource
 import org.example.library.MR
+import org.koin.compose.koinInject
 import repository.TokenData
 import util.compose.EasyToast
 import util.compose.Toast
@@ -102,7 +107,7 @@ fun Register(
     )
     val isRegister by remember {
         derivedStateOf {
-            registerState.value is NetworkResult.Loading || captchaState.value is NetworkResult.Loading
+            registerState.value is NetworkResult.LoadingWithAction || captchaState.value is NetworkResult.LoadingWithAction
         }
     }
     val registerAble = remember {
@@ -517,6 +522,42 @@ fun Register(
     }
 
 }
+
+class RegisterVoyagerScreen : Screen {
+    @Composable
+    override fun Content() {
+        val navigate = LocalNavigator.currentOrThrow
+        val viewModel = koinInject<AuthenticationViewModel>()
+        Register(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
+            register = { email, password, captcha,studentCode,studentPassword->
+                viewModel.register(email,password,captcha,studentCode,studentPassword)
+            },
+            getCaptcha = { email ->
+                viewModel.getRegisterCaptcha(email)
+            },
+            captchaState = viewModel.captcha.collectAsState(),
+            registerState = viewModel.registerState.collectAsState(),
+            verifyStudentID = { studentCode, studentPassword,studentCaptcha ->
+                viewModel.verifyStudentID(studentCode,studentPassword, captcha = studentCaptcha)
+            },
+            navigateToLogin = {
+                navigate.push(LoginVoyagerScreen())
+            },
+            studentCaptchaState = viewModel.studentCaptcha.collectAsState(),
+            getStudentCaptcha = {
+                viewModel.refreshStudentCaptcha()
+            },
+            verifyStudentIDState = viewModel.verifyStudentIDState.collectAsState(),
+            cleanRegisterData = {
+                viewModel.cleanRegisterData()
+            }
+        )
+    }
+}
+
 
 
 

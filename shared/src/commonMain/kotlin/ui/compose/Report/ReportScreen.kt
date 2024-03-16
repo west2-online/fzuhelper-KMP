@@ -25,13 +25,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bumble.appyx.components.backstack.BackStack
-import com.bumble.appyx.components.backstack.BackStackModel
-import com.bumble.appyx.components.backstack.ui.fader.BackStackFader
-import com.bumble.appyx.navigation.composable.AppyxComponent
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
-import com.bumble.appyx.navigation.node.ParentNode
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.Navigator
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import com.bumble.appyx.utils.multiplatform.RawValue
@@ -147,71 +142,7 @@ sealed class ReportTarget : Parcelable {
 
 }
 
-class ReportRouteNode(
-    buildContext: BuildContext,
-    type : ReportType,
-    private val backStack: BackStack<ReportTarget> = BackStack(
-        model = BackStackModel(
-            initialTarget = when(type){
-                is ReportType.PostReportType -> {
-                    ReportTarget.PostReportType(type)
-                }
-                is ReportType.CommentReportType -> {
-                    ReportTarget.CommentReportType(type)
-                }
-            },
-            savedStateMap = buildContext.savedStateMap,
-        ),
-        visualisation = { BackStackFader(it) }
-    )
-) : ParentNode<ReportTarget>(
-    buildContext = buildContext,
-    appyxComponent = backStack
-) {
-    override fun resolve(interactionTarget: ReportTarget, buildContext: BuildContext): Node =
-        when (interactionTarget) {
-            is ReportTarget.CommentReportType -> CommentReportTypeNode(buildContext,interactionTarget.type)
-            is ReportTarget.PostReportType ->  PostReportTypeNode(buildContext,interactionTarget.type)
-        }
 
-    @Composable
-    override fun View(modifier: Modifier) {
-        AppyxComponent(
-            backStack,
-            modifier = Modifier
-                .padding(10.dp)
-        )
-    }
-}
-
-
-class CommentReportTypeNode(
-    buildContext:BuildContext,
-    val type : ReportType.CommentReportType
-):Node(
-    buildContext = buildContext
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        CommentRepost(
-            commentData = type.comment
-        )
-    }
-}
-
-class PostReportTypeNode(
-    buildContext:BuildContext,
-    val type : ReportType.PostReportType
-):Node(
-    buildContext = buildContext
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        PostReport(
-            data = type.data
-        )
-    }
-}
 
 
 enum class ReportLabel(val code : Int ,val reason: String, val description: String) {
@@ -223,4 +154,17 @@ enum class ReportLabel(val code : Int ,val reason: String, val description: Stri
     PRIVACY_ISSUE(6,"隐私问题", "公开他人的私人信息、违反隐私权的行为"),
     UNAUTHORIZED_ADVERTISEMENT(7,"不当宣传或广告", "发布未经授权的广告、垃圾邮件或其他形式的不当宣传"),
     MALICIOUS_BEHAVIOR(8,"恶意行为", "参与恶意行为，如网络欺凌、诽谤、虚假信息传播等")
+}
+
+
+class ReportVoyagerScreen(val type: ReportType):Screen{
+    @Composable
+    override fun Content() {
+        Navigator(
+            when(type){
+                is ReportType.CommentReportType -> CommentReportVoyagerScreen(type)
+                is ReportType.PostReportType -> PostRepostVoyagerScreen(type)
+            }
+        )
+    }
 }

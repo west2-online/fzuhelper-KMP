@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.PersonRepository
 import ui.root.RootAction
-import ui.root.RootTarget
 import util.flow.catchWithMassage
 import util.flow.collectWithMassage
 import util.network.NetworkResult
@@ -107,7 +106,7 @@ class PersonViewModel(
 
     fun navigateToModifierInformation(userId:Int,userData : UserData){
         userData.data?.let {
-            rootAction.navigateToNewTarget(RootTarget.ModifierInformation(userData = userData.data))
+            rootAction.navigateFormAnywhereToMain()
         }
     }
 }

@@ -8,6 +8,7 @@ import data.manage.commentReportData.CommentReportContextData
 import data.manage.commentReportData.CommentReportForResponseList
 import data.manage.postReportPage.PostReportContextData
 import data.manage.postReportPage.PostReportForResponseList
+import data.manage.ribbonGet.RibbonData
 import data.post.CommentById.CommentById
 import data.post.PostById.PostById
 import data.post.PostById.PostData
@@ -102,9 +103,22 @@ class ManageViewModel(
         NetworkResult.UnSend()))
     var openImageAdd = _openImageAdd.asStateFlow()
 
+
+    private var _ribbonImageAdd = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
+    var ribbonImageAdd = _ribbonImageAdd.asStateFlow()
+
+    private var _ribbonList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<RibbonData>>>(
+        NetworkResult.UnSend()))
+    var ribbonList = _ribbonList.asStateFlow()
+
+    private var _ribbonDelete = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
+    var ribbonDelete = _ribbonDelete.asStateFlow()
+
     fun getOpenImage(){
         viewModelScope.launchInDefault {
-            _openImageList.logicIfNotLoading {
+            _openImageList.logicIfNotLoading{
                 repository.getImageList()
                     .catchWithMassage {
                         _openImageList.reset(NetworkResult.Error(Throwable("获取失败")))
@@ -115,8 +129,23 @@ class ManageViewModel(
         }
     }
 
+
+    fun getRibbonData(){
+        viewModelScope.launchInDefault {
+            _ribbonList.logicIfNotLoading {
+                repository.getRibbonList()
+                    .catchWithMassage {
+                        _ribbonList.reset(NetworkResult.Error(Throwable("获取失败")))
+                    }.collectWithMassage {
+                        _ribbonList.reset(it.toNetworkResult())
+                    }
+            }
+        }
+    }
+
     fun refresh(){
         getOpenImage()
+        getRibbonData()
     }
 
     //处理帖子
@@ -169,6 +198,41 @@ class ManageViewModel(
                         _openImageAdd.reset(NetworkResult.Error(Throwable("添加失败")))
                     }.collectWithMassage {
                         _openImageAdd.reset(it.toNetworkResult())
+                    }
+            }
+        }
+    }
+
+
+    //添加新的开轮播图
+    fun addRibbonImage(ribbonImage:ByteArray,ribbonAction:String){
+        viewModelScope.launchInDefault {
+            _ribbonImageAdd.logicIfNotLoading {
+                repository.addNewRibbonImage(ribbonImage,ribbonAction)
+                    .catchWithMassage {
+                        _ribbonImageAdd.reset(NetworkResult.Error(Throwable("添加失败")))
+                    }.collectWithMassage {
+                        _ribbonImageAdd.reset(it.toNetworkResult())
+                    }
+            }
+        }
+    }
+
+    fun deleteRibbon(imageName :String){
+        viewModelScope.launchInDefault {
+            _ribbonDelete.logicIfNotLoading (
+                preAction = {
+                    _ribbonList.reset(NetworkResult.UnSend())
+                }
+            ){
+                repository.deleteRibbon(imageName = imageName)
+                    .catchWithMassage {
+                        _ribbonDelete.reset(NetworkResult.Error(Throwable("删除失败")))
+                        refresh()
+                    }
+                    .collectWithMassage {
+                        _ribbonDelete.reset(it.toNetworkResult())
+                        refresh()
                     }
             }
         }

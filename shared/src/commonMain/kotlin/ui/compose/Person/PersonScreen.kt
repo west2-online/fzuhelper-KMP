@@ -33,18 +33,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import config.BaseUrlConfig
 import data.person.UserData.UserData
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import ui.compose.Main.MainItems
 import util.compose.EasyToast
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
@@ -190,7 +192,6 @@ fun PersonScreen(
         }
         EasyToast(toast = toast)
     }
-
 }
 
 @Composable
@@ -231,7 +232,7 @@ fun PersonalInformationInPerson(
                 is NetworkResult.Success<UserData> -> (userData.value as NetworkResult.Success<UserData>).data.data!!.username
                 is NetworkResult.Error<UserData> -> "加载失败"
                 is NetworkResult.UnSend<UserData> -> "加载中"
-                is NetworkResult.Loading<UserData> -> "加载中"
+                is NetworkResult.LoadingWithAction<UserData> -> "加载中"
                 else -> "加载失败"
             },
             fontSize = 18.sp,
@@ -244,7 +245,7 @@ fun PersonalInformationInPerson(
                 is NetworkResult.Success<UserData> -> (userData.value as NetworkResult.Success<UserData>).data.data!!.email
                 is NetworkResult.Error<UserData> -> "加载失败"
                 is NetworkResult.UnSend<UserData> -> "加载中"
-                is NetworkResult.Loading<UserData> -> "加载中"
+                is NetworkResult.LoadingWithAction<UserData> -> "加载中"
                 else -> "加载失败"
             },
             fontSize = 10.sp
@@ -254,7 +255,7 @@ fun PersonalInformationInPerson(
                 is NetworkResult.Success<UserData> -> "🗺️ ${(userData.value as NetworkResult.Success<UserData>).data.data!!.location}"
                 is NetworkResult.Error<UserData> -> "加载失败"
                 is NetworkResult.UnSend<UserData> -> "加载中"
-                is NetworkResult.Loading<UserData> -> "加载中"
+                is NetworkResult.LoadingWithAction<UserData> -> "加载中"
                 else -> "加载失败"
             },
             fontSize = 10.sp
@@ -265,7 +266,7 @@ fun PersonalInformationInPerson(
                 is NetworkResult.Success<UserData> -> "\uD83E\uDDE0 ${(userData.value as NetworkResult.Success<UserData>).data.data!!.age}"
                 is NetworkResult.Error<UserData> -> "加载失败"
                 is NetworkResult.UnSend<UserData> -> "加载中"
-                is NetworkResult.Loading<UserData> -> "加载中"
+                is NetworkResult.LoadingWithAction<UserData> -> "加载中"
                 else -> "加载失败"
             },
             fontSize = 10.sp
@@ -283,7 +284,7 @@ fun State<NetworkResult<UserData>>.string(
         is NetworkResult.Success-> success
         is NetworkResult.Error -> error
         is NetworkResult.UnSend -> unSend
-        is NetworkResult.Loading -> loading
+        is NetworkResult.LoadingWithAction -> loading
         else -> "加载失败"
     }
 }
@@ -314,17 +315,31 @@ fun randomColor(): Color {
 
 
 
-class PersonRouteNode(
-    buildContext: BuildContext,
-    private val userId: String? = null
-) : Node(
-    buildContext = buildContext
-) {
+class PersonVoyagerScreen(
+    val modifier: Modifier,
+    private val userId: String?
+) : Tab {
+
     @Composable
-    override fun View(modifier: Modifier) {
+    override fun Content() {
         PersonScreen(
             modifier = modifier,
             id = userId
         )
     }
+
+    override val options: TabOptions
+        @Composable
+        get() {
+            val title = MainItems.POST.tag
+            val icon = rememberVectorPainter(MainItems.POST.selectImageVector)
+            return remember {
+                TabOptions(
+                    index = 0u,
+                    title = title,
+                    icon = icon
+                )
+            }
+        }
+
 }

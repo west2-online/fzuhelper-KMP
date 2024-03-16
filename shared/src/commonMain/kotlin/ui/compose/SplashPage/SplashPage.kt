@@ -18,8 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
+import cafe.adriel.voyager.core.screen.Screen
 import com.liftric.kvault.KVault
 import config.BaseUrlConfig
 import io.kamel.image.KamelImage
@@ -28,20 +27,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import ui.root.RootAction
-import ui.root.RootTarget
 import util.compose.EasyToast
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.network.CollectWithContent
 import util.network.logicWithType
 
-class SplashPageRouteNode(
-    val buildContext: BuildContext
-):Node(
-    buildContext = buildContext
-){
+
+class SplashPageVoyagerScreen():Screen{
     @Composable
-    override fun View(modifier: Modifier) {
+    override fun Content() {
         val viewModel:SplashPageViewModel = koinInject()
         val imageState = viewModel.imageState.collectAsState()
         val toast = rememberToastState()
@@ -69,19 +64,18 @@ class SplashPageRouteNode(
         Box(
             modifier = Modifier.fillMaxSize()
                 .clickable {
-//                    viewModel.navigateToMain()
                     token?.let {
-                        rootAction.replaceNewTarget(RootTarget.Main)
+                        rootAction.navigateFormSplashToMainPage()
                     }
                     token?:let {
-                        rootAction.replaceNewTarget(RootTarget.Authentication)
+                        rootAction.navigateFormSplashToLoginAndRegister()
                     }
                 }
         ){
             imageState.CollectWithContent(
                 success = {
                     KamelImage(
-                        resource = asyncPainterResource("${BaseUrlConfig.openImage}/$it"),
+                        resource = asyncPainterResource("${BaseUrlConfig.OpenImage}/$it"),
                         null,
                         modifier = Modifier
                             .fillMaxSize(),

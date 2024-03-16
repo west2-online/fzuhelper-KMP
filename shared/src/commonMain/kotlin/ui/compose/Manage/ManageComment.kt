@@ -44,8 +44,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.cash.paging.compose.collectAsLazyPagingItems
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
+import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
 import data.share.Comment
 import io.kamel.image.KamelImage
@@ -57,15 +56,102 @@ import util.compose.shimmerLoadingAnimation
 import util.network.NetworkResult
 import util.network.toEasyTime
 
-//管理评论举报页面
-class ManageCommentReport(
-    buildContext: BuildContext
-): Node(
-    buildContext = buildContext
-){
+
+//评论展示页面
+@Composable
+fun CommentInReportDetail(
+    comment: Comment,
+) {
+    Row(modifier = Modifier
+        .padding(bottom = 10.dp)
+        .animateContentSize()
+        .clip(RoundedCornerShape(3.dp))
+        .padding(vertical = 5.dp)
+    ){
+        //头像
+        KamelImage(
+            resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${comment.User.avatar}"),
+            null,
+            modifier = Modifier
+                .size(50.dp)
+                .wrapContentSize(Alignment.TopCenter)
+                .fillMaxSize(0.7f)
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(10)),
+            contentScale = ContentScale.FillBounds,
+            onLoading = {
+
+                Box(modifier = Modifier
+                    .matchParentSize()
+                    .shimmerLoadingAnimation()
+                )
+            }
+        )
+        Column (
+            modifier = Modifier
+                .padding(end = 10.dp)
+                .weight(1f)
+                .wrapContentHeight()
+        ){
+            Text(comment.User.username)
+            Text(
+                comment.Time.toEasyTime(),
+                fontSize = 10.sp
+            )
+            Text(
+                comment.Content,
+                fontSize = 14.sp
+            )
+            comment.Image.let {
+                if (it!=""){
+                    KamelImage(
+                        resource = asyncPainterResource("${BaseUrlConfig.CommentImage}/${it}"),
+                        null,
+                        modifier = Modifier
+                            .padding(vertical = 5.dp)
+                            .fillMaxWidth(0.5f)
+                            .wrapContentHeight()
+                            .clip(RoundedCornerShape(3))
+                            .animateContentSize(),
+                        contentScale = ContentScale.Inside,
+                        onLoading = {
+                            Box(modifier = Modifier
+                                .matchParentSize()
+                                .shimmerLoadingAnimation()
+                            )
+                        }
+                    )
+                }
+            }
+            if( comment.Status == 1 ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(10))
+                        .padding(vertical = 10.dp)
+                ){
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .animateContentSize(),
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 10.sp,
+                        text = "该评论遭到较多举报，请谨慎看待",
+                        color = Color.Red
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+object ManageCommentVoyagerScreen:Screen{
     @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
     @Composable
-    override fun View(modifier: Modifier) {
+    override fun Content() {
         val viewModel = koinInject<ManageViewModel>()
         val commentReportPageList = viewModel.commentReportPageList.collectAsLazyPagingItems()
         val horizontalPage = rememberPagerState { commentReportPageList.itemCount }
@@ -217,96 +303,6 @@ class ManageCommentReport(
                             }
                         }
                     }
-                }
-            }
-        }
-    }
-}
-
-//评论展示页面
-@Composable
-fun CommentInReportDetail(
-    comment: Comment,
-) {
-    Row(modifier = Modifier
-        .padding(bottom = 10.dp)
-        .animateContentSize()
-        .clip(RoundedCornerShape(3.dp))
-        .padding(vertical = 5.dp)
-    ){
-        //头像
-        KamelImage(
-            resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${comment.User.avatar}"),
-            null,
-            modifier = Modifier
-                .size(50.dp)
-                .wrapContentSize(Alignment.TopCenter)
-                .fillMaxSize(0.7f)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(10)),
-            contentScale = ContentScale.FillBounds,
-            onLoading = {
-
-                Box(modifier = Modifier
-                    .matchParentSize()
-                    .shimmerLoadingAnimation()
-                )
-            }
-        )
-        Column (
-            modifier = Modifier
-                .padding(end = 10.dp)
-                .weight(1f)
-                .wrapContentHeight()
-        ){
-            Text(comment.User.username)
-            Text(
-                comment.Time.toEasyTime(),
-                fontSize = 10.sp
-            )
-            Text(
-                comment.Content,
-                fontSize = 14.sp
-            )
-            comment.Image.let {
-                if (it!=""){
-                    KamelImage(
-                        resource = asyncPainterResource("${BaseUrlConfig.CommentImage}/${it}"),
-                        null,
-                        modifier = Modifier
-                            .padding(vertical = 5.dp)
-                            .fillMaxWidth(0.5f)
-                            .wrapContentHeight()
-                            .clip(RoundedCornerShape(3))
-                            .animateContentSize(),
-                        contentScale = ContentScale.Inside,
-                        onLoading = {
-                            Box(modifier = Modifier
-                                .matchParentSize()
-                                .shimmerLoadingAnimation()
-                            )
-                        }
-                    )
-                }
-            }
-            if( comment.Status == 1 ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .clip(RoundedCornerShape(10))
-                        .padding(vertical = 10.dp)
-                ){
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .animateContentSize(),
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 10.sp,
-                        text = "该评论遭到较多举报，请谨慎看待",
-                        color = Color.Red
-                    )
                 }
             }
         }

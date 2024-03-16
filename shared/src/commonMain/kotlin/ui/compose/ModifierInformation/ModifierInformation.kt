@@ -40,8 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import asImageBitmap
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
+import cafe.adriel.voyager.core.screen.Screen
 import data.person.UserData.Data
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
@@ -250,14 +249,12 @@ fun ModifierInformationScreen(
     }
 }
 
-class ModifierInformationRouteNode(
+
+class ModifierInformationVoyagerScreen(
     private val userData: Data,
-    buildContext: BuildContext
-): Node(
-    buildContext
-){
+) :Screen{
     @Composable
-    override fun View(modifier: Modifier) {
+    override fun Content() {
         ModifierInformationScreen(
             userData
         )

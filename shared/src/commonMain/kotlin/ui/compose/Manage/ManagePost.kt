@@ -40,8 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import app.cash.paging.compose.collectAsLazyPagingItems
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
+import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
 import data.post.PostById.FileData
 import data.post.PostById.PostContent
@@ -57,14 +56,11 @@ import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
 import util.network.NetworkResult
 
-class ManagePost(
-    buildContext: BuildContext
-): Node(
-    buildContext = buildContext
-){
+
+object ManagePostVoyagerScreen:Screen{
     @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
     @Composable
-    override fun View(modifier: Modifier) {
+    override fun Content() {
         val viewModel = koinInject<ManageViewModel>()
         val postReportPageList = viewModel.postReportPageList.collectAsLazyPagingItems()
         val horizontalPage = rememberPagerState { postReportPageList.itemCount }

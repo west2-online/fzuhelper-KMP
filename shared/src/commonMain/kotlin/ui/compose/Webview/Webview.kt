@@ -1,10 +1,10 @@
 package ui.compose.Webview
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
+import cafe.adriel.voyager.core.screen.Screen
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
@@ -32,14 +32,21 @@ fun OwnWebViewScreen(
     )
 }
 
-class WebViewRouteNode(
-    buildContext: BuildContext,
+
+class WebViewRouteScreen(
     val url:String
-):Node(
-    buildContext = buildContext
-){
+): Screen {
     @Composable
-    override fun View(modifier: Modifier) {
+    override fun Content() {
+        Text("this is a test")
+    }
+}
+
+class WebViewVoyagerScreen(
+    val url : String
+):Screen{
+    @Composable
+    override fun Content() {
         OwnWebViewScreen(
             url
         )

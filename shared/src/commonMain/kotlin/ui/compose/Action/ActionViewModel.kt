@@ -1,4 +1,4 @@
-package ui.compose.Ribbon
+package ui.compose.Action
 
 import com.liftric.kvault.KVault
 import data.ribbon.RibbonData
@@ -14,7 +14,7 @@ import util.network.NetworkResult
 import util.network.logicIfNotLoading
 import util.network.reset
 
-class RibbonViewModel(
+class ActionViewModel(
     private val kVault: KVault,
     private val ribbonRepository: RibbonRepository
 ):ViewModel() {

@@ -25,120 +25,92 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.cash.paging.compose.collectAsLazyPagingItems
-import com.bumble.appyx.components.backstack.BackStack
-import com.bumble.appyx.components.backstack.BackStackModel
-import com.bumble.appyx.components.backstack.operation.replace
-import com.bumble.appyx.components.backstack.ui.slider.BackStackSlider
-import com.bumble.appyx.navigation.composable.AppyxComponent
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
-import com.bumble.appyx.navigation.node.ParentNode
-import com.bumble.appyx.utils.multiplatform.Parcelable
-import com.bumble.appyx.utils.multiplatform.Parcelize
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.Navigator
 import org.koin.compose.koinInject
+import ui.setting.SettingTransitions
 
 
-sealed class ManageScreenNav:Parcelable{
-    @Parcelize
-    data object ManageComment:ManageScreenNav()
-
-    @Parcelize
-    data object ManagePost:ManageScreenNav()
-
-    @Parcelize
-    data object ManageOpenImage:ManageScreenNav()
-}
-
-class ManageRouteNode(
-    buildContext: BuildContext,
-    private val backStack: BackStack<ManageScreenNav> = BackStack<ManageScreenNav>(
-        model = BackStackModel(
-            initialTarget = ManageScreenNav.ManagePost ,
-            savedStateMap = buildContext.savedStateMap,
-        ),
-        visualisation = { BackStackSlider(it) }
-    )
-):ParentNode<ManageScreenNav>(
-    buildContext = buildContext,
-    appyxComponent = backStack
-){
-    override fun resolve(interactionTarget: ManageScreenNav, buildContext: BuildContext): Node {
-        return when(interactionTarget){
-            is ManageScreenNav.ManageComment -> ManageCommentReport(buildContext)
-            is ManageScreenNav.ManagePost -> ManagePost(buildContext)
-            is ManageScreenNav.ManageOpenImage -> ManageOpenImage(buildContext)
-        }
-    }
-
+class ManageVoyagerScreen():Screen{
     @Composable
-    override fun View(modifier: Modifier){
+    override fun Content() {
         val viewModel = koinInject<ManageViewModel>()
-        Column {
-            TopAppBar(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-
-                Row (
+        Navigator(ManagePostVoyagerScreen){ navigator ->
+            Column {
+                TopAppBar(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                ){
-                    val lazyPagingItemsForPost = koinInject<ManageViewModel>().postReportPageList.collectAsLazyPagingItems()
-                    val lazyPagingItemsForComment = koinInject<ManageViewModel>().commentReportPageList.collectAsLazyPagingItems()
-                    IconButton(onClick = {
-                        lazyPagingItemsForComment.refresh()
-                        lazyPagingItemsForPost.refresh()
-                        viewModel.refresh()
-                    }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Localized description")
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    Row (
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ){
+                        val lazyPagingItemsForPost = koinInject<ManageViewModel>().postReportPageList.collectAsLazyPagingItems()
+                        val lazyPagingItemsForComment = koinInject<ManageViewModel>().commentReportPageList.collectAsLazyPagingItems()
+                        IconButton(onClick = {
+                            lazyPagingItemsForComment.refresh()
+                            lazyPagingItemsForPost.refresh()
+                            viewModel.refresh()
+                        }) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Localized description")
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                    ){
+                        var expanded by remember {
+                            mutableStateOf(false)
+                        }
+                        IconButton(onClick = {
+                            expanded = true
+                        }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                        ) {
+                            DropdownMenuItem(onClick = {
+                                if(navigator.lastItem !is ManagePostVoyagerScreen ){
+                                    navigator.replaceAll(ManagePostVoyagerScreen)
+                                }
+                                expanded = false
+                            }) {
+                                Text("管理帖子")
+                            }
+                            DropdownMenuItem(onClick = {
+                                if(navigator.lastItem !is ManageCommentVoyagerScreen ){
+                                    navigator.replaceAll(ManageCommentVoyagerScreen)
+                                }
+                                expanded = false
+                            }) {
+                                Text("管理评论")
+                            }
+                            DropdownMenuItem(onClick = {
+                                if(navigator.lastItem !is ManageOpenImageVoyagerScreen ){
+                                    navigator.replaceAll(ManageOpenImageVoyagerScreen)
+                                }
+                                expanded = false
+                            }) {
+                                Text("管理开屏页")
+                            }
+                            DropdownMenuItem(onClick = {
+                                if(navigator.lastItem !is MangeRibbonVoyagerScreen ){
+                                    navigator.replaceAll(MangeRibbonVoyagerScreen())
+                                }
+                                expanded = false
+                            }) {
+                                Text("管理轮播页")
+                            }
+                        }
                     }
                 }
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                ){
-                    var expanded by remember {
-                        mutableStateOf(false)
-                    }
-                    IconButton(onClick = {
-                        expanded = true
-                    }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                    ) {
-                        DropdownMenuItem(onClick = {
-                            backStack.replace(ManageScreenNav.ManagePost)
-                            expanded = false
-                        }) {
-                            Text("管理帖子")
-                        }
-                        DropdownMenuItem(onClick = {
-                            backStack.replace(ManageScreenNav.ManageComment)
-                            expanded = false
-                        }) {
-                            Text("管理评论")
-                        }
-                        DropdownMenuItem(onClick = {
-                            backStack.replace(ManageScreenNav.ManageOpenImage)
-                            expanded = false
-                        }) {
-                            Text("管理开屏页")
-                        }
-                    }
-                }
+                SettingTransitions(navigator)
             }
-            AppyxComponent(
-                backStack,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
         }
     }
 }

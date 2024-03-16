@@ -38,8 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import asImageBitmap
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
+import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
@@ -55,14 +54,47 @@ import util.compose.toastBindNetworkResult
 import util.network.CollectWithContent
 import util.network.NetworkResult
 
-class ManageOpenImage(
-    buildContext: BuildContext
-):Node(
-    buildContext = buildContext
+
+@Composable
+fun OpenImageShow(
+    string: String,
+    refresh:()->Unit,
+    delete:()->Unit
 ){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .aspectRatio(1f),
+    ) {
+        KamelImage(
+            resource = asyncPainterResource("${BaseUrlConfig.OpenImage}/${string}"),
+            modifier = Modifier
+                .aspectRatio(0.56f)
+                .fillMaxHeight(),
+            contentDescription = "",
+            contentScale = ContentScale.FillBounds
+        )
+        Column(
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .weight(1f)
+        ) {
+            Button(
+                onClick = {
+                    delete.invoke()
+                }
+            ){
+                Text("删除该开屏页")
+            }
+        }
+    }
+}
+
+object ManageOpenImageVoyagerScreen : Screen {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    override fun View(modifier: Modifier) {
+    override fun Content() {
         val manageViewModel = koinInject<ManageViewModel>()
         LaunchedEffect(Unit){
             manageViewModel.getOpenImage()
@@ -277,42 +309,6 @@ class ManageOpenImage(
                         )
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun OpenImageShow(
-    string: String,
-    refresh:()->Unit,
-    delete:()->Unit
-){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(1f)
-            .aspectRatio(1f),
-    ) {
-        KamelImage(
-            resource = asyncPainterResource("${BaseUrlConfig.openImage}/${string}"),
-            modifier = Modifier
-                .aspectRatio(0.56f)
-                .fillMaxHeight(),
-            contentDescription = "",
-            contentScale = ContentScale.FillBounds
-        )
-        Column(
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .weight(1f)
-        ) {
-            Button(
-                onClick = {
-                    delete.invoke()
-                }
-            ){
-                Text("删除该开屏页")
             }
         }
     }

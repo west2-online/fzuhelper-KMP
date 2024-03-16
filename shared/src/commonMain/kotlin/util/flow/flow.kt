@@ -17,7 +17,7 @@ suspend fun <T>Flow<T>.catchWithMassage (
 ): Flow<T> {
     return this.catch {
         if(BaseUrlConfig.isDebug){
-            println(it.message.toString())
+            println("error : ${it.message.toString()}")
         }
         action.invoke(this,it)
     }
@@ -28,7 +28,7 @@ suspend fun <T>Flow<T>.collectWithMassage (
 ){
     this.flowOn(Dispatchers.IO).collect {
         if(BaseUrlConfig.isDebug){
-            println(it)
+            println("collect : ${it}")
         }
         action(it)
     }

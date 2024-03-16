@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.mikepenz.markdown.compose.Markdown
+import ui.compose.Main.MainItems
 import util.compose.loadAction
 
 
@@ -73,13 +76,28 @@ https://github.com/Futalker/FuTalk_Apk
 
 """.trimIndent()
 
-class AboutUsRouteNode(
-    buildContext:BuildContext
-):Node(
-    buildContext = buildContext
-){
+
+
+object AboutUsVoyagerScreen:Tab{
     @Composable
-    override fun View(modifier: Modifier) {
-        AboutUsScreen(modifier)
+    override fun Content() {
+        AboutUsScreen(
+            modifier = Modifier
+                .fillMaxSize()
+        )
     }
+
+    override val options: TabOptions
+        @Composable
+        get() {
+            val title = MainItems.POST.tag
+            val icon = rememberVectorPainter(MainItems.POST.selectImageVector)
+            return remember {
+                TabOptions(
+                    index = 0u,
+                    title = title,
+                    icon = icon
+                )
+            }
+        }
 }

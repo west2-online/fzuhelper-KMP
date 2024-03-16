@@ -2,155 +2,56 @@ package ui.compose.Post
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import app.cash.paging.compose.collectAsLazyPagingItems
-import com.bumble.appyx.components.backstack.BackStack
-import com.bumble.appyx.components.backstack.BackStackModel
-import com.bumble.appyx.components.backstack.operation.push
-import com.bumble.appyx.components.backstack.ui.slider.BackStackSlider
-import com.bumble.appyx.navigation.composable.AppyxComponent
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
-import com.bumble.appyx.navigation.node.ParentNode
-import com.bumble.appyx.utils.multiplatform.Parcelable
-import com.bumble.appyx.utils.multiplatform.Parcelize
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import org.koin.compose.koinInject
+import ui.compose.Main.MainItems
 import ui.compose.Report.ReportType
+import ui.root.RootAction
+import ui.setting.SettingTransitions
 import util.compose.EasyToast
 import util.compose.rememberToastState
 
-sealed class PostNav:Parcelable{
-    @Parcelize
-    data object PostListNav : PostNav()
 
-    @Parcelize
-    class PostDetailNav(
-        var postId:String
-    ):PostNav()
-}
-
-class PostListNode(
-    buildContext: BuildContext,
-    val navigateToNewsDetail: (String) -> Unit,
-):Node(
-    buildContext = buildContext
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        val viewModel = koinInject<PostListViewModel>()
-        PostList(
-            modifier = Modifier
-                .fillMaxSize(),
-            navigateToNewsDetail = navigateToNewsDetail,
-            navigateToRelease = {
-                viewModel.navigateToRelease()
-            },
-            state = rememberLazyListState(),
-            postListFlow = viewModel.postListFlow.collectAsLazyPagingItems(),
-            navigateToReport = {
-                viewModel.navigateToReport(ReportType.PostReportType(id = it.Id.toString(),data = it))
-            }
-        )
-    }
-}
-
-
-class PostDetailNode(
-    buildContext: BuildContext,
-    private val postId: String
-):Node(
-    buildContext = buildContext,
-){
-    @Composable
-    override fun View(modifier: Modifier) {
-        val viewModel = koinInject<PostDetailViewModel>()
-        val toastState = rememberToastState()
-        Box(modifier = Modifier.fillMaxSize()){
-            //初始化初始评论
-            LaunchedEffect(Unit){ viewModel.initPostCommentPreview(postId) }
-            viewModel.postCommentPreviewFlow.collectAsState().value?.let { commentPreviewList ->
-                PostDetail(
-                    id = postId,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(10.dp),
-                    postState = viewModel.currentPostDetail.collectAsState(),
-                    getPostById = {
-                        viewModel.getPostById(it)
-                    },
-                    postCommentPreview = commentPreviewList.flow,
-                    postCommentTree = viewModel.postCommentTreeFlow,
-                    getPostCommentTree = { treeStart ->
-                        viewModel.getPostCommentTree(treeStart, postId = postId)
-                    },
-                    submitComment = { parentId,postId,tree,content,image->
-                        viewModel.submitComment(parentId,postId,tree,content,image)
-                    },
-                    commentSubmitState = viewModel.commentSubmitState.collectAsState(),
-                    toastState = toastState,
-                    commentReport = {
-                        viewModel.navigateToReport(it)
-                    },
-                    refreshCommentPreview = {
-                        viewModel.initPostCommentPreview(postId)
-                    }
+object PostVoyagerScreen : Tab {
+    override val options: TabOptions
+        @Composable
+        get() {
+            val title = MainItems.POST.tag
+            val icon = rememberVectorPainter(MainItems.POST.selectImageVector)
+            return remember {
+                TabOptions(
+                    index = 0u,
+                    title = title,
+                    icon = icon
                 )
+            }
+        }
+
+    @Composable
+    override fun Content() {
+        val toastState = rememberToastState()
+        val rootAction = koinInject<RootAction>()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ){
+            Navigator(PostListVoyagerScreen(
+                navigateToRelease = {
+                    rootAction.navigateFormAnywhereToRelease()
+                },
+                navigateToReport = {
+                    rootAction.navigateFormPostToReport(ReportType.PostReportType(id = it.Id.toString(),it))
+                },
+            )){ navigator ->
+                SettingTransitions(navigator)
             }
             EasyToast(toastState)
         }
     }
-}
-
-var postIdForSave : String? = null
-
-class PostRouteTarget(
-    buildContext: BuildContext,
-    private val backStack: BackStack<PostNav> = BackStack<PostNav>(
-        model = BackStackModel(
-            initialTarget = PostNav.PostListNav ,
-            savedStateMap = buildContext.savedStateMap,
-        ),
-        visualisation = { BackStackSlider(it) }
-    ).apply {
-        postIdForSave?.let {
-            this.push(PostNav.PostDetailNav(it))
-        }
-    }
-): ParentNode<PostNav>(
-    appyxComponent = backStack,
-    buildContext = buildContext,
-) {
-    override fun resolve(interactionTarget: PostNav, buildContext: BuildContext): Node  =
-        when(interactionTarget){
-            is PostNav.PostDetailNav -> PostDetailNode(
-                buildContext,
-                interactionTarget.postId
-            )
-            is PostNav.PostListNav -> PostListNode(
-                    buildContext,
-                    navigateToNewsDetail = {
-                        backStack.push(PostNav.PostDetailNav(it))
-                        postIdForSave = it
-                    }
-            )
-        }
-    @Composable
-    override fun View(modifier: Modifier) {
-        AppyxComponent(
-            appyxComponent = backStack,
-            modifier = modifier
-        )
-    }
-}
-
-
-interface PostItem{
-    class PostList():PostItem
-    class PostDetail(var id:String):PostItem
 }

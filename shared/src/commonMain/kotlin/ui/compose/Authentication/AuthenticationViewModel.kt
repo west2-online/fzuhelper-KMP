@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import repository.LoginRepository
 import repository.TokenData
 import ui.root.RootAction
-import ui.root.RootTarget
 import util.flow.catchWithMassage
 import util.flow.collectWithMassage
 import util.network.NetworkResult
@@ -91,7 +90,7 @@ class AuthenticationViewModel(
 
     fun verifyStudentID( studentCode : String, studentPassword:String,captcha:String){
         viewModelScope.launch (Dispatchers.IO){
-            _verifyStudentIDState.value = NetworkResult.Loading()
+            _verifyStudentIDState.value = NetworkResult.LoadingWithAction()
             loginRepository.verifyStudentIdentity(
                 userName = studentCode, password = studentPassword ,captcha = captcha
             ).catchWithMassage {
@@ -105,10 +104,10 @@ class AuthenticationViewModel(
 
     fun refreshStudentCaptcha(){
         viewModelScope.launch(Dispatchers.IO) {
-            if(_studentCaptcha.value is NetworkResult.Loading){
+            if(_studentCaptcha.value is NetworkResult.LoadingWithAction){
                 return@launch
             }
-            _studentCaptcha.value = NetworkResult.Loading()
+            _studentCaptcha.value = NetworkResult.LoadingWithAction()
             loginRepository.getVerifyCode()
                 .catchWithMassage {
                     _studentCaptcha.value = NetworkResult.Error(it)
@@ -176,7 +175,7 @@ class AuthenticationViewModel(
     private fun enterAuthor(){
         val token : String? = kVault.string(forKey = "token")
         token ?: return
-        rootAction.replaceNewTarget(RootTarget.Main)
+        rootAction.navigateFormAnywhereToMain()
     }
 
 }

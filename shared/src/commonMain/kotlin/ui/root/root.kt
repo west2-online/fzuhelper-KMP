@@ -1,202 +1,79 @@
 package ui.root
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
+import ImagePickerFactory
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
-import com.bumble.appyx.components.backstack.BackStack
-import com.bumble.appyx.components.backstack.BackStackModel
-import com.bumble.appyx.components.backstack.operation.newRoot
-import com.bumble.appyx.components.backstack.operation.pop
-import com.bumble.appyx.components.backstack.operation.push
-import com.bumble.appyx.components.backstack.operation.replace
-import com.bumble.appyx.components.backstack.ui.fader.BackStackFader
-import com.bumble.appyx.navigation.composable.AppyxComponent
-import com.bumble.appyx.navigation.modality.BuildContext
-import com.bumble.appyx.navigation.node.Node
-import com.bumble.appyx.navigation.node.ParentNode
-import com.bumble.appyx.utils.multiplatform.Parcelable
-import com.bumble.appyx.utils.multiplatform.Parcelize
-import com.bumble.appyx.utils.multiplatform.RawValue
+import cafe.adriel.voyager.navigator.Navigator
 import data.person.UserData.Data
 import di.SystemAction
 import di.appModule
+import getPlatformContext
 import initStore
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
-import ui.compose.AboutUs.AboutUsRouteNode
-import ui.compose.Authentication.AuthenticationRouteNode
-import ui.compose.Feedback.FeedbackAssemblyNode
-import ui.compose.Main.MainRouteNode
-import ui.compose.Manage.ManageRouteNode
-import ui.compose.Massage.MassageRouteNode
-import ui.compose.ModifierInformation.ModifierInformationRouteNode
-import ui.compose.Person.PersonRouteNode
-import ui.compose.QRCode.QRCodeRouteNode
-import ui.compose.Release.ReleaseRouteNode
-import ui.compose.Report.ReportRouteNode
+import ui.compose.AboutUs.AboutUsVoyagerScreen
+import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
+import ui.compose.Feedback.FeedbackVoyagerScreen
+import ui.compose.Main.Main
+import ui.compose.Manage.ManageVoyagerScreen
+import ui.compose.ModifierInformation.ModifierInformationVoyagerScreen
+import ui.compose.QRCode.QRCodeVoyagerScreen
+import ui.compose.Release.ReleaseRouteVoyagerScreen
 import ui.compose.Report.ReportType
-import ui.compose.Ribbon.RibbonRouteNode
-import ui.compose.SplashPage.SplashPageRouteNode
-import ui.compose.Weather.WeatherRouteNode
-import ui.compose.Webview.WebViewRouteNode
-
-
-sealed class RootTarget : Parcelable {
-    @Parcelize
-    data object Main : RootTarget()
-
-    @Parcelize
-    data object AboutUs : RootTarget()
-
-    @Parcelize
-    data object Weather : RootTarget()
-
-    @Parcelize
-    data object Massage : RootTarget()
-
-    @Parcelize
-    data object Authentication : RootTarget()
-
-    @Parcelize
-    data object SplashPage : RootTarget()
-
-    @Parcelize
-    class ModifierInformation(val userData: @RawValue Data) : RootTarget()
-
-    @Parcelize
-    class Person(
-        val userId:String?
-    ) : RootTarget()
-
-    @Parcelize
-    data object QRCode : RootTarget()
-
-    @Parcelize
-    data object Release : RootTarget()
-
-    @Parcelize
-    class Report(
-        val type : @RawValue ReportType,
-    ) : RootTarget()
-
-    @Parcelize
-    data object Ribbon : RootTarget()
-
-    @Parcelize
-    data object Feedback : RootTarget()
-
-    @Parcelize
-    data object Manage : RootTarget()
-
-    @Parcelize
-    class WebView(
-        val url :String
-    ) : RootTarget()
-}
-
-class RootNode(
-    buildContext: BuildContext,
-    private val backStack: BackStack<RootTarget> = BackStack(
-        model = BackStackModel(
-            initialTarget = RootTarget.SplashPage,
-            savedStateMap = mutableMapOf(),
-        ),
-        visualisation = { BackStackFader(it) }
-    ),
-    private val systemAction: SystemAction
-) : ParentNode<RootTarget>(
-    buildContext = buildContext,
-    appyxComponent = backStack
-) {
-    override fun resolve(interactionTarget: RootTarget, buildContext: BuildContext): Node =
-        when (interactionTarget) {
-            is RootTarget.AboutUs -> AboutUsRouteNode(buildContext)
-            is RootTarget.Authentication -> AuthenticationRouteNode(buildContext)
-            is RootTarget.Feedback -> FeedbackAssemblyNode(buildContext)
-            is RootTarget.Main -> MainRouteNode(buildContext)
-            is RootTarget.Manage -> ManageRouteNode(buildContext)
-            is RootTarget.Massage -> MassageRouteNode(buildContext)
-            is RootTarget.ModifierInformation -> ModifierInformationRouteNode(interactionTarget.userData,buildContext)
-            is RootTarget.Person -> PersonRouteNode(buildContext,userId = interactionTarget.userId)
-            is RootTarget.QRCode -> QRCodeRouteNode(buildContext)
-            is RootTarget.Release -> ReleaseRouteNode(buildContext)
-            is RootTarget.Report -> ReportRouteNode(buildContext,interactionTarget.type)
-            is RootTarget.Ribbon -> RibbonRouteNode(buildContext)
-            is RootTarget.SplashPage -> SplashPageRouteNode(buildContext)
-            is RootTarget.Weather -> WeatherRouteNode(buildContext)
-            is RootTarget.WebView -> WebViewRouteNode(buildContext,interactionTarget.url)
-        }
-
-    @Composable
-    override fun View(modifier: Modifier) {
-        val scope = rememberCoroutineScope()
-        KoinApplication(application = {
-            modules(appModule(
-                object : RootAction{
-                    override fun navigateToNewTarget(rootTarget: RootTarget) {
-                        scope.launch {
-                            backStack.push(rootTarget)
-
-                        }
-                    }
-
-                    override fun replaceNewTarget(rootTarget: RootTarget) {
-                        scope.launch {
-                            backStack.replace(target = rootTarget)
-                        }
-
-                    }
-
-                    override fun navigateBack() {
-                        backStack.pop()
-                    }
-                    override fun canBack() = backStack.canHandeBackPress()
-
-                    override fun reLogin() {
-                        initStore().clear()
-                        backStack.newRoot(RootTarget.Authentication)
-                    }
-                },
-                systemAction = systemAction
-            ))
-        }) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colors.background)
-            ){
-                AppyxComponent(
-                    appyxComponent = backStack,
-                    modifier = Modifier.fillMaxSize(),
-                    clipToBounds = false
-                )
-            }
-        }
-    }
-
-}
+import ui.compose.Report.ReportVoyagerScreen
+import ui.compose.Setting.SettingVoyagerScreen
+import ui.compose.SplashPage.SplashPageVoyagerScreen
+import ui.compose.Weather.WeatherVoyagerScreen
+import ui.compose.Webview.WebViewVoyagerScreen
+import ui.setting.SettingTransitions
+import util.compose.FuTalkTheme
 
 
 interface RootAction{
-    fun navigateToNewTarget(rootTarget : RootTarget)
-    fun replaceNewTarget(rootTarget : RootTarget)
-    fun navigateBack()
-    fun canBack():StateFlow<Boolean>
     fun reLogin()
+    fun navigateFormSplashToMainPage()
+    fun navigateFormSplashToLoginAndRegister()
+    fun navigateFromActionToFeedback()
+    fun navigateFromActionToQRCodeScreen()
+    fun navigateFromActionToAboutUs()
+    fun navigateFromAnywhereToManage()
+    fun navigateFromAnywhereToWeather()
+    fun navigateFormAnywhereToRelease()
+    fun navigateFormPostToReport(type: ReportType)
+    fun navigateFromAnywhereToWebView(url:String)
+    fun navigateFormAnywhereToSetting()
+    fun navigateFormAnywhereToMain()
+    fun navigateFormAnywhereToInformationModifier(userData: Data)
+    fun popManage()
 }
 
 @Composable
 fun getRootAction(): RootAction {
     return koinInject<RootAction>()
 }
-
+enum class TokeJump(
+    val target:String,
+    val verifyFunction:(String)->Boolean,
+    val toActionString:(String)->String
+){
+    Post(target = "POST", verifyFunction = {
+        it.toIntOrNull() == null
+    }, toActionString = {
+        "POST-${it}"
+    }),
+    WEB(target = "WEB", verifyFunction = {
+        val regexString = ""
+        val regex = Regex(regexString)
+        regex.matches(it)
+    }, toActionString = {
+        "WEB-${it}"
+    }),
+    Null(target = "NULL", verifyFunction = {
+        it == "null"
+    }, toActionString = {
+        "NULL"
+    })
+}
 fun tokenJump(
     tokenForParse:String,
     fail:CoroutineScope.()->Unit,
@@ -210,10 +87,94 @@ fun tokenJump(
     }
     result.let {
         val action = it[1]
-        val model = it[0]
-        when(model){
-            "WEBVIEW" -> rootAction.navigateToNewTarget(RootTarget.WebView(action))
+        when(it[0]){
+            "WEBVIEW" -> {}
         }
     }
+}
 
+@Composable
+fun RootUi(
+    systemAction: SystemAction
+){
+    Navigator(SplashPageVoyagerScreen()){ navigate ->
+        val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
+        KoinApplication(application = {
+            modules(
+                appModule(
+                    object : RootAction{
+
+                        override fun reLogin() {
+                            initStore().clear()
+                            navigate.replaceAll(LoginAndRegisterVoyagerScreen)
+                        }
+
+                        override fun navigateFormSplashToMainPage() {
+                            navigate.replaceAll(Main)
+                        }
+
+                        override fun navigateFormSplashToLoginAndRegister() {
+                            navigate.replaceAll(LoginAndRegisterVoyagerScreen)
+                        }
+
+                        override fun navigateFromActionToFeedback() {
+                            navigate.push(FeedbackVoyagerScreen())
+                        }
+
+                        override fun navigateFromActionToQRCodeScreen() {
+                            navigate.push(QRCodeVoyagerScreen)
+                        }
+
+                        override fun navigateFromActionToAboutUs() {
+                            navigate.push(AboutUsVoyagerScreen)
+                        }
+
+                        override fun navigateFromAnywhereToManage() {
+                            navigate.push(ManageVoyagerScreen())
+                        }
+
+                        override fun navigateFromAnywhereToWeather() {
+                            navigate.push(WeatherVoyagerScreen)
+                        }
+
+                        override fun navigateFormAnywhereToRelease(){
+                            navigate.push(ReleaseRouteVoyagerScreen())
+                        }
+
+                        override fun navigateFormPostToReport(type: ReportType) {
+                            navigate.push(ReportVoyagerScreen(type))
+                        }
+
+                        override fun navigateFromAnywhereToWebView(url: String) {
+                            navigate.push(WebViewVoyagerScreen(url))
+                        }
+
+                        override fun navigateFormAnywhereToSetting() {
+                            navigate.push(SettingVoyagerScreen())
+                        }
+
+                        override fun navigateFormAnywhereToMain() {
+                            navigate.push(Main)
+                        }
+
+                        override fun navigateFormAnywhereToInformationModifier(userData: Data) {
+                            navigate.push(ModifierInformationVoyagerScreen(userData = userData))
+                        }
+
+                        override fun popManage() {
+                            if (navigate.lastItem is ManageVoyagerScreen && navigate.canPop){
+                                navigate.pop()
+                            }
+                        }
+                    },
+                    systemAction = systemAction,
+                    navigator = navigate,
+                )
+            )
+        }) {
+            FuTalkTheme{
+                SettingTransitions(navigate)
+            }
+        }
+    }
 }

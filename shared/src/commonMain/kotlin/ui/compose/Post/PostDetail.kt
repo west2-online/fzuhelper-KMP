@@ -52,6 +52,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,10 +71,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.paging.PagingData
 import app.cash.paging.Pager
 import app.cash.paging.compose.collectAsLazyPagingItems
 import asImageBitmap
+import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
 import data.post.PostById.FileData
 import data.post.PostById.PostById
@@ -86,7 +87,6 @@ import getPlatformContext
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
@@ -97,8 +97,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.example.library.MR
+import org.koin.compose.koinInject
 import ui.compose.Report.ReportType
+import util.compose.EasyToast
 import util.compose.Toast
+import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.network.CollectWithContent
 import util.network.NetworkResult
@@ -111,7 +114,7 @@ fun PostDetail(
     modifier: Modifier = Modifier,
     postState: State<NetworkResult<PostById>>,
     getPostById: (String) -> Unit,
-    postCommentPreview: Flow<PagingData<Data>>,
+    postCommentPreview: Pager<Int, Data>?,
     postCommentTree: StateFlow<Pager<Int, data.post.PostCommentTree.Data>?>,
     getPostCommentTree: (String) -> Unit,
     submitComment: (parentId: Int, postId: Int, tree: String, content: String, image: ByteArray?) -> Unit,
@@ -120,7 +123,7 @@ fun PostDetail(
     commentReport:(type:ReportType)->Unit = {},
     refreshCommentPreview:()->Unit = {}
 ) {
-    val commentItems = postCommentPreview.collectAsLazyPagingItems()
+    val commentItems = postCommentPreview?.flow?.collectAsLazyPagingItems()
     val isRefresh = rememberSaveable{ mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val commentState = rememberSaveable(
@@ -152,7 +155,9 @@ fun PostDetail(
             }
         )
     ){ mutableStateOf<Comment?>(null) }
-
+    LaunchedEffect(postState.value){
+        println(postState.value)
+    }
     //下拉刷新
     LaunchedEffect(state){
         snapshotFlow{ state.isScrollInProgress && !state.canScrollBackward }
@@ -190,506 +195,514 @@ fun PostDetail(
         refreshCommentPreview()
     }
 
-    //主要的帖子和评论
-    Box(modifier = Modifier
-        .fillMaxSize()
+    Box(
+        modifier = modifier
     ){
-        LazyColumn(
-            modifier = modifier,
-            state = state
-        ) {
-            //帖子
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillParentMaxWidth()
-                        .wrapContentHeight()
-                        .animateContentSize()
-                ) {
-                    postState.CollectWithContent(
-                        success = { postById ->
-                            Column {
-                                PersonalInformationAreaInDetail(
-                                    userName = postById.data.Post.User.username,
-                                    url = "${BaseUrlConfig.UserAvatar}/${postById.data.Post.User.avatar}"
-                                )
-                                Time(postById.data.Post.Time)
-                                Text(
-                                    text = postById.data.Post.Title,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                listOf<PostContent>().plus(postById.data.valueData ?: listOf())
-                                    .plus(postById.data.fileData ?: listOf()).sortedBy {
-                                    it.order
-                                }.forEach {
-                                    when (it) {
-                                        is FileData -> {
-                                            ImageContent(it.fileName)
+        //主要的帖子和评论
+        Box(
+            modifier = Modifier
+            .fillMaxSize()
+            .padding(10.dp)
+        ){
+            LazyColumn(
+                modifier = modifier,
+                state = state
+            ) {
+                //帖子
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillParentMaxWidth()
+                            .wrapContentHeight()
+                            .animateContentSize()
+                    ) {
+                        postState.CollectWithContent(
+                            success = { postById ->
+                                Column {
+                                    PersonalInformationAreaInDetail(
+                                        userName = postById.data.Post.User.username,
+                                        url = "${BaseUrlConfig.UserAvatar}/${postById.data.Post.User.avatar}"
+                                    )
+                                    Time(postById.data.Post.Time)
+                                    Text(
+                                        text = postById.data.Post.Title,
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    listOf<PostContent>().plus(postById.data.valueData ?: listOf())
+                                        .plus(postById.data.fileData ?: listOf()).sortedBy {
+                                            it.order
+                                        }.forEach {
+                                            when (it) {
+                                                is FileData -> {
+                                                    ImageContent(it.fileName)
+                                                }
+                                                is ValueData -> {
+                                                    Text(it.value)
+                                                }
+                                            }
                                         }
-                                        is ValueData -> {
-                                            Text(it.value)
-                                        }
+                                    Interaction(
+                                        modifier = Modifier
+                                            .padding( top = 5.dp )
+                                            .fillMaxWidth(0.6f)
+                                            .wrapContentHeight(),
+                                        likeNumber = postById.data.Post.LikeNum
+                                    )
+                                }
+                            },
+                            loading = {
+                                CircularProgressIndicator()
+                            },
+                            content = {
+                                Spacer(modifier = Modifier.height(1.dp))
+                            }
+                        )
+                    }
+                }
+                //分界线
+                item {
+                    Divider(
+                        modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp)
+                    )
+                }
+                //对帖子的直接评论
+                commentItems ?.let {
+                    items(commentItems.itemCount) { index ->
+                        CommentInPostDetail(
+                            commentItems[index],
+                            click = {
+                                scope.launch {
+                                    commentItems[index]?.let {
+                                        currentMainComment.value = it.MainComment
                                     }
                                 }
-                                Interaction(
-                                    modifier = Modifier
-                                        .padding( top = 5.dp )
-                                        .fillMaxWidth(0.6f)
-                                        .wrapContentHeight(),
-                                    likeNumber = postById.data.Post.LikeNum
+                            },
+                            report = {
+                                commentReport.invoke(
+                                    ReportType.CommentReportType(id,it.Id.toString(),it)
                                 )
                             }
-                        },
-                        loading = {
-                            CircularProgressIndicator()
-                        },
-                        content = {
-                            Spacer(modifier = Modifier.height(1.dp))
-                        }
+                        )
+                    }
+                }
+            }
+        }
+
+        //下方的评论按钮和刷新的ui
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ){
+            FloatingActionButton(
+                onClick = {
+                    commentState.value.setCommentAt(null)
+                },
+                modifier = Modifier
+                    .offset(x = (-15).dp,y = ((-5).dp))
+                    .size(50.dp)
+                    .align(Alignment.BottomEnd),
+                shape = CircleShape
+            ){
+                Icon(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center)
+                        .fillMaxSize(0.5f),
+                    painter = painterResource(MR.images.comment),
+                    contentDescription = null
+                )
+            }
+            AnimatedVisibility(
+                isRefresh.value,
+                modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
+                exit = slideOutVertically(),
+                enter = slideInVertically()
+            ){
+                Box(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)){
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(5.dp)
+                            .align(Alignment.Center)
+                            .size(30.dp)
                     )
                 }
             }
-            //分界线
-            item {
-                Divider(
-                    modifier = Modifier.padding(top = 10.dp).fillMaxWidth().padding(bottom = 10.dp)
-                )
-            }
-            //对帖子的直接评论
-            items(commentItems.itemCount) { index ->
-                CommentInPostDetail(
-                    commentItems[index],
-                    click = {
-                        scope.launch {
-                            commentItems[index]?.let {
-                                currentMainComment.value = it.MainComment
-                            }
-                        }
-                    },
-                    report = {
-                        commentReport.invoke(
-                            ReportType.CommentReportType(id,it.Id.toString(),it)
-                        )
-                    }
-                )
-            }
         }
-    }
 
-    //下方的评论按钮和刷新的ui
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ){
-        FloatingActionButton(
-            onClick = {
-                commentState.value.setCommentAt(null)
-            },
+        //获取详细的评论
+        Box(
             modifier = Modifier
-                .offset(x = (-15).dp,y = ((-5).dp))
-                .size(50.dp)
-                .align(Alignment.BottomEnd),
-            shape = CircleShape
+                .fillMaxSize()
         ){
-            Icon(
+            AnimatedVisibility(
+                visible = currentMainComment.value != null,
+                exit = slideOutVertically {
+                    return@slideOutVertically it
+                },
+                enter = slideInVertically {
+                    return@slideInVertically it
+                },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .wrapContentSize(Alignment.Center)
-                    .fillMaxSize(0.5f),
-                painter = painterResource(MR.images.comment),
-                contentDescription = null
-            )
-        }
-        AnimatedVisibility(
-            isRefresh.value,
-            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
-            exit = slideOutVertically(),
-            enter = slideInVertically()
-        ){
-            Box(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)){
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .align(Alignment.Center)
-                        .size(30.dp)
-                )
-            }
-        }
-    }
-
-    //获取详细的评论
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ){
-        AnimatedVisibility(
-            visible = currentMainComment.value != null,
-            exit = slideOutVertically {
-                return@slideOutVertically it
-            },
-            enter = slideInVertically {
-                return@slideInVertically it
-            },
-            modifier = Modifier
-                .fillMaxSize(),
-        ){
-            BackHandler(currentMainComment.value != null){
-                currentMainComment.value = null
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxSize(),
             ){
-                Box(
+                BackHandler(currentMainComment.value != null){
+                    currentMainComment.value = null
+                }
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .background(Color(216, 211, 210, 150))
-                        .clickable(
-                            remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = {
-                                currentMainComment.value = null
-                            }
-                        )
-                )
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.8f)
-                        .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
-                ) {
-                    val isRefreshInCommentTree = remember{
-                        mutableStateOf(false)
-                    }
-                    Column(
+                        .fillMaxSize()
+                ){
+                    Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(10.dp)
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .background(Color(216, 211, 210, 150))
+                            .clickable(
+                                remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = {
+                                    currentMainComment.value = null
+                                }
+                            )
+                    )
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.8f)
+                            .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
                     ) {
-                        val commentTree = postCommentTree.value?.flow?.collectAsLazyPagingItems()
-                        //刷新和下拉按钮
-                        Row(
-                            horizontalArrangement = Arrangement.End,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Refresh,
-                                null,
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .clip(
-                                        CircleShape
-                                    )
-                                    .clickable {
-                                        scope.launch {
-                                            isRefreshInCommentTree.value = true
-                                            delay(1000)
-                                            commentTree?.refresh()
-                                            isRefreshInCommentTree.value = false
-                                        }
-                                    }
-                                    .wrapContentSize(Alignment.Center)
-                                    .fillMaxSize(0.6f)
-                            )
-                            Icon(
-                                imageVector = Icons.Filled.KeyboardArrowDown,
-                                null,
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .clip(
-                                        CircleShape
-                                    )
-                                    .clickable {
-                                        currentMainComment.value = null
-                                    }
-                                    .wrapContentSize(Alignment.Center)
-                                    .fillMaxSize(0.6f)
-                            )
+                        val isRefreshInCommentTree = remember{
+                            mutableStateOf(false)
                         }
-                        Box(
+                        Column(
                             modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                        ){
-                            commentTree?.let {
-                                LazyColumn(
+                                .fillMaxSize()
+                                .padding(10.dp)
+                        ) {
+                            val commentTree = postCommentTree.value?.flow?.collectAsLazyPagingItems()
+                            //刷新和下拉按钮
+                            Row(
+                                horizontalArrangement = Arrangement.End,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Refresh,
+                                    null,
                                     modifier = Modifier
-                                        .fillMaxSize()
-                                ) {
-                                    item {
-                                        Box(
-                                            modifier = Modifier
-                                                .animateContentSize()
-                                        ) {
-                                            currentMainComment.value?.let {
-                                                CommentInPostDetail(
-                                                    commentGroup = Data(
-                                                        MainComment = it,
-                                                        SonComment = listOf()
-                                                    ), click = {
-                                                        commentState.value.setCommentAt(it)
-                                                    },
-                                                    report = {
-                                                        commentReport.invoke(
-                                                            ReportType.CommentReportType(id,it.Id.toString(),it)
-                                                        )
+                                        .size(50.dp)
+                                        .clip(
+                                            CircleShape
+                                        )
+                                        .clickable {
+                                            scope.launch {
+                                                isRefreshInCommentTree.value = true
+                                                delay(1000)
+                                                commentTree?.refresh()
+                                                isRefreshInCommentTree.value = false
+                                            }
+                                        }
+                                        .wrapContentSize(Alignment.Center)
+                                        .fillMaxSize(0.6f)
+                                )
+                                Icon(
+                                    imageVector = Icons.Filled.KeyboardArrowDown,
+                                    null,
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .clip(
+                                            CircleShape
+                                        )
+                                        .clickable {
+                                            currentMainComment.value = null
+                                        }
+                                        .wrapContentSize(Alignment.Center)
+                                        .fillMaxSize(0.6f)
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                            ){
+                                commentTree?.let {
+                                    LazyColumn(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                    ) {
+                                        item {
+                                            Box(
+                                                modifier = Modifier
+                                                    .animateContentSize()
+                                            ) {
+                                                currentMainComment.value?.let {
+                                                    CommentInPostDetail(
+                                                        commentGroup = Data(
+                                                            MainComment = it,
+                                                            SonComment = listOf()
+                                                        ), click = {
+                                                            commentState.value.setCommentAt(it)
+                                                        },
+                                                        report = {
+                                                            commentReport.invoke(
+                                                                ReportType.CommentReportType(id,it.Id.toString(),it)
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        item {
+                                            Divider(
+                                                modifier = Modifier.padding(top = 10.dp).fillMaxWidth()
+                                                    .padding(bottom = 10.dp)
+                                            )
+                                        }
+                                        items(commentTree.itemCount) {
+                                            commentTree[it]?.let { commentIndex ->
+                                                CommentTreeItem(
+                                                    commentIndex,
+                                                    click = { comment ->
+                                                        commentState.value.setCommentAt(comment)
                                                     }
                                                 )
                                             }
                                         }
                                     }
-                                    item {
-                                        Divider(
-                                            modifier = Modifier.padding(top = 10.dp).fillMaxWidth()
-                                                .padding(bottom = 10.dp)
+                                }
+                                androidx.compose.animation.AnimatedVisibility(
+                                    isRefreshInCommentTree.value,
+                                    modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
+                                    exit = slideOutVertically(),
+                                    enter = slideInVertically()
+                                ){
+                                    Box(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)){
+                                        CircularProgressIndicator(
+                                            modifier = Modifier
+                                                .padding(5.dp)
+                                                .align(Alignment.Center)
+                                                .size(30.dp)
                                         )
                                     }
-                                    items(commentTree.itemCount) {
-                                        commentTree[it]?.let { commentIndex ->
-                                            CommentTreeItem(
-                                                commentIndex,
-                                                click = { comment ->
-                                                    commentState.value.setCommentAt(comment)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //帖子评论
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ){
+            AnimatedVisibility(
+                visible = commentState.value.isShow.value,
+                exit = slideOutVertically {
+                    return@slideOutVertically it
+                },
+                enter = slideInVertically {
+                    return@slideInVertically it
+                },
+                modifier = Modifier
+                    .fillMaxSize(),
+            ){
+                val commentValue = remember {
+                    mutableStateOf("")
+                }
+                BackHandler(commentState.value.isShow.value){
+                    commentState.value.closeCommentAt()
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ){
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .background(Color(216, 211, 210, 150))
+                            .clickable(
+                                remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = {
+                                    commentState.value.closeCommentAt()
+                                }
+                            )
+                    )
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.8f)
+                            .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(10.dp)
+                        ) {
+                            val imageByteArray = remember {
+                                mutableStateOf<ByteArray?>(null)
+                            }
+                            val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
+                            imagePicker.registerPicker(
+                                onImagePicked = {
+                                    imageByteArray.value = it
+                                }
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.End,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.KeyboardArrowDown,
+                                    null,
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .clip(
+                                            CircleShape
+                                        )
+                                        .clickable {
+                                            commentState.value.closeCommentAt()
+                                        }
+                                        .wrapContentSize(Alignment.Center)
+                                        .fillMaxSize(0.6f)
+                                )
+                            }
+                            LazyColumn (
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(1f)
+                            ){
+                                commentState.value.commentAt.value?.let {
+                                    item {
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(bottom = 10.dp)
+                                                .border(
+                                                    width = 1.dp,
+                                                    shape = RoundedCornerShape(5.dp),
+                                                    color = Color.Gray
+                                                )
+                                                .padding(5.dp)
+                                        ) {
+                                            Text(
+                                                text = "回复@"
+                                            )
+                                            CommentInPostDetail(
+                                                commentGroup = Data(
+                                                    it,
+                                                    listOf()
+                                                ),
+                                                report = {
+                                                    commentReport.invoke(
+                                                        ReportType.CommentReportType(id,it.Id.toString(),it)
+                                                    )
                                                 }
                                             )
                                         }
                                     }
                                 }
-                            }
-                           androidx.compose.animation.AnimatedVisibility(
-                               isRefreshInCommentTree.value,
-                                modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
-                                exit = slideOutVertically(),
-                                enter = slideInVertically()
-                            ){
-                                Box(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)){
-                                    CircularProgressIndicator(
-                                        modifier = Modifier
-                                            .padding(5.dp)
-                                            .align(Alignment.Center)
-                                            .size(30.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //帖子评论
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ){
-        AnimatedVisibility(
-            visible = commentState.value.isShow.value,
-            exit = slideOutVertically {
-                return@slideOutVertically it
-            },
-            enter = slideInVertically {
-                return@slideInVertically it
-            },
-            modifier = Modifier
-                .fillMaxSize(),
-        ){
-            val commentValue = remember {
-                mutableStateOf("")
-            }
-            BackHandler(commentState.value.isShow.value){
-                commentState.value.closeCommentAt()
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ){
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .background(Color(216, 211, 210, 150))
-                        .clickable(
-                            remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = {
-                                commentState.value.closeCommentAt()
-                            }
-                        )
-                )
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.8f)
-                        .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(10.dp)
-                    ) {
-                        val imageByteArray = remember {
-                            mutableStateOf<ByteArray?>(null)
-                        }
-                        val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
-                        imagePicker.registerPicker(
-                            onImagePicked = {
-                                imageByteArray.value = it
-                            }
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.End,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.KeyboardArrowDown,
-                                null,
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .clip(
-                                        CircleShape
-                                    )
-                                    .clickable {
-                                        commentState.value.closeCommentAt()
-                                    }
-                                    .wrapContentSize(Alignment.Center)
-                                    .fillMaxSize(0.6f)
-                            )
-                        }
-                        LazyColumn (
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(1f)
-                        ){
-                            commentState.value.commentAt.value?.let {
                                 item {
-                                    Column(
+                                    TextField(
+                                        value = commentValue.value,
+                                        onValueChange = {
+                                            commentValue.value = it
+                                        } ,
                                         modifier = Modifier
-                                            .padding(bottom = 10.dp)
-                                            .border(
-                                                width = 1.dp,
-                                                shape = RoundedCornerShape(5.dp),
-                                                color = Color.Gray
-                                            )
-                                            .padding(5.dp)
-                                    ) {
-                                        Text(
-                                            text = "回复@"
-                                        )
-                                        CommentInPostDetail(
-                                            commentGroup = Data(
-                                                it,
-                                                listOf()
-                                            ),
-                                            report = {
-                                                commentReport.invoke(
-                                                    ReportType.CommentReportType(id,it.Id.toString(),it)
-                                                )
-                                            }
-                                        )
-                                    }
+                                            .padding(bottom = 5.dp)
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .animateContentSize()
+                                    )
                                 }
-                            }
-                            item {
-                                TextField(
-                                    value = commentValue.value,
-                                    onValueChange = {
-                                        commentValue.value = it
-                                    } ,
-                                    modifier = Modifier
-                                        .padding(bottom = 5.dp)
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .animateContentSize()
-                                )
-                            }
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .wrapContentHeight()
-                                        .fillMaxWidth()
-                                        .animateContentSize()
-                                ){
-                                    imageByteArray.value?.let {
-                                        Image(
-                                            modifier = Modifier
-                                                .fillMaxWidth(0.5f)
-                                                .wrapContentHeight()
-                                                .clip(RoundedCornerShape(3.dp)),
-                                            bitmap = it.asImageBitmap(),
-                                            contentDescription = null
-                                        )
-                                    }
-                                }
-                            }
-                            item {
-                                Row(
-                                    modifier = Modifier
-                                        .padding(bottom = 5.dp)
-                                ) {
-                                    Crossfade(
-                                        imageByteArray.value
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .wrapContentHeight()
+                                            .fillMaxWidth()
+                                            .animateContentSize()
                                     ){
-                                        if(it == null){
-                                            Icon(
+                                        imageByteArray.value?.let {
+                                            Image(
                                                 modifier = Modifier
-                                                    .size(50.dp)
-                                                    .clip(RoundedCornerShape(5.dp))
-                                                    .clickable {
-                                                        imagePicker.pickImage()
-                                                    }
-                                                    .padding(7.dp),
-                                                painter = painterResource(MR.images.image),
-                                                contentDescription = null,
-                                                tint = Color.Gray
-                                            )
-                                        }else{
-                                            Icon(
-                                                modifier = Modifier
-                                                    .size(50.dp)
-                                                    .clip(RoundedCornerShape(5.dp))
-                                                    .clickable {
-                                                        imageByteArray.value = null
-                                                    }
-                                                    .padding(7.dp),
-                                                imageVector = Icons.Filled.Close,
-                                                contentDescription = null,
-                                                tint = Color.Gray
+                                                    .fillMaxWidth(0.5f)
+                                                    .wrapContentHeight()
+                                                    .clip(RoundedCornerShape(3.dp)),
+                                                bitmap = it.asImageBitmap(),
+                                                contentDescription = null
                                             )
                                         }
                                     }
                                 }
-                            }
-                            item {
-                                Button(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 10.dp),
-                                    onClick = {
-                                        submitComment.invoke(
-                                            if(commentState.value.commentAt.value == null) -1 else commentState.value.commentAt.value!!.Id,
-                                            id.toInt(),
-                                            if(commentState.value.commentAt.value == null) "-1/" else commentState.value.commentAt.value!!.Tree+commentState.value.commentAt.value!!.Id+"/",
-                                            commentValue.value,
-                                            imageByteArray.value
-                                        )
-                                    }
-                                ){
-                                    Icon(
+                                item {
+                                    Row(
                                         modifier = Modifier
-                                            .padding(end = 5.dp)
-                                            .size(30.dp)
-                                            .padding(5.dp),
-                                        imageVector = Icons.Filled.Done,
-                                        contentDescription = null
-                                    )
-                                    Text("提交评论")
+                                            .padding(bottom = 5.dp)
+                                    ) {
+                                        Crossfade(
+                                            imageByteArray.value
+                                        ){
+                                            if(it == null){
+                                                Icon(
+                                                    modifier = Modifier
+                                                        .size(50.dp)
+                                                        .clip(RoundedCornerShape(5.dp))
+                                                        .clickable {
+                                                            imagePicker.pickImage()
+                                                        }
+                                                        .padding(7.dp),
+                                                    painter = painterResource(MR.images.image),
+                                                    contentDescription = null,
+                                                    tint = Color.Gray
+                                                )
+                                            }else{
+                                                Icon(
+                                                    modifier = Modifier
+                                                        .size(50.dp)
+                                                        .clip(RoundedCornerShape(5.dp))
+                                                        .clickable {
+                                                            imageByteArray.value = null
+                                                        }
+                                                        .padding(7.dp),
+                                                    imageVector = Icons.Filled.Close,
+                                                    contentDescription = null,
+                                                    tint = Color.Gray
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                item {
+                                    Button(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 10.dp),
+                                        onClick = {
+                                            submitComment.invoke(
+                                                if(commentState.value.commentAt.value == null) -1 else commentState.value.commentAt.value!!.Id,
+                                                id.toInt(),
+                                                if(commentState.value.commentAt.value == null) "-1/" else commentState.value.commentAt.value!!.Tree+commentState.value.commentAt.value!!.Id+"/",
+                                                commentValue.value,
+                                                imageByteArray.value
+                                            )
+                                        }
+                                    ){
+                                        Icon(
+                                            modifier = Modifier
+                                                .padding(end = 5.dp)
+                                                .size(30.dp)
+                                                .padding(5.dp),
+                                            imageVector = Icons.Filled.Done,
+                                            contentDescription = null
+                                        )
+                                        Text("提交评论")
+                                    }
                                 }
                             }
                         }
@@ -1168,3 +1181,42 @@ fun CommentStateSerializable.toCommentState():CommentState{
         commentAt = mutableStateOf(this.commentAt)
     )
 }
+
+
+class PostDetailVoyagerScreen(
+    val id: String,
+    val modifier: Modifier = Modifier,
+):Screen{
+    @Composable
+    override fun Content() {
+        val postDetailViewModel = koinInject<PostDetailViewModel>()
+        val currentPostDetail = postDetailViewModel.currentPostDetail.collectAsState()
+        val commentSubmitState = postDetailViewModel.commentSubmitState.collectAsState()
+        val postCommentPreview = postDetailViewModel.postCommentPreviewFlow.collectAsState().value
+        val toastState = rememberToastState()
+        PostDetail(
+            id = id,
+            modifier = modifier,
+            postState = currentPostDetail,
+            getPostById = {
+                postDetailViewModel.getPostById(it)
+            },
+            postCommentPreview = postCommentPreview,
+            postCommentTree = postDetailViewModel.postCommentTreeFlow,
+            getPostCommentTree = { treeStart ->
+                postDetailViewModel.getPostCommentTree(treeStart, postId = id)
+            },
+            submitComment = { parentId, postIdInComment, tree, content, image->
+                postDetailViewModel.submitComment(parentId,postIdInComment,tree,content,image)
+            },
+            commentSubmitState = commentSubmitState,
+            toastState = toastState,
+            commentReport = {
+                postDetailViewModel.navigateToReport(it)
+            },
+            refreshCommentPreview = { postDetailViewModel.initPostCommentPreview(id) },
+        )
+        EasyToast(toastState)
+    }
+}
+

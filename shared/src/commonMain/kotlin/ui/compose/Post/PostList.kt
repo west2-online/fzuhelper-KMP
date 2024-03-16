@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
@@ -58,6 +59,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import app.cash.paging.compose.LazyPagingItems
+import app.cash.paging.compose.collectAsLazyPagingItems
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import config.BaseUrlConfig
 import config.BaseUrlConfig.PostImage
 import data.post.PostList.Data
@@ -65,7 +70,35 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
+import kotlinx.serialization.Serializable
+import org.koin.compose.koinInject
 import util.network.toEasyTime
+import kotlin.jvm.Transient
+
+class PostListVoyagerScreen(
+    @Transient
+    val navigateToRelease: () -> Unit,
+    @Transient
+    val navigateToReport: (Data) -> Unit,
+):Screen{
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        PostList(
+            modifier = Modifier.fillMaxSize(),
+            state = rememberLazyListState(),
+            postListFlow = koinInject<PostListViewModel>().postListFlow.collectAsLazyPagingItems(),
+            navigateToRelease = navigateToRelease,
+            navigateToReport = navigateToReport,
+            navigateToNewsDetail  = {
+                navigator.push(PostDetailVoyagerScreen(
+                    id = it,
+                    modifier = Modifier.fillMaxSize()
+                ))
+            },
+        )
+    }
+}
 
 
 @Composable

@@ -12,33 +12,55 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import dev.icerock.moko.resources.compose.colorResource
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import org.example.library.MR
+import org.koin.compose.koinInject
+import ui.setting.Setting
+import ui.setting.toComposeTheme
 
 @Composable
 fun FuTalkTheme(
     content:@Composable () -> Unit
 ){
-    val primary by  animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.primary_dark) else colorResource( MR.colors.primary_light) )
-    val onPrimary by  animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.onPrimary_dark) else colorResource( MR.colors.onPrimary_light) )
-    val primaryVariant by  animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.primaryVariant_dark) else colorResource( MR.colors.primaryVariant_light) )
-    val secondary by  animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.secondary_dark) else colorResource( MR.colors.secondary_light) )
-    val onSecondary by  animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.onSecondary_dark) else colorResource( MR.colors.onSecondary_light) )
-    val secondaryVariant by  animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.secondaryVariant_dark) else colorResource( MR.colors.secondaryVariant_light) )
-    val surface by animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.surface_dark) else colorResource( MR.colors.surface_light) )
-    val onSurface by animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.onSurface_dark) else colorResource( MR.colors.onSurface_light) )
-    val error by animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.error_dark) else colorResource( MR.colors.error_light) )
-    val onError by animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.onError_dark) else colorResource( MR.colors.onError_light) )
-    val background by animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.background_dark) else colorResource( MR.colors.background_light) )
-    val onBackground by  animateColorAsState(if (isSystemInDarkTheme()) colorResource(MR.colors.onBackground_dark) else colorResource( MR.colors.onBackground_light) )
+    val setting = koinInject<Setting>()
+    val themeStyle = setting.theme.collectAsState()
+    val composable = remember( themeStyle.value ) {
+        derivedStateOf {
+            themeStyle.value.toComposeTheme()
+        }
+    }
+    val fontStyle = setting.font.collectAsState()
+
+    @Composable
+    fun getCurrentFont(): FontFamily {
+        return fontFamilyResource(fontStyle.value.fontResource)
+    }
+
+    val primary by  animateColorAsState( if (!isSystemInDarkTheme())  composable.value.primaryInLightTheme else composable.value.primaryInDarkTheme)
+    val onPrimary by  animateColorAsState( if (!isSystemInDarkTheme())  composable.value.onPrimaryInLightTheme else composable.value.onPrimaryInDarkTheme)
+    val primaryVariant by  animateColorAsState( if (!isSystemInDarkTheme())  composable.value.primaryVariantInLightTheme else composable.value.primaryVariantInDarkTheme)
+    val secondary by  animateColorAsState( if (!isSystemInDarkTheme())  composable.value.secondaryInLightTheme else composable.value.secondaryInDarkTheme)
+    val onSecondary by  animateColorAsState( if (!isSystemInDarkTheme())  composable.value.onSecondaryInLightTheme else composable.value.onSecondaryInDarkTheme)
+    val secondaryVariant by  animateColorAsState( if (!isSystemInDarkTheme())  composable.value.secondaryVariantInLightTheme else composable.value.secondaryVariantInDarkTheme)
+    val surface by animateColorAsState( if (!isSystemInDarkTheme())  composable.value.surfaceInLightTheme else composable.value.surfaceInDarkTheme)
+    val onSurface by animateColorAsState( if (!isSystemInDarkTheme())  composable.value.onSurfaceInLightTheme else composable.value.onSurfaceInDarkTheme)
+    val error by animateColorAsState( if (!isSystemInDarkTheme())  composable.value.errorInLightTheme else composable.value.errorInDarkTheme)
+    val onError by animateColorAsState( if (!isSystemInDarkTheme())  composable.value.onErrorInLightTheme else composable.value.onErrorInDarkTheme)
+    val background by animateColorAsState( if (!isSystemInDarkTheme())  composable.value.backgroundInLightTheme else composable.value.backgroundInDarkTheme)
+    val onBackground by  animateColorAsState( if (!isSystemInDarkTheme())  composable.value.onBackgroundInLightTheme else composable.value.onBackgroundInDarkTheme)
+
+
     val lightTheme = Theme.LightTheme(
         colorResource(MR.colors.primary_light),
         colorResource(MR.colors.onPrimary_light),
@@ -67,6 +89,7 @@ fun FuTalkTheme(
         colorResource(MR.colors.background_dark),
         colorResource(MR.colors.onBackground_dark),
     )
+
     MaterialTheme (
         colors = MaterialTheme.colors.copy(
             primary = primary,
@@ -85,9 +108,19 @@ fun FuTalkTheme(
         ),
         content = content,
         typography = MaterialTheme.typography.copy(
-            body1 = TextStyle(
-                fontFamily = fontFamilyResource(MR.fonts.Mulish.light)
-            )
+            h1 = MaterialTheme.typography.h1.copy(fontFamily = getCurrentFont()),
+            h2 = MaterialTheme.typography.h2.copy(fontFamily = getCurrentFont()),
+            h3 = MaterialTheme.typography.h3.copy(fontFamily = getCurrentFont()),
+            h4 = MaterialTheme.typography.h4.copy(fontFamily = getCurrentFont()),
+            h5 = MaterialTheme.typography.h5.copy(fontFamily = getCurrentFont()),
+            h6 = MaterialTheme.typography.h6.copy(fontFamily = getCurrentFont()),
+            subtitle1 = MaterialTheme.typography.subtitle1.copy(fontFamily = getCurrentFont()),
+            subtitle2 = MaterialTheme.typography.subtitle2.copy(fontFamily = getCurrentFont()),
+            body1 = MaterialTheme.typography.body1.copy(fontFamily = getCurrentFont()),
+            body2 = MaterialTheme.typography.body2.copy(fontFamily = getCurrentFont()),
+            button = MaterialTheme.typography.button.copy(fontFamily = getCurrentFont()),
+            caption = MaterialTheme.typography.caption.copy(fontFamily = getCurrentFont()),
+            overline = MaterialTheme.typography.overline.copy(fontFamily = getCurrentFont())
         )
     )
 }
