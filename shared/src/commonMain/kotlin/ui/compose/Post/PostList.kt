@@ -94,7 +94,6 @@ class PostListVoyagerScreen(
             navigateToNewsDetail  = {
                 navigator.push(PostDetailVoyagerScreen(
                     id = it,
-                    modifier = Modifier.fillMaxSize()
                 ))
             },
         )

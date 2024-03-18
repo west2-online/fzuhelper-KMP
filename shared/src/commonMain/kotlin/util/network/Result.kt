@@ -187,7 +187,7 @@ fun <T>T.logicWithNullCheckInCompose(
 
 suspend fun <T> MutableStateFlow<NetworkResult<T>>.reset(newValue : NetworkResult<T>){
     val oldKey = this.value.key.value
-    val newKey = Random(0).nextInt(0,(oldKey+10))
+    val newKey = Random(0).nextInt(oldKey+10,(oldKey+100))
     this.value = newValue.apply {
         key.value = newKey
     }
@@ -241,8 +241,35 @@ fun <T> MutableStateFlow<NetworkResult<T>>.logicIfUnSend(
     }
 }
 
+
+//对网络结果的处理，可以处理无数次
+fun <T> NetworkResult<T>.logicWithTypeWithoutLimit(
+    success: ((T) -> Unit)? = null,
+    error: ((Throwable) -> Unit)? = null,
+    unSend : (() -> Unit)? = null,
+    loading : (() -> Unit)? = null,
+){
+    when(this){
+        is NetworkResult.Success<T> -> {
+            success?.invoke(this.data)
+        }
+        is NetworkResult.Error<T> -> {
+            error?.invoke(this.error)
+        }
+        is NetworkResult.LoadingWithAction<T> -> {
+            loading?.invoke()
+        }
+        is NetworkResult.UnSend<T> -> {
+            unSend?.invoke()
+        }
+        is NetworkResult.LoadingWithOutAction<T> ->{
+            loading?.invoke()
+        }
+    }
+}
+
 //对网络结果的处理，只能处理一次
-fun <T> NetworkResult<T>.logicWithType(
+fun <T> NetworkResult<T>.logicWithTypeWithLimit(
     success: ((T) -> Unit)? = null,
     error: ((Throwable) -> Unit)? = null,
     unSend : (() -> Unit)? = null,
@@ -277,7 +304,7 @@ suspend fun <T> NetworkResult<T>.toast(
     loading : (() -> Unit)? = null,
 ){
     if(this.showToast){
-        this.logicWithType(
+        this.logicWithTypeWithoutLimit(
             success = success,
             error = error,
             unSend = unSend,

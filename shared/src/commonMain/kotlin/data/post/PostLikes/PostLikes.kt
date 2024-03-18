@@ -3,7 +3,6 @@ package data.post.PostLikes
 import kotlinx.serialization.Serializable
 import util.network.NetworkResult
 import util.network.networkError
-import util.network.networkSuccess
 
 @Serializable
 data class PostLikes(
@@ -19,9 +18,9 @@ data class PostLikes(
             return networkError("点赞失败")
         }
         return when(result){
-            PostLikesResult.PostLikeMissingPostInformation,PostLikesResult.PostLikeFail -> networkError("点赞失败")
-            PostLikesResult.PostLikeAlready -> networkError("已经点赞了")
-            PostLikesResult.PostLikeSuccess -> networkSuccess("点赞成功")
+            PostLikesResult.PostLikeMissingPostInformation,PostLikesResult.PostLikeFail -> NetworkResult.Error(Throwable("点赞失败"))
+            PostLikesResult.PostLikeAlready -> NetworkResult.Error(Throwable("已经点赞了"))
+            PostLikesResult.PostLikeSuccess -> NetworkResult.Success("点赞成功")
         }
     }
 }

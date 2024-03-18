@@ -98,7 +98,7 @@ inline fun Toast.toastBindNetworkResult(
     networkResult5: State<NetworkResult<String>>? = null
 ){
     if (networkResult1 != null) {
-        LaunchedEffect(networkResult1.value.key.value){
+        LaunchedEffect(networkResult1.value.key){
             networkResult1.value.toast(
                 success = {
                     this@toastBindNetworkResult.addToast(it)
@@ -110,7 +110,7 @@ inline fun Toast.toastBindNetworkResult(
         }
     }
     if (networkResult2 != null) {
-        LaunchedEffect(networkResult2.value.key.value){
+        LaunchedEffect(networkResult2.value.key){
             networkResult2.value.toast(
                 success = {
                     this@toastBindNetworkResult.addToast(it)
@@ -122,7 +122,7 @@ inline fun Toast.toastBindNetworkResult(
         }
     }
     if (networkResult3 != null) {
-        LaunchedEffect(networkResult3.value.key.value){
+        LaunchedEffect(networkResult3.value.key){
             networkResult3.value.toast(
                 success = {
                     this@toastBindNetworkResult.addToast(it)
@@ -134,7 +134,7 @@ inline fun Toast.toastBindNetworkResult(
         }
     }
     if (networkResult4 != null) {
-        LaunchedEffect(networkResult4.value.key.value){
+        LaunchedEffect(networkResult4.value.key){
             networkResult4.value.toast(
                 success = {
                     this@toastBindNetworkResult.addToast(it)
@@ -146,7 +146,7 @@ inline fun Toast.toastBindNetworkResult(
         }
     }
     if (networkResult5 != null) {
-        LaunchedEffect(networkResult5.value.key.value){
+        LaunchedEffect(networkResult5.value.key){
             networkResult5.value.toast(
                 success = {
                     this@toastBindNetworkResult.addToast(it)

@@ -31,7 +31,7 @@ import util.compose.EasyToast
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.network.CollectWithContent
-import util.network.logicWithType
+import util.network.logicWithTypeWithoutLimit
 
 
 class SplashPageVoyagerScreen():Screen{
@@ -42,7 +42,7 @@ class SplashPageVoyagerScreen():Screen{
         val toast = rememberToastState()
         val rootAction = koinInject<RootAction>()
         LaunchedEffect(imageState,imageState.value.key){
-            imageState.value.logicWithType(
+            imageState.value.logicWithTypeWithoutLimit(
                 error = {
                     toast.addToast(it.message.toString(), Color.Red)
                 }

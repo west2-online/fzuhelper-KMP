@@ -52,7 +52,7 @@ import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.network.CollectWithContent
 import util.network.NetworkResult
-import util.network.logicWithType
+import util.network.logicWithTypeWithoutLimit
 import kotlin.random.Random
 
 
@@ -70,7 +70,7 @@ fun PersonScreen(
     }
     val toast = rememberToastState()
     LaunchedEffect(userDataState.value,userDataState.value.key){
-        userDataState.value.logicWithType(
+        userDataState.value.logicWithTypeWithoutLimit(
             success = null,
             error = {
                 toast.addToast(it.message.toString(), Color.Red)

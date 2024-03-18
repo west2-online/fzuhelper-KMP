@@ -102,7 +102,7 @@ import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.compose.toastBindNetworkResult
 import util.network.CollectWithContent
-import util.network.logicWithType
+import util.network.logicWithTypeWithLimit
 import util.network.toEasyTime
 import util.network.toast
 
@@ -227,7 +227,7 @@ fun PostDetail(
                                                 }
                                             }
                                         }
-                                    postDetailViewModel.postLikeSubmitState.collectAsState().value.logicWithType(
+                                    postDetailViewModel.postLikeSubmitState.collectAsState().value.logicWithTypeWithLimit(
                                         success = {
                                             postDetailViewModel.refreshPostById(postById.data.Post.Id.toString())
                                         }
@@ -1178,48 +1178,49 @@ fun CommentStateSerializable.toCommentState():CommentState{
 
 class PostDetailVoyagerScreen(
     val id: String,
-    val modifier: Modifier = Modifier,
 ):Screen{
     @Composable
     override fun Content() {
-        val postDetailViewModel = koinInject<PostDetailViewModel>()
-        val commentSubmitState = postDetailViewModel.commentSubmitState.collectAsState()
-        val postCommentPreview = postDetailViewModel.postCommentPreviewFlow.collectAsState().value
-        val toastState = rememberToastState()
-        toastState.toastBindNetworkResult(
-            postDetailViewModel.postLikeSubmitState.collectAsState(),
-            postDetailViewModel.commentSubmitState.collectAsState()
-        )
-        LaunchedEffect(commentSubmitState.value.key){
-            commentSubmitState.value.toast(
-                success = {
-                    toastState.addToast(it)
-                },
-                error = {
-                    toastState.addToast(it.message.toString(), Color.Red)
-                }
+        Box(modifier = Modifier.fillMaxSize()){
+            val postDetailViewModel = koinInject<PostDetailViewModel>()
+            val commentSubmitState = postDetailViewModel.commentSubmitState.collectAsState()
+            val postCommentPreview = postDetailViewModel.postCommentPreviewFlow.collectAsState().value
+            val toastState = rememberToastState()
+            toastState.toastBindNetworkResult(
+                postDetailViewModel.postLikeSubmitState.collectAsState(),
+                postDetailViewModel.commentSubmitState.collectAsState()
             )
+            LaunchedEffect(commentSubmitState.value.key){
+                commentSubmitState.value.toast(
+                    success = {
+                        toastState.addToast(it)
+                    },
+                    error = {
+                        toastState.addToast(it.message.toString(), Color.Red)
+                    }
+                )
+            }
+            PostDetail(
+                id = id,
+                modifier = Modifier.fillMaxSize(),
+                initPostDetail = {
+                    postDetailViewModel.initPostById(it)
+                },
+                postCommentPreview = postCommentPreview,
+                postCommentTree = postDetailViewModel.postCommentTreeFlow,
+                getPostCommentTree = { treeStart ->
+                    postDetailViewModel.getPostCommentTree(treeStart, postId = id)
+                },
+                submitComment = { parentId, postIdInComment, tree, content, image->
+                    postDetailViewModel.submitComment(parentId,postIdInComment,tree,content,image)
+                },
+                commentReport = {
+                    postDetailViewModel.navigateToReport(it)
+                },
+                refreshCommentPreview = { postDetailViewModel.initPostCommentPreview(id) },
+            )
+            EasyToast(toastState)
         }
-        PostDetail(
-            id = id,
-            modifier = modifier,
-            initPostDetail = {
-                postDetailViewModel.initPostById(it)
-            },
-            postCommentPreview = postCommentPreview,
-            postCommentTree = postDetailViewModel.postCommentTreeFlow,
-            getPostCommentTree = { treeStart ->
-                postDetailViewModel.getPostCommentTree(treeStart, postId = id)
-            },
-            submitComment = { parentId, postIdInComment, tree, content, image->
-                postDetailViewModel.submitComment(parentId,postIdInComment,tree,content,image)
-            },
-            commentReport = {
-                postDetailViewModel.navigateToReport(it)
-            },
-            refreshCommentPreview = { postDetailViewModel.initPostCommentPreview(id) },
-        )
-        EasyToast(toastState)
     }
 }
 

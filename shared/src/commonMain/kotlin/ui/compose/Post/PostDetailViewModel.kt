@@ -28,7 +28,6 @@ import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
 import util.network.logicIfUnSend
-import util.network.networkError
 import util.network.reset
 
 class PostDetailViewModel(
@@ -144,7 +143,7 @@ class PostDetailViewModel(
             _postLikeSubmitState.logicIfNotLoading {
                 postRepository.postLike(postId)
                     .catchWithMassage {
-                        _postLikeSubmitState.reset(networkError("点赞失败"))
+                        _postLikeSubmitState.reset(NetworkResult.Error(Throwable("点赞失败")))
                     }
                     .collectWithMassage {
                         _postLikeSubmitState.reset(it.toNetworkResult())
