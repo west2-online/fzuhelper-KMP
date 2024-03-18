@@ -53,6 +53,7 @@ import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import ui.compose.Main.MainItems
+import ui.root.RootAction
 import util.compose.EasyToast
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
@@ -136,14 +137,11 @@ fun PersonScreen(
                                     .padding(start = 10.dp),
                                 personViewModel.userData.collectAsState()
                             )
+                            val rootAction = koinInject<RootAction>()
                             id ?:run{
                                 Button(
                                     onClick = {
-                                        userData.data?.let { it1 ->
-                                            personViewModel.navigateToModifierInformation(
-                                                userId = it1.Id, userData = userData
-                                            )
-                                        }
+                                        rootAction.navigateFormAnywhereToRelease()
                                     },
                                     modifier = Modifier
                                         .padding(horizontal = 5.dp)

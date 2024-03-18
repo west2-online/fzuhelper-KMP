@@ -103,12 +103,6 @@ class PersonViewModel(
             }
         }
     }
-
-    fun navigateToModifierInformation(userId:Int,userData : UserData){
-        userData.data?.let {
-            rootAction.navigateFormAnywhereToMain()
-        }
-    }
 }
 
 enum class UserDataResult(val value:Int,val descrie:String){
