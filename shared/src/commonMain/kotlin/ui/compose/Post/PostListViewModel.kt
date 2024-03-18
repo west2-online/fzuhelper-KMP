@@ -6,18 +6,15 @@ import app.cash.paging.PagingSource
 import app.cash.paging.PagingState
 import app.cash.paging.cachedIn
 import com.liftric.kvault.KVault
-import data.post.PostCommentNew.PostCommentNew
 import data.post.PostList.Data
 import data.post.PostList.PostList
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import repository.CommentSubmitStatus
 import repository.PostRepository
 import ui.compose.Report.ReportType
 import ui.root.RootAction
-import util.network.NetworkResult
 
 class PostListViewModel(
     private val postRepository:PostRepository,
@@ -202,29 +199,6 @@ class EasyPageSourceForCommentTree(
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
-        }
-    }
-}
-
-fun PostCommentNew.toNetworkResult(): NetworkResult<String> {
-    val result = CommentSubmitStatus.values().find {
-        it.value == this.code
-    }
-    return when(result){
-        null ->{
-            NetworkResult.Error(Throwable("评论失败,稍后再试"))
-        }
-        CommentSubmitStatus.CommentFailed,CommentSubmitStatus.FileParsingFailed, CommentSubmitStatus.FailedToSaveTheCommentImage->{
-            NetworkResult.Error(Throwable("评论失败,稍后再试"))
-        }
-        CommentSubmitStatus.TheCommentIsEmpty -> {
-            NetworkResult.Error(Throwable("评论不能为空"))
-        }
-        CommentSubmitStatus.TheReviewWasSuccessful -> {
-            NetworkResult.Success("评论成功")
-        }
-        else -> {
-            NetworkResult.Error(Throwable("评论失败,稍后再试"))
         }
     }
 }

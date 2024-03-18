@@ -51,7 +51,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -77,7 +76,6 @@ import asImageBitmap
 import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
 import data.post.PostById.FileData
-import data.post.PostById.PostById
 import data.post.PostById.PostContent
 import data.post.PostById.ValueData
 import data.post.PostCommentPreview.Data
@@ -100,11 +98,11 @@ import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.compose.Report.ReportType
 import util.compose.EasyToast
-import util.compose.Toast
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
+import util.compose.toastBindNetworkResult
 import util.network.CollectWithContent
-import util.network.NetworkResult
+import util.network.logicWithType
 import util.network.toEasyTime
 import util.network.toast
 
@@ -112,17 +110,15 @@ import util.network.toast
 fun PostDetail(
     id: String,
     modifier: Modifier = Modifier,
-    postState: State<NetworkResult<PostById>>,
-    getPostById: (String) -> Unit,
+    initPostDetail: (String) -> Unit,
     postCommentPreview: Pager<Int, Data>?,
     postCommentTree: StateFlow<Pager<Int, data.post.PostCommentTree.Data>?>,
     getPostCommentTree: (String) -> Unit,
     submitComment: (parentId: Int, postId: Int, tree: String, content: String, image: ByteArray?) -> Unit,
-    commentSubmitState: State<NetworkResult<String>>,
-    toastState: Toast,
     commentReport:(type:ReportType)->Unit = {},
     refreshCommentPreview:()->Unit = {}
 ) {
+    val postDetailViewModel = koinInject<PostDetailViewModel>()
     val commentItems = postCommentPreview?.flow?.collectAsLazyPagingItems()
     val isRefresh = rememberSaveable{ mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -155,9 +151,7 @@ fun PostDetail(
             }
         )
     ){ mutableStateOf<Comment?>(null) }
-    LaunchedEffect(postState.value){
-        println(postState.value)
-    }
+
     //下拉刷新
     LaunchedEffect(state){
         snapshotFlow{ state.isScrollInProgress && !state.canScrollBackward }
@@ -167,21 +161,10 @@ fun PostDetail(
             .collect {
                 isRefresh.value = true
                 delay(1000)
-//                getPostById(id)
+                postDetailViewModel.refreshPostById(id)
                 refreshCommentPreview()
                 isRefresh.value = false
             }
-    }
-
-    LaunchedEffect(commentSubmitState.value.key){
-        commentSubmitState.value.toast(
-            success = {
-                toastState.addToast(it)
-            },
-            error = {
-                toastState.addToast(it.message.toString(), Color.Red)
-            }
-        )
     }
 
     LaunchedEffect(currentMainComment.value){
@@ -191,7 +174,7 @@ fun PostDetail(
     }
 
     LaunchedEffect(Unit){
-        getPostById(id)
+        initPostDetail(id)
         refreshCommentPreview()
     }
 
@@ -199,13 +182,14 @@ fun PostDetail(
         modifier = modifier
     ){
         //主要的帖子和评论
-        Box(
+        Box (
             modifier = Modifier
-            .fillMaxSize()
-            .padding(10.dp)
+                .fillMaxSize()
+                .padding(10.dp)
         ){
             LazyColumn(
-                modifier = modifier,
+                modifier = Modifier
+                    .fillMaxSize(),
                 state = state
             ) {
                 //帖子
@@ -216,6 +200,7 @@ fun PostDetail(
                             .wrapContentHeight()
                             .animateContentSize()
                     ) {
+                        val postState = postDetailViewModel.currentPostDetail.collectAsState()
                         postState.CollectWithContent(
                             success = { postById ->
                                 Column {
@@ -242,12 +227,21 @@ fun PostDetail(
                                                 }
                                             }
                                         }
+                                    postDetailViewModel.postLikeSubmitState.collectAsState().value.logicWithType(
+                                        success = {
+                                            postDetailViewModel.refreshPostById(postById.data.Post.Id.toString())
+                                        }
+                                    )
                                     Interaction(
                                         modifier = Modifier
                                             .padding( top = 5.dp )
                                             .fillMaxWidth(0.6f)
                                             .wrapContentHeight(),
-                                        likeNumber = postById.data.Post.LikeNum
+                                        likeNumber = postById.data.Post.LikeNum,
+                                        like = {
+                                            postDetailViewModel.postLikes(postById.data.Post.Id)
+                                            println(1)
+                                        }
                                     )
                                 }
                             },
@@ -1189,16 +1183,28 @@ class PostDetailVoyagerScreen(
     @Composable
     override fun Content() {
         val postDetailViewModel = koinInject<PostDetailViewModel>()
-        val currentPostDetail = postDetailViewModel.currentPostDetail.collectAsState()
         val commentSubmitState = postDetailViewModel.commentSubmitState.collectAsState()
         val postCommentPreview = postDetailViewModel.postCommentPreviewFlow.collectAsState().value
         val toastState = rememberToastState()
+        toastState.toastBindNetworkResult(
+            postDetailViewModel.postLikeSubmitState.collectAsState(),
+            postDetailViewModel.commentSubmitState.collectAsState()
+        )
+        LaunchedEffect(commentSubmitState.value.key){
+            commentSubmitState.value.toast(
+                success = {
+                    toastState.addToast(it)
+                },
+                error = {
+                    toastState.addToast(it.message.toString(), Color.Red)
+                }
+            )
+        }
         PostDetail(
             id = id,
             modifier = modifier,
-            postState = currentPostDetail,
-            getPostById = {
-                postDetailViewModel.getPostById(it)
+            initPostDetail = {
+                postDetailViewModel.initPostById(it)
             },
             postCommentPreview = postCommentPreview,
             postCommentTree = postDetailViewModel.postCommentTreeFlow,
@@ -1208,8 +1214,6 @@ class PostDetailVoyagerScreen(
             submitComment = { parentId, postIdInComment, tree, content, image->
                 postDetailViewModel.submitComment(parentId,postIdInComment,tree,content,image)
             },
-            commentSubmitState = commentSubmitState,
-            toastState = toastState,
             commentReport = {
                 postDetailViewModel.navigateToReport(it)
             },

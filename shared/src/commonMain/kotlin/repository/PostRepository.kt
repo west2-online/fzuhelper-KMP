@@ -3,6 +3,7 @@ package repository
 import data.post.PostById.PostById
 import data.post.PostCommentNew.PostCommentNew
 import data.post.PostCommentPreview.PostCommentPreview
+import data.post.PostLikes.PostLikes
 import data.post.PostList.PostList
 import data.post.PostNew.NewPostResponse
 import doist.x.normalize.Form
@@ -11,11 +12,13 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
+import io.ktor.http.parameters
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import ui.compose.Release.ReleasePageItem
@@ -106,6 +109,17 @@ class PostRepository(private val client: HttpClient) {
     fun getCommentPreview(page:Int,postId: Int):Flow<PostCommentPreview>{
         return flow {
             val response = client.get("/post/comment/page/${page}/${postId}").body<PostCommentPreview>()
+            emit(response)
+        }
+    }
+
+    fun postLike(postId: Int): Flow<PostLikes> {
+        return flow<PostLikes> {
+            val response = client.submitForm(
+                url = "/post/like",
+                formParameters = parameters {
+                append("postId",postId.toString())
+            }).body<PostLikes>()
             emit(response)
         }
     }

@@ -20,30 +20,41 @@ import kotlin.random.Random
 interface NetworkResult<T> {
     val key: MutableState<Int>
     var showToast :Boolean
+    var hasDeal : Boolean
     data class Success<T>(
         val data:T,
         override var showToast: Boolean = true,
-        override val key: MutableState<Int> = mutableStateOf(0)
+        override val key: MutableState<Int> = mutableStateOf(0),
+        override var hasDeal: Boolean = false,
     ) : NetworkResult<T>
 
     data class Error<T>(
         val error: Throwable,
         override var showToast: Boolean = true,
-        override val key: MutableState<Int> = mutableStateOf(0)
+        override val key: MutableState<Int> = mutableStateOf(0),
+        override var hasDeal: Boolean = false,
     ): NetworkResult<T>
 
-    class LoadingWithAction<T>(override var showToast: Boolean = true, override val key: MutableState<Int> = mutableStateOf(0)):
+    class LoadingWithAction<T>(
+        override var showToast: Boolean = true,
+        override val key: MutableState<Int> = mutableStateOf(0),
+        override var hasDeal: Boolean = false,
+    ):
         NetworkResult<T>
 
 
-    class LoadingWithOutAction<T>(override var showToast: Boolean = true, override val key: MutableState<Int> = mutableStateOf(0)):
+    class LoadingWithOutAction<T>(override var showToast: Boolean = true, override val key: MutableState<Int> = mutableStateOf(0),
+                                  override var hasDeal: Boolean = false,):
         NetworkResult<T>
 
-    class UnSend<T>( override var showToast: Boolean = true,override val key: MutableState<Int> = mutableStateOf(0)) :
+    class UnSend<T>( override var showToast: Boolean = true,override val key: MutableState<Int> = mutableStateOf(0),
+                     override var hasDeal: Boolean = false,) :
         NetworkResult<T>
 
 }
 
+fun <T>networkError(error: String) = NetworkResult.Error<T>(Throwable(error))
+fun networkSuccess(success: String) = NetworkResult.Success<String>(success)
 @Composable
 fun <T> State<NetworkResult<T>>.CollectWithContent(
     success : (@Composable (T)->Unit)? = null,
@@ -212,28 +223,49 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.logicIfNotLoading(
         block.invoke()
     }
 }
+suspend fun <T> MutableStateFlow<NetworkResult<T>>.logicIfUnSendInSuspend(
+    preAction: suspend ()->Unit = {},
+    block: suspend () -> Unit
+){
+    preAction.invoke()
+    if(this.value is NetworkResult.UnSend){
+        block.invoke()
+    }
+}
 
+fun <T> MutableStateFlow<NetworkResult<T>>.logicIfUnSend(
+    block: () -> Unit
+){
+    if(this.value is NetworkResult.UnSend){
+        block.invoke()
+    }
+}
+
+//对网络结果的处理，只能处理一次
 fun <T> NetworkResult<T>.logicWithType(
     success: ((T) -> Unit)? = null,
     error: ((Throwable) -> Unit)? = null,
     unSend : (() -> Unit)? = null,
     loading : (() -> Unit)? = null,
 ){
-    when(this){
-        is NetworkResult.Success<T> -> {
-            success?.invoke(this.data)
-        }
-        is NetworkResult.Error<T> -> {
-            error?.invoke(this.error)
-        }
-        is NetworkResult.LoadingWithAction<T> -> {
-            loading?.invoke()
-        }
-        is NetworkResult.UnSend<T> -> {
-            unSend?.invoke()
-        }
-        is NetworkResult.LoadingWithOutAction<T> ->{
-            loading?.invoke()
+    if(!this.hasDeal){
+        this.hasDeal = true
+        when(this){
+            is NetworkResult.Success<T> -> {
+                success?.invoke(this.data)
+            }
+            is NetworkResult.Error<T> -> {
+                error?.invoke(this.error)
+            }
+            is NetworkResult.LoadingWithAction<T> -> {
+                loading?.invoke()
+            }
+            is NetworkResult.UnSend<T> -> {
+                unSend?.invoke()
+            }
+            is NetworkResult.LoadingWithOutAction<T> ->{
+                loading?.invoke()
+            }
         }
     }
 }

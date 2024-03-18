@@ -88,18 +88,76 @@ inline fun rememberToastState(
 
 
 
+//未优化的方法
 @Composable
-inline fun Toast.toastBindNetworkResult(networkResult: State<NetworkResult<String>>){
-    LaunchedEffect(networkResult.value.key.value){
-        networkResult.value.toast(
-            success = {
-                this@toastBindNetworkResult.addToast(it)
-            },
-            error = {
-                this@toastBindNetworkResult.addWarnToast(it.message.toString())
-            }
-        )
+inline fun Toast.toastBindNetworkResult(
+    networkResult1: State<NetworkResult<String>>? = null,
+    networkResult2: State<NetworkResult<String>>? = null,
+    networkResult3: State<NetworkResult<String>>? = null,
+    networkResult4: State<NetworkResult<String>>? = null,
+    networkResult5: State<NetworkResult<String>>? = null
+){
+    if (networkResult1 != null) {
+        LaunchedEffect(networkResult1.value.key.value){
+            networkResult1.value.toast(
+                success = {
+                    this@toastBindNetworkResult.addToast(it)
+                },
+                error = {
+                    this@toastBindNetworkResult.addWarnToast(it.message.toString())
+                }
+            )
+        }
     }
+    if (networkResult2 != null) {
+        LaunchedEffect(networkResult2.value.key.value){
+            networkResult2.value.toast(
+                success = {
+                    this@toastBindNetworkResult.addToast(it)
+                },
+                error = {
+                    this@toastBindNetworkResult.addWarnToast(it.message.toString())
+                }
+            )
+        }
+    }
+    if (networkResult3 != null) {
+        LaunchedEffect(networkResult3.value.key.value){
+            networkResult3.value.toast(
+                success = {
+                    this@toastBindNetworkResult.addToast(it)
+                },
+                error = {
+                    this@toastBindNetworkResult.addWarnToast(it.message.toString())
+                }
+            )
+        }
+    }
+    if (networkResult4 != null) {
+        LaunchedEffect(networkResult4.value.key.value){
+            networkResult4.value.toast(
+                success = {
+                    this@toastBindNetworkResult.addToast(it)
+                },
+                error = {
+                    this@toastBindNetworkResult.addWarnToast(it.message.toString())
+                }
+            )
+        }
+    }
+    if (networkResult5 != null) {
+        LaunchedEffect(networkResult5.value.key.value){
+            networkResult5.value.toast(
+                success = {
+                    this@toastBindNetworkResult.addToast(it)
+                },
+                error = {
+                    this@toastBindNetworkResult.addWarnToast(it.message.toString())
+                }
+            )
+        }
+    }
+
 }
 
 
