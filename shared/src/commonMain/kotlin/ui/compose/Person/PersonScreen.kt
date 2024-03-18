@@ -2,6 +2,7 @@ package ui.compose.Person
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
@@ -20,16 +22,20 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.Surface
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -61,12 +67,12 @@ import kotlin.random.Random
 fun PersonScreen(
     id:String? = null,
     modifier: Modifier = Modifier,
-    viewModel: PersonViewModel = koinInject()
+    personViewModel: PersonViewModel = koinInject()
 ){
     val scope = rememberCoroutineScope()
-    val userDataState = viewModel.userData.collectAsState()
+    val userDataState = personViewModel.userData.collectAsState()
     LaunchedEffect(Unit){
-        viewModel.getUserData(id)
+        personViewModel.getUserData(id)
     }
     val toast = rememberToastState()
     LaunchedEffect(userDataState.value,userDataState.value.key){
@@ -82,26 +88,45 @@ fun PersonScreen(
             modifier = Modifier
                 .fillMaxSize()
         ){
-            viewModel.userData.collectAsState().CollectWithContent(
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ){
+                KamelImage(
+                    resource = asyncPainterResource("https://picx.zhimg.com/80/v2-cee6c1a92831cd1566e4c5f9dd4a35f4_720w.webp?source=1def8aca"),
+                    null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .shimmerLoadingAnimation(
+                            colorList = listOf(
+                                Color.Black.copy(alpha = 0.1f),
+                                Color.Black.copy(alpha = 0.2f),
+                                Color.Black.copy(alpha = 0.3f),
+                                Color.Black.copy(alpha = 0.2f),
+                                Color.Black.copy(alpha = 0.1f),
+                            )
+                        ),
+                    contentScale = ContentScale.FillBounds
+                )
+                Icon(
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .offset(x = -10.dp,y = 10.dp)
+                        .align(Alignment.TopEnd)
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            personViewModel.getUserData(id)
+                        }
+                        .padding(5.dp)
+                )
+            }
+            personViewModel.userData.collectAsState().CollectWithContent(
                 success = { userData ->
                     Column{
-                        KamelImage(
-                            resource = asyncPainterResource("https://picx.zhimg.com/80/v2-cee6c1a92831cd1566e4c5f9dd4a35f4_720w.webp?source=1def8aca"),
-                            null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .shimmerLoadingAnimation(
-                                    colorList = listOf(
-                                        Color.Black.copy(alpha = 0.1f),
-                                        Color.Black.copy(alpha = 0.2f),
-                                        Color.Black.copy(alpha = 0.3f),
-                                        Color.Black.copy(alpha = 0.2f),
-                                        Color.Black.copy(alpha = 0.1f),
-                                    )
-                                ),
-                            contentScale = ContentScale.FillBounds
-                        )
                         Row {
                             PersonalInformationInPerson(
                                 modifier = Modifier
@@ -109,13 +134,13 @@ fun PersonScreen(
                                     .wrapContentHeight()
                                     .weight(1f)
                                     .padding(start = 10.dp),
-                                viewModel.userData.collectAsState()
+                                personViewModel.userData.collectAsState()
                             )
                             id ?:run{
                                 Button(
                                     onClick = {
                                         userData.data?.let { it1 ->
-                                            viewModel.navigateToModifierInformation(
+                                            personViewModel.navigateToModifierInformation(
                                                 userId = it1.Id, userData = userData
                                             )
                                         }
@@ -128,6 +153,34 @@ fun PersonScreen(
                                     )
                                 }
                             }
+                        }
+                    }
+                },
+                error = {
+                    Column{
+                        Row {
+                            PersonalInformationInPerson(
+                                modifier = Modifier
+                                    .offset(y = (-25).dp)
+                                    .wrapContentHeight()
+                                    .weight(1f)
+                                    .padding(start = 10.dp),
+                                personViewModel.userData.collectAsState()
+                            )
+                        }
+                    }
+                },
+                content = {
+                    Column{
+                        Row {
+                            PersonalInformationInPerson(
+                                modifier = Modifier
+                                    .offset(y = (-25).dp)
+                                    .wrapContentHeight()
+                                    .weight(1f)
+                                    .padding(start = 10.dp),
+                                personViewModel.userData.collectAsState()
+                            )
                         }
                     }
                 }
@@ -145,13 +198,13 @@ fun PersonScreen(
                     items.forEachIndexed { index, item ->
                         Tab(
                             text = {
-                                 Text(item)
+                                Text(item)
                             },
                             selected = pageState.currentPage == index,
                             onClick = {
-                                 scope.launch {
-                                     pageState.animateScrollToPage(index)
-                                 }
+                                scope.launch {
+                                    pageState.animateScrollToPage(index)
+                                }
                             },
                         )
                     }
@@ -167,9 +220,9 @@ fun PersonScreen(
                                 .fillMaxSize()
                         ) {
                             LaunchedEffect(Unit){
-                                viewModel.getIdentityData(id)
+                                personViewModel.getIdentityData(id)
                             }
-                            viewModel.identityData.collectAsState().CollectWithContent(
+                            personViewModel.identityData.collectAsState().CollectWithContent(
                                 success = {
                                     FlowRow (
                                         modifier = Modifier
