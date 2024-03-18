@@ -711,7 +711,6 @@ fun PostDetail(
             }
         }
     }
-
 }
 
 
