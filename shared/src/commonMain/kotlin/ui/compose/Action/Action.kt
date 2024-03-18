@@ -231,6 +231,7 @@ object ActionVoyagerScreen : Tab {
         Action(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(10.dp)
         )
     }
 }
