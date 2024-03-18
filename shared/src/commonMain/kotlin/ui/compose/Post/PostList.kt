@@ -70,8 +70,9 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
-import kotlinx.serialization.Serializable
 import org.koin.compose.koinInject
+import util.compose.EasyToast
+import util.compose.rememberToastState
 import util.network.toEasyTime
 import kotlin.jvm.Transient
 
@@ -125,6 +126,7 @@ fun PostList(
                 isRefresh.value = false
             }
     }
+    val toastState = rememberToastState()
 
     Box(modifier = modifier){
         postListFlow.let{ postList ->
@@ -141,6 +143,8 @@ fun PostList(
                             post = postData,
                             navigateToReport = {
                                 navigateToReport.invoke(it)
+                            }, like = {
+                                toastState.addWarnToast("请在详情页中点赞")
                             }
                         )
                     }
@@ -218,6 +222,7 @@ fun PostList(
                 contentDescription = null
             )
         }
+        EasyToast(toastState)
     }
 }
 
@@ -226,6 +231,7 @@ fun PostList(
 fun NewsItem(
     navigateToNewsDetail: (String) -> Unit,
     navigateToReport: (Data) -> Unit,
+    like :()->Unit,
     post: Data,
     modifier: Modifier = Modifier
         .fillMaxWidth()
@@ -345,7 +351,8 @@ fun NewsItem(
                 likeNumber = post.LikeNum,
                 report = {
                     navigateToReport.invoke(post)
-                }
+                },
+                like = like
             )
             if( post.Status == 1 ) {
                 Box(
@@ -422,7 +429,8 @@ fun Interaction(
     modifier: Modifier,
     likeNumber :Int,
     report :()->Unit = {},
-    share:()->Unit = {}
+    share:()->Unit = {},
+    like:()->Unit = {}
 ){
     BottomNavigation(
         contentColor = Color.Transparent,
@@ -438,7 +446,9 @@ fun Interaction(
             ) },
             label = { Text(likeNumber.toString()) },
             selected = false,
-            onClick = {  },
+            onClick = {
+                      like.invoke()
+            },
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
         )
@@ -461,7 +471,9 @@ fun Interaction(
                     .size(15.dp)) },
             label = { Text("分享", fontSize = 10.sp) },
             selected = false,
-            onClick = { },
+            onClick = {
+                      share.invoke()
+            },
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
         )
