@@ -22,11 +22,12 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
@@ -34,8 +35,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,9 +47,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.bottomSheet.BottomSheetNavigator
 import cafe.adriel.voyager.navigator.bottomSheet.LocalBottomSheetNavigator
+import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
@@ -63,46 +62,50 @@ object ManageAdministratorVoyager : Screen{
     @Composable
     override fun Content() {
         TabNavigator(FeatAdministratorVoyagerScreen){ tabNavigator ->
-            Scaffold(
-                content = {
-                    CurrentScreen()
-                },
-                bottomBar = {
-                    NavigationBar {
-                        NavigationBarItem(
-                            label = {
-                                Text(FeatAdministratorVoyagerScreen.options.title)
-                            },
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.Filled.Add,
-                                    contentDescription = null
-                                )
-                            },
-                            onClick = {
-                                tabNavigator.current = FeatAdministratorVoyagerScreen
-                            },
-                            selected = tabNavigator.current is FeatAdministratorVoyagerScreen
-                        )
-                        NavigationBarItem(
-                            label = {
-                                Text(ManageExistAdministratorVoyagerScreen.options.title)
-                            },
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.Filled.Person,
-                                    contentDescription = null
-                                )
-                            },
-                            onClick = {
-                                tabNavigator.current = ManageExistAdministratorVoyagerScreen
-                            },
-                            selected = tabNavigator.current is ManageExistAdministratorVoyagerScreen
-                        )
-                    }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ){
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ){
+                    CurrentTab()
                 }
-
-            )
+                BottomNavigation {
+                    BottomNavigationItem(
+                        label = {
+                            Text(FeatAdministratorVoyagerScreen.options.title)
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = null
+                            )
+                        },
+                        onClick = {
+                            tabNavigator.current = FeatAdministratorVoyagerScreen
+                        },
+                        selected = tabNavigator.current is FeatAdministratorVoyagerScreen
+                    )
+                    BottomNavigationItem(
+                        label = {
+                            Text(ManageExistAdministratorVoyagerScreen.options.title)
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.Person,
+                                contentDescription = null
+                            )
+                        },
+                        onClick = {
+                            tabNavigator.current = ManageExistAdministratorVoyagerScreen
+                        },
+                        selected = tabNavigator.current is ManageExistAdministratorVoyagerScreen
+                    )
+                }
+            }
         }
     }
 }
@@ -122,6 +125,7 @@ object FeatAdministratorVoyagerScreen:Tab{
         Column (
             verticalArrangement = Arrangement.spacedBy(20.dp),
             modifier = Modifier
+                .fillMaxSize()
                 .padding(10.dp)
         ){
             val userEmail = remember {
@@ -199,8 +203,10 @@ object ManageExistAdministratorVoyagerScreen : Tab{
         val userForChangeLevel = remember {
             mutableStateOf<User?>(null)
         }
-
-        BottomSheetNavigator{ bottomSheetNavigator ->
+        BottomSheetNavigator(
+            modifier = Modifier
+                .fillMaxSize()
+        ){ bottomSheetNavigator ->
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -257,6 +263,7 @@ class ChangeUserLevel(
                         .fillMaxSize(0.8f)
                 )
             }
+
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -294,6 +301,29 @@ class ChangeUserLevel(
                             }
                         }
                     }
+                }
+            }
+            Row (
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth()
+                    .padding(10.dp)
+            ){
+                Button(
+                    onClick = {
+
+                    },
+                    modifier = Modifier
+                ){
+                    Text(
+                        "修改等级",
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .padding(10.dp),
+                        color = Color.Black
+                    )
                 }
             }
         }
