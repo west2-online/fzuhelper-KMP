@@ -57,6 +57,7 @@ import data.share.User
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import util.network.getAvatarStatic
+import util.regex.matchEmail
 
 object ManageAdministratorVoyager : Screen{
     @Composable
@@ -153,7 +154,8 @@ object FeatAdministratorVoyagerScreen:Tab{
                     .fillMaxWidth(1f),
                 placeholder = {
                     Text("输入邮箱")
-                }
+                },
+                isError = !matchEmail(userEmail.value)
             )
             Box(
                 modifier = Modifier
