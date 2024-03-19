@@ -13,6 +13,7 @@ import data.post.CommentById.CommentById
 import data.post.PostById.PostById
 import data.post.PostById.PostData
 import data.share.Comment
+import data.share.User
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClient
@@ -22,11 +23,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import repository.ManageRepository
 import repository.toNetworkResult
+import util.flow.actionWithLabel
 import util.flow.catchWithMassage
 import util.flow.collectWithMassage
 import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
+import util.network.networkError
 import util.network.reset
 
 /*
@@ -115,6 +118,9 @@ class ManageViewModel(
     private var _ribbonDelete = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
         NetworkResult.UnSend()))
     var ribbonDelete = _ribbonDelete.asStateFlow()
+
+    private var _userByEmail = CMutableStateFlow(MutableStateFlow<NetworkResult<User>>(NetworkResult.UnSend()))
+    var userByEmail = _userByEmail.asStateFlow()
 
     fun getOpenImage(){
         viewModelScope.launchInDefault {
@@ -237,6 +243,25 @@ class ManageViewModel(
             }
         }
     }
+
+    //通过email获取user的信息
+    fun getUserDataByEmail(email:String){
+        viewModelScope.launchInDefault {
+            _userByEmail.logicIfNotLoading {
+                repository.getEmailByEmail(email)
+                    .actionWithLabel(
+                        label = "邮件获取用户信息",
+                        catchAction = {
+                            _userByEmail.reset(networkError("用户信息获取失败"))
+                        },
+                        collectAction = {
+                            _userByEmail.reset(it.toNetworkResult())
+                        }
+                    )
+            }
+        }
+    }
+
 }
 
 enum class PostProcessResult(val value : Int){

@@ -7,6 +7,7 @@ import data.manage.processPost.ProcessPost
 import data.manage.ribbonDelete.RibbonDelete
 import data.manage.ribbonGet.GetRibbon
 import data.manage.ribbonImageAdd.RibbonImageAdd
+import data.manage.userDataByEmail.UserDataByEmail
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.formData
@@ -116,6 +117,17 @@ class ManageRepository(
                     append("ribbonAction", ribbonAction)
                 }
             ).body<RibbonImageAdd>()
+            emit(response)
+        }
+    }
+
+    fun getEmailByEmail(email:String):Flow<UserDataByEmail>{
+        return flow {
+            val response = client.get("/manage/user"){
+                url {
+                    parameters.append("email", email)
+                }
+            }.body<UserDataByEmail>()
             emit(response)
         }
     }

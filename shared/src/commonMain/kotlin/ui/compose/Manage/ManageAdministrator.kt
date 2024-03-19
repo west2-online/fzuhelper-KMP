@@ -1,7 +1,6 @@
 package ui.compose.Manage
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
@@ -20,12 +19,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Button
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -36,6 +38,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -56,6 +59,8 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import data.share.User
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import org.koin.compose.koinInject
+import util.network.CollectWithContent
 import util.network.getAvatarStatic
 import util.regex.matchEmail
 
@@ -129,11 +134,9 @@ object FeatAdministratorVoyagerScreen:Tab{
                 .fillMaxSize()
                 .padding(10.dp)
         ){
+            val manageViewModel = koinInject<ManageViewModel>()
             val userEmail = remember {
                 mutableStateOf("")
-            }
-            val currentUser = remember {
-                mutableStateOf<User?>(null)
             }
             TextField(
                 value = userEmail.value,
@@ -146,7 +149,7 @@ object FeatAdministratorVoyagerScreen:Tab{
                         contentDescription = null,
                         modifier = Modifier
                             .clickable {
-
+                                manageViewModel.getUserDataByEmail(userEmail.value)
                             }
                     )
                 },
@@ -162,28 +165,33 @@ object FeatAdministratorVoyagerScreen:Tab{
                     .weight(1f)
                     .fillMaxWidth()
             ){
-                Crossfade(
+                manageViewModel.userByEmail.collectAsState().CollectWithContent(
+                    success = {
+                        FeatAdministratorShowUser(it)
+                    },
+                    error = {
+                        Text(
+                            text = it.message.toString(),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                        )
+                    },
+                    loading = {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                        )
+                    },
+                    unSend = {
+                        Text(
+                            "用户未加载",
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                        )
+                    },
                     modifier = Modifier
-                        .fillMaxSize(),
-                    targetState = currentUser.value
-                ){
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                    ){
-                        if(it == null){
-                            Text(
-                                "用户未加载",
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                            )
-                        } else {
-                            FeatAdministratorShowUser(
-                                user = it
-                            )
-                        }
-                    }
-                }
+                        .fillMaxSize()
+                )
             }
         }
     }
@@ -392,10 +400,11 @@ fun FeatAdministratorShowUser(
 ){
     Column(
         modifier = Modifier
-            .wrapContentHeight()
-            .animateContentSize()
+            .fillMaxHeight()
             .fillMaxWidth()
-            .padding(10.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         PersonalInformationAreaInManage(
             userName = user.username,
@@ -405,6 +414,20 @@ fun FeatAdministratorShowUser(
         Text("所在地:${user.location}")
         Text("年级:${user.gender}")
         Text("年龄:${user.age}")
+        Button(
+            onClick = {
+
+            }
+        ){
+            Text("加入审核管理员")
+        }
+        Button(
+            onClick = {
+
+            }
+        ){
+            Text("加入主要管理员")
+        }
     }
 }
 

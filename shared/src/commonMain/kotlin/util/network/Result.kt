@@ -1,6 +1,9 @@
 package util.network
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -63,6 +66,7 @@ fun <T> State<NetworkResult<T>>.CollectWithContent(
     unSend : (@Composable ()->Unit)? = null,
     content :@Composable ()->Unit = {},
     modifier: Modifier = Modifier
+        .fillMaxSize()
 ){
     Crossfade(
         this.value,
@@ -114,6 +118,68 @@ fun <T> State<NetworkResult<T>>.CollectWithContent(
 }
 
 
+@Composable
+fun <T> State<NetworkResult<T>>.CollectWithContentInBox(
+    success : (@Composable BoxScope.(T)->Unit)? = null,
+    error  : (@Composable BoxScope.(Throwable)->Unit)? = null,
+    loading : (@Composable BoxScope.()->Unit)? = null,
+    unSend : (@Composable BoxScope.()->Unit)? = null,
+    content :@Composable BoxScope.()->Unit = {},
+    modifier: Modifier = Modifier
+){
+    Crossfade(
+        this.value,
+        modifier = modifier
+    ){
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ){
+            when(it){
+                is NetworkResult.Success<T> ->{
+                    if (success == null){
+                        content.invoke(this)
+                    }else{
+                        success.invoke(this,it.data)
+                    }
+
+                }
+                is NetworkResult.Error<T> ->{
+
+                    if (error == null){
+                        content.invoke(this)
+                    }else{
+                        error.invoke(this,it.error)
+                    }
+
+                }
+                is NetworkResult.LoadingWithAction<T> ->{
+                    if (loading == null){
+                        content.invoke(this)
+                    }else{
+                        loading.invoke(this)
+                    }
+
+                }
+                is NetworkResult.UnSend<T> ->{
+                    if (unSend == null){
+                        content.invoke(this)
+                    }else{
+                        unSend.invoke(this)
+                    }
+                }
+
+                is NetworkResult.LoadingWithOutAction<T> ->{
+                    if (loading == null){
+                        content.invoke(this)
+                    }else{
+                        loading.invoke(this)
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 
