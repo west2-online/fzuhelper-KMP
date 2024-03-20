@@ -433,11 +433,11 @@ fun FeatAdministratorShowUser(
 
 @Composable
 fun PersonalInformationAreaInManage(
-    url : String = "https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg",
+    url : String ,
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .height(50.dp),
-    userName : String = "theonenull",
+    userName : String,
 ){
     Row(
         modifier = modifier,
