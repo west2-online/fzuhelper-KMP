@@ -2,6 +2,8 @@
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
+import app.cash.sqldelight.db.SqlDriver
+import com.futalk.kmm.FuTalkDatabase
 import com.liftric.kvault.KVault
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClientConfig
@@ -53,3 +55,10 @@ expect class PlatformContext
 @Composable
 expect fun getPlatformContext(): PlatformContext
 
+
+expect fun createDriver(): SqlDriver
+
+fun createDatabase(): FuTalkDatabase {
+    val driver =  createDriver()
+    return FuTalkDatabase(driver)
+}

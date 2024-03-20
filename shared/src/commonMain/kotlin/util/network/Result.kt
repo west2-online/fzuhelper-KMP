@@ -10,6 +10,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import di.database
+import di.globalScope
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import kotlinx.coroutines.delay
@@ -17,6 +19,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.datetime.Clock
+import util.flow.launchInDefault
 import kotlin.random.Random
 
 @Stable
@@ -252,6 +256,11 @@ fun <T>T.logicWithNullCheckInCompose(
 
 
 suspend fun <T> MutableStateFlow<NetworkResult<T>>.reset(newValue : NetworkResult<T>){
+    if(newValue is NetworkResult.Error){
+        globalScope.launchInDefault {
+            database.networkLogQueries.insertNetworkErrorLog(time = Clock.System.now().toString(),error = newValue.error.message.toString())
+        }
+    }
     val oldKey = this.value.key.value
     val newKey = Random(0).nextInt(oldKey+10,(oldKey+100))
     this.value = newValue.apply {

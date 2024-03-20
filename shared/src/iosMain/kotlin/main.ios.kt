@@ -17,7 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import androidx.compose.ui.interop.LocalUIViewController
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import com.bumble.appyx.navigation.integration.IosNodeHost
+import com.futalk.kmm.FuTalkDatabase
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.refTo
 import kotlinx.coroutines.channels.Channel
@@ -168,4 +171,8 @@ actual fun rememberBitmapFromBytes(bytes: ByteArray?): ImageBitmap? {
             null
         }
     }
+}
+
+actual fun createDriver(): SqlDriver {
+    return NativeSqliteDriver(FuTalkDatabase.Schema, "futalk.db")
 }
