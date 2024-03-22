@@ -262,7 +262,7 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.resetWithLog(logLabel:String,
     if(newValue is NetworkResult.Error){
         globalScope.launchInDefault {
             var errorMassage = ""
-            while (newValue.rawError != null){
+            while (newValue.rawError.cause != null){
                 errorMassage += "${if (errorMassage.isEmpty()) "" else "-->"} @{$logLabel} ${ newValue.rawError.message.toString()}"
             }
             database.networkLogQueries.insertNetworkErrorLog(time = Clock.System.now().toString(),error = errorMassage)
