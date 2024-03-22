@@ -1,8 +1,8 @@
 package data.post.PostCommentNew
 
 import kotlinx.serialization.Serializable
-import repository.CommentSubmitStatus
 import util.network.NetworkResult
+import util.network.networkErrorWithLog
 
 @Serializable
 data class PostCommentNew(
@@ -11,25 +11,14 @@ data class PostCommentNew(
     val msg: String?
 ){
     fun toNetworkResult(): NetworkResult<String> {
-        val result = CommentSubmitStatus.values().find {
-            it.value == this.code
-        }
-        return when(result){
-            null ->{
-                NetworkResult.Error(Throwable("评论失败,稍后再试"))
-            }
-            CommentSubmitStatus.CommentFailed, CommentSubmitStatus.FileParsingFailed, CommentSubmitStatus.FailedToSaveTheCommentImage->{
-                NetworkResult.Error(Throwable("评论失败,稍后再试"))
-            }
-            CommentSubmitStatus.TheCommentIsEmpty -> {
-                NetworkResult.Error(Throwable("评论不能为空"))
-            }
-            CommentSubmitStatus.TheReviewWasSuccessful -> {
-                NetworkResult.Success("评论成功")
-            }
-            else -> {
-                NetworkResult.Error(Throwable("评论失败,稍后再试"))
-            }
+        return when(code){
+
+            5 -> networkErrorWithLog(code,"评论不得为空")
+
+            4 -> NetworkResult.Success("评论成功")
+
+            else -> networkErrorWithLog(code,"评论失败,稍后再试")
         }
     }
 }
+

@@ -91,10 +91,10 @@ fun Login(
         loginState.value.let {
             when( it ){
                 is NetworkResult.Success<String>->{
-                    toast.addToast( it.data )
+                    toast.addToast( it.dataForShow )
                 }
                 is NetworkResult.Error -> {
-                    toast.addToast( it.error.message.toString() , Color.Red )
+                    toast.addToast( it.errorForShow.message.toString() , Color.Red )
                 }
 
             }
@@ -104,10 +104,10 @@ fun Login(
         loginCaptcha.value.let {
             when( it ){
                 is NetworkResult.Success<String>->{
-                    toast.addToast( it.data )
+                    toast.addToast( it.dataForShow )
                 }
                 is NetworkResult.Error -> {
-                    toast.addToast( it.error.message.toString() , Color.Red )
+                    toast.addToast( it.errorForShow.message.toString() , Color.Red )
                 }
 
             }

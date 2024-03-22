@@ -5,6 +5,7 @@ fun matchEmail(email:String):Boolean{
     return emailRegex.matches(email)
 }
 
+@Suppress
 fun matchPhone(phone:String):Boolean{
     val phoneRegex = Regex("/^1[3456789]\\d{9}\$/")
     return phoneRegex.matches(phone)

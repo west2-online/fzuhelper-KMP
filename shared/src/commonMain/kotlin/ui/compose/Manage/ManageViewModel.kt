@@ -22,15 +22,13 @@ import io.ktor.client.request.get
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import repository.ManageRepository
-import repository.toNetworkResult
 import util.flow.actionWithLabel
-import util.flow.catchWithMassage
-import util.flow.collectWithMassage
 import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
-import util.network.networkError
-import util.network.reset
+import util.network.networkErrorWithLog
+import util.network.resetWithLog
+import util.network.resetWithoutLog
 
 /*
 管理界面的ViewModel
@@ -126,25 +124,33 @@ class ManageViewModel(
         viewModelScope.launchInDefault {
             _openImageList.logicIfNotLoading{
                 repository.getImageList()
-                    .catchWithMassage {
-                        _openImageList.reset(NetworkResult.Error(Throwable("获取失败")))
-                    }.collectWithMassage {
-                        _openImageList.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "actionWithLabel/actionWithLabel",
+                        catchAction = { label, error ->
+                            _openImageList.resetWithLog(label, networkErrorWithLog(error,"获取失败"))
+                        },
+                        collectAction = { label, data ->
+                            _openImageList.resetWithLog(label,data.toNetworkResult())
+                        }
+                    )
+
             }
         }
     }
-
 
     fun getRibbonData(){
         viewModelScope.launchInDefault {
             _ribbonList.logicIfNotLoading {
                 repository.getRibbonList()
-                    .catchWithMassage {
-                        _ribbonList.reset(NetworkResult.Error(Throwable("获取失败")))
-                    }.collectWithMassage {
-                        _ribbonList.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "getRibbonData/getRibbonList",
+                        collectAction = { label, data ->
+                            _ribbonList.resetWithLog(label, data.toNetworkResult())
+                        },
+                        catchAction = { label, error ->
+                            _ribbonList.resetWithLog(label, networkErrorWithLog(error,"获取失败"))
+                        }
+                    )
             }
         }
     }
@@ -159,11 +165,16 @@ class ManageViewModel(
         viewModelScope.launchInDefault {
             reportState.logicIfNotLoading {
                 repository.processPost(postId,result.value)
-                    .catchWithMassage {
-                        reportState.reset(NetworkResult.Error(Throwable("操作失败")))
-                    }.collectWithMassage {
-                        reportState.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "dealPost/processPost",
+                        collectAction = { label, data ->
+                            reportState.resetWithLog(label, data.toNetworkResult())
+                        },
+                        catchAction = { label, error ->
+                            reportState.resetWithLog(label, networkErrorWithLog(error,"操作失败"))
+                        }
+                    )
+
             }
         }
     }
@@ -172,42 +183,61 @@ class ManageViewModel(
         viewModelScope.launchInDefault {
             reportState.logicIfNotLoading {
                 repository.processComment(commentId,postId,result.value)
-                    .catchWithMassage {
-                        reportState.reset(NetworkResult.Error(Throwable("操作失败")))
-                    }.collectWithMassage {
-                        reportState.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "dealPost/processComment",
+                        collectAction = { label, data ->
+                            reportState.resetWithLog(label, data.toNetworkResult())
+                        },
+                        catchAction = { label, error ->
+                            reportState.resetWithLog(label, networkErrorWithLog(error,"操作失败"))
+                        }
+                    )
             }
         }
     }
+
     //删除开屏页
     fun deleteOpenImage(openImageName : String){
         viewModelScope.launchInDefault {
             _openImageDelete.logicIfNotLoading {
                 repository.deleteOpenImage(openImageName)
-                    .catchWithMassage {
-                        _openImageDelete.reset(NetworkResult.Error(Throwable("删除失败")))
-                        refresh()
-                    }.collectWithMassage {
-                        _openImageDelete.reset(it.toNetworkResult())
-                        refresh()
-                    }
+                    .actionWithLabel(
+                        "dealPost/processComment",
+                        collectAction = { label, data ->
+                            _openImageDelete.resetWithLog(label, data.toNetworkResult())
+                            refresh()
+                        },
+                        catchAction = { label, error ->
+                            _openImageDelete.resetWithLog(label, networkErrorWithLog(error,"删除失败"))
+                            refresh()
+                        }
+                    )
+
             }
         }
     }
+
     //添加新的开屏页
     fun addOpenImage(openImage:ByteArray){
         viewModelScope.launchInDefault {
             _openImageAdd.logicIfNotLoading {
                 repository.addNewOpenImage(openImage)
-                    .catchWithMassage {
-                        _openImageAdd.reset(NetworkResult.Error(Throwable("添加失败")))
-                    }.collectWithMassage {
-                        _openImageAdd.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "dealPost/processComment",
+                        collectAction = { label, data ->
+                            _openImageAdd.resetWithLog(label, data.toNetworkResult())
+                            refresh()
+                        },
+                        catchAction = { label, error ->
+                            _openImageAdd.resetWithLog(label, networkErrorWithLog(error,"添加失败"))
+                            refresh()
+                        }
+                    )
+
             }
         }
     }
+
 
 
     //添加新的开轮播图
@@ -215,11 +245,18 @@ class ManageViewModel(
         viewModelScope.launchInDefault {
             _ribbonImageAdd.logicIfNotLoading {
                 repository.addNewRibbonImage(ribbonImage,ribbonAction)
-                    .catchWithMassage {
-                        _ribbonImageAdd.reset(NetworkResult.Error(Throwable("添加失败")))
-                    }.collectWithMassage {
-                        _ribbonImageAdd.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "addRibbonImage/addNewRibbonImage",
+                        collectAction = { label, data ->
+                            _ribbonImageAdd.resetWithLog(label, data.toNetworkResult())
+                            refresh()
+                        },
+                        catchAction = { label, error ->
+                            _ribbonImageAdd.resetWithLog(label, networkErrorWithLog(error,"添加失败"))
+                            refresh()
+                        }
+                    )
+
             }
         }
     }
@@ -228,34 +265,38 @@ class ManageViewModel(
         viewModelScope.launchInDefault {
             _ribbonDelete.logicIfNotLoading (
                 preAction = {
-                    _ribbonList.reset(NetworkResult.UnSend())
+                    _ribbonList.resetWithoutLog(NetworkResult.UnSend())
                 }
             ){
                 repository.deleteRibbon(imageName = imageName)
-                    .catchWithMassage {
-                        _ribbonDelete.reset(NetworkResult.Error(Throwable("删除失败")))
-                        refresh()
-                    }
-                    .collectWithMassage {
-                        _ribbonDelete.reset(it.toNetworkResult())
-                        refresh()
-                    }
+                    .actionWithLabel(
+                        "deleteRibbon/deleteRibbon",
+                        collectAction = { label, data ->
+                            _ribbonDelete.resetWithLog(label, data.toNetworkResult())
+                            refresh()
+                        },
+                        catchAction = { label, error ->
+                            _ribbonDelete.resetWithLog(label, networkErrorWithLog(error,"删除失败"))
+                            refresh()
+                        }
+                    )
             }
         }
     }
 
     //通过email获取user的信息
+
     fun getUserDataByEmail(email:String){
         viewModelScope.launchInDefault {
             _userByEmail.logicIfNotLoading {
                 repository.getEmailByEmail(email)
                     .actionWithLabel(
-                        label = "邮件获取用户信息",
-                        catchAction = {
-                            _userByEmail.reset(networkError("用户信息获取失败"))
+                        label = "getUserDataByEmail/getEmailByEmail",
+                        catchAction = { label,error ->
+                            _userByEmail.resetWithLog(label, networkErrorWithLog(error,"用户信息获取失败"))
                         },
-                        collectAction = {
-                            _userByEmail.reset(it.toNetworkResult())
+                        collectAction = { label,data ->
+                            _userByEmail.resetWithLog(label ,data.toNetworkResult())
                         }
                     )
             }

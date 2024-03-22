@@ -11,7 +11,7 @@ import util.flow.catchWithMassage
 import util.flow.collectWithMassage
 import util.flow.launchInDefault
 import util.network.NetworkResult
-import util.network.reset
+import util.network.resetWithLog
 
 class ReportViewModel(
     private val repository: ReportRepository
@@ -28,9 +28,9 @@ class ReportViewModel(
         viewModelScope.launchInDefault {
             repository.reportComment(commentId, typeId, postId)
                 .catchWithMassage {
-                    _reportCommentResponse.reset(NetworkResult.Error(Throwable("举报失败")))
+                    _reportCommentResponse.resetWithLog(NetworkResult.Error(Throwable("举报失败")))
                 }.collectWithMassage {
-                    _reportCommentResponse.reset(it.toNetworkResult())
+                    _reportCommentResponse.resetWithLog(it.toNetworkResult())
                 }
         }
     }
@@ -39,9 +39,9 @@ class ReportViewModel(
         viewModelScope.launchInDefault {
             repository.reportPost(typeId, postId)
                 .catchWithMassage {
-                    _reportPostResponse.reset(NetworkResult.Error(Throwable("举报失败")))
+                    _reportPostResponse.resetWithLog(NetworkResult.Error(Throwable("举报失败")))
                 }.collectWithMassage {
-                    _reportPostResponse.reset(it.toNetworkResult())
+                    _reportPostResponse.resetWithLog(it.toNetworkResult())
                 }
         }
     }

@@ -1,6 +1,5 @@
 package ui.compose.Release
 
-import data.post.PostNew.NewPostResponse
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.Dispatchers
@@ -9,12 +8,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.PostRepository
-import repository.PostStatus
-import util.flow.catchWithMassage
-import util.flow.collectWithMassage
+import util.flow.actionWithLabel
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
-import util.network.reset
+import util.network.networkErrorWithLog
+import util.network.resetWithLog
+import util.network.resetWithoutLog
 
 class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewModel() {
     private val _newPostState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
@@ -39,39 +38,27 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
                     }
                 }
                 if (list.isEmpty()){
-                    _newPostState.reset(NetworkResult.Error(Throwable("帖子不得为空")))
+                    _newPostState.resetWithoutLog(networkErrorWithLog(Throwable("帖子不得为空"),"帖子不得为空"))
                     return@logicIfNotLoading
                 }
                 if (title.isEmpty()){
-                    _newPostState.reset(NetworkResult.Error(Throwable("标题不得为空")))
+                    _newPostState.resetWithoutLog(networkErrorWithLog(Throwable("标题不得为空"),"标题不得为空"))
                     return@logicIfNotLoading
                 }
                 releaseRepository.newPost(
                     releasePageItemList = list,
                     title = title
-                ).catchWithMassage {
-                    _newPostState.reset(NetworkResult.Error(Throwable("发布失败")))
-                }.collectWithMassage { newPostResponse ->
-                    _newPostState.reset(newPostResponse.toNetworkResult())
-                }
+                ).actionWithLabel(
+                    "newPost/newPost",
+                    collectAction = { label, data ->
+                        _newPostState.resetWithLog(label,data.toNetworkResult())
+                    },
+                    catchAction = { label, error ->
+                        _newPostState.resetWithLog(label,networkErrorWithLog(error,"发布失败"))
+                    }
+                )
             }
         }
     }
 
-}
-
-fun NewPostResponse.toNetworkResult(): NetworkResult<String> {
-    val status = PostStatus.values().find {
-        it.value == this.code
-    }
-    status?:let {
-        return NetworkResult.Error(Throwable("发布失败"))
-    }
-    return status.let {
-        when(status.value){
-            0 -> NetworkResult.Error(Throwable(status.translation))
-            4 -> NetworkResult.Success("发布成功")
-            else -> NetworkResult.Error(Throwable("发布失败"))
-        }
-    }
 }

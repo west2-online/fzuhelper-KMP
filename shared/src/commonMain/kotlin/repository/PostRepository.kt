@@ -135,11 +135,4 @@ enum class PostStatus(val value: Int, val translation: String) {
     ThePostWasSuccessfulInPost(7, "获取帖子成功");
 }
 
-enum class CommentSubmitStatus(val value: Int, val description: String) {
-    MissingDataWhenSubmittingAComment(0, "提交评论时缺少数据"),
-    FileParsingFailed(1, "文件解析失败"),
-    FailedToSaveTheCommentImage(2, "保存评论图片失败"),
-    CommentFailed(3, "评论失败"),
-    TheReviewWasSuccessful(4, "评论成功"),
-    TheCommentIsEmpty(5, "评论为空")
-}
+

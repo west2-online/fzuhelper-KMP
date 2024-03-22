@@ -1,7 +1,6 @@
 package util.flow
 
 import config.BaseUrlConfig
-import createDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -15,33 +14,32 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 suspend fun <T>Flow<T>.catchWithMassage (
     label: String = "",
-    action: suspend kotlinx.coroutines.flow.FlowCollector<T>.(kotlin.Throwable) -> kotlin.Unit,
+    action: suspend kotlinx.coroutines.flow.FlowCollector<T>.(label:String,kotlin.Throwable) -> kotlin.Unit,
 ): Flow<T> {
     return this.catch {
         if(BaseUrlConfig.isDebug){
             println("$label error : ${it.message.toString()}")
         }
-        action.invoke(this,it)
+        action.invoke(this,label,it)
     }
 }
 
 suspend fun <T>Flow<T>.collectWithMassage (
     label: String = "",
-    action: suspend (T)->Unit,
-
+    action: suspend (label: String,data : T)->Unit,
 ){
     this.flowOn(Dispatchers.IO).collect {
         if(BaseUrlConfig.isDebug){
             println("$label collect : ${it} ${this.toString()}")
         }
-        action(it)
+        action(label,it)
     }
 }
 
 suspend fun <T>Flow<T>.actionWithLabel(
     label : String,
-    catchAction: suspend kotlinx.coroutines.flow.FlowCollector<T>.(kotlin.Throwable) -> kotlin.Unit,
-    collectAction:  suspend (T)->Unit
+    catchAction: suspend kotlinx.coroutines.flow.FlowCollector<T>.(label:String,error:kotlin.Throwable) -> kotlin.Unit,
+    collectAction:  suspend (label:String,data : T)->Unit
 ){
     this.catchWithMassage(
         label = label,

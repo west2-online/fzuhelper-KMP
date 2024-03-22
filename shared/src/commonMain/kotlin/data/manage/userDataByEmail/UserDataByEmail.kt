@@ -3,7 +3,7 @@ package data.manage.userDataByEmail
 import data.share.User
 import kotlinx.serialization.Serializable
 import util.network.NetworkResult
-import util.network.networkError
+import util.network.networkErrorWithLog
 
 @Serializable
 data class UserDataByEmail(
@@ -12,23 +12,11 @@ data class UserDataByEmail(
     val msg: String
 ) {
     fun toNetworkResult(): NetworkResult<User> {
-        val result = UserDataByEmailResult.values().find {
-            this.code == it.value
-        }
-        result ?:let {
-            return NetworkResult.Error(Throwable("操作失败"))
-        }
-        result.let {
-            return when(it){
-                UserDataByEmailResult.FailedToObtainUserInformation -> networkError("获取失败")
-                UserDataByEmailResult.FailedToQueryEmailInformation -> networkError("获取失败")
-                UserDataByEmailResult.TheMailboxIsSuccessfullyAcquired -> if(this.data == null) networkError("无该用户") else NetworkResult.Success(this.data)
-            }
+        return when(code){
+            0 -> networkErrorWithLog(code,"获取失败")
+            1 -> networkErrorWithLog(code,"获取失败")
+            2 -> if(this.data == null) networkErrorWithLog(code,"无该用户") else NetworkResult.Success(this.data)
+            else -> networkErrorWithLog(code,"获取失败")
         }
     }
-}
-enum class UserDataByEmailResult(val value:Int,val describe:String){
-    FailedToObtainUserInformation(0,"FailedToObtainUserInformation"),
-    FailedToQueryEmailInformation(1,"FailedToQueryEmailInformation"),
-    TheMailboxIsSuccessfullyAcquired(2,"TheMailboxIsSuccessfullyAcquired")
 }

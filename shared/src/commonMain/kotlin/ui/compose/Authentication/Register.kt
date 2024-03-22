@@ -134,11 +134,11 @@ fun Register(
             when( it ){
                 is NetworkResult.Success ->{
 //                    toast = Toast(it.data)
-                    toast.addToast(it.data)
+                    toast.addToast(it.dataForShow)
                 }
                 is NetworkResult.Error ->{
 //                    toast = Toast( it.error.message.toString(), Red )
-                    toast.addToast(it.error.message.toString())
+                    toast.addToast(it.errorForShow.message.toString())
                 }
                 else ->{
 
@@ -150,10 +150,10 @@ fun Register(
         captchaState.value.let {
             when( it ){
                 is NetworkResult.Success ->{
-                    toast.addToast(it.data)
+                    toast.addToast(it.dataForShow)
                 }
                 is NetworkResult.Error ->{
-                    toast.addToast(it.error.message.toString())
+                    toast.addToast(it.errorForShow.message.toString())
                 }
                 else ->{
 

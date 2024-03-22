@@ -22,13 +22,12 @@ import repository.PostRepository
 import ui.compose.Report.ReportType
 import ui.root.RootAction
 import util.flow.actionWithLabel
-import util.flow.catchWithMassage
-import util.flow.collectWithMassage
 import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
 import util.network.logicIfUnSend
-import util.network.reset
+import util.network.networkErrorWithLog
+import util.network.resetWithLog
 
 class PostDetailViewModel(
     private val client: HttpClient,
@@ -80,11 +79,11 @@ class PostDetailViewModel(
                 postRepository.getPostById(id = id)
                     .actionWithLabel(
                         label = "getPostById",
-                        catchAction = {
-                            _currentPostDetail.reset(NetworkResult.Error(Throwable("帖子获取失败")))
+                        catchAction = { label,error ->
+                            _currentPostDetail.resetWithLog(label, networkErrorWithLog(error,"帖子获取失败"))
                         },
-                        collectAction = {
-                            _currentPostDetail.reset(NetworkResult.Success(it))
+                        collectAction = { label,data ->
+                            _currentPostDetail.resetWithLog(label,NetworkResult.Success(data))
                         }
                     )
 
@@ -108,11 +107,15 @@ class PostDetailViewModel(
         viewModelScope.launchInDefault {
             _commentSubmitState.logicIfNotLoading {
                 postRepository.postNewComment(parentId,postId,tree,content.normalize(Form.NFC),image)
-                    .catchWithMassage {
-                        _commentSubmitState.reset(NetworkResult.Error(Throwable("评论失败，稍后再试")))
-                    }.collectWithMassage{
-                        _commentSubmitState.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "",
+                        collectAction = { label,data ->
+                            _commentSubmitState.resetWithLog(label,data.toNetworkResult())
+                        },
+                        catchAction = {label , error ->
+                            _commentSubmitState.resetWithLog(label, networkErrorWithLog(error,"评论失败，稍后再试"))
+                        }
+                    )
             }
         }
     }
@@ -142,13 +145,17 @@ class PostDetailViewModel(
         viewModelScope.launchInDefault {
             _postLikeSubmitState.logicIfNotLoading {
                 postRepository.postLike(postId)
-                    .catchWithMassage {
-                        _postLikeSubmitState.reset(NetworkResult.Error(Throwable("点赞失败")))
-                    }
-                    .collectWithMassage {
-                        _postLikeSubmitState.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "postLike/postLike",
+                        catchAction = { label, error ->
+                            _postLikeSubmitState.resetWithLog(label, networkErrorWithLog(error,"点赞失败"))
+                        },
+                        collectAction = { label, data ->
+                            _postLikeSubmitState.resetWithLog(label,data.toNetworkResult())
+                        }
+                    )
             }
         }
     }
 }
+

@@ -263,7 +263,7 @@ fun PersonalInformationInPerson(
                 when(it){
                     is NetworkResult.Success<UserData> -> {
                         KamelImage(
-                            resource = asyncPainterResource("${BaseUrlConfig.BaseUrl}/static/userAvatar/${it.data.data!!.avatar}"),
+                            resource = asyncPainterResource("${BaseUrlConfig.BaseUrl}/static/userAvatar/${it.dataForShow.data!!.avatar}"),
                             null,
                             modifier = Modifier
                                 .fillMaxSize(),
@@ -280,7 +280,7 @@ fun PersonalInformationInPerson(
         }
         Text(
             text = when(userData.value){
-                is NetworkResult.Success<UserData> -> (userData.value as NetworkResult.Success<UserData>).data.data!!.username
+                is NetworkResult.Success<UserData> -> (userData.value as NetworkResult.Success<UserData>).dataForShow.data!!.username
                 is NetworkResult.Error<UserData> -> "加载失败"
                 is NetworkResult.UnSend<UserData> -> "加载中"
                 is NetworkResult.LoadingWithAction<UserData> -> "加载中"
@@ -293,7 +293,7 @@ fun PersonalInformationInPerson(
         )
         Text(
             text = when(userData.value){
-                is NetworkResult.Success<UserData> -> (userData.value as NetworkResult.Success<UserData>).data.data!!.email
+                is NetworkResult.Success<UserData> -> (userData.value as NetworkResult.Success<UserData>).dataForShow.data!!.email
                 is NetworkResult.Error<UserData> -> "加载失败"
                 is NetworkResult.UnSend<UserData> -> "加载中"
                 is NetworkResult.LoadingWithAction<UserData> -> "加载中"
@@ -303,7 +303,7 @@ fun PersonalInformationInPerson(
         )
         Text(
             text = when(userData.value){
-                is NetworkResult.Success<UserData> -> "🗺️ ${(userData.value as NetworkResult.Success<UserData>).data.data!!.location}"
+                is NetworkResult.Success<UserData> -> "🗺️ ${(userData.value as NetworkResult.Success<UserData>).dataForShow.data!!.location}"
                 is NetworkResult.Error<UserData> -> "加载失败"
                 is NetworkResult.UnSend<UserData> -> "加载中"
                 is NetworkResult.LoadingWithAction<UserData> -> "加载中"
@@ -314,7 +314,7 @@ fun PersonalInformationInPerson(
 
         Text(
             text = when(userData.value){
-                is NetworkResult.Success<UserData> -> "\uD83E\uDDE0 ${(userData.value as NetworkResult.Success<UserData>).data.data!!.age}"
+                is NetworkResult.Success<UserData> -> "\uD83E\uDDE0 ${(userData.value as NetworkResult.Success<UserData>).dataForShow.data!!.age}"
                 is NetworkResult.Error<UserData> -> "加载失败"
                 is NetworkResult.UnSend<UserData> -> "加载中"
                 is NetworkResult.LoadingWithAction<UserData> -> "加载中"
