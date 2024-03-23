@@ -75,14 +75,15 @@ import org.example.library.MR
 import org.koin.compose.koinInject
 import util.compose.EasyToast
 import util.compose.Label
+import util.compose.Toast
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReleasePageScreen(
     modifier: Modifier = Modifier,
-    viewModel: ReleasePageViewModel = koinInject()
+    viewModel: ReleasePageViewModel = koinInject(),
+    initLabel: List<String> = listOf()
 ){
     val toastState = rememberToastState()
     val releasePageItems = remember { mutableStateListOf<ReleasePageItem>() }
@@ -96,6 +97,9 @@ fun ReleasePageScreen(
     LaunchedEffect(Unit){
         labelList.add(LabelForSelect("学习"))
         labelList.add(LabelForSelect("生活"))
+        initLabel.forEach {
+            labelList.add(LabelForSelect(it,false))
+        }
     }
     toastState.toastBindNetworkResult(viewModel.newPostState.collectAsState())
     Column (
@@ -112,7 +116,7 @@ fun ReleasePageScreen(
             if (isPreview) {
                 PreviewContent(lazyListState, title, releasePageItems,labelList)
             } else {
-                ReleaseContent(lazyListState, title, releasePageItems,labelList)
+                ReleaseContent(lazyListState, title, releasePageItems,labelList,toastState)
             }
         }
         Row (
@@ -582,7 +586,8 @@ fun ReleaseContent(
     lazyListState : LazyListState,
     title:MutableState<String>,
     releasePageItems:SnapshotStateList<ReleasePageItem>,
-    labelList : SnapshotStateList<LabelForSelect>
+    labelList : SnapshotStateList<LabelForSelect>,
+    toast: Toast
 ){
     val scope = rememberCoroutineScope()
     LazyColumn(
@@ -640,7 +645,7 @@ fun ReleaseContent(
                             }
                         },
                         onClick = {
-                            label.isSelect.value = !label.isSelect.value
+                            label.changeSelected(toast = toast)
                         },
                         label = {
                             Text(
@@ -832,12 +837,15 @@ fun PreviewContent(
     }
 }
 
-class ReleaseRouteVoyagerScreen:Screen{
+class ReleaseRouteVoyagerScreen(
+    val initLabel : List<String> = listOf()
+):Screen{
     @Composable
     override fun Content() {
         ReleasePageScreen(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
+            initLabel = initLabel
         )
     }
 }
@@ -862,5 +870,15 @@ fun SnapshotStateList<ReleasePageItem>.downOrder(index:Int){
 
 class LabelForSelect(
     val label : String,
-    val isSelect: MutableState<Boolean> = mutableStateOf(false),
-)
+    private val canChange :Boolean = true
+){
+    private val _isSelect: MutableState<Boolean> = mutableStateOf(false)
+    val isSelect : State<Boolean> = _isSelect
+    fun changeSelected(toast: Toast){
+        if (canChange){
+            _isSelect.value = !_isSelect.value
+        }else{
+            toast.addWarnToast("该标签必须选中")
+        }
+    }
+}

@@ -141,7 +141,7 @@ fun PersonScreen(
                             id ?:run{
                                 Button(
                                     onClick = {
-                                        rootAction.navigateFormAnywhereToRelease()
+                                        rootAction.navigateFormAnywhereToRelease(listOf())
                                     },
                                     modifier = Modifier
                                         .padding(horizontal = 5.dp)

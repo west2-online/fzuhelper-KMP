@@ -40,7 +40,7 @@ interface RootAction{
     fun navigateFromActionToAboutUs()
     fun navigateFromAnywhereToManage()
     fun navigateFromAnywhereToWeather()
-    fun navigateFormAnywhereToRelease()
+    fun navigateFormAnywhereToRelease(initLabelList: List<String>)
     fun navigateFormPostToReport(type: ReportType)
     fun navigateFromAnywhereToWebView(url:String)
     fun navigateFormAnywhereToSetting()
@@ -141,8 +141,8 @@ fun RootUi(
                             navigate.push(WeatherVoyagerScreen)
                         }
 
-                        override fun navigateFormAnywhereToRelease(){
-                            navigate.push(ReleaseRouteVoyagerScreen())
+                        override fun navigateFormAnywhereToRelease(initLabelList: List<String>){
+                            navigate.push(ReleaseRouteVoyagerScreen(initLabelList))
                         }
 
                         override fun navigateFormPostToReport(type: ReportType) {

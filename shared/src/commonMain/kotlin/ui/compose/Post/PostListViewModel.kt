@@ -13,7 +13,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import repository.PostRepository
-import ui.compose.Report.ReportType
 import ui.root.RootAction
 
 class PostListViewModel(
@@ -36,13 +35,6 @@ class PostListViewModel(
     }.flow
         .cachedIn(viewModelScope)
 
-    fun navigateToRelease(){
-        rootAction.navigateFormAnywhereToRelease()
-    }
-
-    fun navigateToReport(type: ReportType){
-        rootAction.navigateFormPostToReport(type)
-    }
 
 }
 
