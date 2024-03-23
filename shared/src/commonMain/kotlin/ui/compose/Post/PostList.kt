@@ -30,7 +30,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.FloatingActionButton
@@ -345,15 +344,6 @@ fun NewsItem(
                     text = post.Time.toEasyTime(),
                     fontSize = 10.sp
                 )
-                Button(
-                    onClick = {
-                        isUnfold = !isUnfold
-                    }
-                ){
-                    Text(
-                        text = if (isUnfold) "收起" else "展开"
-                    )
-                }
             }
             Interaction(
                 modifier = Modifier
