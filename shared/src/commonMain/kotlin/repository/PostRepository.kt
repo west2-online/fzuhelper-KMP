@@ -25,7 +25,11 @@ import ui.compose.Release.ReleasePageItem
 
 class PostRepository(private val client: HttpClient) {
 
-    fun newPost(releasePageItemList:List<ReleasePageItem>,title : String): Flow<NewPostResponse> {
+    fun newPost(
+        releasePageItemList: List<ReleasePageItem>,
+        title: String,
+        labelList: List<String>
+    ): Flow<NewPostResponse> {
         return flow {
             val response = client.post("/post/new") {
                 setBody(
@@ -34,7 +38,7 @@ class PostRepository(private val client: HttpClient) {
                             releasePageItemList.forEachIndexed{ index,item->
                                 when (item) {
                                     is ReleasePageItem.ImageItem -> {
-                                        append(index.toString(),item.image.value!!,
+                                        append("image",item.image.value!!,
                                             Headers.build {
                                                 append("order", index.toString())
                                                 append("isImage", "true")
@@ -44,7 +48,7 @@ class PostRepository(private val client: HttpClient) {
                                         )
                                     }
                                     is ReleasePageItem.TextItem -> {
-                                        append( index.toString(),item.text.value.normalize(Form.NFKD),
+                                        append( "text",item.text.value.normalize(Form.NFKD),
                                             Headers.build {
                                                 append("order", index.toString())
                                                 append("isText", "true")
@@ -54,6 +58,9 @@ class PostRepository(private val client: HttpClient) {
                                 }
                             }
                             append("title",title.normalize(Form.NFKD))
+                            labelList.forEach {
+                                append("label",it)
+                            }
                         },
                         boundary = "WebAppBoundary"
                     )

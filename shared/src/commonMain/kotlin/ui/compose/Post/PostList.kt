@@ -10,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -67,7 +66,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import config.BaseUrlConfig
 import config.BaseUrlConfig.PostImage
-import data.post.PostList.Data
+import data.post.PostList.PostListItemData
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
@@ -83,7 +82,7 @@ class PostListVoyagerScreen(
     @Transient
     val navigateToRelease: () -> Unit,
     @Transient
-    val navigateToReport: (Data) -> Unit,
+    val navigateToReport: (PostListItemData) -> Unit,
 ):Screen{
     @Composable
     override fun Content() {
@@ -108,9 +107,9 @@ class PostListVoyagerScreen(
 fun PostList(
     modifier: Modifier = Modifier,
     state: LazyListState,
-    postListFlow: LazyPagingItems<Data>,
+    postListFlow: LazyPagingItems<PostListItemData>,
     navigateToRelease: () -> Unit,
-    navigateToReport: (Data) -> Unit,
+    navigateToReport: (PostListItemData) -> Unit,
     navigateToNewsDetail: (String) -> Unit,
 ){
     val isRefresh = remember{
@@ -140,9 +139,9 @@ fun PostList(
                     postList.itemCount,
                 ){
                     postList[it]?.let { postData ->
-                        NewsItem(
+                        PostItem(
                             navigateToNewsDetail = navigateToNewsDetail,
-                            post = postData,
+                            postListItemData = postData,
                             navigateToReport = {
                                 navigateToReport.invoke(it)
                             }, like = {
@@ -231,20 +230,22 @@ fun PostList(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun NewsItem(
+fun PostItem(
     navigateToNewsDetail: (String) -> Unit,
-    navigateToReport: (Data) -> Unit,
+    navigateToReport: (PostListItemData) -> Unit,
     like :()->Unit,
-    post: Data,
+    postListItemData: PostListItemData,
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .clickable {
-            navigateToNewsDetail.invoke(post.Id.toString())
+            navigateToNewsDetail.invoke(postListItemData.Post.Id.toString())
         }
         .padding(10.dp)
         .wrapContentHeight()
         .animateContentSize()
 ){
+    val post = postListItemData.Post
+    val labels = postListItemData.Labels
     var isUnfold by rememberSaveable {
         mutableStateOf(false)
     }
@@ -273,19 +274,17 @@ fun NewsItem(
                     .fillMaxWidth()
                     .wrapContentHeight()
             ){
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                ) {
-
-                }
                 LazyRow (
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
                 ){
-                    items(30) {
-                        Label("#" + "s" * ((1..10).random()))
+                    labels?.let {
+                        it.forEach {
+                            item {
+                                Label(it.Label)
+                            }
+                        }
                     }
                 }
             }
@@ -351,7 +350,7 @@ fun NewsItem(
                     .wrapContentHeight(),
                 likeNumber = post.LikeNum,
                 report = {
-                    navigateToReport.invoke(post)
+                    navigateToReport.invoke(postListItemData)
                 },
                 like = like
             )

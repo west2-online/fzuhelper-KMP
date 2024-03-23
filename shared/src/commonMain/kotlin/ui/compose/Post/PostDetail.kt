@@ -18,6 +18,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -98,6 +100,7 @@ import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.compose.Report.ReportType
 import util.compose.EasyToast
+import util.compose.Label
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.compose.toastBindNetworkResult
@@ -106,6 +109,7 @@ import util.network.logicWithTypeWithLimit
 import util.network.toEasyTime
 import util.network.toast
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PostDetail(
     id: String,
@@ -214,6 +218,19 @@ fun PostDetail(
                                         fontSize = 20.sp,
                                         fontWeight = FontWeight.Bold
                                     )
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                    ) {
+                                        FlowRow {
+                                            postById.data.labelData?.let { labelList ->
+                                                labelList.forEach {
+                                                    Label(it.Label)
+                                                }
+                                            }
+                                        }
+                                    }
                                     listOf<PostContent>().plus(postById.data.valueData ?: listOf())
                                         .plus(postById.data.fileData ?: listOf()).sortedBy {
                                             it.order

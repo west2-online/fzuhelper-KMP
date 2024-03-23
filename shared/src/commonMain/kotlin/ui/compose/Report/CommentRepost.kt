@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
-import data.post.PostList.Data
+import data.post.PostList.PostListItemData
 import data.share.Comment
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -193,8 +193,9 @@ fun CommentRepost(
 @Composable
 fun PostReportInCommentReport(
     modifier: Modifier = Modifier,
-    data : Data
+    data : PostListItemData
 ){
+    val post = data.Post
     Column(
         modifier = modifier
     ) {
@@ -208,10 +209,10 @@ fun PostReportInCommentReport(
                 .padding(10.dp)
         ){
             PersonalInformationAreaInList(
-                userAvatar = data.User.avatar ,
-                userName = data.User.username ,
+                userAvatar = post.User.avatar ,
+                userName = post.User.username ,
             )
-            data.FirstImage?.let {
+            post.FirstImage?.let {
                 KamelImage(
                     resource = asyncPainterResource("${BaseUrlConfig.PostImage}/${it}"),
                     null,
@@ -242,7 +243,7 @@ fun PostReportInCommentReport(
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                text = data.Title
+                text = post.Title
             )
             Text(
                 modifier = Modifier
@@ -253,7 +254,7 @@ fun PostReportInCommentReport(
                 maxLines = 10,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 10.sp,
-                text = data.LittleDescribe?:""
+                text = post.LittleDescribe?:""
             )
         }
     }

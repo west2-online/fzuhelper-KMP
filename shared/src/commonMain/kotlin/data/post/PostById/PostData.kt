@@ -1,5 +1,6 @@
 package data.post.PostById
 
+import data.share.Label
 import data.share.Post
 import kotlinx.serialization.Serializable
 
@@ -7,7 +8,8 @@ import kotlinx.serialization.Serializable
 data class PostData(
     val Post: Post,
     val fileData: List<FileData>?,
-    val valueData: List<ValueData>?
+    val valueData: List<ValueData>?,
+    val labelData: List<Label>?
 )
 
 interface PostContent{

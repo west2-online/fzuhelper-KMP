@@ -6,8 +6,8 @@ import app.cash.paging.PagingSource
 import app.cash.paging.PagingState
 import app.cash.paging.cachedIn
 import com.liftric.kvault.KVault
-import data.post.PostList.Data
 import data.post.PostList.PostList
+import data.post.PostList.PostListItemData
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -47,7 +47,7 @@ class PostListViewModel(
 }
 
 class LoadPageDataForPost(
-    val getResult : suspend (page:Int) -> List<Data>?
+    val getResult : suspend (page:Int) -> List<PostListItemData>?
 ) {
     suspend fun searchUsers(page: Int): PageLoadDataForPost {
         val response = getResult(page)
@@ -64,17 +64,17 @@ class LoadPageDataForPost(
 
 
 data class PageLoadDataForPost(
-    val result : List<Data>?,
+    val result : List<PostListItemData>?,
     val nextPageNumber: Int?
 )
 
 
 class EasyPageSourceForPost(
     private val backend: LoadPageDataForPost,
-) : PagingSource<Int, Data>() {
+) : PagingSource<Int, PostListItemData>() {
     override suspend fun load(
         params: LoadParams<Int>
-    ): LoadResult<Int, Data> {
+    ): LoadResult<Int, PostListItemData> {
         return try {
             val page = params.key ?: 1
             val response = backend.searchUsers(page)
@@ -88,7 +88,7 @@ class EasyPageSourceForPost(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, Data>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, PostListItemData>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)

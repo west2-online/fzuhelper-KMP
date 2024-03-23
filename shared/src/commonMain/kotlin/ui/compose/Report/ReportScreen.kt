@@ -30,8 +30,8 @@ import cafe.adriel.voyager.navigator.Navigator
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import com.bumble.appyx.utils.multiplatform.RawValue
-import data.post.PostList.Data
 import data.share.Comment
+import data.share.Post
 import org.koin.compose.koinInject
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
@@ -120,7 +120,7 @@ sealed class ReportType{
 
     data class PostReportType(
         val id: String,
-        val data : Data
+        val data : Post
     ): ReportType()
 
     data class CommentReportType(

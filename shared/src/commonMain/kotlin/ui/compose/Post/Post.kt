@@ -46,7 +46,7 @@ object PostVoyagerScreen : Tab {
                     rootAction.navigateFormAnywhereToRelease()
                 },
                 navigateToReport = {
-                    rootAction.navigateFormPostToReport(ReportType.PostReportType(id = it.Id.toString(),it))
+                    rootAction.navigateFormPostToReport(ReportType.PostReportType(id = it.Post.Id.toString(),it.Post))
                 },
             )){ navigator ->
                 SettingTransitions(navigator)

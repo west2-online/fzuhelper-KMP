@@ -21,7 +21,11 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
     val newPostState = _newPostState.asStateFlow()
 
     //发布新的帖子
-    fun newPost(releasePageItemList:List<ReleasePageItem>,title:String){
+    fun newPost(
+        releasePageItemList: List<ReleasePageItem>,
+        title: String,
+        labelList : List<String>
+    ){
         viewModelScope.launch(Dispatchers.IO){
             _newPostState.logicIfNotLoading{
                 val list = releasePageItemList.filter {
@@ -47,7 +51,8 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
                 }
                 releaseRepository.newPost(
                     releasePageItemList = list,
-                    title = title
+                    title = title,
+                    labelList = labelList
                 ).actionWithLabel(
                     "newPost/newPost",
                     collectAction = { label, data ->

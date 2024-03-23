@@ -237,7 +237,7 @@ fun ReleasePageScreen(
             }
             FloatingActionButton(
                 onClick = {
-                    viewModel.newPost(releasePageItems.toList(),title.value)
+                    viewModel.newPost(releasePageItems.toList(),title.value,labelList.filter { it.isSelect.value }.toList().map { it.label })
                 },
                 modifier = Modifier
                     .padding(10.dp)
@@ -250,8 +250,7 @@ fun ReleasePageScreen(
                         .aspectRatio(1f)
                         .wrapContentSize(Alignment.Center)
                         .clip(RoundedCornerShape(10))
-                        .fillMaxSize(0.7f)
-                    ,
+                        .fillMaxSize(0.7f),
                     imageVector = Icons.Filled.Done,
                     contentDescription = null,
                     tint = Color.Green
