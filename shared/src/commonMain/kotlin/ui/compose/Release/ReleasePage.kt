@@ -73,7 +73,6 @@ import getPlatformContext
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
-import ui.compose.Post.times
 import util.compose.EasyToast
 import util.compose.Label
 import util.compose.rememberToastState
@@ -95,9 +94,8 @@ fun ReleasePageScreen(
         mutableStateListOf<LabelForSelect>()
     }
     LaunchedEffect(Unit){
-        repeat(30){
-            labelList.add(LabelForSelect("#" + "s" * ((1..10).random())))
-        }
+        labelList.add(LabelForSelect("学习"))
+        labelList.add(LabelForSelect("生活"))
     }
     toastState.toastBindNetworkResult(viewModel.newPostState.collectAsState())
     Column (
@@ -237,6 +235,15 @@ fun ReleasePageScreen(
             }
             FloatingActionButton(
                 onClick = {
+                    if(labelList.isEmpty()){
+                        toastState.addWarnToast("至少选择一个标签")
+                    }
+                    if(title.value.isEmpty()){
+                        toastState.addWarnToast("标题不得为空")
+                    }
+                    if(releasePageItems.isEmpty()){
+                        toastState.addWarnToast("帖子不得为空")
+                    }
                     viewModel.newPost(releasePageItems.toList(),title.value,labelList.filter { it.isSelect.value }.toList().map { it.label })
                 },
                 modifier = Modifier
@@ -268,7 +275,6 @@ interface ReleasePageItem{
     class ImageItem() : ReleasePageItem{
         var image = mutableStateOf<ByteArray?>(null)
     }
-
 }
 
 
@@ -637,7 +643,10 @@ fun ReleaseContent(
                             label.isSelect.value = !label.isSelect.value
                         },
                         label = {
-                            Text(label.label)
+                            Text(
+                                "#${label.label}",
+                                fontSize = 12.sp
+                            )
                         },
                         selected = label.isSelect.value,
                         modifier = Modifier
