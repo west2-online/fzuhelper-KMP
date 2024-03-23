@@ -14,6 +14,7 @@ import org.koin.compose.koinInject
 import ui.compose.AboutUs.AboutUsVoyagerScreen
 import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
 import ui.compose.Feedback.FeedbackVoyagerScreen
+import ui.compose.Log.LogVoyagerScreen
 import ui.compose.Main.Main
 import ui.compose.Manage.ManageVoyagerScreen
 import ui.compose.ModifierInformation.ModifierInformationVoyagerScreen
@@ -43,6 +44,7 @@ interface RootAction{
     fun navigateFromAnywhereToWebView(url:String)
     fun navigateFormAnywhereToSetting()
     fun navigateFormAnywhereToMain()
+    fun navigateFormAnywhereToLog()
     fun navigateFormAnywhereToInformationModifier(userData: Data)
     fun popManage()
 }
@@ -165,6 +167,10 @@ fun RootUi(
                             if (navigate.lastItem is ManageVoyagerScreen && navigate.canPop){
                                 navigate.pop()
                             }
+                        }
+
+                        override fun navigateFormAnywhereToLog() {
+                            navigate.push(LogVoyagerScreen())
                         }
                     },
                     systemAction = systemAction,

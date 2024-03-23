@@ -60,7 +60,7 @@ import data.share.User
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
-import util.network.CollectWithContent
+import util.network.CollectWithContentInBox
 import util.network.getAvatarStatic
 import util.regex.matchEmail
 
@@ -165,7 +165,7 @@ object FeatAdministratorVoyagerScreen:Tab{
                     .weight(1f)
                     .fillMaxWidth()
             ){
-                manageViewModel.userByEmail.collectAsState().CollectWithContent(
+                manageViewModel.userByEmail.collectAsState().CollectWithContentInBox(
                     success = {
                         FeatAdministratorShowUser(it)
                     },

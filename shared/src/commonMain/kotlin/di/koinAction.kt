@@ -36,6 +36,7 @@ import repository.WeatherRepository
 import ui.compose.Action.ActionViewModel
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.Feedback.FeedBackViewModel
+import ui.compose.Log.LogViewModel
 import ui.compose.Manage.ManageViewModel
 import ui.compose.ModifierInformation.ModifierInformationViewModel
 import ui.compose.Person.PersonViewModel
@@ -270,7 +271,7 @@ fun Module.viewModel(){
     single {
         PostDetailViewModel(get(),get(),get())
     }
-    single {
+    viewModelDefinition {
         ManageViewModel(get(),get())
     }
     viewModelDefinition {
@@ -284,6 +285,9 @@ fun Module.viewModel(){
     }
     viewModelDefinition {
         ModifierInformationViewModel(get())
+    }
+    viewModelDefinition {
+        LogViewModel()
     }
 }
 fun HttpClientConfig<*>.configure() {
