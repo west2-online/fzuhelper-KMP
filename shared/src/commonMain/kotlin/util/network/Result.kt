@@ -262,10 +262,13 @@ suspend fun <T> MutableStateFlow<NetworkResult<T>>.resetWithLog(logLabel:String,
     if(newValue is NetworkResult.Error){
         globalScope.launchInDefault {
             var errorMassage = ""
-            while (newValue.rawError.cause != null){
-                errorMassage += "${if (errorMassage.isEmpty()) "" else "-->"} @{$logLabel} ${ newValue.rawError.message.toString()}"
+            errorMassage += "$logLabel >>> ${newValue.rawError.message.toString()}"
+            var cause = newValue.rawError.cause
+            while (cause != null){
+                errorMassage += " --> ${ newValue.rawError.message.toString()}"
+                cause = cause.cause
             }
-            database.networkLogQueries.insertNetworkErrorLog(time = Clock.System.now().toString(),error = errorMassage)
+            database.networkLogQueries.insertNetworkErrorLog(time = Clock.System.now().toString().toEasyTimeWithSecond(),error = errorMassage)
         }
     }
     val oldKey = this.value.key.value
