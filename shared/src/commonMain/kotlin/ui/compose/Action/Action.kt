@@ -45,6 +45,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
+import ui.compose.Test.TestVoyagerScreen
 import ui.root.RootAction
 import ui.root.tokenJump
 import util.math.takeover
@@ -206,7 +207,7 @@ enum class Functions(
 //    WebView( functionName = "新生宝典", painter = MR.images.login, { rootAction -> }),
 //    Weather(  functionName = "天气", painter = MR.images.cloud, { rootAction -> rootAction.navigateFromAnywhereToWeather()}),
 //    Map(  functionName = "地图", painter = MR.images.close, { rootAction -> }),
-//    Test(functionName = "测试", painter = MR.images.close, { rootAction -> }),
+    Test(functionName = "测试", painter = MR.images.close, { rootAction -> rootAction.navigateToScreen(TestVoyagerScreen())}),
     AboutUs(functionName = "关于我们", painter = MR.images.FuTalk ,  { rootAction -> rootAction.navigateFromActionToAboutUs()}),
     Manage(functionName = "管理", painter = MR.images.not_solved, { rootAction -> rootAction.navigateFromAnywhereToManage()}),
     Feedback(functionName = "反馈", painter = MR.images.feedback2, { rootAction -> rootAction.navigateFromActionToFeedback() }),

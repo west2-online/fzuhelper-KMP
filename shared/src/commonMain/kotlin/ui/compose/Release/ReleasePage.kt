@@ -9,6 +9,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
@@ -39,7 +42,10 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.ElevatedFilterChip
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -67,7 +73,9 @@ import getPlatformContext
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
+import ui.compose.Post.times
 import util.compose.EasyToast
+import util.compose.Label
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
 
@@ -83,6 +91,14 @@ fun ReleasePageScreen(
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
     var preview by remember { mutableStateOf(false) }
+    val labelList = remember {
+        mutableStateListOf<LabelForSelect>()
+    }
+    LaunchedEffect(Unit){
+        repeat(30){
+            labelList.add(LabelForSelect("#" + "s" * ((1..10).random())))
+        }
+    }
     toastState.toastBindNetworkResult(viewModel.newPostState.collectAsState())
     Column (
         modifier = Modifier
@@ -96,189 +112,9 @@ fun ReleasePageScreen(
                 .padding(top = 10.dp)
         ){ isPreview ->
             if (isPreview) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    state = lazyListState
-                ) {
-                    item {
-                        Column(modifier) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight(),
-                                content = {
-                                    Text(
-                                        text = title.value,
-                                        modifier = Modifier
-                                            .padding(bottom = 5.dp)
-                                            .fillMaxWidth()
-                                            .wrapContentHeight()
-                                            .padding(10.dp),
-                                        fontSize = 20.sp
-                                    )
-                                }
-                            )
-                        }
-                    }
-                    releasePageItems.toList().filter {
-                        return@filter when (it) {
-                            is ReleasePageItem.TextItem -> it.text.value != ""
-                            is ReleasePageItem.ImageItem -> it.image.value != null
-                            else -> false
-                        }
-                    }.forEachIndexed { _, releasePageItem ->
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .padding(bottom = 5.dp)
-                                    .fillMaxWidth()
-                                    .wrapContentHeight()
-                                    .padding(10.dp)
-                            ) {
-                                when (releasePageItem) {
-                                    is ReleasePageItem.TextItem -> {
-                                        ReleasePageItemTextForShow(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .wrapContentHeight()
-                                                .animateItemPlacement(),
-                                            text = releasePageItem.text,
-                                        )
-                                    }
-
-                                    is ReleasePageItem.ImageItem -> {
-                                        ReleasePageItemImageForShow(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .wrapContentHeight()
-                                                .animateContentSize()
-                                                .animateItemPlacement(),
-                                            image = releasePageItem.image
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                PreviewContent(lazyListState, title, releasePageItems,labelList)
             } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    state = lazyListState
-                ) {
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .padding(bottom = 10.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight()
-                                    .animateContentSize(
-                                        finishedListener = { init, target ->
-                                            scope.launch {
-                                                lazyListState.animateScrollBy(target.height.toFloat() - init.height.toFloat())
-                                            }
-                                        }
-                                    ),
-                                content = {
-                                    TextField(
-                                        value = title.value,
-                                        onValueChange = {
-                                            title.value = it
-                                        },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .wrapContentHeight(),
-                                        label = {
-                                            Text("标题")
-                                        }
-                                    )
-                                }
-                            )
-                        }
-                    }
-                    releasePageItems.toList().forEachIndexed { index, releasePageItem ->
-                        item {
-                            Card(
-                                modifier = Modifier
-                                    .padding(bottom = 10.dp)
-                                    .fillMaxWidth()
-                                    .wrapContentHeight(),
-                                shape = RoundedCornerShape(5),
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .padding(10.dp)
-                                        .animateContentSize { initialValue, targetValue ->
-                                            scope.launch {
-                                                lazyListState.animateScrollBy((targetValue.height - initialValue.height).dp.value)
-                                            }
-                                        }
-                                ) {
-                                    when (releasePageItem) {
-                                        is ReleasePageItem.TextItem -> {
-                                            ReleasePageItemText(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .wrapContentHeight()
-                                                    .animateContentSize(),
-                                                text = releasePageItem.text,
-                                                onValueChange = {
-                                                    releasePageItem.text.value = it
-                                                },
-                                                delete = {
-                                                    releasePageItems.removeAt(index)
-                                                },
-                                                moveDown = {
-                                                    releasePageItems.downOrder(index)
-                                                },
-                                                moveUp = {
-                                                    releasePageItems.upOrder(index)
-                                                },
-                                                onEmojiChange = {
-                                                    releasePageItem.text.value = releasePageItem.text.value + it
-                                                }
-                                            )
-                                        }
-
-                                        is ReleasePageItem.ImageItem -> {
-                                            ReleasePageItemImage(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .wrapContentHeight()
-                                                    .animateContentSize()
-                                                    .animateItemPlacement(),
-                                                onImagePicked = {
-                                                    releasePageItem.image.value = it
-                                                },
-                                                image = releasePageItem.image,
-                                                delete = {
-                                                    releasePageItems.removeAt(index)
-                                                },
-                                                moveDown = {
-                                                    releasePageItems.downOrder(index)
-                                                },
-                                                moveUp = {
-                                                    releasePageItems.upOrder(index)
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.fillMaxWidth().height(250.dp))
-                    }
-                }
+                ReleaseContent(lazyListState, title, releasePageItems,labelList)
             }
         }
         Row (
@@ -689,7 +525,6 @@ fun ReleasePageItemTextForShow(
     modifier: Modifier,
     text : State<String>
 ){
-
     Column( modifier ) {
         Box(
             modifier = Modifier
@@ -734,6 +569,260 @@ fun ReleasePageItemImageForShow(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class,
+    ExperimentalMaterial3Api::class
+)
+@Composable
+fun ReleaseContent(
+    lazyListState : LazyListState,
+    title:MutableState<String>,
+    releasePageItems:SnapshotStateList<ReleasePageItem>,
+    labelList : SnapshotStateList<LabelForSelect>
+){
+    val scope = rememberCoroutineScope()
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize(),
+        state = lazyListState
+    ) {
+        item {
+            Column(
+                modifier = Modifier
+                    .padding(bottom = 10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .animateContentSize(
+                            finishedListener = { init, target ->
+                                scope.launch {
+                                    lazyListState.animateScrollBy(target.height.toFloat() - init.height.toFloat())
+                                }
+                            }
+                        ),
+                    content = {
+                        TextField(
+                            value = title.value,
+                            onValueChange = {
+                                title.value = it
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
+                            label = {
+                                Text("标题")
+                            }
+                        )
+                    }
+                )
+            }
+        }
+        item {
+            FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .animateContentSize(),
+            ) {
+                labelList.forEach { label ->
+                    ElevatedFilterChip(
+                        leadingIcon = {
+                            Crossfade(label.isSelect){
+                                if(it.value){
+                                    Icon(imageVector = Icons.Filled.Done,contentDescription = null)
+                                }
+                            }
+                        },
+                        onClick = {
+                            label.isSelect.value = !label.isSelect.value
+                        },
+                        label = {
+                            Text(label.label)
+                        },
+                        selected = label.isSelect.value,
+                        modifier = Modifier
+                            .padding(end = 10.dp)
+                            .wrapContentSize()
+                            .animateContentSize(),
+                        shape = RoundedCornerShape(20)
+                    )
+                }
+            }
+        }
+        releasePageItems.toList().forEachIndexed { index, releasePageItem ->
+            item {
+                Card(
+                    modifier = Modifier
+                        .padding(bottom = 10.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    shape = RoundedCornerShape(5),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(10.dp)
+                            .animateContentSize { initialValue, targetValue ->
+                                scope.launch {
+                                    lazyListState.animateScrollBy((targetValue.height - initialValue.height).dp.value)
+                                }
+                            }
+                    ) {
+                        when (releasePageItem) {
+                            is ReleasePageItem.TextItem -> {
+                                ReleasePageItemText(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .animateContentSize(),
+                                    text = releasePageItem.text,
+                                    onValueChange = {
+                                        releasePageItem.text.value = it
+                                    },
+                                    delete = {
+                                        releasePageItems.removeAt(index)
+                                    },
+                                    moveDown = {
+                                        releasePageItems.downOrder(index)
+                                    },
+                                    moveUp = {
+                                        releasePageItems.upOrder(index)
+                                    },
+                                    onEmojiChange = {
+                                        releasePageItem.text.value = releasePageItem.text.value + it
+                                    }
+                                )
+                            }
+
+                            is ReleasePageItem.ImageItem -> {
+                                ReleasePageItemImage(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .animateContentSize()
+                                        .animateItemPlacement(),
+                                    onImagePicked = {
+                                        releasePageItem.image.value = it
+                                    },
+                                    image = releasePageItem.image,
+                                    delete = {
+                                        releasePageItems.removeAt(index)
+                                    },
+                                    moveDown = {
+                                        releasePageItems.downOrder(index)
+                                    },
+                                    moveUp = {
+                                        releasePageItems.upOrder(index)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.fillMaxWidth().height(250.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@Composable
+fun PreviewContent(
+    lazyListState: LazyListState,
+    title: MutableState<String>,
+    releasePageItems: SnapshotStateList<ReleasePageItem>,
+    labelList: SnapshotStateList<LabelForSelect>
+){
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize(),
+        state = lazyListState
+    ) {
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    content = {
+                        Text(
+                            text = title.value,
+                            modifier = Modifier
+                                .padding(bottom = 5.dp)
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .padding(10.dp),
+                            fontSize = 20.sp
+                        )
+                    }
+                )
+            }
+        }
+        item {
+            FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .animateContentSize(),
+            ) {
+                labelList.filter {
+                    it.isSelect.value
+                }.forEach { label ->
+                    Label(label.label)
+                }
+            }
+        }
+        releasePageItems.toList().filter {
+            return@filter when (it) {
+                is ReleasePageItem.TextItem -> it.text.value != ""
+                is ReleasePageItem.ImageItem -> it.image.value != null
+                else -> false
+            }
+        }.forEachIndexed { _, releasePageItem ->
+            item {
+                Box(
+                    modifier = Modifier
+                        .padding(bottom = 5.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(10.dp)
+                ) {
+                    when (releasePageItem) {
+                        is ReleasePageItem.TextItem -> {
+                            ReleasePageItemTextForShow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                                    .animateItemPlacement(),
+                                text = releasePageItem.text,
+                            )
+                        }
+
+                        is ReleasePageItem.ImageItem -> {
+                            ReleasePageItemImageForShow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                                    .animateContentSize()
+                                    .animateItemPlacement(),
+                                image = releasePageItem.image
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 class ReleaseRouteVoyagerScreen:Screen{
     @Composable
@@ -762,3 +851,8 @@ fun SnapshotStateList<ReleasePageItem>.downOrder(index:Int){
     this[index+1] = this[index]
     this[index] = temp
 }
+
+class LabelForSelect(
+    val label : String,
+    val isSelect: MutableState<Boolean> = mutableStateOf(false),
+)

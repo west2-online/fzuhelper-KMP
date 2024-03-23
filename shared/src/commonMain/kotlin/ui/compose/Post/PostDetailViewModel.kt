@@ -110,7 +110,8 @@ class PostDetailViewModel(
                     .actionWithLabel(
                         "",
                         collectAction = { label,data ->
-                            _commentSubmitState.resetWithLog(label,data.toNetworkResult())
+                            _commentSubmitState.resetWithLog(label,data.
+                            toNetworkResult())
                         },
                         catchAction = {label , error ->
                             _commentSubmitState.resetWithLog(label, networkErrorWithLog(error,"评论失败，稍后再试"))

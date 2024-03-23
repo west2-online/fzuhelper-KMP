@@ -48,7 +48,6 @@ fun Label(
             fontSize = 10.sp,
             modifier = Modifier
                 .padding(vertical = 5.dp, horizontal = 10.dp),
-            color = Color(41, 108, 218),
         )
     }
 }

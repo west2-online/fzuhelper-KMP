@@ -2,6 +2,7 @@ package ui.root
 
 import ImagePickerFactory
 import androidx.compose.runtime.Composable
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import data.person.UserData.Data
 import di.SystemAction
@@ -47,6 +48,7 @@ interface RootAction{
     fun navigateFormAnywhereToLog()
     fun navigateFormAnywhereToInformationModifier(userData: Data)
     fun popManage()
+    fun navigateToScreen(screen: Screen)
 }
 
 @Composable
@@ -171,6 +173,10 @@ fun RootUi(
 
                         override fun navigateFormAnywhereToLog() {
                             navigate.push(LogVoyagerScreen())
+                        }
+
+                        override fun navigateToScreen(screen: Screen) {
+                            navigate.push(screen)
                         }
                     },
                     systemAction = systemAction,

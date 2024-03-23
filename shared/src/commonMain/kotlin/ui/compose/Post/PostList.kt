@@ -9,6 +9,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -72,6 +75,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import org.koin.compose.koinInject
 import util.compose.EasyToast
+import util.compose.Label
 import util.compose.rememberToastState
 import util.network.toEasyTime
 import kotlin.jvm.Transient
@@ -226,6 +230,7 @@ fun PostList(
 }
 
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NewsItem(
     navigateToNewsDetail: (String) -> Unit,
@@ -264,20 +269,27 @@ fun NewsItem(
                 userAvatar = post.User.avatar,
                 userName = post.User.username
             )
-//            Surface (
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .wrapContentHeight()
-//            ){
-//                FlowRow(
-//                    modifier = Modifier
-//                        .fillMaxSize(),
-//                ) {
-//                    repeat(30) {
-//                        Label("#"+"s"*((1..10).random()))
-//                    }
-//                }
-//            }
+            Surface (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ){
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                ) {
+
+                }
+                LazyRow (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ){
+                    items(30) {
+                        Label("#" + "s" * ((1..10).random()))
+                    }
+                }
+            }
             post.FirstImage?.let{
                 if(it.isEmpty()){
                     return@let
