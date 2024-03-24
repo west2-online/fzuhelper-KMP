@@ -89,7 +89,7 @@ object Main : Screen{
             val scope = rememberCoroutineScope()
             val scaffoldState = rememberScaffoldState()
             Scaffold(
-                drawerGesturesEnabled = false ,
+                drawerGesturesEnabled = scaffoldState.drawerState.isOpen ,
                 content = {
                     Column (
                         modifier = Modifier
