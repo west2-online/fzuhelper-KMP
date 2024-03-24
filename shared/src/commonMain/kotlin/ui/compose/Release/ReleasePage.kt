@@ -68,8 +68,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import asImageBitmap
 import cafe.adriel.voyager.core.screen.Screen
+import data.person.UserLabel.UserLabel
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
@@ -94,11 +98,23 @@ fun ReleasePageScreen(
     val labelList = remember {
         mutableStateListOf<LabelForSelect>()
     }
+    val client = koinInject<HttpClient>()
     LaunchedEffect(Unit){
         labelList.add(LabelForSelect("学习"))
         labelList.add(LabelForSelect("生活"))
         initLabel.forEach {
             labelList.add(LabelForSelect(it,false))
+        }
+    }
+    LaunchedEffect(Unit){
+        try {
+            val userLabelList = client.get("/user/label").body<UserLabel>()
+            userLabelList.data.forEach {
+                labelList.add(LabelForSelect(it.Label))
+            }
+            toastState.addToast("获取个人标签成功")
+        }catch (e:Exception){
+            toastState.addWarnToast("获取个人标签失败")
         }
     }
     toastState.toastBindNetworkResult(viewModel.newPostState.collectAsState())
@@ -217,7 +233,17 @@ fun ReleasePageScreen(
             }
             FloatingActionButton(
                 onClick = {
-
+                    scope.launch {
+                        try {
+                            val userLabelList = client.get("/user/label").body<UserLabel>()
+                            userLabelList.data.forEach {
+                                labelList.add(LabelForSelect(it.Label))
+                            }
+                            toastState.addToast("刷新个人标签成功")
+                        }catch (e:Exception){
+                            toastState.addWarnToast("刷新个人标签失败")
+                        }
+                    }
                 },
                 modifier = Modifier
                     .padding(10.dp)
