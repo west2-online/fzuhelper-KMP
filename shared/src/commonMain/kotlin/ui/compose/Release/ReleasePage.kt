@@ -103,14 +103,19 @@ fun ReleasePageScreen(
         labelList.add(LabelForSelect("学习"))
         labelList.add(LabelForSelect("生活"))
         initLabel.forEach {
-            labelList.add(LabelForSelect(it,false))
+            labelList.add(LabelForSelect(it,false,LabelType.Init))
         }
     }
     LaunchedEffect(Unit){
         try {
+            labelList.filter {
+                it.labelType == LabelType.Person
+            }.forEach {
+                labelList.remove(it)
+            }
             val userLabelList = client.get("/user/label").body<UserLabel>()
             userLabelList.data.forEach {
-                labelList.add(LabelForSelect(it.Label))
+                labelList.add(LabelForSelect(it.Label, labelType = LabelType.Person))
             }
             toastState.addToast("获取个人标签成功")
         }catch (e:Exception){
@@ -235,9 +240,14 @@ fun ReleasePageScreen(
                 onClick = {
                     scope.launch {
                         try {
+                            labelList.filter {
+                                it.labelType == LabelType.Person
+                            }.forEach {
+                                labelList.remove(it)
+                            }
                             val userLabelList = client.get("/user/label").body<UserLabel>()
                             userLabelList.data.forEach {
-                                labelList.add(LabelForSelect(it.Label))
+                                labelList.add(LabelForSelect(it.Label, labelType = LabelType.Person))
                             }
                             toastState.addToast("刷新个人标签成功")
                         }catch (e:Exception){
@@ -896,7 +906,8 @@ fun SnapshotStateList<ReleasePageItem>.downOrder(index:Int){
 
 class LabelForSelect(
     val label : String,
-    private val canChange :Boolean = true
+    private val canChange :Boolean = true,
+    val labelType: LabelType = LabelType.Official
 ){
     private val _isSelect: MutableState<Boolean> = mutableStateOf(false)
     val isSelect : State<Boolean> = _isSelect
@@ -907,4 +918,10 @@ class LabelForSelect(
             toast.addWarnToast("该标签必须选中")
         }
     }
+}
+
+enum class LabelType{
+    Init,
+    Official,
+    Person
 }
