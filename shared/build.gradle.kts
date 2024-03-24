@@ -173,6 +173,11 @@ kotlin {
                 implementation("io.ktor:ktor-client-darwin:$ktor_version")
             }
         }
+        val commonTest by getting{
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
     }
 }
 
