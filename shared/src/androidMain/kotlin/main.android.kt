@@ -150,3 +150,7 @@ actual fun rememberBitmapFromBytes(bytes: ByteArray?): ImageBitmap? {
 actual fun createDriver(): SqlDriver {
     return AndroidSqliteDriver(FuTalkDatabase.Schema, MyApplication.instance, "futalk.db")
 }
+
+actual fun getVersionFileName():String{
+    return "androidVersion.json"
+}

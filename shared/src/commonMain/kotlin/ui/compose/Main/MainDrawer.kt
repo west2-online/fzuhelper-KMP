@@ -48,6 +48,7 @@ import com.liftric.kvault.KVault
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import di.SystemAction
+import getVersionFileName
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import io.ktor.client.HttpClient
@@ -129,7 +130,7 @@ fun MainDrawer(
             }
             LaunchedEffect(Unit){
                 try {
-                    val result = client.get("/static/config/androidVersion.json").bodyAsText()
+                    val result = client.get("/static/config/${getVersionFileName()}").bodyAsText()
                     val data:AndroidVersion = Json.decodeFromString(result)
                     latest.value = data.version
                         .filter {

@@ -62,3 +62,5 @@ fun createDatabase(): FuTalkDatabase {
     val driver =  createDriver()
     return FuTalkDatabase(driver)
 }
+
+expect fun getVersionFileName():String

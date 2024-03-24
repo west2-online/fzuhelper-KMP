@@ -3,6 +3,6 @@ package androidVersion
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class androidVersion(
+data class VersionList(
     val version: List<Version>
 )

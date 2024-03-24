@@ -176,3 +176,7 @@ actual fun rememberBitmapFromBytes(bytes: ByteArray?): ImageBitmap? {
 actual fun createDriver(): SqlDriver {
     return NativeSqliteDriver(FuTalkDatabase.Schema, "futalk.db")
 }
+
+actual fun getVersionFileName():String{
+    return "iosVersion.json"
+}
