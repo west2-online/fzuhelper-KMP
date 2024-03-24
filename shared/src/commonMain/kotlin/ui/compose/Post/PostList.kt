@@ -50,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -87,6 +88,7 @@ class PostListVoyagerScreen(
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val postDetailViewModel = koinInject<PostDetailViewModel>()
         PostList(
             modifier = Modifier.fillMaxSize(),
             state = rememberLazyListState(),
@@ -94,6 +96,7 @@ class PostListVoyagerScreen(
             navigateToRelease = navigateToRelease,
             navigateToReport = navigateToReport,
             navigateToNewsDetail  = {
+                postDetailViewModel.refreshPostById(postId = it)
                 navigator.push(PostDetailVoyagerScreen(
                     id = it,
                 ))
@@ -237,8 +240,15 @@ fun PostItem(
     postListItemData: PostListItemData,
     modifier: Modifier = Modifier
         .fillMaxWidth()
-        .clickable {
-            navigateToNewsDetail.invoke(postListItemData.Post.Id.toString())
+//        .clickable {
+//            navigateToNewsDetail.invoke(postListItemData.Post.Id.toString())
+//        }
+        .composed {
+            val postDetailViewModel = koinInject<PostDetailViewModel>()
+            return@composed this.clickable {
+                postDetailViewModel.refreshPostById(postListItemData.Post.Id.toString())
+                navigateToNewsDetail.invoke(postListItemData.Post.Id.toString())
+            }
         }
         .padding(10.dp)
         .wrapContentHeight()

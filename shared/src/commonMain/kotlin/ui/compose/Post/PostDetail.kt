@@ -1221,7 +1221,7 @@ class PostDetailVoyagerScreen(
                 id = id,
                 modifier = Modifier.fillMaxSize(),
                 initPostDetail = {
-                    postDetailViewModel.initPostById(it)
+//                    postDetailViewModel.initPostById(it)
                 },
                 postCommentPreview = postCommentPreview,
                 postCommentTree = postDetailViewModel.postCommentTreeFlow,

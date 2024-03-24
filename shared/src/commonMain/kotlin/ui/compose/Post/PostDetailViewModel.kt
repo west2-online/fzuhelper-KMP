@@ -25,7 +25,6 @@ import util.flow.actionWithLabel
 import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
-import util.network.logicIfUnSend
 import util.network.networkErrorWithLog
 import util.network.resetWithLog
 
@@ -91,13 +90,13 @@ class PostDetailViewModel(
         }
     }
 
-    fun initPostById(postId: String){
-        _currentPostDetail.logicIfUnSend (
-            block = {
-                getPostById(postId)
-            }
-        )
-    }
+//    fun initPostById(postId: String){
+//        _currentPostDetail.logicIfUnSend (
+//            block = {
+//                getPostById(postId)
+//            }
+//        )
+//    }
 
     fun refreshPostById(postId: String){
         getPostById(postId)
