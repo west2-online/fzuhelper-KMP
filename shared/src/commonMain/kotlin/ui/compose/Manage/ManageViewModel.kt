@@ -4,6 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingSource
 import app.cash.paging.PagingConfig
 import app.cash.paging.cachedIn
+import data.manage.adminList.Admin
 import data.manage.commentReportData.CommentReportContextData
 import data.manage.commentReportData.CommentReportForResponseList
 import data.manage.postReportPage.PostReportContextData
@@ -119,6 +120,10 @@ class ManageViewModel(
 
     private var _userByEmail = CMutableStateFlow(MutableStateFlow<NetworkResult<User>>(NetworkResult.UnSend()))
     var userByEmail = _userByEmail.asStateFlow()
+
+
+    private var _adminList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<Admin>>>(NetworkResult.UnSend()))
+    var adminList = _adminList.asStateFlow()
 
     fun getOpenImage(){
         viewModelScope.launchInDefault {
@@ -303,6 +308,22 @@ class ManageViewModel(
         }
     }
 
+    fun refreshAdminList(){
+        viewModelScope.launchInDefault {
+            _adminList.logicIfNotLoading {
+                repository.getAdminList()
+                    .actionWithLabel(
+                        "refreshAdminList/getAdminList",
+                            collectAction = { label, data ->
+                                _adminList.resetWithLog(label, data.toNetworkResult())
+                            },
+                            catchAction = { label, error ->
+                                _adminList.resetWithLog(label, networkErrorWithLog(error,"获取失败"))
+                            }
+                        )
+            }
+        }
+    }
 }
 
 enum class PostProcessResult(val value : Int){

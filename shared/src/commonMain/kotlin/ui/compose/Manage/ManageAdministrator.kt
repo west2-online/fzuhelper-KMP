@@ -4,10 +4,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,12 +35,14 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,6 +68,10 @@ import org.koin.compose.koinInject
 import util.network.CollectWithContentInBox
 import util.network.getAvatarStatic
 import util.regex.matchEmail
+const val AuditManage = 1
+const val MainManage = 2
+const val SuperManage = 3
+
 
 object ManageAdministratorVoyager : Screen{
     @Composable
@@ -207,34 +216,96 @@ object ManageExistAdministratorVoyagerScreen : Tab{
                 title = "管理已有管理员"
             )
         }
-    @OptIn(ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
     @Composable
     override fun Content() {
         val userForChangeLevel = remember {
             mutableStateOf<User?>(null)
         }
+        val manageViewModel = koinInject<ManageViewModel>()
+        LaunchedEffect(Unit){
+            manageViewModel.refreshAdminList()
+        }
+        val adminList = manageViewModel.adminList.collectAsState()
         BottomSheetNavigator(
             modifier = Modifier
                 .fillMaxSize()
         ){ bottomSheetNavigator ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable {
-                        bottomSheetNavigator.show(ChangeUserLevel(user = User(
-                            Id = 0,
-                            Identify = 0,
-                            age = 0,
-                            email = "",
-                            gender = "",
-                            location = "",
-                            username = "",
-                            avatar = ""
-                        )))
+            adminList.CollectWithContentInBox(
+                success = {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ){
+                        stickyHeader {
+                            TopAppBar (
+                                contentPadding = PaddingValues(start = 10.dp)
+                            ){
+                                Text("超级管理员")
+                            }
+                        }
+                        items(it.filter {
+                            it.Level == SuperManage
+                        }){
+                            AdministratorShowUser(
+                                it.User,
+                                changeUserLevel = {
+                                    bottomSheetNavigator.show(ChangeUserLevel(user = it))
+                                }
+                            )
+                        }
+                        stickyHeader {
+                            TopAppBar(
+                                contentPadding = PaddingValues(start = 10.dp)
+                            ) {
+                                Text("主要管理员")
+                            }
+                        }
+                        items(it.filter {
+                            it.Level == MainManage
+                        }){
+                            AdministratorShowUser(
+                                it.User,
+                                changeUserLevel = {
+                                    bottomSheetNavigator.show(ChangeUserLevel(user = it))
+                                }
+                            )
+                        }
+                        stickyHeader {
+                            TopAppBar(
+                                contentPadding = PaddingValues(start = 10.dp)
+                            ) {
+                                Text("审核管理员")
+                            }
+                        }
+                        items(it.filter {
+                            it.Level == AuditManage
+                        }){
+                            AdministratorShowUser(
+                                it.User,
+                                changeUserLevel = {
+                                    bottomSheetNavigator.show(ChangeUserLevel(user = it))
+                                }
+                            )
+                        }
                     }
-            ){
-
-            }
+                },
+                error = {
+                    Text(
+                        "加载失败",
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                    )
+                },
+                loading = {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                    )
+                }
+            )
         }
     }
 }
@@ -348,7 +419,8 @@ enum class AdministratorLevel(val describe:String,val levelName:String){
 
 @Composable
 fun AdministratorShowUser(
-    user: User
+    user: User,
+    changeUserLevel: (User)->Unit
 ){
     val showDetail = remember {
         mutableStateOf(false)
@@ -361,21 +433,25 @@ fun AdministratorShowUser(
     ) {
         PersonalInformationAreaInManage(
             userName = user.username,
-            url = getAvatarStatic(user.avatar)
+            url = getAvatarStatic(user.avatar),
+            clickShowDetail = {
+                showDetail.value = !showDetail.value
+            }
         )
         AnimatedVisibility(showDetail.value){
             Column {
-                Text("邮箱:${user.username}")
+                Text("邮箱:${user.email}")
                 Text("所在地:${user.location}")
                 Text("年级:${user.gender}")
                 Text("年龄:${user.age}")
-                Row {
+                Row (
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
+                ){
                     Button(
                         onClick = {
-
+                            changeUserLevel.invoke(user)
                         },
                         content = {
-                            Text("删除")
                             Text("修改等级")
                         }
                     )
@@ -385,7 +461,6 @@ fun AdministratorShowUser(
                         },
                         content = {
                             Text("删除")
-                            Text("修改等级")
                         }
                     )
                 }
@@ -407,9 +482,11 @@ fun FeatAdministratorShowUser(
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         PersonalInformationAreaInManage(
-            userName = user.username,
-            url = getAvatarStatic(user.avatar)
-        )
+            url = getAvatarStatic(user.avatar),
+            userName = user.username
+        ) {
+
+        }
         Text("邮箱:${user.username}")
         Text("所在地:${user.location}")
         Text("年级:${user.gender}")
@@ -433,15 +510,20 @@ fun FeatAdministratorShowUser(
 
 @Composable
 fun PersonalInformationAreaInManage(
-    url : String ,
+    url: String,
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .height(50.dp),
-    userName : String,
+    userName: String,
+    clickShowDetail: () -> Unit,
 ){
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .clickable {
+                       clickShowDetail.invoke()
+            },
         verticalAlignment = Alignment.CenterVertically,
+
     ) {
         KamelImage(
             resource = asyncPainterResource(url),

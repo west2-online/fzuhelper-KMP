@@ -49,7 +49,7 @@ import config.BaseUrlConfig
 import data.feedback.FeelbackDetail.Data
 import data.feedback.FeelbackDetail.FeedbackComment
 import data.feedback.FeelbackDetail.FeedbackStatu
-import data.feedback.FeelbackDetail.User
+import data.share.User
 import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage

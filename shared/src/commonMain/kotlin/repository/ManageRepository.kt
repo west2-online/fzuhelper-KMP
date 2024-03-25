@@ -1,5 +1,6 @@
 package repository
 
+import data.manage.adminList.AdminList
 import data.manage.openImageAdd.OpenImageAdd
 import data.manage.openImageDelete.OpenImageDelete
 import data.manage.openImageList.OpenImageList
@@ -127,6 +128,13 @@ class ManageRepository(
                     parameters.append("email", email)
                 }
             }.body<UserDataByEmail>()
+            emit(response)
+        }
+    }
+
+    fun getAdminList():Flow<AdminList>{
+        return flow {
+            val response = client.get("/manage/admins").body<AdminList>()
             emit(response)
         }
     }
