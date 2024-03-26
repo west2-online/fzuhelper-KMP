@@ -473,6 +473,7 @@ fun AdministratorShowUser(
 fun FeatAdministratorShowUser(
     user: User
 ){
+    val manageViewModel = koinInject<ManageViewModel>()
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -493,7 +494,7 @@ fun FeatAdministratorShowUser(
         Text("年龄:${user.age}")
         Button(
             onClick = {
-
+                manageViewModel.addManager(user.email)
             }
         ){
             Text("加入审核管理员")

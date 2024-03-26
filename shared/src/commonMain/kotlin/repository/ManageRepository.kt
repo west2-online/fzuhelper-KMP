@@ -1,5 +1,6 @@
 package repository
 
+import data.manage.addAdmin.AdminAdd
 import data.manage.adminList.AdminList
 import data.manage.openImageAdd.OpenImageAdd
 import data.manage.openImageDelete.OpenImageDelete
@@ -135,6 +136,17 @@ class ManageRepository(
     fun getAdminList():Flow<AdminList>{
         return flow {
             val response = client.get("/manage/admins").body<AdminList>()
+            emit(response)
+        }
+    }
+
+    fun addAdmin(email: String):Flow<AdminAdd>{
+        return flow {
+            val response = client.submitForm (url = "/manage/admin"){
+                formData {
+                    append("email",email)
+                }
+            }.body<AdminAdd>()
             emit(response)
         }
     }

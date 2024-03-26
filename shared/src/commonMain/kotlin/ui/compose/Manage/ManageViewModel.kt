@@ -125,6 +125,9 @@ class ManageViewModel(
     private var _adminList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<Admin>>>(NetworkResult.UnSend()))
     var adminList = _adminList.asStateFlow()
 
+    private var _adminAdd = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    var adminAdd = _adminAdd.asStateFlow()
+
     fun getOpenImage(){
         viewModelScope.launchInDefault {
             _openImageList.logicIfNotLoading{
@@ -321,6 +324,23 @@ class ManageViewModel(
                                 _adminList.resetWithLog(label, networkErrorWithLog(error,"获取失败"))
                             }
                         )
+            }
+        }
+    }
+
+    fun addManager(email: String){
+        viewModelScope.launchInDefault {
+            _adminAdd.logicIfNotLoading {
+                repository.addAdmin(email)
+                    .actionWithLabel(
+                        "addManager/addAdmin",
+                        catchAction = { label, error ->
+                            _adminAdd.resetWithLog(label, networkErrorWithLog(error,"添加失败"))
+                        },
+                        collectAction = { label, data ->
+                            _adminAdd.resetWithLog(label,data.toNetworkResult())
+                        }
+                    )
             }
         }
     }
