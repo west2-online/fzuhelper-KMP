@@ -128,6 +128,9 @@ class ManageViewModel(
     private var _adminAdd = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     var adminAdd = _adminAdd.asStateFlow()
 
+    private val _adminLevelUpdate = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    var adminLevelUpdate = _adminLevelUpdate.asStateFlow()
+
     fun getOpenImage(){
         viewModelScope.launchInDefault {
             _openImageList.logicIfNotLoading{
@@ -339,6 +342,23 @@ class ManageViewModel(
                         },
                         collectAction = { label, data ->
                             _adminAdd.resetWithLog(label,data.toNetworkResult())
+                        }
+                    )
+            }
+        }
+    }
+
+    fun adminLevelUpdate(userId :Int,level : Int){
+        viewModelScope.launchInDefault {
+            _adminLevelUpdate.logicIfNotLoading {
+                repository.updateAdminLevel(level,userId)
+                    .actionWithLabel(
+                        label = "adminLevelUpdate/updateAdminLevel",
+                        catchAction = {label, error ->
+                                      _adminLevelUpdate.resetWithLog(label, networkErrorWithLog(error,"更新失败"))
+                        },
+                        collectAction = {label, data ->
+                            _adminLevelUpdate.resetWithLog(label,data.toNetworkResult())
                         }
                     )
             }

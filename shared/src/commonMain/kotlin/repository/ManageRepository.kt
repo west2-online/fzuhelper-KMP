@@ -1,6 +1,7 @@
 package repository
 
 import data.manage.addAdmin.AdminAdd
+import data.manage.adminLevelUpdate.AdminLevelUpdate
 import data.manage.adminList.AdminList
 import data.manage.openImageAdd.OpenImageAdd
 import data.manage.openImageDelete.OpenImageDelete
@@ -147,6 +148,18 @@ class ManageRepository(
                     append("email",email)
                 }
             }.body<AdminAdd>()
+            emit(response)
+        }
+    }
+
+    fun updateAdminLevel(level:Int,userId :Int): Flow<AdminLevelUpdate> {
+        return flow<AdminLevelUpdate> {
+            val response = client.submitForm("/manage/adminUpdate") {
+                formData {
+                    append("userId",userId)
+                    append("level",level)
+                }
+            }.body<AdminLevelUpdate>()
             emit(response)
         }
     }

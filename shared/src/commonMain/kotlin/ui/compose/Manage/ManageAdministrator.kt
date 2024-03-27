@@ -65,12 +65,16 @@ import data.share.User
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
+import util.compose.EasyToast
+import util.compose.rememberToastState
+import util.compose.toastBindNetworkResult
 import util.network.CollectWithContentInBox
 import util.network.getAvatarStatic
 import util.regex.matchEmail
-const val AuditManage = 1
-const val MainManage = 2
-const val SuperManage = 3
+
+const val AuditManage = 0
+const val MainManage = 1
+const val SuperManage = 2
 
 
 object ManageAdministratorVoyager : Screen{
@@ -86,7 +90,14 @@ object ManageAdministratorVoyager : Screen{
                         .weight(1f)
                         .fillMaxWidth()
                 ){
+                    val toastState = rememberToastState()
+                    val manageViewModel = koinInject<ManageViewModel>()
+                    toastState.toastBindNetworkResult(
+                        manageViewModel.adminAdd.collectAsState(),
+                        manageViewModel.adminLevelUpdate.collectAsState()
+                    )
                     CurrentTab()
+                    EasyToast(toastState)
                 }
                 BottomNavigation {
                     BottomNavigationItem(
@@ -321,6 +332,7 @@ class ChangeUserLevel(
             modifier = Modifier
                 .fillMaxSize()
         ){
+            val manageViewModel = koinInject<ManageViewModel>()
             val selectLevel = remember {
                 mutableStateOf(AdministratorLevel.AuditAdministratorLevel)
             }
@@ -394,7 +406,7 @@ class ChangeUserLevel(
             ){
                 Button(
                     onClick = {
-
+                        manageViewModel.adminLevelUpdate(userId = user.Id, level = selectLevel.value.level)
                     },
                     modifier = Modifier
                 ){
@@ -411,10 +423,10 @@ class ChangeUserLevel(
     }
 }
 
-enum class AdministratorLevel(val describe:String,val levelName:String){
-    SuperAdministratorLevel("几乎所有权限","超级管理员"),
-    MainAdministratorLevel("了修改管理员等级的其他权限","主要管理员"),
-    AuditAdministratorLevel("负责审核的管理员权限","审核管理员")
+enum class AdministratorLevel(val describe:String,val levelName:String,val level : Int){
+    SuperAdministratorLevel("几乎所有权限","超级管理员", SuperManage),
+    MainAdministratorLevel("了修改管理员等级的其他权限","主要管理员", MainManage),
+    AuditAdministratorLevel("负责审核的管理员权限","审核管理员", AuditManage)
 }
 
 @Composable
@@ -488,7 +500,7 @@ fun FeatAdministratorShowUser(
         ) {
 
         }
-        Text("邮箱:${user.username}")
+        Text("邮箱:${user.email}")
         Text("所在地:${user.location}")
         Text("年级:${user.gender}")
         Text("年龄:${user.age}")
