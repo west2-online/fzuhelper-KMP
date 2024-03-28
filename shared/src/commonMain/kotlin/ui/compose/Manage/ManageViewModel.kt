@@ -169,6 +169,8 @@ class ManageViewModel(
     fun refresh(){
         getOpenImage()
         getRibbonData()
+        refreshAdminList()
+
     }
 
     //处理帖子
@@ -296,7 +298,6 @@ class ManageViewModel(
     }
 
     //通过email获取user的信息
-
     fun getUserDataByEmail(email:String){
         viewModelScope.launchInDefault {
             _userByEmail.logicIfNotLoading {
@@ -487,3 +488,4 @@ class LoadCommentReportPageData(
         )
     }
 }
+
