@@ -32,7 +32,6 @@ import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -63,6 +62,7 @@ import util.compose.EasyToast
 import util.compose.Toast
 import util.network.CollectWithContent
 import util.network.NetworkResult
+import util.network.logicWithTypeWithLimit
 
 @Composable
 fun Register(
@@ -75,7 +75,6 @@ fun Register(
     verifyStudentID: (studentCode: String, studentPassword: String, studentCaptcha: String) -> Unit,
     studentCaptchaState: State<NetworkResult<ImageBitmap>>,
     getStudentCaptcha: () -> Unit,
-    cleanRegisterData: () -> Unit,
     verifyStudentIDState: State<NetworkResult<TokenData>>,
 ) {
     var studentCode by remember {
@@ -161,11 +160,8 @@ fun Register(
             }
         }
     }
-    DisposableEffect(Unit){
+    LaunchedEffect(Unit){
         getStudentCaptcha()
-        onDispose {
-            cleanRegisterData()
-        }
     }
     Box(modifier = modifier){
         LazyColumn (
@@ -520,7 +516,6 @@ fun Register(
         }
         EasyToast(toast)
     }
-
 }
 
 class RegisterVoyagerScreen : Screen {
@@ -528,6 +523,9 @@ class RegisterVoyagerScreen : Screen {
     override fun Content() {
         val navigate = LocalNavigator.currentOrThrow
         val viewModel = koinInject<AuthenticationViewModel>()
+        viewModel.registerState.collectAsState().value.logicWithTypeWithLimit {
+            navigate.replaceAll(LoginVoyagerScreen())
+        }
         Register(
             modifier = Modifier
                 .fillMaxSize()
@@ -544,16 +542,13 @@ class RegisterVoyagerScreen : Screen {
                 viewModel.verifyStudentID(studentCode,studentPassword, captcha = studentCaptcha)
             },
             navigateToLogin = {
-                navigate.push(LoginVoyagerScreen())
+                navigate.replaceAll(LoginVoyagerScreen())
             },
             studentCaptchaState = viewModel.studentCaptcha.collectAsState(),
             getStudentCaptcha = {
                 viewModel.refreshStudentCaptcha()
             },
             verifyStudentIDState = viewModel.verifyStudentIDState.collectAsState(),
-            cleanRegisterData = {
-                viewModel.cleanRegisterData()
-            }
         )
     }
 }

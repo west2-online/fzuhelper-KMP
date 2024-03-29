@@ -33,6 +33,7 @@ import util.compose.FuTalkTheme
 
 interface RootAction{
     fun reLogin()
+    fun finishLogin()
     fun navigateFormSplashToMainPage()
     fun navigateFormSplashToLoginAndRegister()
     fun navigateFromActionToFeedback()
@@ -107,6 +108,9 @@ fun RootUi(
             modules(
                 appModule(
                     object : RootAction{
+                        override fun finishLogin() {
+                            navigate.replaceAll(ManageVoyagerScreen())
+                        }
 
                         override fun reLogin() {
                             initStore().clear()

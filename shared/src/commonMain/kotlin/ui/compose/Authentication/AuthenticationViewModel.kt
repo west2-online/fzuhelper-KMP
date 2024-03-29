@@ -18,7 +18,6 @@ import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
 import util.network.networkErrorWithLog
-import util.network.networkSuccess
 import util.network.resetWithLog
 
 
@@ -138,26 +137,15 @@ class AuthenticationViewModel(
                             _loginState.resetWithLog(label, networkErrorWithLog(error,"登录失败"))
                         },
                         collectAction = { label, data ->
+                            _loginState.resetWithLog(label,data.toNetworkResult())
                             if(data.code == 12){
                                 kVault.set("token",data.data.toString())
-                                println("token : ${kVault.string("token")}")
-                                println("authenticationResponse : ${data.data.toString()}")
-                                println("token : ${data}")
-                                enterAuthor()
+                                rootAction.navigateFormAnywhereToMain()
                             }
                         }
                     )
             }
         }
-    }
-
-    fun cleanRegisterData() {
-        _captcha.value = NetworkResult.UnSend()
-        _registerState.value = NetworkResult.UnSend()
-        _studentCaptcha.value = NetworkResult.UnSend()
-        _verifyStudentIDState.value = NetworkResult.UnSend()
-        _loginCaptcha.value = NetworkResult.UnSend()
-        _loginState.value = NetworkResult.UnSend()
     }
 
     fun getLoginCaptcha(email: String){
@@ -166,7 +154,7 @@ class AuthenticationViewModel(
                 .actionWithLabel(
                     "getLoginCaptcha/getLoginCaptcha",
                     collectAction = { label, data ->
-                        _loginCaptcha.resetWithLog(label, networkSuccess("申请失败,请稍后重试"))
+                        _loginCaptcha.resetWithLog(label, data.toNetworkResult())
                     },
                     catchAction = { label, error ->
                         _loginCaptcha.resetWithLog(label, networkErrorWithLog(error,"申请失败,请稍后重试"))

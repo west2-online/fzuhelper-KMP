@@ -13,8 +13,8 @@ data class RegisterResponse(
 ) {
     fun toNetworkResult(): NetworkResult<String> {
         return when(code){
-            11 -> networkSuccess("注册成功")
-            0 -> networkSuccess("获取验证码成功")
+            11 -> networkSuccess("获取验证码成功")
+            0 -> networkSuccess("注册成功")
             1 -> networkErrorWithLog(code,"申请验证码时缺失邮箱")
             2 -> networkErrorWithLog(code,"申请验证码时，邮箱格式错误")
             7 -> networkErrorWithLog(code,"该电子邮件地址已经注册")
