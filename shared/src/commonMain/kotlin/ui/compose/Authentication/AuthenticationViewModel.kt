@@ -93,16 +93,15 @@ class AuthenticationViewModel(
     fun verifyStudentID( studentCode : String, studentPassword:String,captcha:String){
         viewModelScope.launchInDefault{
             _verifyStudentIDState.logicIfNotLoading {
-                _verifyStudentIDState.value = NetworkResult.LoadingWithAction()
                 loginRepository.verifyStudentIdentity(
                     userName = studentCode, password = studentPassword ,captcha = captcha
                 ).actionWithLabel(
                     label = "verifyStudentID/verifyStudentIdentity",
                     collectAction = { label, data ->
-                        _registerState.resetWithLog(label, networkSuccess("验证成功"))
+                        _verifyStudentIDState.resetWithLog(label, NetworkResult.Success(data))
                     },
                     catchAction = { label, error ->
-                        _registerState.resetWithLog(label, networkErrorWithLog(Throwable("登录失败"),"验证失败"))
+                        _verifyStudentIDState.resetWithLog(label, networkErrorWithLog(Throwable("登录失败"),"验证失败"))
                     }
                 )
             }
