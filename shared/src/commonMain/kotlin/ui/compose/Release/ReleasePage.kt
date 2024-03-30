@@ -287,7 +287,9 @@ fun ReleasePageScreen(
             }
             FloatingActionButton(
                 onClick = {
-                    viewModel.newPost(releasePageItems.toList(),title.value,labelList.filter { it.isSelect.value }.toList().map { it.label })
+                    scope.launch {
+                        viewModel.newPost(releasePageItems.toList(),title.value,labelList.filter { it.isSelect.value }.toList().map { it.label })
+                    }
                 },
                 modifier = Modifier
                     .padding(10.dp)
@@ -295,7 +297,7 @@ fun ReleasePageScreen(
                     .aspectRatio(1f)
             ){
                 viewModel.newPostState.collectAsState().CollectWithContent(
-                    success = {
+                    loading = {
                         CircularProgressIndicator(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -317,6 +319,7 @@ fun ReleasePageScreen(
                             contentDescription = null,
                             tint = Color.Green
                         )
+
                     }
                 )
             }
