@@ -298,6 +298,18 @@ fun PostItem(
                     }
                 }
             }
+            Text(
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(end = 10.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                text = post.Title
+            )
             post.FirstImage?.let{
                 if(it.isEmpty()){
                     return@let
@@ -322,18 +334,6 @@ fun PostItem(
 
                 )
             }
-            Text(
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(end = 10.dp),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                text = post.Title
-            )
             Text(
                 modifier = Modifier
                     .padding(top = 10.dp)
