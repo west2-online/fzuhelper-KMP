@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -82,6 +83,8 @@ import util.compose.Label
 import util.compose.Toast
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
+import util.network.CollectWithContent
+import util.network.logicWithTypeWithLimit
 
 @Composable
 fun ReleasePageScreen(
@@ -98,6 +101,15 @@ fun ReleasePageScreen(
     val labelList = remember {
         mutableStateListOf<LabelForSelect>()
     }
+    toastState.toastBindNetworkResult(viewModel.newPostState.collectAsState())
+    viewModel.newPostState.value.logicWithTypeWithLimit (
+        success = {
+            releasePageItems.clear()
+            labelList.forEach {
+                it.close()
+            }
+        }
+    )
     val client = koinInject<HttpClient>()
     LaunchedEffect(Unit){
         labelList.add(LabelForSelect("学习"))
@@ -122,7 +134,7 @@ fun ReleasePageScreen(
             toastState.addWarnToast("获取个人标签失败")
         }
     }
-    toastState.toastBindNetworkResult(viewModel.newPostState.collectAsState())
+
     Column (
         modifier = Modifier
             .padding(10.dp)
@@ -275,15 +287,6 @@ fun ReleasePageScreen(
             }
             FloatingActionButton(
                 onClick = {
-                    if(labelList.isEmpty()){
-                        toastState.addWarnToast("至少选择一个标签")
-                    }
-                    if(title.value.isEmpty()){
-                        toastState.addWarnToast("标题不得为空")
-                    }
-                    if(releasePageItems.isEmpty()){
-                        toastState.addWarnToast("帖子不得为空")
-                    }
                     viewModel.newPost(releasePageItems.toList(),title.value,labelList.filter { it.isSelect.value }.toList().map { it.label })
                 },
                 modifier = Modifier
@@ -291,16 +294,30 @@ fun ReleasePageScreen(
                     .fillMaxHeight()
                     .aspectRatio(1f)
             ){
-                Icon(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .wrapContentSize(Alignment.Center)
-                        .clip(RoundedCornerShape(10))
-                        .fillMaxSize(0.7f),
-                    imageVector = Icons.Filled.Done,
-                    contentDescription = null,
-                    tint = Color.Green
+                viewModel.newPostState.collectAsState().CollectWithContent(
+                    success = {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .aspectRatio(1f)
+                                .wrapContentSize(Alignment.Center)
+                                .clip(RoundedCornerShape(10))
+                                .fillMaxSize(0.7f),
+                        )
+                    },
+                    content = {
+                        Icon(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .aspectRatio(1f)
+                                .wrapContentSize(Alignment.Center)
+                                .clip(RoundedCornerShape(10))
+                                .fillMaxSize(0.7f),
+                            imageVector = Icons.Filled.Done,
+                            contentDescription = null,
+                            tint = Color.Green
+                        )
+                    }
                 )
             }
         }
@@ -918,6 +935,9 @@ class LabelForSelect(
         }else{
             toast.addWarnToast("该标签必须选中")
         }
+    }
+    fun close(){
+        _isSelect.value = false
     }
 }
 
