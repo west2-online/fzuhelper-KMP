@@ -38,7 +38,7 @@ class PostRepository(private val client: HttpClient) {
                             releasePageItemList.forEachIndexed{ index,item->
                                 when (item) {
                                     is ReleasePageItem.ImageItem -> {
-                                        append("image",item.image.value!!,
+                                        append(index.toString(),item.image.value!!,
                                             Headers.build {
                                                 append("order", index.toString())
                                                 append("isImage", "true")
@@ -48,7 +48,7 @@ class PostRepository(private val client: HttpClient) {
                                         )
                                     }
                                     is ReleasePageItem.TextItem -> {
-                                        append( "text",item.text.value.normalize(Form.NFKD),
+                                        append( index.toString(),item.text.value.normalize(Form.NFKD),
                                             Headers.build {
                                                 append("order", index.toString())
                                                 append("isText", "true")

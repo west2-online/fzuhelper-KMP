@@ -49,6 +49,10 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
                     _newPostState.resetWithoutLog(networkErrorWithLog(Throwable("标题不得为空"),"标题不得为空"))
                     return@logicIfNotLoading
                 }
+                if (labelList.isEmpty()){
+                    _newPostState.resetWithoutLog(networkErrorWithLog(Throwable("至少要一个标签"),"至少要一个标签"))
+                    return@logicIfNotLoading
+                }
                 releaseRepository.newPost(
                     releasePageItemList = list,
                     title = title,

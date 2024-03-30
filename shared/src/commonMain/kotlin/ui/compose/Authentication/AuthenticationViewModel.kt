@@ -153,7 +153,8 @@ class AuthenticationViewModel(
             loginRepository.getLoginCaptcha(email = email)
                 .actionWithLabel(
                     "getLoginCaptcha/getLoginCaptcha",
-                    collectAction = { label, data ->
+                    collectAction
+                    = { label, data ->
                         _loginCaptcha.resetWithLog(label, data.toNetworkResult())
                     },
                     catchAction = { label, error ->
