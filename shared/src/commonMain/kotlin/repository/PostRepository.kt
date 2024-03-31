@@ -92,16 +92,15 @@ class PostRepository(private val client: HttpClient) {
                                 append(
                                     "commentImage",it,
                                     Headers.build {
-                                        append("isImage", "true")
+                                        append(HttpHeaders.ContentType, "image/png")
+                                        append(HttpHeaders.ContentDisposition, "filename=contentImage")
                                     }
                                 )
 //                                append("parentId", parentId.toString())
 //                                append("postId", postId.toString())
 //                                append("tree", tree)
                             }
-                            append("content", content.normalize(Form.NFD),Headers.build {
-                                append("isContent","ssss")
-                            })
+                            append("content", content.normalize(Form.NFD))
                         }
                     )
                 )
