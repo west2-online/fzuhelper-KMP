@@ -60,6 +60,7 @@ import util.compose.shimmerLoadingAnimation
 import util.network.CollectWithContent
 import util.network.NetworkResult
 import util.network.logicWithTypeWithoutLimit
+import kotlin.jvm.Transient
 import kotlin.random.Random
 
 
@@ -251,6 +252,7 @@ fun PersonScreen(
 
 @Composable
 fun PersonalInformationInPerson(
+
     modifier: Modifier = Modifier,
     userData: State<NetworkResult<UserData>>
 ){
@@ -371,8 +373,8 @@ fun randomColor(): Color {
 
 
 class PersonVoyagerScreen(
-    val modifier: Modifier,
-    private val userId: String?
+    @Transient val modifier: Modifier,
+    @Transient private val userId: String?
 ) : Tab {
 
     @Composable

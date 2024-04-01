@@ -16,7 +16,7 @@ import ui.compose.AboutUs.AboutUsVoyagerScreen
 import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
 import ui.compose.Feedback.FeedbackVoyagerScreen
 import ui.compose.Log.LogVoyagerScreen
-import ui.compose.Main.Main
+import ui.compose.Main.MainVoyagerScreen
 import ui.compose.Manage.ManageVoyagerScreen
 import ui.compose.ModifierInformation.ModifierInformationVoyagerScreen
 import ui.compose.QRCode.QRCodeVoyagerScreen
@@ -41,6 +41,7 @@ interface RootAction{
     fun navigateFromActionToAboutUs()
     fun navigateFromAnywhereToManage()
     fun navigateFromAnywhereToWeather()
+    fun navigateFormLoginToMain()
     fun navigateFormAnywhereToRelease(initLabelList: List<String>)
     fun navigateFormPostToReport(type: ReportType)
     fun navigateFromAnywhereToWebView(url:String)
@@ -118,7 +119,7 @@ fun RootUi(
                         }
 
                         override fun navigateFormSplashToMainPage() {
-                            navigate.replaceAll(Main)
+                            navigate.replaceAll(MainVoyagerScreen)
                         }
 
                         override fun navigateFormSplashToLoginAndRegister() {
@@ -145,6 +146,9 @@ fun RootUi(
                             navigate.push(WeatherVoyagerScreen)
                         }
 
+                        override fun navigateFormLoginToMain() {
+                            navigate.replaceAll(MainVoyagerScreen)
+                        }
                         override fun navigateFormAnywhereToRelease(initLabelList: List<String>){
                             navigate.push(ReleaseRouteVoyagerScreen(initLabelList))
                         }
@@ -162,7 +166,7 @@ fun RootUi(
                         }
 
                         override fun navigateFormAnywhereToMain() {
-                            navigate.push(Main)
+                            navigate.push(MainVoyagerScreen)
                         }
 
                         override fun navigateFormAnywhereToInformationModifier(userData: Data) {

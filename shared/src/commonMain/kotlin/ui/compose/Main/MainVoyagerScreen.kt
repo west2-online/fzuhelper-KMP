@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
@@ -82,7 +84,7 @@ enum class MainItems(
 
 
 
-object Main : Screen{
+object MainVoyagerScreen : Screen{
     @Composable
     override fun Content() {
         TabNavigator(PostVoyagerScreen) { tabNavigator ->
@@ -102,7 +104,11 @@ object Main : Screen{
                         ){
                             CurrentTab()
                         }
-                        BottomNavigation {
+                        BottomNavigation (
+                            modifier = Modifier
+                                .wrapContentHeight()
+                                .systemBarsPadding()
+                        ){
                             Box(
                                 modifier = Modifier
                                     .fillMaxHeight()

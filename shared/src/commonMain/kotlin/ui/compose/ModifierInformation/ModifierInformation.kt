@@ -49,6 +49,7 @@ import org.koin.compose.koinInject
 import util.compose.EasyToast
 import util.compose.rememberToastState
 import util.network.toast
+import kotlin.jvm.Transient
 
 @Composable
 fun ModifierInformationScreen(
@@ -251,6 +252,7 @@ fun ModifierInformationScreen(
 
 
 class ModifierInformationVoyagerScreen(
+    @Transient
     private val userData: Data,
 ) :Screen{
     @Composable
