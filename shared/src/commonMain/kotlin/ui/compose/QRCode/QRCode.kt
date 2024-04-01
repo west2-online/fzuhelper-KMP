@@ -55,7 +55,10 @@ import io.github.alexzhirkevich.qrose.options.circle
 import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.options.solid
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
-
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
+import kotlin.jvm.Transient
 
 
 @Composable
@@ -100,7 +103,7 @@ fun QRCodeScreen(
         }
     }
 
-    Column( modifier = Modifier ) {
+    Column( modifier = modifier ) {
         Image(
             painter = qrcodePainter,
             null,
@@ -275,11 +278,15 @@ fun QRCodeScreen(
 }
 
 
-object QRCodeVoyagerScreen:Screen{
+class QRCodeVoyagerScreen(
+    @Transient
+    val parentPaddingControl :ParentPaddingControl = defaultSelfPaddingControl()
+):Screen{
     @Composable
     override fun Content() {
         QRCodeScreen(
             modifier = Modifier
+                .parentSystemControl(parentPaddingControl)
                 .fillMaxSize()
         )
     }

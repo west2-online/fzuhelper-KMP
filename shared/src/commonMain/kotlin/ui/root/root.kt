@@ -119,7 +119,7 @@ fun RootUi(
                         }
 
                         override fun navigateFormSplashToMainPage() {
-                            navigate.replaceAll(MainVoyagerScreen)
+                            navigate.replaceAll(MainVoyagerScreen())
                         }
 
                         override fun navigateFormSplashToLoginAndRegister() {
@@ -131,11 +131,11 @@ fun RootUi(
                         }
 
                         override fun navigateFromActionToQRCodeScreen() {
-                            navigate.push(QRCodeVoyagerScreen)
+                            navigate.push(QRCodeVoyagerScreen())
                         }
 
                         override fun navigateFromActionToAboutUs() {
-                            navigate.push(AboutUsVoyagerScreen)
+                            navigate.push(AboutUsVoyagerScreen())
                         }
 
                         override fun navigateFromAnywhereToManage() {
@@ -143,11 +143,11 @@ fun RootUi(
                         }
 
                         override fun navigateFromAnywhereToWeather() {
-                            navigate.push(WeatherVoyagerScreen)
+                            navigate.push(WeatherVoyagerScreen())
                         }
 
                         override fun navigateFormLoginToMain() {
-                            navigate.replaceAll(MainVoyagerScreen)
+                            navigate.replaceAll(MainVoyagerScreen())
                         }
                         override fun navigateFormAnywhereToRelease(initLabelList: List<String>){
                             navigate.push(ReleaseRouteVoyagerScreen(initLabelList))
@@ -166,7 +166,7 @@ fun RootUi(
                         }
 
                         override fun navigateFormAnywhereToMain() {
-                            navigate.push(MainVoyagerScreen)
+                            navigate.push(MainVoyagerScreen())
                         }
 
                         override fun navigateFormAnywhereToInformationModifier(userData: Data) {

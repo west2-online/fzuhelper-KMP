@@ -40,10 +40,15 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.zip
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
+import kotlin.jvm.Transient
 
 @Composable
 fun MassageDetail(
     modifier: Modifier = Modifier,
+
 ){
     val listState = rememberLazyListState()
     val isShowTopBar = remember {
@@ -196,12 +201,16 @@ fun TextWithLink(
 }
 
 
-class MassageDetailVoyagerScreen: Screen {
+class MassageDetailVoyagerScreen(
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+): Screen {
     @Composable
     override fun Content() {
         MassageDetail(
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
                 .padding(10.dp),
         )
     }

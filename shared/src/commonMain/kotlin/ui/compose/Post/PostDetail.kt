@@ -101,6 +101,9 @@ import org.koin.compose.koinInject
 import ui.compose.Report.ReportType
 import util.compose.EasyToast
 import util.compose.Label
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.compose.toastBindNetworkResult
@@ -108,6 +111,7 @@ import util.network.CollectWithContent
 import util.network.logicWithTypeWithLimit
 import util.network.toEasyTime
 import util.network.toast
+import kotlin.jvm.Transient
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -1195,6 +1199,8 @@ fun CommentStateSerializable.toCommentState():CommentState{
 
 class PostDetailVoyagerScreen(
     val id: String,
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ):Screen{
     @Composable
     override fun Content() {
@@ -1219,7 +1225,7 @@ class PostDetailVoyagerScreen(
             }
             PostDetail(
                 id = id,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().parentSystemControl(parentPaddingControl),
                 initPostDetail = {
 //                    postDetailViewModel.initPostById(it)
                 },

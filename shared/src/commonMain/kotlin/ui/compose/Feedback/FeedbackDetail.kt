@@ -59,12 +59,16 @@ import kotlinx.coroutines.flow.filter
 import org.example.library.MR
 import org.koin.compose.koinInject
 import util.compose.EasyToast
+import util.compose.ParentPaddingControl
 import util.compose.Toast
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.network.CollectWithContent
 import util.network.NetworkResult
 import util.network.toEasyTime
 import util.network.toast
+import kotlin.jvm.Transient
 
 const val SpaceWeight = 0.2f
 @Composable
@@ -374,7 +378,9 @@ fun Numbering(
 }
 
 class FeedbackDetailVoyagerScreen(
-    private val feedbackId : Int
+    private val feedbackId : Int,
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ):Screen{
     @Composable
     override fun Content() {
@@ -382,7 +388,8 @@ class FeedbackDetailVoyagerScreen(
         val toastState = rememberToastState()
         FeedbackDetail(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .parentSystemControl(parentPaddingControl),
             getDetailData = {
                 feedBackViewModel.getFeedbackDetail(feedbackId)
             },

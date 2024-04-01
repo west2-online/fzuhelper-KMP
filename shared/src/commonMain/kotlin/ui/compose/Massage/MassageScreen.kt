@@ -6,6 +6,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import ui.setting.SettingTransitions
+import util.compose.statusSelfPaddingControl
 
 
 object MassageVoyagerScreen: Tab {
@@ -23,7 +24,9 @@ object MassageVoyagerScreen: Tab {
     @Composable
     override fun Content() {
         Navigator(
-            MassageVoyagerList()
+            MassageVoyagerList(
+                statusSelfPaddingControl()
+            )
         ){ navigator ->
             SettingTransitions(navigator)
         }

@@ -80,11 +80,15 @@ import org.example.library.MR
 import org.koin.compose.koinInject
 import util.compose.EasyToast
 import util.compose.Label
+import util.compose.ParentPaddingControl
 import util.compose.Toast
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
 import util.network.CollectWithContent
 import util.network.logicWithTypeWithLimit
+import kotlin.jvm.Transient
 
 @Composable
 fun ReleasePageScreen(
@@ -895,13 +899,16 @@ fun PreviewContent(
 }
 
 class ReleaseRouteVoyagerScreen(
-    val initLabel : List<String> = listOf()
+    private val initLabel : List<String> = listOf(),
+    @Transient
+    val parentPaddingControl : ParentPaddingControl = defaultSelfPaddingControl()
 ):Screen{
     @Composable
     override fun Content() {
         ReleasePageScreen(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .parentSystemControl(parentPaddingControl),
             initLabel = initLabel
         )
     }

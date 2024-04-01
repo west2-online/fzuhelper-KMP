@@ -11,10 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -50,6 +47,10 @@ import ui.compose.Action.ActionVoyagerScreen
 import ui.compose.Massage.MassageVoyagerScreen
 import ui.compose.Person.PersonVoyagerScreen
 import ui.compose.Post.PostVoyagerScreen
+import util.compose.BottomNavigationWithBottomPadding
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import kotlin.jvm.Transient
 
 
 enum class MainItems(
@@ -81,46 +82,46 @@ enum class MainItems(
 }
 
 
-
-
-
-object MainVoyagerScreen : Screen{
+class MainVoyagerScreen(
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Screen {
     @Composable
     override fun Content() {
-        TabNavigator(PostVoyagerScreen) { tabNavigator ->
+        TabNavigator(PostVoyagerScreen()) { tabNavigator ->
             val scope = rememberCoroutineScope()
             val scaffoldState = rememberScaffoldState()
             Scaffold(
-                drawerGesturesEnabled = scaffoldState.drawerState.isOpen ,
+                drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
                 content = {
-                    Column (
+                    Column(
                         modifier = Modifier
                             .fillMaxSize()
-                    ){
+                    ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
-                        ){
+                        ) {
                             CurrentTab()
                         }
-                        BottomNavigation (
+                        BottomNavigationWithBottomPadding(
                             modifier = Modifier
-                                .wrapContentHeight()
-                                .systemBarsPadding()
-                        ){
+                                .fillMaxWidth(),
+                            isNavigationBarsPadding = !parentPaddingControl.parentNavigatorControl
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .weight(1f)
                                     .padding(10.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .clickable{
+                                    .clickable {
                                         scope.launch {
                                             scaffoldState.drawerState.open()
                                         }
                                     }
-                            ){
+                            ) {
                                 Image(
                                     painter = painterResource(MR.images.FuTalk),
                                     contentDescription = null,
@@ -178,7 +179,7 @@ fun RowScope.BottomPostTab(){
         label = { Text(item.tag) },
         selected = currentTabNavigator.current is PostVoyagerScreen,
         onClick = {
-            currentTabNavigator.current = PostVoyagerScreen
+            currentTabNavigator.current = PostVoyagerScreen()
         },
         selectedContentColor = MaterialTheme.colors.primaryVariant,
         modifier = Modifier
@@ -213,7 +214,9 @@ fun RowScope.BottomActionTab(){
         label = { Text(item.tag) },
         selected = currentTabNavigator.current is ActionVoyagerScreen,
         onClick = {
-            currentTabNavigator.current = ActionVoyagerScreen
+            currentTabNavigator.current = ActionVoyagerScreen(
+                ParentPaddingControl(false,true)
+            )
         },
         selectedContentColor = MaterialTheme.colors.primaryVariant,
         modifier = Modifier

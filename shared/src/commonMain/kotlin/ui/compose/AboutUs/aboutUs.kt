@@ -19,7 +19,11 @@ import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.mikepenz.markdown.compose.Markdown
 import ui.compose.Main.MainItems
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
 import util.compose.loadAction
+import util.compose.parentSystemControl
+import kotlin.jvm.Transient
 
 
 @Composable
@@ -81,13 +85,16 @@ https://futalker.github.io
 """.trimIndent()
 
 
-
-object AboutUsVoyagerScreen:Tab{
+class AboutUsVoyagerScreen(
+    @Transient
+    private val parentPaddingControl : ParentPaddingControl = defaultSelfPaddingControl()
+) : Tab {
     @Composable
     override fun Content() {
         AboutUsScreen(
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
         )
     }
 

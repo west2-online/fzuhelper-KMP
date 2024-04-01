@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
@@ -55,6 +56,8 @@ import org.koin.compose.koinInject
 import ui.compose.Main.MainItems
 import ui.root.RootAction
 import util.compose.EasyToast
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.network.CollectWithContent
@@ -69,7 +72,8 @@ import kotlin.random.Random
 fun PersonScreen(
     id:String? = null,
     modifier: Modifier = Modifier,
-    personViewModel: PersonViewModel = koinInject()
+    personViewModel: PersonViewModel = koinInject(),
+    parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ){
     val scope = rememberCoroutineScope()
     val userDataState = personViewModel.userData.collectAsState()
@@ -90,11 +94,10 @@ fun PersonScreen(
             modifier = Modifier
                 .fillMaxSize()
         ){
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(240.dp)
             ){
                 KamelImage(
                     resource = asyncPainterResource("https://picx.zhimg.com/80/v2-cee6c1a92831cd1566e4c5f9dd4a35f4_720w.webp?source=1def8aca"),
@@ -116,6 +119,7 @@ fun PersonScreen(
                     imageVector = Icons.Filled.Refresh,
                     contentDescription = null,
                     modifier = Modifier
+                        .statusBarsPadding()
                         .offset(x = -10.dp,y = 10.dp)
                         .align(Alignment.TopEnd)
                         .size(40.dp)
@@ -186,7 +190,8 @@ fun PersonScreen(
                             )
                         }
                     }
-                }
+                },
+                modifier = Modifier
             )
             val items = listOf("发布","动态","身份")
             val pageState = rememberPagerState {
@@ -246,13 +251,12 @@ fun PersonScreen(
                 }
             }
         }
-        EasyToast(toast = toast)
+        EasyToast( toast = toast )
     }
 }
 
 @Composable
 fun PersonalInformationInPerson(
-
     modifier: Modifier = Modifier,
     userData: State<NetworkResult<UserData>>
 ){
@@ -374,14 +378,16 @@ fun randomColor(): Color {
 
 class PersonVoyagerScreen(
     @Transient val modifier: Modifier,
-    @Transient private val userId: String?
+    @Transient private val userId: String?,
+    @Transient val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ) : Tab {
 
     @Composable
     override fun Content() {
         PersonScreen(
             modifier = modifier,
-            id = userId
+            id = userId,
+
         )
     }
 

@@ -36,19 +36,26 @@ import ui.setting.PageTransitions
 import ui.setting.Setting
 import ui.setting.ThemeStyle
 import ui.setting.toComposeTheme
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
+import kotlin.jvm.Transient
 
 
-class SettingVoyagerScreen : Screen {
+class SettingVoyagerScreen(
+    @Transient
+    private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Screen {
 
     @Composable
     override fun Content() {
-
         val setting = koinInject<Setting>()
         val theme = setting.theme.collectAsState()
         val font = setting.font.collectAsState()
         val transitions = setting.transitions.collectAsState()
         Column(
             modifier = Modifier
+                .parentSystemControl(parentPaddingControl)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ){

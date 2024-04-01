@@ -51,8 +51,12 @@ import dev.icerock.moko.resources.compose.painterResource
 import org.example.library.MR
 import org.koin.compose.koinInject
 import util.compose.EasyToast
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.network.NetworkResult
+import kotlin.jvm.Transient
 
 @Composable
 fun Login(
@@ -61,7 +65,8 @@ fun Login(
     login:(userEmail:String,userPassword:String,captcha:String)->Unit,
     getCaptcha:(userEmail:String)->Unit,
     loginState: State<NetworkResult<String>>,
-    loginCaptcha:State<NetworkResult<String>>
+    loginCaptcha:State<NetworkResult<String>>,
+
 ){
     var userEmail by remember {
         mutableStateOf("")
@@ -107,7 +112,10 @@ fun Login(
             }
         }
     }
-    Box( modifier = Modifier.fillMaxSize() ){
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ){
         LazyColumn (
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -287,7 +295,10 @@ fun Login(
     }
 }
 
-class LoginVoyagerScreen: Screen {
+class LoginVoyagerScreen (
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+): Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
@@ -296,6 +307,7 @@ class LoginVoyagerScreen: Screen {
         Login(
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
                 .padding(10.dp),
             navigateToRegister = {
                 navigator.push(RegisterVoyagerScreen())

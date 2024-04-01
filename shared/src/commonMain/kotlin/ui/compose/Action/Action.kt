@@ -48,8 +48,12 @@ import org.koin.compose.koinInject
 import ui.compose.Test.TestVoyagerScreen
 import ui.root.RootAction
 import ui.root.tokenJump
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.math.takeover
 import util.network.CollectWithContent
+import kotlin.jvm.Transient
 
 @Composable
 fun Action(
@@ -217,7 +221,10 @@ enum class Functions(
 
 
 
-object ActionVoyagerScreen : Tab {
+class ActionVoyagerScreen(
+    @Transient
+    private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Tab {
     override val options: TabOptions
         @Composable
         get(){
@@ -233,6 +240,7 @@ object ActionVoyagerScreen : Tab {
         Action(
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
                 .padding(10.dp)
         )
     }

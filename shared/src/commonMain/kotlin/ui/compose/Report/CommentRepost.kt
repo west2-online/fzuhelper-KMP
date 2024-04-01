@@ -44,10 +44,14 @@ import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
 import ui.compose.Post.PersonalInformationAreaInList
 import util.compose.EasyToast
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.compose.toastBindNetworkResult
 import util.network.toEasyTime
+import kotlin.jvm.Transient
 
 @Composable
 fun CommentRepost(
@@ -260,12 +264,17 @@ fun PostReportInCommentReport(
 }
 
 class CommentReportVoyagerScreen(
-    val type : ReportType.CommentReportType
+    @Transient
+    val type : ReportType.CommentReportType,
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ): Screen {
     @Composable
     override fun Content() {
         CommentRepost(
-            commentData = type.comment
+            commentData = type.comment,
+            modifier = Modifier
+                .parentSystemControl(parentPaddingControl)
         )
     }
 }
