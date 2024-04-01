@@ -3,6 +3,7 @@ package repository
 import data.post.PostById.PostById
 import data.post.PostCommentNew.PostCommentNew
 import data.post.PostCommentPreview.PostCommentPreview
+import data.post.PostLikes.PostLikes
 import data.post.PostList.PostList
 import data.post.PostNew.NewPostResponse
 import doist.x.normalize.Form
@@ -11,18 +12,24 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
+import io.ktor.http.parameters
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import ui.compose.Release.ReleasePageItem
 
 class PostRepository(private val client: HttpClient) {
 
-    fun newPost(releasePageItemList:List<ReleasePageItem>,title : String): Flow<NewPostResponse> {
+    fun newPost(
+        releasePageItemList: List<ReleasePageItem>,
+        title: String,
+        labelList: List<String>
+    ): Flow<NewPostResponse> {
         return flow {
             val response = client.post("/post/new") {
                 setBody(
@@ -51,6 +58,9 @@ class PostRepository(private val client: HttpClient) {
                                 }
                             }
                             append("title",title.normalize(Form.NFKD))
+                            labelList.forEach {
+                                append("label",it)
+                            }
                         },
                         boundary = "WebAppBoundary"
                     )
@@ -82,16 +92,15 @@ class PostRepository(private val client: HttpClient) {
                                 append(
                                     "commentImage",it,
                                     Headers.build {
-                                        append("isImage", "true")
+                                        append(HttpHeaders.ContentType, "image/png")
+                                        append(HttpHeaders.ContentDisposition, "filename=contentImage")
                                     }
                                 )
 //                                append("parentId", parentId.toString())
 //                                append("postId", postId.toString())
 //                                append("tree", tree)
                             }
-                            append("content", content.normalize(Form.NFD),Headers.build {
-                                append("isContent","ssss")
-                            })
+                            append("content", content.normalize(Form.NFD))
                         }
                     )
                 )
@@ -109,6 +118,17 @@ class PostRepository(private val client: HttpClient) {
             emit(response)
         }
     }
+
+    fun postLike(postId: Int): Flow<PostLikes> {
+        return flow<PostLikes> {
+            val response = client.submitForm(
+                url = "/post/like",
+                formParameters = parameters {
+                append("postId",postId.toString())
+            }).body<PostLikes>()
+            emit(response)
+        }
+    }
 }
 enum class PostStatus(val value: Int, val translation: String) {
     MissingTitleInPost(0, "在帖子中缺少标题"),
@@ -121,11 +141,4 @@ enum class PostStatus(val value: Int, val translation: String) {
     ThePostWasSuccessfulInPost(7, "获取帖子成功");
 }
 
-enum class CommentSubmitStatus(val value: Int, val description: String) {
-    MissingDataWhenSubmittingAComment(0, "提交评论时缺少数据"),
-    FileParsingFailed(1, "文件解析失败"),
-    FailedToSaveTheCommentImage(2, "保存评论图片失败"),
-    CommentFailed(3, "评论失败"),
-    TheReviewWasSuccessful(4, "评论成功"),
-    TheCommentIsEmpty(5, "评论为空")
-}
+

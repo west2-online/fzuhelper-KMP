@@ -13,6 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.futalk.kmm.FuTalkDatabase
 import com.liftric.kvault.KVault
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClientConfig
@@ -144,3 +147,10 @@ actual fun rememberBitmapFromBytes(bytes: ByteArray?): ImageBitmap? {
     }
 }
 
+actual fun createDriver(): SqlDriver {
+    return AndroidSqliteDriver(FuTalkDatabase.Schema, MyApplication.instance, "futalk.db")
+}
+
+actual fun getVersionFileName():String{
+    return "androidVersion.json"
+}

@@ -1,134 +1,31 @@
 package ui.compose.Report
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import com.bumble.appyx.utils.multiplatform.RawValue
-import data.post.PostList.Data
 import data.share.Comment
-import org.koin.compose.koinInject
-import util.compose.rememberToastState
-import util.compose.toastBindNetworkResult
+import data.share.Post
 
-@Composable
-fun ReportScreen(
-    modifier: Modifier = Modifier,
-    type : ReportType,
-    viewModel: ReportViewModel = koinInject()
-){
-    val selectItem = remember {
-        mutableStateOf(0)
-    }
-    val reportResponseState = viewModel.reportCommentResponse.collectAsState()
-    val toastState = rememberToastState()
-    toastState.toastBindNetworkResult(reportResponseState)
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(10.dp),
-        horizontalAlignment = Alignment.End
-    ){
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-        ) {
-            item {
-                when(type){
-                    is ReportType.PostReportType -> {
-                        PostReport(modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth(),type.data)
-                    }
-                    is ReportType.CommentReportType -> {
-                        CommentRepost(
-                            modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth(),
-                            commentData = type.comment,
-//                            postData = type.data
-                        )
-                    }
-                }
-            }
-            ReportLabel.values().forEachIndexed { index, reportLabel ->
-                item {
-                    Box(
-                        modifier = Modifier
-                            .padding(bottom = 10.dp)
-                            .wrapContentHeight()
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(5.dp))
-                            .border(1.dp, Color.Gray,RoundedCornerShape(5.dp))
-                            .background(
-                                animateColorAsState(if(index == selectItem.value) MaterialTheme.colors.error else MaterialTheme.colors.surface).value
-                            )
-                            .clickable {
-                                selectItem.value = index
-                            }
-                            .padding(5.dp)
-                    ){
-                        Column {
-                            Text(reportLabel.reason)
-                            Text(reportLabel.description, fontSize = 10.sp)
-                        }
-                    }
-                }
-            }
-        }
-        Button(
-            modifier = Modifier
-                .fillMaxWidth(0.4f),
-            onClick = {
-                when(type){
-                    is ReportType.PostReportType -> {
-                        viewModel.reportPost(selectItem.value,type.data.Id.toString())
-                    }
-                    is ReportType.CommentReportType -> {
-                        viewModel.reportComment(type.commentId,selectItem.value,type.postId)
-                    }
-                }
-            }
-        ){
-            Text("举报")
-        }
-    }
-}
-
-sealed class ReportType{
+sealed interface ReportType{
 
     data class PostReportType(
         val id: String,
-        val data : Data
-    ): ReportType()
+        val data : Post
+    ): ReportType
 
     data class CommentReportType(
         val commentId: String,
         val postId: String,
 //        val data: Data,
         val comment: Comment
-    ): ReportType()
+    ): ReportType
 
 }
 
@@ -160,11 +57,13 @@ enum class ReportLabel(val code : Int ,val reason: String, val description: Stri
 class ReportVoyagerScreen(val type: ReportType):Screen{
     @Composable
     override fun Content() {
-        Navigator(
-            when(type){
-                is ReportType.CommentReportType -> CommentReportVoyagerScreen(type)
-                is ReportType.PostReportType -> PostRepostVoyagerScreen(type)
-            }
-        )
+        Box(modifier = Modifier.padding(10.dp)){
+            Navigator(
+                when(type){
+                    is ReportType.CommentReportType -> CommentReportVoyagerScreen(type)
+                    is ReportType.PostReportType -> PostRepostVoyagerScreen(type)
+                }
+            )
+        }
     }
 }

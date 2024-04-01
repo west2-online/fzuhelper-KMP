@@ -6,18 +6,14 @@ import app.cash.paging.PagingSource
 import app.cash.paging.PagingState
 import app.cash.paging.cachedIn
 import com.liftric.kvault.KVault
-import data.post.PostCommentNew.PostCommentNew
-import data.post.PostList.Data
 import data.post.PostList.PostList
+import data.post.PostList.PostListItemData
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import repository.CommentSubmitStatus
 import repository.PostRepository
-import ui.compose.Report.ReportType
 import ui.root.RootAction
-import util.network.NetworkResult
 
 class PostListViewModel(
     private val postRepository:PostRepository,
@@ -39,18 +35,11 @@ class PostListViewModel(
     }.flow
         .cachedIn(viewModelScope)
 
-    fun navigateToRelease(){
-        rootAction.navigateFormAnywhereToRelease()
-    }
-
-    fun navigateToReport(type: ReportType){
-        rootAction.navigateFormPostToReport(type)
-    }
 
 }
 
 class LoadPageDataForPost(
-    val getResult : suspend (page:Int) -> List<Data>?
+    val getResult : suspend (page:Int) -> List<PostListItemData>?
 ) {
     suspend fun searchUsers(page: Int): PageLoadDataForPost {
         val response = getResult(page)
@@ -67,17 +56,17 @@ class LoadPageDataForPost(
 
 
 data class PageLoadDataForPost(
-    val result : List<Data>?,
+    val result : List<PostListItemData>?,
     val nextPageNumber: Int?
 )
 
 
 class EasyPageSourceForPost(
     private val backend: LoadPageDataForPost,
-) : PagingSource<Int, Data>() {
+) : PagingSource<Int, PostListItemData>() {
     override suspend fun load(
         params: LoadParams<Int>
-    ): LoadResult<Int, Data> {
+    ): LoadResult<Int, PostListItemData> {
         return try {
             val page = params.key ?: 1
             val response = backend.searchUsers(page)
@@ -91,7 +80,7 @@ class EasyPageSourceForPost(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, Data>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, PostListItemData>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
@@ -202,29 +191,6 @@ class EasyPageSourceForCommentTree(
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
-        }
-    }
-}
-
-fun PostCommentNew.toNetworkResult(): NetworkResult<String> {
-    val result = CommentSubmitStatus.values().find {
-        it.value == this.code
-    }
-    return when(result){
-        null ->{
-            NetworkResult.Error(Throwable("评论失败,稍后再试"))
-        }
-        CommentSubmitStatus.CommentFailed,CommentSubmitStatus.FileParsingFailed, CommentSubmitStatus.FailedToSaveTheCommentImage->{
-            NetworkResult.Error(Throwable("评论失败,稍后再试"))
-        }
-        CommentSubmitStatus.TheCommentIsEmpty -> {
-            NetworkResult.Error(Throwable("评论不能为空"))
-        }
-        CommentSubmitStatus.TheReviewWasSuccessful -> {
-            NetworkResult.Success("评论成功")
-        }
-        else -> {
-            NetworkResult.Error(Throwable("评论失败,稍后再试"))
         }
     }
 }

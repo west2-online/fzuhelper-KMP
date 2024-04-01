@@ -7,12 +7,11 @@ import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import repository.RibbonRepository
-import util.flow.catchWithMassage
-import util.flow.collectWithMassage
+import util.flow.actionWithLabel
 import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
-import util.network.reset
+import util.network.resetWithLog
 
 class ActionViewModel(
     private val kVault: KVault,
@@ -26,11 +25,16 @@ class ActionViewModel(
         viewModelScope.launchInDefault {
             _ribbonList.logicIfNotLoading {
                 ribbonRepository.getRibbonList()
-                    .catchWithMassage {
-                        _ribbonList.reset(NetworkResult.Error(Throwable("获取失败")))
-                    }.collectWithMassage {
-                        _ribbonList.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "getRibbonList/getRibbonList",
+                        catchAction = {label, error ->
+                            _ribbonList.resetWithLog(label,NetworkResult.Error(error,Throwable("获取失败")))
+                        },
+                        collectAction = { label, data ->
+                            _ribbonList.resetWithLog(label,data.toNetworkResult())
+                        }
+                    )
+
             }
         }
     }
@@ -42,11 +46,15 @@ class ActionViewModel(
             }
             _ribbonList.logicIfNotLoading {
                 ribbonRepository.getRibbonList()
-                    .catchWithMassage {
-                        _ribbonList.reset(NetworkResult.Error(Throwable("获取失败")))
-                    }.collectWithMassage {
-                        _ribbonList.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "initRibbonList/getRibbonList",
+                        catchAction = {label, error ->
+                            _ribbonList.resetWithLog(label,NetworkResult.Error(error,Throwable("获取失败")))
+                        },
+                        collectAction = { label, data ->
+                            _ribbonList.resetWithLog(label,data.toNetworkResult())
+                        }
+                    )
             }
         }
     }

@@ -1,5 +1,8 @@
 package repository
 
+import data.manage.addAdmin.AdminAdd
+import data.manage.adminLevelUpdate.AdminLevelUpdate
+import data.manage.adminList.AdminList
 import data.manage.openImageAdd.OpenImageAdd
 import data.manage.openImageDelete.OpenImageDelete
 import data.manage.openImageList.OpenImageList
@@ -7,6 +10,7 @@ import data.manage.processPost.ProcessPost
 import data.manage.ribbonDelete.RibbonDelete
 import data.manage.ribbonGet.GetRibbon
 import data.manage.ribbonImageAdd.RibbonImageAdd
+import data.manage.userDataByEmail.UserDataByEmail
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.formData
@@ -18,7 +22,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.parameters
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import util.network.NetworkResult
 
 class ManageRepository(
     val client: HttpClient
@@ -119,99 +122,60 @@ class ManageRepository(
             emit(response)
         }
     }
-}
 
-enum class ProcessPostStatus(val value: Int, val describe: String) {
-    TheProcessingInformationIsIncorrect(0, "处理信息不正确"),
-    ActivationFailed(1, "激活失败"),
-    TheBanFailed(2, "封禁失败"),
-    TheProcessingWasSuccessful(3, "处理成功")
-}
+    fun getEmailByEmail(email:String):Flow<UserDataByEmail>{
+        return flow {
+            val response = client.get("/manage/user"){
+                url {
+                    parameters.append("email", email)
+                }
+            }.body<UserDataByEmail>()
+            emit(response)
+        }
+    }
 
-fun ProcessPost.toNetworkResult(): NetworkResult<String> {
-    val result = ProcessPostStatus.values().find {
-        this.code == it.value
+    fun getAdminList():Flow<AdminList>{
+        return flow {
+            val response = client.get("/manage/admins").body<AdminList>()
+            emit(response)
+        }
     }
-    result ?:let {
-        return NetworkResult.Error(Throwable("操作失败"))
+
+    fun addAdmin(email: String):Flow<AdminAdd>{
+        return flow {
+            val response = client.submitForm (url = "/manage/admin"){
+                formData {
+                    append("email",email)
+                }
+            }.body<AdminAdd>()
+            emit(response)
+        }
     }
-    result.let {
-        return when(it){
-            ProcessPostStatus.TheProcessingInformationIsIncorrect -> NetworkResult.Error(Throwable("操作失败"))
-            ProcessPostStatus.ActivationFailed -> NetworkResult.Error(Throwable("操作失败"))
-            ProcessPostStatus.TheBanFailed -> NetworkResult.Error(Throwable("操作失败"))
-            ProcessPostStatus.TheProcessingWasSuccessful -> NetworkResult.Success("处理成功")
+
+    fun updateAdminLevel(level:Int,userId :Int): Flow<AdminLevelUpdate> {
+        return flow<AdminLevelUpdate> {
+            val response = client.submitForm("/manage/adminUpdate") {
+                formData {
+                    append("userId",userId)
+                    append("level",level)
+                }
+            }.body<AdminLevelUpdate>()
+            emit(response)
         }
     }
 }
+
+
+
 
 enum class GetImageStatus(val value: Int, val describe: String) {
     FailedToGetTheImageList(0,"获取失败"),
     TheListOfImagesWasObtained(1,"获取成功")
 }
 
-fun OpenImageList.toNetworkResult(): NetworkResult<List<String>> {
-    val result = GetImageStatus.values().find {
-        this.code == it.value
-    }
-    result ?:let {
-        return NetworkResult.Error(Throwable("操作失败"))
-    }
-    result.let {
-        return when(it){
-            GetImageStatus.FailedToGetTheImageList -> NetworkResult.Error(Throwable("获取失败"))
-            GetImageStatus.TheListOfImagesWasObtained -> NetworkResult.Success(this.data)
-        }
-    }
-}
 
-enum class DeletionResult(val value: Int, val description: String) {
-    TheInformationToBeDeletedIsIncomplete(0, "删除信息不完整"),
-    ThePictureYouWantToDeleteNotExist(1, "要删除的图片不存在"),
-    RemovedUnknownErrors(2, "移除时发生未知错误"),
-    DeletionFailed(3, "删除失败"),
-    TheDeletionIsSuccessful(4, "删除成功")
-}
 
-fun OpenImageDelete.toNetworkResult(): NetworkResult<String> {
-    val result = DeletionResult.values().find {
-        this.code == it.value
-    }
-    result ?:let {
-        return NetworkResult.Error(Throwable("操作失败"))
-    }
-    result.let {
-        return when(it){
-            DeletionResult.TheInformationToBeDeletedIsIncomplete -> NetworkResult.Error(Throwable(it.description))
-            DeletionResult.ThePictureYouWantToDeleteNotExist -> NetworkResult.Error(Throwable(it.description))
-            DeletionResult.RemovedUnknownErrors -> NetworkResult.Error(Throwable(it.description))
-            DeletionResult.DeletionFailed -> NetworkResult.Error(Throwable(it.description))
-            DeletionResult.TheDeletionIsSuccessful -> NetworkResult.Success("删除成功")
-        }
-    }
-}
 
-enum class OpenImageAddResult(val value: Int, val description: String) {
-    SplashPageFormParseFileFailed(0, "闪屏页面表单解析文件失败"),
-    SplashPageFileParsingFailed(1, "闪屏页面文件解析失败"),
-    SlashPageSaveFailed(2, "开屏页面无法保存评论图片"),
-    SlashPageSaveSuccess(3, "斜杠页面保存失败");
-}
 
-fun OpenImageAdd.toNetworkResult(): NetworkResult<String> {
-    val result = OpenImageAddResult.values().find {
-        this.code == it.value
-    }
-    result ?:let {
-        return NetworkResult.Error(Throwable("操作失败"))
-    }
-    result.let {
-        return when(it){
-            OpenImageAddResult.SplashPageFormParseFileFailed -> NetworkResult.Error(Throwable("操作失败"))
-            OpenImageAddResult.SplashPageFileParsingFailed -> NetworkResult.Error(Throwable("操作失败"))
-            OpenImageAddResult.SlashPageSaveFailed -> NetworkResult.Error(Throwable("操作失败"))
-            OpenImageAddResult.SlashPageSaveSuccess -> NetworkResult.Success("操作成功")
-        }
-    }
-}
+
 

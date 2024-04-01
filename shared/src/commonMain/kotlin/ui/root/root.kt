@@ -2,6 +2,7 @@ package ui.root
 
 import ImagePickerFactory
 import androidx.compose.runtime.Composable
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import data.person.UserData.Data
 import di.SystemAction
@@ -14,6 +15,7 @@ import org.koin.compose.koinInject
 import ui.compose.AboutUs.AboutUsVoyagerScreen
 import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
 import ui.compose.Feedback.FeedbackVoyagerScreen
+import ui.compose.Log.LogVoyagerScreen
 import ui.compose.Main.Main
 import ui.compose.Manage.ManageVoyagerScreen
 import ui.compose.ModifierInformation.ModifierInformationVoyagerScreen
@@ -31,6 +33,7 @@ import util.compose.FuTalkTheme
 
 interface RootAction{
     fun reLogin()
+    fun finishLogin()
     fun navigateFormSplashToMainPage()
     fun navigateFormSplashToLoginAndRegister()
     fun navigateFromActionToFeedback()
@@ -38,13 +41,15 @@ interface RootAction{
     fun navigateFromActionToAboutUs()
     fun navigateFromAnywhereToManage()
     fun navigateFromAnywhereToWeather()
-    fun navigateFormAnywhereToRelease()
+    fun navigateFormAnywhereToRelease(initLabelList: List<String>)
     fun navigateFormPostToReport(type: ReportType)
     fun navigateFromAnywhereToWebView(url:String)
     fun navigateFormAnywhereToSetting()
     fun navigateFormAnywhereToMain()
+    fun navigateFormAnywhereToLog()
     fun navigateFormAnywhereToInformationModifier(userData: Data)
     fun popManage()
+    fun navigateToScreen(screen: Screen)
 }
 
 @Composable
@@ -103,6 +108,9 @@ fun RootUi(
             modules(
                 appModule(
                     object : RootAction{
+                        override fun finishLogin() {
+                            navigate.replaceAll(ManageVoyagerScreen())
+                        }
 
                         override fun reLogin() {
                             initStore().clear()
@@ -137,8 +145,8 @@ fun RootUi(
                             navigate.push(WeatherVoyagerScreen)
                         }
 
-                        override fun navigateFormAnywhereToRelease(){
-                            navigate.push(ReleaseRouteVoyagerScreen())
+                        override fun navigateFormAnywhereToRelease(initLabelList: List<String>){
+                            navigate.push(ReleaseRouteVoyagerScreen(initLabelList))
                         }
 
                         override fun navigateFormPostToReport(type: ReportType) {
@@ -165,6 +173,14 @@ fun RootUi(
                             if (navigate.lastItem is ManageVoyagerScreen && navigate.canPop){
                                 navigate.pop()
                             }
+                        }
+
+                        override fun navigateFormAnywhereToLog() {
+                            navigate.push(LogVoyagerScreen())
+                        }
+
+                        override fun navigateToScreen(screen: Screen) {
+                            navigate.push(screen)
                         }
                     },
                     systemAction = systemAction,

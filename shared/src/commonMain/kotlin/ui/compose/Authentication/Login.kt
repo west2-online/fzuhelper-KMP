@@ -22,13 +22,13 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -61,8 +61,7 @@ fun Login(
     login:(userEmail:String,userPassword:String,captcha:String)->Unit,
     getCaptcha:(userEmail:String)->Unit,
     loginState: State<NetworkResult<String>>,
-    loginCaptcha:State<NetworkResult<String>>,
-    cleanRegisterData:()->Unit
+    loginCaptcha:State<NetworkResult<String>>
 ){
     var userEmail by remember {
         mutableStateOf("")
@@ -77,24 +76,19 @@ fun Login(
         mutableStateOf(false)
     }
     val toast = rememberToastState()
-    val registerAble = remember {
+    val loginAble = remember {
         derivedStateOf {
-            loginState.value !is NetworkResult.LoadingWithAction && userEmail != "" && userPassword!="" && captcha!=""
-        }
-    }
-    DisposableEffect(Unit){
-        onDispose {
-            cleanRegisterData()
+            userEmail != "" && userPassword!="" && captcha!=""
         }
     }
     LaunchedEffect(loginState.value,loginState.value.key.value){
         loginState.value.let {
             when( it ){
                 is NetworkResult.Success<String>->{
-                    toast.addToast( it.data )
+                    toast.addToast( it.dataForShow )
                 }
                 is NetworkResult.Error -> {
-                    toast.addToast( it.error.message.toString() , Color.Red )
+                    toast.addToast( it.errorForShow.message.toString() , Color.Red )
                 }
 
             }
@@ -104,10 +98,10 @@ fun Login(
         loginCaptcha.value.let {
             when( it ){
                 is NetworkResult.Success<String>->{
-                    toast.addToast( it.data )
+                    toast.addToast( it.dataForShow )
                 }
                 is NetworkResult.Error -> {
-                    toast.addToast( it.error.message.toString() , Color.Red )
+                    toast.addToast( it.errorForShow.message.toString() , Color.Red )
                 }
 
             }
@@ -257,16 +251,30 @@ fun Login(
                         modifier = Modifier
                             .padding( start = 20.dp )
                             .weight(1f),
-                        enabled = registerAble.value
+                        enabled = loginAble.value
                     ) {
-                        Icon(
-                            painter = painterResource(MR.images.login),
-                            "",
-                            modifier = Modifier
-                                .size(40.dp)
-                                .wrapContentSize(Alignment.Center)
-                                .fillMaxSize(0.6f)
-                        )
+                        val authenticationViewModel = koinInject <AuthenticationViewModel>()
+                        Box(
+                            modifier = Modifier.size(40.dp)
+                        ){
+                            if (authenticationViewModel.loginState.value is NetworkResult.LoadingWithAction){
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .wrapContentSize(Alignment.Center)
+                                        .fillMaxSize(0.6f)
+                                )
+                            }else {
+                                Icon(
+                                    painter = painterResource(MR.images.login),
+                                    "",
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .wrapContentSize(Alignment.Center)
+                                        .fillMaxSize(0.6f)
+                                )
+                            }
+                        }
                         Text("登录")
                     }
                 }
@@ -284,6 +292,7 @@ class LoginVoyagerScreen: Screen {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val viewModel = koinInject<AuthenticationViewModel>()
+
         Login(
             modifier = Modifier
                 .fillMaxSize()
@@ -299,9 +308,6 @@ class LoginVoyagerScreen: Screen {
                 viewModel.getLoginCaptcha(userEmail)
             },
             loginCaptcha = viewModel.loginCaptcha.collectAsState(),
-            cleanRegisterData = {
-                viewModel.cleanRegisterData()
-            }
         )
     }
 }

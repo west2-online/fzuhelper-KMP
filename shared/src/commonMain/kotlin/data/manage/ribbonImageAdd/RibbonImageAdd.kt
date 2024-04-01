@@ -2,6 +2,7 @@ package data.manage.ribbonImageAdd
 
 import kotlinx.serialization.Serializable
 import util.network.NetworkResult
+import util.network.networkErrorWithLog
 
 @Serializable
 data class RibbonImageAdd(
@@ -10,29 +11,9 @@ data class RibbonImageAdd(
     val msg: String
 ) {
     fun toNetworkResult(): NetworkResult<String> {
-        val result = RibbonAddResult.values().find {
-            this.code == it.value
-        }
-        result ?:let {
-            return NetworkResult.Error(Throwable("操作失败"))
-        }
-        result.let {
-            return when(it){
-                RibbonAddResult.RibbonFileAddSuccess -> NetworkResult.Success("添加成功")
-                else -> NetworkResult.Error(Throwable("添加失败"))
-            }
+        return when(code){
+            4 -> NetworkResult.Success("添加成功")
+            else -> networkErrorWithLog(code,"添加失败")
         }
     }
-}
-
-enum class RibbonAddResult(
-    val value:Int,
-    val describe:String
-){
-    RibbonFileOpenFail(0, describe = "RibbonFileOpenFile"),
-    RibbonFileCreateFail(1, describe = "RibbonFileCreateFail"),
-    RibbonFileSaveFail(2, describe = "RibbonFileSaveFail"),
-    RibbonFileSaveToMysqlFail(3, describe = "RibbonFileSaveToMysqlFail"),
-    RibbonFileAddSuccess(4, describe = "RibbonFileAddSuccess"),
-    RibbonFileAddParseFail(5, describe = "RibbonFileAddParseFail"),
 }

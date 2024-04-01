@@ -45,7 +45,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import config.BaseUrlConfig.UserAvatar
 import data.feedback.FeedbackList.Data
-import data.feedback.FeedbackList.User
+import data.share.User
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -173,7 +173,7 @@ fun FeedbackListItem(
 
 @Composable
 fun DiscussInList(
-    user:User ,
+    user: User,
     content:String,
     time:String,
     identity :String,

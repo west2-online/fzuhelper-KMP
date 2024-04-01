@@ -7,11 +7,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.WeatherRepository
-import util.flow.catchWithMassage
-import util.flow.collectWithMassage
+import util.flow.actionWithLabel
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
-import util.network.reset
+import util.network.networkErrorWithLog
+import util.network.resetWithLog
 
 class WeatherViewModel(
     val repository: WeatherRepository
@@ -24,11 +24,15 @@ class WeatherViewModel(
         viewModelScope.launch {
             _weatherDataOfFuZhou.logicIfNotLoading {
                 repository.getWeatherOfFuZhou()
-                    .catchWithMassage {
-                        _weatherDataOfFuZhou.reset(NetworkResult.Error(Throwable("获取失败")))
-                    }.collectWithMassage {
-                        _weatherDataOfFuZhou.reset(NetworkResult.Success(it))
-                    }
+                    .actionWithLabel(
+                        "getFuZhouWeather/getFuZhouWeather",
+                        collectAction = { label, data ->
+                            _weatherDataOfFuZhou.resetWithLog(label,NetworkResult.Success(data))
+                        },
+                        catchAction = { label, error ->
+                            _weatherDataOfFuZhou.resetWithLog(label, networkErrorWithLog(error,"获取失败"))
+                        }
+                    )
             }
         }
     }

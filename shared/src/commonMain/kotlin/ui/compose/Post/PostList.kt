@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,12 +23,12 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.FloatingActionButton
@@ -49,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -65,13 +67,15 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import config.BaseUrlConfig
 import config.BaseUrlConfig.PostImage
-import data.post.PostList.Data
+import data.post.PostList.PostListItemData
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
-import kotlinx.serialization.Serializable
 import org.koin.compose.koinInject
+import util.compose.EasyToast
+import util.compose.Label
+import util.compose.rememberToastState
 import util.network.toEasyTime
 import kotlin.jvm.Transient
 
@@ -79,11 +83,12 @@ class PostListVoyagerScreen(
     @Transient
     val navigateToRelease: () -> Unit,
     @Transient
-    val navigateToReport: (Data) -> Unit,
+    val navigateToReport: (PostListItemData) -> Unit,
 ):Screen{
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val postDetailViewModel = koinInject<PostDetailViewModel>()
         PostList(
             modifier = Modifier.fillMaxSize(),
             state = rememberLazyListState(),
@@ -91,9 +96,9 @@ class PostListVoyagerScreen(
             navigateToRelease = navigateToRelease,
             navigateToReport = navigateToReport,
             navigateToNewsDetail  = {
+                postDetailViewModel.refreshPostById(postId = it)
                 navigator.push(PostDetailVoyagerScreen(
                     id = it,
-                    modifier = Modifier.fillMaxSize()
                 ))
             },
         )
@@ -105,9 +110,9 @@ class PostListVoyagerScreen(
 fun PostList(
     modifier: Modifier = Modifier,
     state: LazyListState,
-    postListFlow: LazyPagingItems<Data>,
+    postListFlow: LazyPagingItems<PostListItemData>,
     navigateToRelease: () -> Unit,
-    navigateToReport: (Data) -> Unit,
+    navigateToReport: (PostListItemData) -> Unit,
     navigateToNewsDetail: (String) -> Unit,
 ){
     val isRefresh = remember{
@@ -125,6 +130,7 @@ fun PostList(
                 isRefresh.value = false
             }
     }
+    val toastState = rememberToastState()
 
     Box(modifier = modifier){
         postListFlow.let{ postList ->
@@ -136,11 +142,13 @@ fun PostList(
                     postList.itemCount,
                 ){
                     postList[it]?.let { postData ->
-                        NewsItem(
+                        PostItem(
                             navigateToNewsDetail = navigateToNewsDetail,
-                            post = postData,
+                            postListItemData = postData,
                             navigateToReport = {
                                 navigateToReport.invoke(it)
+                            }, like = {
+                                toastState.addWarnToast("请在详情页中点赞")
                             }
                         )
                     }
@@ -218,24 +226,36 @@ fun PostList(
                 contentDescription = null
             )
         }
+        EasyToast(toastState)
     }
 }
 
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun NewsItem(
+fun PostItem(
     navigateToNewsDetail: (String) -> Unit,
-    navigateToReport: (Data) -> Unit,
-    post: Data,
+    navigateToReport: (PostListItemData) -> Unit,
+    like :()->Unit,
+    postListItemData: PostListItemData,
     modifier: Modifier = Modifier
         .fillMaxWidth()
-        .clickable {
-            navigateToNewsDetail.invoke(post.Id.toString())
+//        .clickable {
+//            navigateToNewsDetail.invoke(postListItemData.Post.Id.toString())
+//        }
+        .composed {
+            val postDetailViewModel = koinInject<PostDetailViewModel>()
+            return@composed this.clickable {
+                postDetailViewModel.refreshPostById(postListItemData.Post.Id.toString())
+                navigateToNewsDetail.invoke(postListItemData.Post.Id.toString())
+            }
         }
         .padding(10.dp)
         .wrapContentHeight()
         .animateContentSize()
 ){
+    val post = postListItemData.Post
+    val labels = postListItemData.Labels
     var isUnfold by rememberSaveable {
         mutableStateOf(false)
     }
@@ -259,20 +279,37 @@ fun NewsItem(
                 userAvatar = post.User.avatar,
                 userName = post.User.username
             )
-//            Surface (
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .wrapContentHeight()
-//            ){
-//                FlowRow(
-//                    modifier = Modifier
-//                        .fillMaxSize(),
-//                ) {
-//                    repeat(30) {
-//                        Label("#"+"s"*((1..10).random()))
-//                    }
-//                }
-//            }
+            Surface (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ){
+                LazyRow (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ){
+                    labels?.let {
+                        it.forEach {
+                            item {
+                                Label(it.Label)
+                            }
+                        }
+                    }
+                }
+            }
+            Text(
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(end = 10.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                text = post.Title
+            )
             post.FirstImage?.let{
                 if(it.isEmpty()){
                     return@let
@@ -302,18 +339,6 @@ fun NewsItem(
                     .padding(top = 10.dp)
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(end = 10.dp),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                text = post.Title
-            )
-            Text(
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .fillMaxWidth()
-                    .wrapContentHeight()
                     .animateContentSize(),
                 maxLines = lines,
                 overflow = TextOverflow.Ellipsis,
@@ -328,15 +353,6 @@ fun NewsItem(
                     text = post.Time.toEasyTime(),
                     fontSize = 10.sp
                 )
-                Button(
-                    onClick = {
-                        isUnfold = !isUnfold
-                    }
-                ){
-                    Text(
-                        text = if (isUnfold) "收起" else "展开"
-                    )
-                }
             }
             Interaction(
                 modifier = Modifier
@@ -344,8 +360,9 @@ fun NewsItem(
                     .wrapContentHeight(),
                 likeNumber = post.LikeNum,
                 report = {
-                    navigateToReport.invoke(post)
-                }
+                    navigateToReport.invoke(postListItemData)
+                },
+                like = like
             )
             if( post.Status == 1 ) {
                 Box(
@@ -422,7 +439,8 @@ fun Interaction(
     modifier: Modifier,
     likeNumber :Int,
     report :()->Unit = {},
-    share:()->Unit = {}
+    share:()->Unit = {},
+    like:()->Unit = {}
 ){
     BottomNavigation(
         contentColor = Color.Transparent,
@@ -438,7 +456,9 @@ fun Interaction(
             ) },
             label = { Text(likeNumber.toString()) },
             selected = false,
-            onClick = {  },
+            onClick = {
+                      like.invoke()
+            },
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
         )
@@ -461,7 +481,9 @@ fun Interaction(
                     .size(15.dp)) },
             label = { Text("分享", fontSize = 10.sp) },
             selected = false,
-            onClick = { },
+            onClick = {
+                      share.invoke()
+            },
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
         )

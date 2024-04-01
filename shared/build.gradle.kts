@@ -1,11 +1,20 @@
+val appyx_version = "2.0.0-alpha09"
+val koin_version = "3.5.0"
+val koin_compose_version = "1.1.0"
+val ktor_version = "2.3.5"
+val serialization_version = "1.6.2"
+val markdown_version = "0.10.0"
+val sqlDelightVersion = "2.0.1"
+
 plugins {
+    val sqlDelightVersion = "2.0.1"
     kotlin("multiplatform")
     id("com.android.library")
     id("org.jetbrains.compose")
     id("dev.icerock.mobile.multiplatform-resources")
     kotlin("plugin.serialization") version "1.9.20"
     id("kotlin-parcelize")
-    id("app.cash.sqldelight") version "2.0.1"
+    id("app.cash.sqldelight") version sqlDelightVersion
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
@@ -28,13 +37,7 @@ kotlin {
             export("dev.icerock.moko:mvvm-state:0.16.1")
         }
     }
-    val appyx_version = "2.0.0-alpha09"
-    val koin_version = "3.5.0"
-    val koin_compose_version = "1.1.0"
-    val ktor_version = "2.3.5"
-    val serialization_version = "1.6.2"
-    val markdown_version = "0.10.0"
-    val sqlDelightVersion = "2.0.1"
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -131,6 +134,7 @@ kotlin {
 
                 //sqlDelight
                 implementation("app.cash.sqldelight:coroutines-extensions:$sqlDelightVersion")
+                implementation("app.cash.sqldelight:coroutines-extensions:$sqlDelightVersion")
             }
         }
         val androidMain by getting {
@@ -169,6 +173,11 @@ kotlin {
                 implementation("io.ktor:ktor-client-darwin:$ktor_version")
             }
         }
+        val commonTest by getting{
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
     }
 }
 
@@ -204,8 +213,8 @@ multiplatformResources {
 
 sqldelight {
     databases {
-        create("Database") {
-            packageName.set("com.example")
+        create("FuTalkDatabase") {
+            packageName.set("com.futalk.kmm")
         }
     }
 }

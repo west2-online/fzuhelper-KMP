@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
-import data.post.PostList.Data
+import data.share.Post
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
@@ -43,7 +43,7 @@ import util.compose.toastBindNetworkResult
 @Composable
 fun PostReport(
     modifier: Modifier = Modifier,
-    data : Data
+    data : Post
 ){
     val viewModel = koinInject<ReportViewModel>()
     val selectItem = remember {
@@ -163,7 +163,8 @@ fun PostReport(
     EasyToast(toastState)
 }
 
-class PostRepostVoyagerScreen(
+class PostRepostVoyagerScreen
+    (
     val type : ReportType.PostReportType
 ): Screen {
     @Composable

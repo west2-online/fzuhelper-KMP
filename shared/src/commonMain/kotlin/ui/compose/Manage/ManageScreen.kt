@@ -106,6 +106,14 @@ class ManageVoyagerScreen():Screen{
                             }) {
                                 Text("管理轮播页")
                             }
+                            DropdownMenuItem(onClick = {
+                                if(navigator.lastItem !is ManageAdministratorVoyager ){
+                                    navigator.replaceAll(ManageAdministratorVoyager)
+                                }
+                                expanded = false
+                            }) {
+                                Text("管理管理员")
+                            }
                         }
                     }
                 }

@@ -1,10 +1,13 @@
 package ui.compose.Main
 
 
+import androidVersion.AndroidVersion
+import androidVersion.Version
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -24,6 +27,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,14 +46,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.liftric.kvault.KVault
 import dev.icerock.moko.resources.compose.painterResource
+import dev.icerock.moko.resources.compose.stringResource
 import di.SystemAction
+import getVersionFileName
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.todayIn
+import kotlinx.serialization.json.Json
 import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.root.getRootAction
@@ -73,11 +84,11 @@ fun getPassedRange(): Float {
 @Composable
 fun MainDrawer(
     modifier: Modifier = Modifier,
-
 ){
 
     LazyColumn(
-        modifier = modifier
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ){
         item{
             val angle = Animatable(270f)
@@ -110,6 +121,45 @@ fun MainDrawer(
                     )
                 }
                 Text("今年已过 ${(getPassedRange()*100).toInt()}%，继续加油！\uD83E\uDD17")
+            }
+        }
+        item{
+            val client = koinInject<HttpClient>()
+            val latest = remember {
+                mutableStateOf<Version?>(null)
+            }
+            LaunchedEffect(Unit){
+                try {
+                    val result = client.get("/static/config/${getVersionFileName()}").bodyAsText()
+                    val data:AndroidVersion = Json.decodeFromString(result)
+                    latest.value = data.version
+                        .filter {
+                            it.canUse
+                        }
+                        .filter {
+                            it.version.split("-")[1]=="Release"
+                        }.sortedBy {
+                            val list = it.version.split("-")[0].split(".")
+                            return@sortedBy list[0].toInt() *100 + list[1].toInt() *10 + list[2].toInt() *1
+                        }.lastOrNull()
+                } catch (e:Exception){
+                    println(e.message.toString())
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colors.primary)
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ){
+                Text( "当前版本:"+stringResource(MR.strings.version))
+                Divider( modifier = Modifier.fillMaxWidth().height(1.dp))
+                latest.value?.let {
+                    Text( "最新版本:"+ latest.value?.version)
+                }
             }
         }
         item{
@@ -164,7 +214,6 @@ fun Functions(
     ){
         Divider(
             modifier = Modifier
-                .padding(vertical = 10.dp)
                 .fillMaxWidth()
                 .padding(10.dp)
         )

@@ -21,12 +21,12 @@ import kotlinx.coroutines.launch
 import repository.PostRepository
 import ui.compose.Report.ReportType
 import ui.root.RootAction
-import util.flow.catchWithMassage
-import util.flow.collectWithMassage
+import util.flow.actionWithLabel
 import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
-import util.network.reset
+import util.network.networkErrorWithLog
+import util.network.resetWithLog
 
 class PostDetailViewModel(
     private val client: HttpClient,
@@ -36,8 +36,7 @@ class PostDetailViewModel(
 
     private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostById>>(
         NetworkResult.UnSend()
-    )
-    )
+    ))
     val currentPostDetail = _currentPostDetail.asStateFlow()
 
     private val _postCommentPreviewFlow = CMutableStateFlow(MutableStateFlow<Pager<Int, Data>?>(null))
@@ -49,6 +48,11 @@ class PostDetailViewModel(
     private val _commentSubmitState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
         NetworkResult.UnSend()))
     val commentSubmitState = _commentSubmitState.asStateFlow()
+
+    private val _postLikeSubmitState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
+        NetworkResult.UnSend()))
+    val postLikeSubmitState = _postLikeSubmitState.asStateFlow()
+
 
     fun initPostCommentPreview(postId: String){
         viewModelScope.launchInDefault {
@@ -68,35 +72,52 @@ class PostDetailViewModel(
         }
     }
 
-    fun getPostById(id: String){
+    private fun getPostById(id: String){
         viewModelScope.launch (Dispatchers.IO){
             _currentPostDetail.logicIfNotLoading {
                 postRepository.getPostById(id = id)
-                    .catchWithMassage {
-                        _currentPostDetail.reset(NetworkResult.Error(Throwable("帖子获取失败")))
-                    }
-                    .collectWithMassage{
-                        _currentPostDetail.reset(NetworkResult.Success(it))
-                    }
+                    .actionWithLabel(
+                        label = "getPostById",
+                        catchAction = { label,error ->
+                            _currentPostDetail.resetWithLog(label, networkErrorWithLog(error,"帖子获取失败"))
+                        },
+                        collectAction = { label,data ->
+                            _currentPostDetail.resetWithLog(label,NetworkResult.Success(data))
+                        }
+                    )
+
             }
         }
+    }
+
+//    fun initPostById(postId: String){
+//        _currentPostDetail.logicIfUnSend (
+//            block = {
+//                getPostById(postId)
+//            }
+//        )
+//    }
+
+    fun refreshPostById(postId: String){
+        getPostById(postId)
     }
 
     fun submitComment(parentId:Int,postId:Int,tree:String,content:String,image:ByteArray?){
         viewModelScope.launchInDefault {
             _commentSubmitState.logicIfNotLoading {
                 postRepository.postNewComment(parentId,postId,tree,content.normalize(Form.NFC),image)
-                    .catchWithMassage {
-                        _commentSubmitState.reset(NetworkResult.Error(Throwable("评论失败，稍后再试")))
-                    }.collectWithMassage{
-                        _commentSubmitState.reset(it.toNetworkResult())
-                    }
+                    .actionWithLabel(
+                        "",
+                        collectAction = { label,data ->
+                            _commentSubmitState.resetWithLog(label,data.
+                            toNetworkResult())
+                        },
+                        catchAction = {label , error ->
+                            _commentSubmitState.resetWithLog(label, networkErrorWithLog(error,"评论失败，稍后再试"))
+                        }
+                    )
             }
         }
-    }
-
-    fun navigateToRelease(){
-        rootAction.navigateFormAnywhereToRelease()
     }
 
     fun navigateToReport(type: ReportType){
@@ -120,4 +141,21 @@ class PostDetailViewModel(
         }
     }
 
+    fun postLikes(postId: Int){
+        viewModelScope.launchInDefault {
+            _postLikeSubmitState.logicIfNotLoading {
+                postRepository.postLike(postId)
+                    .actionWithLabel(
+                        "postLike/postLike",
+                        catchAction = { label, error ->
+                            _postLikeSubmitState.resetWithLog(label, networkErrorWithLog(error,"点赞失败"))
+                        },
+                        collectAction = { label, data ->
+                            _postLikeSubmitState.resetWithLog(label,data.toNetworkResult())
+                        }
+                    )
+            }
+        }
+    }
 }
+

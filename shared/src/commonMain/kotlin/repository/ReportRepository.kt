@@ -40,8 +40,3 @@ class ReportRepository (
 
 }
 
-enum class ReportStatus(val value: Int, val description: String) {
-    InsufficientInformation(0, "信息不足"),
-    TheReportFailed(1, "报告失败"),
-    TheReportWasSuccessful(2, "报告成功")
-}

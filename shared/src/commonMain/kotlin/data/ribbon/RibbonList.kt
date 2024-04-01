@@ -2,6 +2,7 @@ package data.ribbon
 
 import kotlinx.serialization.Serializable
 import util.network.NetworkResult
+import util.network.networkErrorWithLog
 
 @Serializable
 data class RibbonList(
@@ -10,18 +11,11 @@ data class RibbonList(
     val msg: String
 ) {
     fun toNetworkResult(): NetworkResult<List<RibbonData>> {
-        val data = RibbonListResult.values().find {
-            it.value == this.code
-        }
-        return when(data){
-            RibbonListResult.FailedToGetCarousel -> NetworkResult.Error(Throwable("获取失败"))
-            RibbonListResult.SuccessToGetCarousel -> NetworkResult.Success(this.data)
-            null -> NetworkResult.Error(Throwable("获取失败"))
+        return when(code){
+            1 -> NetworkResult.Success(this.data)
+            else -> networkErrorWithLog(code,"获取失败")
         }
     }
 }
 
-enum class RibbonListResult(val value: Int,val describe:String){
-    FailedToGetCarousel(0,"无法获取轮播"),
-    SuccessToGetCarousel(1,"成功获得轮播")
-}
+

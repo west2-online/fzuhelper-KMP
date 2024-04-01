@@ -1,0 +1,13 @@
+
+
+CREATE TABLE NetworkErrorLog(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    time Text,
+    error text AS kotlin.String
+);
+
+insertNetworkErrorLog:
+INSERT INTO NetworkErrorLog (time, error) VALUES (?,?);
+
+getAllNetworkErrorLog:
+SELECT * FROM NetworkErrorLog;

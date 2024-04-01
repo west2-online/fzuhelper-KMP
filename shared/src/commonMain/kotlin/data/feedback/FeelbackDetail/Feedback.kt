@@ -1,5 +1,6 @@
 package data.feedback.FeelbackDetail
 
+import data.share.User
 import kotlinx.serialization.Serializable
 
 @Serializable

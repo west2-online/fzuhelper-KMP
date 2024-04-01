@@ -1,7 +1,8 @@
 package repository
 
 
-import data.register.AuthenticationResponse
+import data.register.LoginResponse
+import data.register.RegisterResponse
 import di.LoginClient
 import io.ktor.client.call.body
 import io.ktor.client.request.cookie
@@ -24,9 +25,9 @@ import kotlinx.serialization.Serializable
 
 class LoginRepository(private val loginClient : LoginClient) {
     val client = loginClient.client
-    fun getRegisterCaptcha(email:String):Flow<AuthenticationResponse>{
+    fun getRegisterCaptcha(email:String):Flow<RegisterResponse>{
         return flow{
-            val response: AuthenticationResponse = client.submitForm(
+            val response: RegisterResponse = client.submitForm(
                 url = "register/captcha",
                 formParameters = parameters {
                     append("email", email)
@@ -38,9 +39,9 @@ class LoginRepository(private val loginClient : LoginClient) {
         }
     }
 
-    fun getLoginCaptcha(email:String):Flow<AuthenticationResponse>{
+    fun getLoginCaptcha(email:String):Flow<LoginResponse>{
         return flow{
-            val response: AuthenticationResponse = client.submitForm(
+            val response: LoginResponse = client.submitForm(
                 url = "login/captcha",
                 formParameters = parameters {
                     append("email", email)
@@ -52,9 +53,9 @@ class LoginRepository(private val loginClient : LoginClient) {
         }
     }
 
-    fun register(email:String,password:String,captcha:String,studentCode:String,studentPassword:String):Flow<AuthenticationResponse>{
+    fun register(email:String,password:String,captcha:String,studentCode:String,studentPassword:String):Flow<RegisterResponse>{
         return flow{
-            val response: AuthenticationResponse = client.submitForm(
+            val response: RegisterResponse = client.submitForm(
                 url = "register/register",
                 formParameters = parameters {
                     append("email", email)
@@ -73,9 +74,9 @@ class LoginRepository(private val loginClient : LoginClient) {
         }
     }
 
-    fun login(email:String,password:String,captcha:String):Flow<AuthenticationResponse>{
+    fun login(email:String,password:String,captcha:String):Flow<LoginResponse>{
         return flow{
-            val response: AuthenticationResponse = client.submitForm(
+            val response: LoginResponse = client.submitForm(
                 url = "login/login",
                 formParameters = parameters {
                     append("email", email)
@@ -100,24 +101,7 @@ class LoginRepository(private val loginClient : LoginClient) {
         user: String,
         pass: String,
         captcha: String,
-        tryTimes: Int = 0,
-        theUserDoesNotExistAction: () -> Unit = {},
-        captchaVerificationFailedAction: () -> Unit = {},
-        thePasswordIsIncorrectAction: () -> Unit = {},
-        errorNotExplainedAction: () -> Unit = {},
-        theOriginalPasswordIsWeakAction: () -> Unit = {},
-        networkErrorAction: () -> Unit = {},
-        elseErrorAction:()->Unit = {},
-        everyErrorAction:(LoginError)->Unit = {}
     ): Flow<TokenData> {
-        val exceptionActions = listOf(
-            theUserDoesNotExistAction,
-            captchaVerificationFailedAction,
-            thePasswordIsIncorrectAction,
-            errorNotExplainedAction,
-            theOriginalPasswordIsWeakAction,
-            networkErrorAction,
-        )
         return flow {
             val response = client.submitForm (
                 url = "https://jwcjwxt1.fzu.edu.cn/logincheck.asp",
@@ -134,7 +118,6 @@ class LoginRepository(private val loginClient : LoginClient) {
                 println(response.status)
                 throw LoginError.NetworkError.throwable
             }
-//            val data = response.bodyAsText(fallbackCharset = Charset.forName("GB2312"))
             val data = response.bodyAsText(Charset.forName("GBK"))
             println(data)
             LoginError.values().forEach {

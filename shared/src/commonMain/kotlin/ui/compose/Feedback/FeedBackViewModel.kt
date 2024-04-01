@@ -5,11 +5,8 @@ import app.cash.paging.Pager
 import app.cash.paging.PagingConfig
 import app.cash.paging.PagingState
 import app.cash.paging.cachedIn
-import data.feedback.FeedbackDetailComment.FeedbackDetailComment
 import data.feedback.FeedbackList.FeedbackList
 import data.feedback.FeelbackDetail.Data
-import data.feedback.FeelbackDetail.FeedbackDetail
-import data.feedback.SubmitNewFeedBack.FeedbackSubmit
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.call.body
@@ -18,11 +15,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import repository.FeedbackRepository
-import util.flow.catchWithMassage
-import util.flow.collectWithMassage
+import util.flow.actionWithLabel
 import util.network.NetworkResult
-import util.network.loading
-import util.network.reset
+import util.network.logicIfNotLoading
+import util.network.networkErrorWithLog
+import util.network.resetWithLog
 
 class FeedBackViewModel(
     private val feedbackRepository: FeedbackRepository
@@ -41,38 +38,52 @@ class FeedBackViewModel(
 
     fun submitNewFeedback(content : String,type: FeedbackType){
         viewModelScope.launch {
-            _submitResult.loading()
-            feedbackRepository.submitNewFeedBack(content,type.code)
-                .catchWithMassage {
-                    _submitResult.reset(NetworkResult.Error(it))
-                }
-                .collectWithMassage{
-                    _submitResult.reset(it.toSubmitResult())
-                }
+            _submitResult.logicIfNotLoading {
+                feedbackRepository.submitNewFeedBack(content,type.code)
+                    .actionWithLabel(
+                        "submitNewFeedBack/submitNewFeedBack",
+                        collectAction = { label, data ->
+                            _submitResult.resetWithLog(label,data.toNetworkResult())
+                        },
+                        catchAction = { label, error ->
+                            _submitResult.resetWithLog(label, networkErrorWithLog(error,"发布失败"))
+                        }
+                    )
+            }
         }
     }
     fun getFeedbackDetail(id:Int){
         viewModelScope.launch {
-            _detailResult.loading()
-            feedbackRepository.getFeedbackDetail(id)
-                .catchWithMassage {
-                    _detailResult.reset(NetworkResult.Error(it))
-                }
-                .collectWithMassage{
-                    _detailResult.reset(it.toDetailResult())
-                }
+            _detailResult.logicIfNotLoading {
+                feedbackRepository.getFeedbackDetail(id)
+                    .actionWithLabel(
+                        "getFeedbackDetail/getFeedbackDetail",
+                        catchAction = { label, error ->
+                            _detailResult.resetWithLog(label, networkErrorWithLog(error,"获取详情失败"))
+                        },
+                        collectAction = { label, data ->
+                            _detailResult.resetWithLog(label, data.toNetworkResult())
+                        }
+                    )
+
+            }
         }
     }
+
     fun postFeedbackDetailComment(content:String,id: Int){
         viewModelScope.launch {
-            _commentResult.loading()
-            feedbackRepository.postFeedbackDetailComment(content,id)
-                .catchWithMassage {
-                    _commentResult.reset(NetworkResult.Error(it))
-                }
-                .collectWithMassage{
-                    _commentResult.reset(it.toNetworkResult())
-                }
+            _commentResult.logicIfNotLoading{
+                feedbackRepository.postFeedbackDetailComment(content,id)
+                    .actionWithLabel(
+                        "postFeedbackDetailComment/postFeedbackDetailComment",
+                        catchAction = { label, error ->
+                            _commentResult.resetWithLog(label, networkErrorWithLog(error,"发表评论失败"))
+                        },
+                        collectAction = { label, data ->
+                            _commentResult.resetWithLog(label, data.toNetworkResult())
+                        }
+                    )
+            }
         }
     }
 
@@ -99,38 +110,9 @@ enum class SubmitStatus(val value: Int, val description: String) {
 
 
 
-fun FeedbackSubmit.toSubmitResult(): NetworkResult<String> {
-    val response = SubmitStatus.values().findLast {
-        it.value == this.code
-    }
-    response?:let{
-        return NetworkResult.Error(Throwable("数据为空"))
-    }
-    response.let {
-        return when(it.value){
-            2-> NetworkResult.Success("发布成功")
-            else -> NetworkResult.Error(Throwable("发布失败"))
-        }
-    }
-}
-enum class FeedbackStatus(val value: Int, val description: String) {
-    MissingID(0, "缺少ID"),
-    FailedToGetFeedbackDetails(1, "获取反馈详情失败"),
-    SuccessToGetFeedbackDetails(2, "成功获取反馈详情")
-}
 
 
-fun FeedbackDetail.toDetailResult(): NetworkResult<Data> {
-    val response = SubmitStatus.values().findLast {
-        it.value == this.code
-    }
-    response?:let{
-        return NetworkResult.Error(Throwable("数据为空"))
-    }
-    response.let {
-        return NetworkResult.Success(this.data)
-    }
-}
+
 
 enum class CommentStatus(val value: Int, val description: String) {
     MissingCommentID(0, "缺少评论id"),
@@ -139,20 +121,6 @@ enum class CommentStatus(val value: Int, val description: String) {
 }
 
 
-fun FeedbackDetailComment.toNetworkResult(): NetworkResult<String> {
-    val response = SubmitStatus.values().findLast {
-        it.value == this.code
-    }
-    response?:let{
-        return NetworkResult.Error(Throwable("数据为空"))
-    }
-    response.let {
-        return when(it.value){
-            2-> NetworkResult.Success("评论成功")
-            else -> NetworkResult.Error(Throwable("评论失败"))
-        }
-    }
-}
 
 
 

@@ -43,10 +43,10 @@ object PostVoyagerScreen : Tab {
         ){
             Navigator(PostListVoyagerScreen(
                 navigateToRelease = {
-                    rootAction.navigateFormAnywhereToRelease()
+                    rootAction.navigateFormAnywhereToRelease(listOf())
                 },
                 navigateToReport = {
-                    rootAction.navigateFormPostToReport(ReportType.PostReportType(id = it.Id.toString(),it))
+                    rootAction.navigateFormPostToReport(ReportType.PostReportType(id = it.Post.Id.toString(),it.Post))
                 },
             )){ navigator ->
                 SettingTransitions(navigator)
