@@ -141,7 +141,11 @@ fun PersonScreen(
                             id ?:run{
                                 Button(
                                     onClick = {
-                                        rootAction.navigateFormAnywhereToRelease(listOf())
+                                        userData.data?.let {
+                                            rootAction.navigateFormAnywhereToInformationModifier(
+                                                it
+                                            )
+                                        }
                                     },
                                     modifier = Modifier
                                         .padding(horizontal = 5.dp)

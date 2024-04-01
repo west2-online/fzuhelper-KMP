@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
-import data.post.PostById.PostData
 import data.share.Post
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -164,7 +163,8 @@ fun PostReport(
     EasyToast(toastState)
 }
 
-class PostRepostVoyagerScreen(
+class PostRepostVoyagerScreen
+    (
     val type : ReportType.PostReportType
 ): Screen {
     @Composable

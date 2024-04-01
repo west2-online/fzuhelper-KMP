@@ -62,12 +62,12 @@ fun CommentRepost(
     val toastState = rememberToastState()
     toastState.toastBindNetworkResult(reportResponseState)
     LazyColumn(
-        modifier = modifier
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ){
         item{
             Column(
                 modifier = Modifier
-                    .padding(bottom = 10.dp)
             ) {
                 Text("举报@", color = Color.Red, modifier = Modifier.padding(bottom = 10.dp))
                 Column(
@@ -151,7 +151,6 @@ fun CommentRepost(
             item {
                 Box(
                     modifier = Modifier
-                        .padding(bottom = 10.dp)
                         .wrapContentHeight()
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(5.dp))
