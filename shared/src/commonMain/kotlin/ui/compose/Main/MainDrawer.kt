@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -85,7 +86,6 @@ fun getPassedRange(): Float {
 fun MainDrawer(
     modifier: Modifier = Modifier,
 ){
-
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -97,6 +97,7 @@ fun MainDrawer(
             }
             Row (
                 modifier = Modifier
+                    .statusBarsPadding()
                     .fillMaxWidth()
                     .height(100.dp)
                     .clip(RoundedCornerShape(10.dp))
