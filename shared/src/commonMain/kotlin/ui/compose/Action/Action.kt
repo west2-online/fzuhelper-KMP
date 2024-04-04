@@ -45,6 +45,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
+import ui.compose.EmptyHouse.EmptyHouseVoyagerScreen
 import ui.compose.Test.TestVoyagerScreen
 import ui.root.RootAction
 import ui.root.tokenJump
@@ -217,6 +218,7 @@ enum class Functions(
     Feedback(functionName = "反馈", painter = MR.images.feedback2, { rootAction -> rootAction.navigateFromActionToFeedback() }),
     Setting(functionName = "设置", painter = MR.images.setting, { rootAction -> rootAction.navigateFormAnywhereToSetting() }),
     Log(functionName = "日志", painter = MR.images.log, { rootAction -> rootAction.navigateFormAnywhereToLog() }),
+    EmptyHouse(functionName = "空教室", painter =MR.images.log, navigator = { rootAction -> rootAction.navigateToScreen(EmptyHouseVoyagerScreen()) })
 }
 
 

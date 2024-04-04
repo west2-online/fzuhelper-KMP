@@ -129,7 +129,7 @@ class AuthenticationViewModel(
 
     fun login(email: String,password: String,captcha:String){
         viewModelScope.launch (Dispatchers.Default){
-            _loginCaptcha.logicIfNotLoading {
+            _loginState.logicIfNotLoading {
                 loginRepository.login(email = email, password = password, captcha = captcha)
                     .actionWithLabel(
                         "label/label",
@@ -140,7 +140,7 @@ class AuthenticationViewModel(
                             _loginState.resetWithLog(label,data.toNetworkResult())
                             if(data.code == 12){
                                 kVault.set("token",data.data.toString())
-                                rootAction.navigateFormAnywhereToMain()
+                                rootAction.navigateFormLoginToMain()
                             }
                         }
                     )

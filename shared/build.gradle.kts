@@ -88,7 +88,7 @@ kotlin {
                 // QRcode 生成周期
                 implementation("io.github.alexzhirkevich:qrose:1.0.0-beta02")
 
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0-RC")
 
                 //分页
                 implementation("app.cash.paging:paging-common:3.3.0-alpha02-0.4.0")

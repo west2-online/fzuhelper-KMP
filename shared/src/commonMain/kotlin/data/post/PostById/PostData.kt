@@ -12,6 +12,6 @@ data class PostData(
     val labelData: List<Label>?
 )
 
-interface PostContent{
-    val order:Int
-}
+
+
+
