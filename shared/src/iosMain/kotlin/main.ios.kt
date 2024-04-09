@@ -21,6 +21,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import com.bumble.appyx.navigation.integration.IosNodeHost
 import com.futalk.kmm.FuTalkDatabase
+import io.ktor.client.engine.HttpClientEngineConfig
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.refTo
 import kotlinx.coroutines.channels.Channel
@@ -179,4 +180,8 @@ actual fun createDriver(): SqlDriver {
 
 actual fun getVersionFileName():String{
     return "iosVersion.json"
+}
+
+actual fun HttpClientEngineConfig.ktorConfig() {
+
 }

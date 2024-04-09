@@ -70,6 +70,11 @@ fun <T>networkErrorWithLog( errorCode :Int,newDescribe : String ) = NetworkResul
     errorForShow = Throwable(newDescribe)
 )
 
+fun <T>networkErrorWithLog( errorCode :Int,newThrowable: Throwable ) = NetworkResult.Error<T>(
+    rawError = Throwable("Error Code : $errorCode"),
+    errorForShow = newThrowable
+)
+
 fun <T>networkErrorWithLog( error :Throwable,newDescribe : String ) = NetworkResult.Error<T>(
     rawError = error,
     errorForShow = Throwable(newDescribe)
@@ -258,7 +263,7 @@ fun <T>T.logicWithNullCheckInCompose(
 }
 
 @ImportantFunction
-suspend fun <T> MutableStateFlow<NetworkResult<T>>.resetWithLog(logLabel:String, newValue : NetworkResult<T>){
+suspend fun <T> MutableStateFlow<NetworkResult<T>>.resetWithLog(logLabel:String, newValue: NetworkResult<T>){
     if(newValue is NetworkResult.Error){
         globalScope.launchInDefault {
             var errorMassage = ""

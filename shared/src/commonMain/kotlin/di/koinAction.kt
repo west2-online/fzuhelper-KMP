@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import repository.EmptyHouseRepository
 import repository.FeedbackRepository
 import repository.LoginRepository
 import repository.ManageRepository
@@ -35,6 +36,7 @@ import repository.SplashRepository
 import repository.WeatherRepository
 import ui.compose.Action.ActionViewModel
 import ui.compose.Authentication.AuthenticationViewModel
+import ui.compose.EmptyHouse.EmptyHouseVoyagerViewModel
 import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.Log.LogViewModel
 import ui.compose.Manage.ManageViewModel
@@ -248,6 +250,9 @@ fun Module.repositoryList(){
     single {
         RibbonRepository(get())
     }
+    single {
+        EmptyHouseRepository(get())
+    }
 }
 fun Module.viewModel(){
     viewModelDefinition {
@@ -288,6 +293,9 @@ fun Module.viewModel(){
     }
     viewModelDefinition {
         LogViewModel()
+    }
+    viewModelDefinition {
+        EmptyHouseVoyagerViewModel(get())
     }
 }
 fun HttpClientConfig<*>.configure() {

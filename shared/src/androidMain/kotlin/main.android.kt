@@ -19,6 +19,7 @@ import com.futalk.kmm.FuTalkDatabase
 import com.liftric.kvault.KVault
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.engine.okhttp.OkHttpConfig
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.definition.Definition
@@ -27,7 +28,6 @@ import org.koin.core.module.Module
 import org.koin.core.qualifier.Qualifier
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
-import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.X509TrustManager
@@ -67,8 +67,8 @@ actual fun HttpClientConfig<*>.configureForPlatform() {
 //            sslContext.init(null, arrayOf(trustAllCert), SecureRandom())
 //            sslSocketFactory(sslContext.socketFactory, trustAllCert)
             sslSocketFactory(getSSLSocketFactory, trustAllCerts[0])
-            connectTimeout(5, TimeUnit.SECONDS)
-            readTimeout(10, TimeUnit.SECONDS)
+//            connectTimeout(5, TimeUnit.SECONDS)
+//            readTimeout(10, TimeUnit.SECONDS)
         }
     }
 }
@@ -154,3 +154,8 @@ actual fun createDriver(): SqlDriver {
 actual fun getVersionFileName():String{
     return "androidVersion.json"
 }
+
+actual fun HttpClientEngineConfig.ktorConfig() {
+
+}
+
