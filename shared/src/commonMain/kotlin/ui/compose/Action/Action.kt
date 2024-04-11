@@ -139,7 +139,10 @@ private fun Carousel(
                 val pageState = rememberPagerState(
                     initialPage = 0,
                 ) {
-                    ribbonDataList.size
+                    if(ribbonDataList!=null){
+                        return@rememberPagerState ribbonDataList.size
+                    }
+                    0
                 }
                 val coroutineScope = rememberCoroutineScope()
 
@@ -147,30 +150,34 @@ private fun Carousel(
                     while (true) {
                         delay(4000)
                         coroutineScope.launch {
-                            pageState.animateScrollToPage((pageState.currentPage + 1).takeover(ribbonDataList.size)?:0 )
+                            if (ribbonDataList != null) {
+                                pageState.animateScrollToPage((pageState.currentPage + 1).takeover(ribbonDataList.size)?:0 )
+                            }
                         }
                     }
                 }
                 HorizontalPager(
                     state = pageState,
-                ) {
+                ) { index ->
                     val scope = rememberCoroutineScope()
                     val rootAction = koinInject<RootAction>()
-                    KamelImage(
-                        resource = asyncPainterResource("${BaseUrlConfig.RibbonImage}/${ribbonDataList[it].Image}"),
-                        null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable {
-                                   tokenJump(
-                                       tokenForParse = ribbonDataList[it].Action,
-                                       scope = scope,
-                                       fail = {},
-                                       rootAction = rootAction
-                                   )
-                            },
-                        contentScale = ContentScale.FillBounds
-                    )
+                    ribbonDataList?.let {
+                        KamelImage(
+                            resource = asyncPainterResource("${BaseUrlConfig.RibbonImage}/${it[index].Image}"),
+                            null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable {
+                                    tokenJump(
+                                        tokenForParse = ribbonDataList[index].Action,
+                                        scope = scope,
+                                        fail = {},
+                                        rootAction = rootAction
+                                    )
+                                },
+                            contentScale = ContentScale.FillBounds
+                        )
+                    }
                 }
             },
             error = {

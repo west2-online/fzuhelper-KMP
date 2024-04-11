@@ -140,15 +140,14 @@ fun ReleasePageScreen(
     }
 
     Column (
-        modifier = Modifier
-            .padding(10.dp)
+        modifier = modifier
     ){
         Crossfade(
             preview,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(11f)
-                .padding(top = 10.dp)
+                .padding(horizontal = 10.dp)
         ){ isPreview ->
             if (isPreview) {
                 PreviewContent(lazyListState, title, releasePageItems,labelList)

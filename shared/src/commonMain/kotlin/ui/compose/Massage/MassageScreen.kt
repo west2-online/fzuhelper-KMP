@@ -6,10 +6,15 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import ui.setting.SettingTransitions
-import util.compose.statusSelfPaddingControl
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import kotlin.jvm.Transient
 
 
-object MassageVoyagerScreen: Tab {
+class MassageVoyagerScreen(
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+): Tab {
     override val options: TabOptions
         @Composable
         get(){
@@ -25,7 +30,7 @@ object MassageVoyagerScreen: Tab {
     override fun Content() {
         Navigator(
             MassageVoyagerList(
-                statusSelfPaddingControl()
+                parentPaddingControl = parentPaddingControl
             )
         ){ navigator ->
             SettingTransitions(navigator)

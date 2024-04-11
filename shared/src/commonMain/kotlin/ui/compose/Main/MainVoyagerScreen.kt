@@ -88,7 +88,11 @@ class MainVoyagerScreen(
 ) : Screen {
     @Composable
     override fun Content() {
-        TabNavigator(PostVoyagerScreen()) { tabNavigator ->
+        TabNavigator(PostVoyagerScreen(
+            parentPaddingControl = ParentPaddingControl(
+                parentNavigatorControl = true
+            )
+        )) {
             val scope = rememberCoroutineScope()
             val scaffoldState = rememberScaffoldState()
             Scaffold(
@@ -179,7 +183,11 @@ fun RowScope.BottomPostTab(){
         label = { Text(item.tag) },
         selected = currentTabNavigator.current is PostVoyagerScreen,
         onClick = {
-            currentTabNavigator.current = PostVoyagerScreen()
+            currentTabNavigator.current = PostVoyagerScreen(
+                parentPaddingControl = ParentPaddingControl(
+                    parentNavigatorControl = true
+                )
+            )
         },
         selectedContentColor = MaterialTheme.colors.primaryVariant,
         modifier = Modifier
@@ -251,7 +259,9 @@ fun RowScope.BottomMassageTab(){
         label = { Text(item.tag) },
         selected = currentTabNavigator.current is PostVoyagerScreen,
         onClick = {
-            currentTabNavigator.current = MassageVoyagerScreen
+            currentTabNavigator.current = MassageVoyagerScreen(
+                ParentPaddingControl(false,true)
+            )
         },
         selectedContentColor = MaterialTheme.colors.primaryVariant,
         modifier = Modifier
@@ -286,7 +296,10 @@ fun RowScope.BottomPersonTab(){
         label = { Text(item.tag) },
         selected = currentTabNavigator.current is PersonVoyagerScreen,
         onClick = {
-            currentTabNavigator.current = PersonVoyagerScreen( modifier = Modifier.fillMaxSize(),null)
+            currentTabNavigator.current = PersonVoyagerScreen(
+                modifier = Modifier.fillMaxSize(),null,
+                parentPaddingControl = ParentPaddingControl(false,true)
+            )
         },
         selectedContentColor = MaterialTheme.colors.primaryVariant,
         modifier = Modifier

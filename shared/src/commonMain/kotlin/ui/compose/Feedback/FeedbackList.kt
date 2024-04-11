@@ -88,9 +88,9 @@ fun FeedbackList(
             }
     }
 
-    Box(modifier = Modifier){
+    Box(modifier = modifier){
         LazyColumn (
-            modifier = modifier,
+            modifier = Modifier.fillMaxSize(),
             state = state
         ){
             items(feedbackListFlow.itemCount){

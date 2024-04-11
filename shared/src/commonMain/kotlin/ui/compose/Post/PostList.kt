@@ -141,7 +141,7 @@ fun PostList(
     Box(modifier = modifier){
         postListFlow.let{ postList ->
             LazyColumn(
-                modifier = modifier,
+                modifier = Modifier.fillMaxSize(),
                 state = state,
             ){
                 items(

@@ -28,6 +28,7 @@ import org.koin.core.module.Module
 import org.koin.core.qualifier.Qualifier
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.X509TrustManager
@@ -67,8 +68,8 @@ actual fun HttpClientConfig<*>.configureForPlatform() {
 //            sslContext.init(null, arrayOf(trustAllCert), SecureRandom())
 //            sslSocketFactory(sslContext.socketFactory, trustAllCert)
             sslSocketFactory(getSSLSocketFactory, trustAllCerts[0])
-//            connectTimeout(5, TimeUnit.SECONDS)
-//            readTimeout(10, TimeUnit.SECONDS)
+            connectTimeout(20, TimeUnit.SECONDS)
+            readTimeout(20, TimeUnit.SECONDS)
         }
     }
 }

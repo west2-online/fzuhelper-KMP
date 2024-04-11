@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
@@ -89,7 +88,7 @@ fun PersonScreen(
             }
         )
     }
-    Box(modifier = Modifier.fillMaxSize()){
+    Box(modifier = modifier){
         Column (
             modifier = Modifier
                 .fillMaxSize()
@@ -119,9 +118,8 @@ fun PersonScreen(
                     imageVector = Icons.Filled.Refresh,
                     contentDescription = null,
                     modifier = Modifier
-                        .statusBarsPadding()
-                        .offset(x = -10.dp,y = 10.dp)
-                        .align(Alignment.TopEnd)
+                        .offset(x = -10.dp,y = -10.dp)
+                        .align(Alignment.BottomEnd)
                         .size(40.dp)
                         .clip(CircleShape)
                         .clickable {
@@ -387,7 +385,7 @@ class PersonVoyagerScreen(
         PersonScreen(
             modifier = modifier,
             id = userId,
-
+            parentPaddingControl = parentPaddingControl
         )
     }
 

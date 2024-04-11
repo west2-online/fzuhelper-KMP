@@ -54,7 +54,7 @@ class PostVoyagerScreen(
                 navigateToReport = {
                     rootAction.navigateFormPostToReport(ReportType.PostReportType(id = it.Post.Id.toString(),it.Post))
                 },
-                parentPaddingControl = parentPaddingControl.copyNew()
+                parentPaddingControl = parentPaddingControl
             )){ navigator ->
                 SettingTransitions(navigator)
             }

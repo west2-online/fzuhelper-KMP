@@ -13,12 +13,16 @@ import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.statement.HttpReceivePipeline
+import io.ktor.client.statement.request
 import io.ktor.http.headers
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.InternalAPI
 import io.ktor.util.pipeline.PipelinePhase
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Job
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -126,6 +130,7 @@ class SystemAction(
     val onFinish: () -> Unit
 )
 
+@OptIn(InternalAPI::class, DelicateCoroutinesApi::class)
 fun appModule(
     rootAction: RootAction,
     systemAction: SystemAction,
@@ -165,7 +170,9 @@ fun appModule(
                 }
                 url(BaseUrlConfig.BaseUrl)
             }
-            install(Logging)
+            install(Logging){
+                level = LogLevel.BODY
+            }
             install(HttpCookies){}
             install(HttpRedirect) {
                 checkHttpMethod = false
@@ -187,6 +194,28 @@ fun appModule(
             }
             if(it.status.value == 557){
                 get<RootAction>().popManage()
+            }
+        }
+        if(BaseUrlConfig.isDebug){
+            val LogRequest = PipelinePhase("LogRequest")
+            client.receivePipeline.insertPhaseAfter(HttpReceivePipeline.After,LogRequest)
+            client.receivePipeline.intercept(LogRequest){
+                println("----------------------request---------------------------")
+                println("request ${it.request.url} ${it.request.method}")
+                it.request.headers.forEach { s, strings ->
+                    println("header --> s -> ${strings}")
+                }
+            }
+
+            val LogResponse = PipelinePhase("LogResponse")
+            client.receivePipeline.insertPhaseAfter(HttpReceivePipeline.After,LogResponse)
+            client.receivePipeline.intercept(LogResponse){
+                println("----------------------response---------------------------")
+                println("request ${it.request.url} ${it.request.method}")
+                it.headers.forEach { s, strings ->
+                    println("header --> s -> $strings")
+                }
+//                println(it.content.readByte().toString())
             }
         }
         return@single client

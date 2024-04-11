@@ -17,7 +17,7 @@ class ActionViewModel(
     private val kVault: KVault,
     private val ribbonRepository: RibbonRepository
 ):ViewModel() {
-    private val _ribbonList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<RibbonData>>>(
+    private val _ribbonList = CMutableStateFlow(MutableStateFlow<NetworkResult<List<RibbonData>?>>(
         NetworkResult.UnSend()))
     val ribbonList = _ribbonList.asStateFlow()
 
