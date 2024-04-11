@@ -135,6 +135,10 @@ kotlin {
                 //sqlDelight
                 implementation("app.cash.sqldelight:coroutines-extensions:$sqlDelightVersion")
                 implementation("app.cash.sqldelight:coroutines-extensions:$sqlDelightVersion")
+
+//                //加密
+//                implementation("com.ionspin.kotlin:multiplatform-crypto-libsodium-bindings:0.9.1")
+                implementation("dev.whyoleg.cryptography:cryptography-serialization-pem:0.3.0")
             }
         }
         val androidMain by getting {
@@ -177,6 +181,10 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
             }
+        }
+
+        val test by creating {
+            dependsOn(commonMain)
         }
     }
 }

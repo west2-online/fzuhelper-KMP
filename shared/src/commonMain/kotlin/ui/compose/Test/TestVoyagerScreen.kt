@@ -16,6 +16,9 @@ import androidx.compose.ui.unit.dp
 import asImageBitmap
 import cafe.adriel.voyager.core.screen.Screen
 import configureForPlatform
+import dev.whyoleg.cryptography.serialization.pem.PEM
+import dev.whyoleg.cryptography.serialization.pem.PemContent
+import dev.whyoleg.cryptography.serialization.pem.PemLabel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.client.plugins.cookies.HttpCookies
@@ -26,7 +29,7 @@ import io.ktor.http.Cookie
 import io.ktor.http.Url
 
 class TestVoyagerScreen :Screen{
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalUnsignedTypes::class)
     @Composable
     override fun Content() {
         //192.168.31.1
@@ -37,6 +40,23 @@ class TestVoyagerScreen :Screen{
             mutableStateOf<Cookie?>(null)
         }
         LaunchedEffect(Unit){
+//            val message = ("Ladies and Gentlemen of the class of '99: If I could offer you " +
+//                    "only one tip for the future, sunscreen would be it.").encodeToUByteArray()
+//
+//            val key = "futalk".encodeToUByteArray()
+//
+//            val nonce = LibsodiumRandom.buf(24)
+//
+//            val encrypted = SecretBox.easy(message, nonce, key)
+//            val decrypted = SecretBox.openEasy(encrypted, nonce, key)
+//            println("encrypted==============="+encrypted)
+            val encodedPemContent: String = PEM.encode(
+                PemContent(
+                    label = PemLabel("KEY"),
+                    bytes = "Hello World".encodeToByteArray()
+                )
+            )
+            println(encodedPemContent)
             try {
                 val client = HttpClient(){
                     install(HttpCookies){
@@ -50,8 +70,8 @@ class TestVoyagerScreen :Screen{
             }catch (e:Exception){
                 println(e.message)
             }
-
         }
+
         Column {
             data.value?.let{
                 Image(

@@ -1,6 +1,9 @@
 
 
 import androidVersion.AndroidVersion
+import dev.whyoleg.cryptography.serialization.pem.PEM
+import dev.whyoleg.cryptography.serialization.pem.PemContent
+import dev.whyoleg.cryptography.serialization.pem.PemLabel
 import di.configure
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.DefaultRequest
@@ -25,10 +28,15 @@ class GrepTest {
             "ABC 123"
         )
     }
+    @Test
     fun grep(lines: List<String>, pattern: String, action: (String) -> Unit) {
-        val regex = pattern.toRegex()
-        lines.filter(regex::containsMatchIn)
-            .forEach(action)
+        val encodedPemContent: String = PEM.encode(
+            PemContent(
+                label = PemLabel("KEY"),
+                bytes = "Hello World".encodeToByteArray()
+            )
+        )
+        println(encodedPemContent)
     }
     @Test
     fun shouldFindMatches() {
@@ -59,4 +67,5 @@ class GrepTest {
             println(data.version.last().canUse)
         }
     }
+
 }

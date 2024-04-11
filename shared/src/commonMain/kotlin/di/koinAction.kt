@@ -15,6 +15,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.HttpRequestPipeline
 import io.ktor.client.statement.HttpReceivePipeline
 import io.ktor.client.statement.request
 import io.ktor.http.headers
@@ -24,6 +25,7 @@ import io.ktor.util.pipeline.PipelinePhase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.datetime.Clock
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import repository.EmptyHouseRepository
@@ -55,7 +57,10 @@ import ui.compose.Weather.WeatherViewModel
 import ui.root.RootAction
 import ui.setting.Setting
 import util.compose.Toast
+import util.encode.encode
 import viewModelDefinition
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 class LoginClient(
     val client : HttpClient = HttpClient{
@@ -179,6 +184,14 @@ fun appModule(
             }
             configure()
         }
+        val encodePhase = PipelinePhase("Encode")
+        client.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
+        client.requestPipeline.intercept(encodePhase){
+            val time = Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = Random.nextInt(10..99)
+            val randomNumber2 = Random.nextInt(0..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
+        }
         val authPhase = PipelinePhase("Auth")
         client.receivePipeline.insertPhaseBefore(HttpReceivePipeline.Before,authPhase)
         client.receivePipeline.intercept(authPhase){
@@ -203,7 +216,7 @@ fun appModule(
                 println("----------------------request---------------------------")
                 println("request ${it.request.url} ${it.request.method}")
                 it.request.headers.forEach { s, strings ->
-                    println("header --> s -> ${strings}")
+                    println("header --> $s -> ${strings}")
                 }
             }
 
@@ -213,7 +226,7 @@ fun appModule(
                 println("----------------------response---------------------------")
                 println("request ${it.request.url} ${it.request.method}")
                 it.headers.forEach { s, strings ->
-                    println("header --> s -> $strings")
+                    println("header --> $s -> $strings")
                 }
 //                println(it.content.readByte().toString())
             }
