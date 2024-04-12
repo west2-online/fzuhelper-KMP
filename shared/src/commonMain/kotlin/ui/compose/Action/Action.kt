@@ -217,7 +217,7 @@ enum class Functions(
 ){
     QRCODE(  functionName = "二维码生成", painter = MR.images.qrcode, { rootAction -> rootAction.navigateFromActionToQRCodeScreen() }),
 //    WebView( functionName = "新生宝典", painter = MR.images.login, { rootAction -> }),
-//    Weather(  functionName = "天气", painter = MR.images.cloud, { rootAction -> rootAction.navigateFromAnywhereToWeather()}),
+    Weather(  functionName = "天气", painter = MR.images.cloud, { rootAction -> rootAction.navigateFromAnywhereToWeather()}),
 //    Map(  functionName = "地图", painter = MR.images.close, { rootAction -> }),
     Test(functionName = "测试", painter = MR.images.close, { rootAction -> rootAction.navigateToScreen(TestVoyagerScreen())}),
     AboutUs(functionName = "关于我们", painter = MR.images.FuTalk ,  { rootAction -> rootAction.navigateFromActionToAboutUs()}),
