@@ -1,7 +1,5 @@
 package di
 
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.navigator.Navigator
 import com.liftric.kvault.KVault
 import config.BaseUrlConfig
@@ -18,13 +16,8 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.HttpRequestPipeline
 import io.ktor.client.statement.HttpReceivePipeline
 import io.ktor.client.statement.request
-import io.ktor.http.headers
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.InternalAPI
 import io.ktor.util.pipeline.PipelinePhase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.datetime.Clock
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -107,35 +100,12 @@ class WebClient(
     }
 )
 
-class TopBarState(){
-    val itemForSelect = mutableStateOf<List<SelectItem>?>(null)
-    val expanded = mutableStateOf(false)
-    val itemForSelectShow = derivedStateOf {
-        itemForSelect.value != null
-    }
-    fun registerItemForSelect(list:List<SelectItem>?){
-        itemForSelect.value = list
-    }
-    val title = mutableStateOf<String?>(null)
-
-}
-
-data class SelectItem(
-    val text : String,
-    val click : ()->Unit,
-)
-
-data class BackItem(
-    val label: String,
-    val click: () -> Unit
-)
 
 class SystemAction(
     val onBack :() -> Unit,
     val onFinish: () -> Unit
 )
 
-@OptIn(InternalAPI::class, DelicateCoroutinesApi::class)
 fun appModule(
     rootAction: RootAction,
     systemAction: SystemAction,
@@ -147,6 +117,7 @@ fun appModule(
     single {
         Setting(get())
     }
+
     single {
         systemAction
     }
@@ -157,13 +128,6 @@ fun appModule(
         val client = HttpClient{
             install(ContentNegotiation) {
                 json()
-            }
-            headers {
-                val kVault = get<KVault>()
-                val token : String? = kVault.string(forKey = "token")
-                token?.let {
-                    append("Authorization",token)
-                }
             }
             install(
                 DefaultRequest
@@ -201,9 +165,8 @@ fun appModule(
                 get<RootAction>().reLogin()
             }
             if(it.status.value == 556){
-                val kVault = get<KVault>()
-                kVault.clear()
-                get<RootAction>().reLogin()
+                val toast = get<Toast>()
+                toast.addWarnToast("网络延迟过大")
             }
             if(it.status.value == 557){
                 get<RootAction>().popManage()
@@ -228,21 +191,14 @@ fun appModule(
                 it.headers.forEach { s, strings ->
                     println("header --> $s -> $strings")
                 }
-//                println(it.content.readByte().toString())
             }
         }
         return@single client
-    }
-    single {
-        TopBarState()
     }
     repositoryList()
     viewModel()
     single {
         initStore()
-    }
-    single {
-        val kVault = get<KVault>()
     }
     single {
         LoginClient()
@@ -254,8 +210,7 @@ fun appModule(
         WebClient()
     }
     single {
-        val scope = CoroutineScope(Job())
-        return@single Toast(scope)
+        Toast(globalScope)
     }
 }
 fun Module.repositoryList(){

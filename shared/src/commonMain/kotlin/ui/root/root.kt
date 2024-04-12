@@ -1,13 +1,14 @@
 package ui.root
 
-import ImagePickerFactory
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import data.person.UserData.Data
 import di.SystemAction
 import di.appModule
-import getPlatformContext
 import initStore
 import kotlinx.coroutines.CoroutineScope
 import org.koin.compose.KoinApplication
@@ -28,6 +29,7 @@ import ui.compose.SplashPage.SplashPageVoyagerScreen
 import ui.compose.Weather.WeatherVoyagerScreen
 import ui.compose.Webview.WebViewVoyagerScreen
 import ui.setting.SettingTransitions
+import util.compose.EasyToast
 import util.compose.FuTalkTheme
 
 
@@ -104,7 +106,6 @@ fun RootUi(
     systemAction: SystemAction
 ){
     Navigator(SplashPageVoyagerScreen()){ navigate ->
-        val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
         KoinApplication(application = {
             modules(
                 appModule(
@@ -192,8 +193,11 @@ fun RootUi(
                 )
             )
         }) {
-            FuTalkTheme{
-                SettingTransitions(navigate)
+            Box(modifier = Modifier.fillMaxSize()){
+                FuTalkTheme{
+                    SettingTransitions(navigate)
+                }
+                EasyToast(toast = koinInject())
             }
         }
     }

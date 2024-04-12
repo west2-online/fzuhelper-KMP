@@ -6,5 +6,5 @@ import kotlinx.coroutines.Job
 
 val database = createDatabase()
 
-val job = Job()
+internal val job = Job()
 val globalScope = CoroutineScope(job)
