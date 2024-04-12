@@ -89,8 +89,10 @@ import util.compose.rememberToastState
 import util.network.CollectWithContentInBox
 import util.network.NetworkResult
 import util.network.logicWithTypeWithLimit
+import kotlin.jvm.Transient
 
 class EmptyHouseVoyagerScreen(
+    @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ) :Screen{
     @OptIn(ExperimentalMaterial3Api::class, FormatStringsInDatetimeFormats::class,
