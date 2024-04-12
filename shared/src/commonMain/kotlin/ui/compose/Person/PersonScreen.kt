@@ -77,7 +77,7 @@ fun PersonScreen(
     val scope = rememberCoroutineScope()
     val userDataState = personViewModel.userData.collectAsState()
     LaunchedEffect(Unit){
-        personViewModel.getUserData(id)
+        personViewModel.initUserData(id)
     }
     val toast = rememberToastState()
     LaunchedEffect(userDataState.value,userDataState.value.key){
@@ -123,7 +123,7 @@ fun PersonScreen(
                         .size(40.dp)
                         .clip(CircleShape)
                         .clickable {
-                            personViewModel.getUserData(id)
+                            personViewModel.refreshUserData(id)
                         }
                         .padding(5.dp)
                 )

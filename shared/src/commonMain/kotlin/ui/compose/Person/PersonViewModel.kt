@@ -58,7 +58,11 @@ class PersonViewModel(
         }
     }
 
-
+    fun initUserData(id: String?){
+        if (userData.value is NetworkResult.UnSend){
+            getUserData(id)
+        }
+    }
 
     fun getIdentityData(id:String?){
         id?:run {
@@ -89,6 +93,10 @@ class PersonViewModel(
                     )
             }
         }
+    }
+
+    fun refreshUserData(id: String?) {
+        getUserData(id)
     }
 }
 
