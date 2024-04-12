@@ -133,7 +133,10 @@ enum class ThemeStyle(val serializable: String){
 enum class Font(val serializable: String, val fontResource: FontResource){
     MulishLight("MulishLight",MR.fonts.Mulish.light),
     MadimiOne("MadimiOne",MR.fonts.MadimiOne.regular),
-    EBG("EBG",MR.fonts.EBGaramond_wght.eBGaramond_wght)
+    EBG("EBG",MR.fonts.EBGaramond_wght.eBGaramond_wght),
+    LiuJian("LiuJian",MR.fonts.LiuJianMaoCao.regular),
+    LongCang("LongCang",MR.fonts.LongCang.regular),
+    ZhiMangXing("ZhiMangXing",MR.fonts.ZhiMangXing.regular)
 }
 
 @Composable
