@@ -12,8 +12,7 @@ data class ProcessPost(
 ){
     fun toNetworkResult(): NetworkResult<String> {
         return when(code){
-            3 -> NetworkResult.Success("处理成功")
-            0 -> networkErrorWithLog(code,"操作失败")
+            0 -> NetworkResult.Success("处理成功")
             else -> networkErrorWithLog(code,"操作失败")
         }
     }

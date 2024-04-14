@@ -12,11 +12,8 @@ data class PostCommentNew(
 ){
     fun toNetworkResult(): NetworkResult<String> {
         return when(code){
-
-            5 -> networkErrorWithLog(code,"评论不得为空")
-
-            4 -> NetworkResult.Success("评论成功")
-
+            1 -> networkErrorWithLog(code,"评论不得为空")
+            0 -> NetworkResult.Success("评论成功")
             else -> networkErrorWithLog(code,"评论失败,稍后再试")
         }
     }

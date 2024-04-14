@@ -213,12 +213,12 @@ fun PostDetail(
                             success = { postById ->
                                 Column {
                                     PersonalInformationAreaInDetail(
-                                        userName = postById.data.Post.User.username,
-                                        url = "${BaseUrlConfig.UserAvatar}/${postById.data.Post.User.avatar}"
+                                        userName = postById.Post.User.username,
+                                        url = "${BaseUrlConfig.UserAvatar}/${postById.Post.User.avatar}"
                                     )
-                                    Time(postById.data.Post.Time)
+                                    Time(postById.Post.Time)
                                     Text(
-                                        text = postById.data.Post.Title,
+                                        text = postById.Post.Title,
                                         fontSize = 20.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -228,15 +228,15 @@ fun PostDetail(
                                             .wrapContentHeight()
                                     ) {
                                         FlowRow {
-                                            postById.data.labelData?.let { labelList ->
+                                            postById.labelData?.let { labelList ->
                                                 labelList.forEach {
                                                     Label(it.Label)
                                                 }
                                             }
                                         }
                                     }
-                                    listOf<PostContent>().plus(postById.data.valueData ?: listOf())
-                                        .plus(postById.data.fileData ?: listOf()).sortedBy {
+                                    listOf<PostContent>().plus(postById.valueData ?: listOf())
+                                        .plus(postById.fileData ?: listOf()).sortedBy {
                                             it.order
                                         }.forEach {
                                             when (it) {
@@ -250,7 +250,7 @@ fun PostDetail(
                                         }
                                     postDetailViewModel.postLikeSubmitState.collectAsState().value.logicWithTypeWithLimit(
                                         success = {
-                                            postDetailViewModel.refreshPostById(postById.data.Post.Id.toString())
+                                            postDetailViewModel.refreshPostById(postById.Post.Id.toString())
                                         }
                                     )
                                     Interaction(
@@ -258,9 +258,9 @@ fun PostDetail(
                                             .padding( top = 5.dp )
                                             .fillMaxWidth(0.6f)
                                             .wrapContentHeight(),
-                                        likeNumber = postById.data.Post.LikeNum,
+                                        likeNumber = postById.Post.LikeNum,
                                         like = {
-                                            postDetailViewModel.postLikes(postById.data.Post.Id)
+                                            postDetailViewModel.postLikes(postById.Post.Id)
                                             println(1)
                                         }
                                     )

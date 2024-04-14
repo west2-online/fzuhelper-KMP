@@ -12,7 +12,7 @@ data class FeedbackSubmit(
 ){
     fun toNetworkResult(): NetworkResult<String> {
         return when(code){
-            2-> NetworkResult.Success("发布成功")
+            0 -> NetworkResult.Success("发布成功")
             else -> networkErrorWithLog(code,"发布失败")
         }
     }

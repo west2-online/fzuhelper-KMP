@@ -12,9 +12,9 @@ data class EmptyRoomData(
 ) {
     fun toNetworkResult(): NetworkResult<Map<String, List<EmptyRoom>?>?> {
         return when(code){
-            2 -> NetworkResult.Success(data)
-            3 -> networkErrorWithLog(code,UnAvailable(code))
-            4,6 -> NetworkResult.Success(data)
+            1 -> NetworkResult.Success(data)
+            2 -> networkErrorWithLog(code,UnAvailable(code))
+            3,4 -> NetworkResult.Success(data)
             else -> networkErrorWithLog(code,"获取失败")
         }
     }

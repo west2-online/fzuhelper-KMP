@@ -13,9 +13,7 @@ data class UserDataByEmail(
 ) {
     fun toNetworkResult(): NetworkResult<User> {
         return when(code){
-            0 -> networkErrorWithLog(code,"获取失败")
-            1 -> networkErrorWithLog(code,"获取失败")
-            2 -> if(this.data == null) networkErrorWithLog(code,"无该用户") else NetworkResult.Success(this.data)
+            0 -> if(this.data == null) networkErrorWithLog(code,"无该用户") else NetworkResult.Success(this.data)
             else -> networkErrorWithLog(code,"获取失败")
         }
     }

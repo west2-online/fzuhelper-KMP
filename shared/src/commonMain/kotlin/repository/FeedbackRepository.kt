@@ -21,8 +21,8 @@ class FeedbackRepository(val client: HttpClient) {
             val response = client.submitForm(
                 "/feedback/new",
                 formParameters = Parameters.build {
-                    append("content",content.normalize(Form.NFKD))
-                    append("type",type.toString())
+                    append("Content",content.normalize(Form.NFKD))
+                    append("Type",type.toString())
                 }
             ).body<FeedbackSubmit>()
             emit(response)
@@ -39,9 +39,10 @@ class FeedbackRepository(val client: HttpClient) {
     fun postFeedbackDetailComment(comment : String,id:Int ):Flow<FeedbackDetailComment>{
         return flow {
             val response = client.submitForm(
-                url = "/feedback/comment/${id}",
+                url = "/feedback/comment",
                 formParameters = parameters {
-                    append("comment",comment.normalize(Form.NFKD))
+                    append("Comment",comment.normalize(Form.NFKD))
+                    append("Id",id.toString())
                 }
             ).body<FeedbackDetailComment>()
             emit(response)

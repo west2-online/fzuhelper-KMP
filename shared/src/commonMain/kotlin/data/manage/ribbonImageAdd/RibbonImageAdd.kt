@@ -12,7 +12,7 @@ data class RibbonImageAdd(
 ) {
     fun toNetworkResult(): NetworkResult<String> {
         return when(code){
-            4 -> NetworkResult.Success("添加成功")
+            0 -> NetworkResult.Success("添加成功")
             else -> networkErrorWithLog(code,"添加失败")
         }
     }
