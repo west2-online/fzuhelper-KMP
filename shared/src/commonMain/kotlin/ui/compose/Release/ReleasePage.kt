@@ -192,46 +192,133 @@ fun ReleasePageScreen(
                     )
                 }
                 item{
-                    Crossfade(preview){
-                        if(it){
-                            Icon(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .aspectRatio(1f)
-                                    .wrapContentSize(Alignment.Center)
-                                    .fillMaxSize(0.75f)
-                                    .clip(CircleShape)
-                                    .clickable {
-                                        scope.launch{
-                                            preview = !preview
-                                        }
-                                    }
-                                    .wrapContentSize(Alignment.Center)
-                                    .fillMaxSize(0.7f)
-                                ,
-                                painter = painterResource(MR.images.eye),
-                                contentDescription = null
-                            )
-                        }else{
-                            Icon(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .aspectRatio(1f)
-                                    .wrapContentSize(Alignment.Center)
-                                    .fillMaxSize(0.75f)
-                                    .clip(CircleShape)
-                                    .clickable {
-                                        scope.launch{
-                                            preview = !preview
-                                        }
-                                    }
-                                    .wrapContentSize(Alignment.Center)
-                                    .fillMaxSize(0.7f)
-                                ,
-                                painter = painterResource(MR.images.eye_outline),
-                                contentDescription = null
-                            )
+                    Icon(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .wrapContentSize(Alignment.Center)
+                            .fillMaxSize(0.75f)
+                            .clip(CircleShape)
+                            .clickable {
+                                scope.launch{
+                                    releasePageItems.add(ReleasePageItem.LineChartItem())
+                                    lazyListState.animateScrollToItem(releasePageItems.size - 1)
+                                }
+                            }
+                            .wrapContentSize(Alignment.Center)
+                            .fillMaxSize(0.7f)
+                        ,
+                        painter = painterResource(MR.images.chart_line),
+                        contentDescription = null
+                    )
+                }
+//                item{
+//                    Crossfade(preview){
+//                        if(it){
+//                            Icon(
+//                                modifier = Modifier
+//                                    .fillMaxHeight()
+//                                    .aspectRatio(1f)
+//                                    .wrapContentSize(Alignment.Center)
+//                                    .fillMaxSize(0.75f)
+//                                    .clip(CircleShape)
+//                                    .clickable {
+//                                        scope.launch{
+//                                            preview = !preview
+//                                        }
+//                                    }
+//                                    .wrapContentSize(Alignment.Center)
+//                                    .fillMaxSize(0.7f)
+//                                ,
+//                                painter = painterResource(MR.images.eye),
+//                                contentDescription = null
+//                            )
+//                        }else{
+//                            Icon(
+//                                modifier = Modifier
+//                                    .fillMaxHeight()
+//                                    .aspectRatio(1f)
+//                                    .wrapContentSize(Alignment.Center)
+//                                    .fillMaxSize(0.75f)
+//                                    .clip(CircleShape)
+//                                    .clickable {
+//                                        scope.launch{
+//                                            preview = !preview
+//                                        }
+//                                    }
+//                                    .wrapContentSize(Alignment.Center)
+//                                    .fillMaxSize(0.7f)
+//                                ,
+//                                painter = painterResource(MR.images.eye_outline),
+//                                contentDescription = null
+//                            )
+//                        }
+//                    }
+//                }
+            }
+            FloatingActionButton(
+                onClick = {
+                    scope.launch {
+                        try {
+                            labelList.filter {
+                                it.labelType == LabelType.Person
+                            }.forEach {
+                                labelList.remove(it)
+                            }
+                            val userLabelList = client.get("/user/label").body<UserLabel>()
+                            userLabelList.data.forEach {
+                                labelList.add(LabelForSelect(it.Label, labelType = LabelType.Person))
+                            }
+                            toastState.addToast("刷新个人标签成功")
+                        }catch (e:Exception){
+                            toastState.addWarnToast("刷新个人标签失败")
                         }
+                    }
+                },
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxHeight()
+                    .aspectRatio(1f)
+            ){
+                Crossfade(preview){
+                    if(it){
+                        Icon(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .aspectRatio(1f)
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.75f)
+                                .clip(CircleShape)
+                                .clickable {
+                                    scope.launch{
+                                        preview = !preview
+                                    }
+                                }
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.7f)
+                            ,
+                            painter = painterResource(MR.images.eye),
+                            contentDescription = null
+                        )
+                    }else{
+                        Icon(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .aspectRatio(1f)
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.75f)
+                                .clip(CircleShape)
+                                .clickable {
+                                    scope.launch{
+                                        preview = !preview
+                                    }
+                                }
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.7f)
+                            ,
+                            painter = painterResource(MR.images.eye_outline),
+                            contentDescription = null
+                        )
                     }
                 }
             }
@@ -483,7 +570,12 @@ fun ReleaseContent(
                             }
 
                             is ReleasePageItem.LineChartItem -> {
-                                TODO()
+                                ReleasePageItemLineChart(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight(),
+                                    releasePageItem
+                                )
                             }
                         }
                     }

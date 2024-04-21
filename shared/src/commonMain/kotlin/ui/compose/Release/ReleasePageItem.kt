@@ -47,7 +47,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import asImageBitmap
-import com.aay.compose.lineChart.LineChart
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import org.example.library.MR
@@ -88,7 +87,6 @@ fun ReleasePageItemText(
     val openEmoji = remember{
         mutableStateOf(false)
     }
-    LineChart()
     Column(
         modifier = modifier
     ){
@@ -325,7 +323,7 @@ fun ReleasePageItemLineChart(
     lineChartItem: ReleasePageItem.LineChartItem
 ){
     Column (
-        modifier = Modifier
+        modifier = modifier
             .padding(10.dp)
     ){
         TextField(
