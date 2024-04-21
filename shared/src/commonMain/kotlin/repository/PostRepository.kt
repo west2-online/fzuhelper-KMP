@@ -52,6 +52,9 @@ class PostRepository(private val client: HttpClient) {
                                                 append("Content-Type", "text/plain")
                                             })
                                     }
+                                    is ReleasePageItem.LineChartItem -> {
+
+                                    }
                                 }
                             }
                             append("title",title.normalize(Form.NFKD))

@@ -244,7 +244,7 @@ fun PostDetail(
                                                     ImageContent(it.fileName)
                                                 }
                                                 is ValueData -> {
-                                                    Text(it.value)
+                                                    TextContent(it.value)
                                                 }
                                             }
                                         }
@@ -917,26 +917,6 @@ fun CommentInPostDetail(
     }
 }
 
-@Composable
-fun ImageContent(
-    imageData: String
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .animateContentSize()
-    ){
-        KamelImage(
-            resource = asyncPainterResource("${BaseUrlConfig.PostImage}/${imageData}"),
-            null,
-            modifier = Modifier
-                .padding(top = 10.dp)
-                .fillMaxWidth(),
-            contentScale = ContentScale.Fit
-        )
-    }
-}
 
 //在评论树中的item
 @Composable

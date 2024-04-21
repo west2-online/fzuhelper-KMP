@@ -15,13 +15,8 @@ data class ValueData(
     val value: String
 ):PostContent
 
-@Serializable
-data class NavigationData(
-    override val order: Int,
-    val navigation :String
-):PostContent
-
 
 interface PostContent{
     val order:Int
 }
+

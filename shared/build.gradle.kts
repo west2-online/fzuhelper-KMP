@@ -139,6 +139,9 @@ kotlin {
 //                //加密
 //                implementation("com.ionspin.kotlin:multiplatform-crypto-libsodium-bindings:0.9.1")
                 implementation("dev.whyoleg.cryptography:cryptography-serialization-pem:0.3.0")
+
+                val latest_release = "Beta-0.0.5"
+                implementation("io.github.thechance101:chart:$latest_release")
             }
         }
         val androidMain by getting {
