@@ -574,7 +574,16 @@ fun ReleaseContent(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .wrapContentHeight(),
-                                    releasePageItem
+                                    releasePageItem,
+                                    delete = {
+                                        releasePageItems.removeAt(index)
+                                    },
+                                    moveDown = {
+                                        releasePageItems.downOrder(index)
+                                    },
+                                    moveUp = {
+                                        releasePageItems.upOrder(index)
+                                    }
                                 )
                             }
                         }

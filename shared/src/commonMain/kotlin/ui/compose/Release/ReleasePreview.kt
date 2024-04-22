@@ -9,14 +9,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -36,7 +34,6 @@ import asImageBitmap
 import com.aay.compose.baseComponents.model.GridOrientation
 import com.aay.compose.lineChart.LineChart
 import com.aay.compose.lineChart.model.LineParameters
-import com.aay.compose.lineChart.model.LineType
 import util.compose.Label
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
@@ -140,35 +137,25 @@ fun PreviewContent(
                                         .height(300.dp)
                                         .width((50.dp + (100 * releasePageItem.lineParameters.size).dp))
                                 ){
-//                                    LineChart(
-//                                        xAxisData = releasePageItem.lineParameters.toList().map {
-//                                            it.x.value
-//                                        },
-//                                        linesParameters = listOf(
-//                                            LineParameters(
-//                                                label = releasePageItem.label.value,
-//                                                data = releasePageItem.lineParameters.map {
-//                                                    it.y.value.toDouble()
-//                                                },
-//                                                lineColor = Color.Red, lineType = LineType.CURVED_LINE, lineShadow = true,)
-//                                        ),
-//                                    )
                                     LineChart(
-                                        modifier = Modifier.fillMaxHeight().wrapContentWidth(),
+                                        modifier = Modifier.fillMaxSize(),
                                         linesParameters = listOf(
                                             LineParameters(
                                                 label = releasePageItem.label.value,
                                                 data = releasePageItem.lineParameters.map {
                                                     it.y.value.toDouble()
                                                 },
-                                                lineColor = Color.Red, lineType = LineType.CURVED_LINE, lineShadow = true,)
+                                                lineColor = releasePageItem.gridColor.value,
+                                                lineType = releasePageItem.lineType.value,
+                                                lineShadow = releasePageItem.lineShadow.value,
+                                            )
                                         ),
-                                        isGrid = true,
+                                        isGrid = releasePageItem.isGrid.value,
                                         gridColor = Color.Blue,
                                         xAxisData = releasePageItem.lineParameters.map {
                                             it.x.value
                                         },
-                                        animateChart = true,
+                                        animateChart = releasePageItem.animateChart.value,
                                         showGridWithSpacer = true,
                                         yAxisStyle = TextStyle(
                                             fontSize = 14.sp,
