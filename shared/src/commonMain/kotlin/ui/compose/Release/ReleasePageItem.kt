@@ -49,10 +49,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import asImageBitmap
+import com.aay.compose.baseComponents.model.GridOrientation
+import com.aay.compose.lineChart.LineChart
+import com.aay.compose.lineChart.model.LineParameters
 import com.aay.compose.lineChart.model.LineType
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
@@ -71,7 +77,7 @@ sealed interface ReleasePageItem{
         val animateChart = mutableStateOf(true)
         val lineShadow = mutableStateOf(true)
         val lineType = mutableStateOf(LineType.CURVED_LINE)
-        val isGrid = mutableStateOf<Boolean>(false)
+        val isGrid = mutableStateOf<Boolean>(true)
         val gridColor = mutableStateOf<Color>(Color.Gray)
         val label = mutableStateOf<String>("")
         val lineParameters = mutableStateListOf<LineParametersDataItem>()
@@ -654,5 +660,59 @@ fun ReleasePageItemLineChart(
                 }
             }
         }
+    }
+}
+
+
+
+@Composable
+fun LineChartSample() {
+
+    val testLineParameters: List<LineParameters> = listOf(
+        LineParameters(
+            label = "revenue",
+            data = listOf(70.0, 00.0, 50.33, 40.0, 100.500, 50.0),
+            lineColor = Color.Gray,
+            lineType = LineType.CURVED_LINE,
+            lineShadow = true,
+        ),
+        LineParameters(
+            label = "Earnings",
+            data = listOf(60.0, 80.6, 40.33, 86.232, 88.0, 90.0),
+            lineColor = Color(0xFFFF7F50),
+            lineType = LineType.DEFAULT_LINE,
+            lineShadow = true
+        ),
+        LineParameters(
+            label = "Earnings",
+            data = listOf(1.0, 40.0, 11.33, 55.23, 1.0, 100.0),
+            lineColor = Color(0xFF81BE88),
+            lineType = LineType.CURVED_LINE,
+            lineShadow = false,
+        )
+    )
+
+    Box(Modifier) {
+        LineChart(
+            modifier = Modifier.fillMaxSize(),
+            linesParameters = testLineParameters,
+            isGrid = true,
+            gridColor = Color.Blue,
+            xAxisData = listOf("2015", "2016", "2017", "2018", "2019", "2020"),
+            animateChart = true,
+            showGridWithSpacer = true,
+            yAxisStyle = TextStyle(
+                fontSize = 14.sp,
+                color = Color.Gray,
+            ),
+            xAxisStyle = TextStyle(
+                fontSize = 14.sp,
+                color = Color.Gray,
+                fontWeight = FontWeight.W400
+            ),
+            yAxisRange = 14,
+            oneLineChart = false,
+            gridOrientation = GridOrientation.VERTICAL
+        )
     }
 }

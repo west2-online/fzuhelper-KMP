@@ -135,41 +135,45 @@ fun PreviewContent(
                                 Box(
                                     modifier = Modifier
                                         .height(300.dp)
-                                        .width((50.dp + (100 * releasePageItem.lineParameters.size).dp))
+                                        .width((100.dp + (100 * releasePageItem.lineParameters.size).dp))
                                 ){
-                                    LineChart(
-                                        modifier = Modifier.fillMaxSize(),
-                                        linesParameters = listOf(
-                                            LineParameters(
-                                                label = releasePageItem.label.value,
-                                                data = releasePageItem.lineParameters.map {
-                                                    it.y.value.toDouble()
+                                    Box(Modifier){
+                                        releasePageItem.lineParameters.let {
+                                            LineChart(
+                                                modifier = Modifier.fillMaxSize(),
+                                                linesParameters = listOf(
+                                                    LineParameters(
+                                                        label = releasePageItem.label.value,
+                                                        data = it.map {
+                                                            it.y.value.toDouble()
+                                                        },
+                                                        lineColor = releasePageItem.gridColor.value,
+                                                        lineType = releasePageItem.lineType.value,
+                                                        lineShadow = releasePageItem.lineShadow.value,
+                                                    )
+                                                ),
+                                                isGrid = releasePageItem.isGrid.value,
+                                                gridColor = Color.Blue,
+                                                xAxisData = it.map {
+                                                    it.x.value
                                                 },
-                                                lineColor = releasePageItem.gridColor.value,
-                                                lineType = releasePageItem.lineType.value,
-                                                lineShadow = releasePageItem.lineShadow.value,
+                                                animateChart = releasePageItem.animateChart.value,
+                                                showGridWithSpacer = true,
+                                                yAxisStyle = TextStyle(
+                                                    fontSize = 14.sp,
+                                                    color = Color.Gray,
+                                                ),
+                                                xAxisStyle = TextStyle(
+                                                    fontSize = 14.sp,
+                                                    color = Color.Gray,
+                                                    fontWeight = FontWeight.W400
+                                                ),
+                                                yAxisRange = 14,
+                                                oneLineChart = false,
+                                                gridOrientation = GridOrientation.VERTICAL
                                             )
-                                        ),
-                                        isGrid = releasePageItem.isGrid.value,
-                                        gridColor = Color.Blue,
-                                        xAxisData = releasePageItem.lineParameters.map {
-                                            it.x.value
-                                        },
-                                        animateChart = releasePageItem.animateChart.value,
-                                        showGridWithSpacer = true,
-                                        yAxisStyle = TextStyle(
-                                            fontSize = 14.sp,
-                                            color = Color.Gray,
-                                        ),
-                                        xAxisStyle = TextStyle(
-                                            fontSize = 14.sp,
-                                            color = Color.Gray,
-                                            fontWeight = FontWeight.W400
-                                        ),
-                                        yAxisRange = 14,
-                                        oneLineChart = false,
-                                        gridOrientation = GridOrientation.VERTICAL
-                                    )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -228,3 +232,5 @@ fun ReleasePageItemImageForShow(
         }
     )
 }
+
+
