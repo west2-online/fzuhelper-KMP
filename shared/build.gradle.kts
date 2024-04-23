@@ -151,7 +151,7 @@ kotlin {
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.10.1")
                 implementation("io.ktor:ktor-client-okhttp:$ktor_version")
-
+                implementation("org.jetbrains.compose.components:components-ui-tooling-preview-common:1.6.2")
                 //koin
                 implementation("io.insert-koin:koin-android:$koin_version")
                 api("dev.icerock.moko:mvvm-livedata-material:0.16.1") // api mvvm-livedata, Material library android extensions

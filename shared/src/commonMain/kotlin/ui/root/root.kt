@@ -100,6 +100,7 @@ fun tokenJump(
     }
 }
 
+@Preview
 @Composable
 fun RootUi(
     systemAction: SystemAction
