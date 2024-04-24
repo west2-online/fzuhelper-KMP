@@ -12,8 +12,8 @@ data class ModifierData(
 ){
     fun toNetworkResult(): NetworkResult<String> {
         return when(code){
-            2 -> NetworkResult.Success("更新失败")
-            0 -> networkErrorWithLog(code,"年龄必须为数字")
+            0 -> NetworkResult.Success("用户信息更改成功")
+            1 -> networkErrorWithLog(code,"年龄必须为数字或数据格式错误")
             else -> networkErrorWithLog(code,"更新失败")
         }
     }
@@ -27,7 +27,7 @@ data class ModifierAvatar(
 ){
     fun toNetworkResult(): NetworkResult<String>{
         return when(code){
-            3 -> NetworkResult.Success("头像更新成功")
+            0 -> NetworkResult.Success("头像更新成功")
             else -> networkErrorWithLog(code,"修改失败")
         }
     }

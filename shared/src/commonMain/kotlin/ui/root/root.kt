@@ -31,7 +31,6 @@ import ui.setting.SettingTransitions
 import util.compose.EasyToast
 import util.compose.FuTalkTheme
 
-
 interface RootAction{
     fun reLogin()
     fun finishLogin()
@@ -100,7 +99,6 @@ fun tokenJump(
     }
 }
 
-@Preview
 @Composable
 fun RootUi(
     systemAction: SystemAction

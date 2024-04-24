@@ -5,6 +5,7 @@ val ktor_version = "2.3.5"
 val serialization_version = "1.6.2"
 val markdown_version = "0.10.0"
 val sqlDelightVersion = "2.0.1"
+val voyagerVersion = "1.0.0"
 
 plugins {
     val sqlDelightVersion = "2.0.1"
@@ -44,8 +45,12 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material)
+//                implementation(compose.uiTooling)
+//                implementation(compose.components.uiToolingPreview)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
+                implementation(compose.material3)
+
                 //图像
                 implementation("media.kamel:kamel-image:0.7.3")
                 implementation("io.ktor:ktor-client-core:$ktor_version")
@@ -94,42 +99,29 @@ kotlin {
                 implementation("app.cash.paging:paging-common:3.3.0-alpha02-0.4.0")
                 implementation("app.cash.paging:paging-compose-common:3.3.0-alpha02-0.4.0")
 
-                implementation(compose.material3)
+
 
                 implementation("com.doist.x:normalize:1.0.5")
+
                 //加密库
                 implementation("dev.whyoleg.cryptography:cryptography-core:0.2.0")
+
 //              //webview
                 implementation("io.github.kevinnzou:compose-webview-multiplatform:1.8.8")
 
                 implementation("com.mikepenz:multiplatform-markdown-renderer:${markdown_version}")
 
                 //appyx导航
-
                 implementation("com.bumble.appyx:appyx-navigation:$appyx_version")
                 implementation("com.bumble.appyx:appyx-interactions:$appyx_version")
                 implementation("com.bumble.appyx:backstack:$appyx_version")
                 implementation("com.bumble.appyx:spotlight:$appyx_version")
-//                api("com.bumble.appyx:utils-material3:$appyx_version")
-                //voyager
 
-                val voyagerVersion = "1.0.0"
-
-                // Multiplatform
-
-                // Navigator
+                // Voyager
                 implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
-
-                // Screen Model
                 implementation("cafe.adriel.voyager:voyager-screenmodel:$voyagerVersion")
-
-                // BottomSheetNavigator
                 implementation("cafe.adriel.voyager:voyager-bottom-sheet-navigator:$voyagerVersion")
-
-                // TabNavigator
                 implementation("cafe.adriel.voyager:voyager-tab-navigator:$voyagerVersion")
-
-                // Transitions
                 implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
 
                 //sqlDelight
@@ -151,7 +143,6 @@ kotlin {
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.10.1")
                 implementation("io.ktor:ktor-client-okhttp:$ktor_version")
-                implementation("org.jetbrains.compose.components:components-ui-tooling-preview-common:1.6.2")
                 //koin
                 implementation("io.insert-koin:koin-android:$koin_version")
                 api("dev.icerock.moko:mvvm-livedata-material:0.16.1") // api mvvm-livedata, Material library android extensions

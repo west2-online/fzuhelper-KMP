@@ -12,8 +12,7 @@ data class PersonIdentityData(
 ){
     fun toNetworkResult(): NetworkResult<PersonIdentityData> {
         return when(code){
-            0 -> networkErrorWithLog(code,"获取身份失败")
-            1 -> NetworkResult.Success<PersonIdentityData>(this)
+            0 -> NetworkResult.Success<PersonIdentityData>(this)
             else -> networkErrorWithLog(code,"获取失败")
         }
     }
