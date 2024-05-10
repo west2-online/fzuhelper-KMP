@@ -14,13 +14,13 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 suspend fun <T>Flow<T>.catchWithMassage (
     label: String = "",
-    action: suspend kotlinx.coroutines.flow.FlowCollector<T>.(label:String,kotlin.Throwable) -> kotlin.Unit,
+    action:  (suspend kotlinx.coroutines.flow.FlowCollector<T>.(label:String,kotlin.Throwable) -> kotlin.Unit)?,
 ): Flow<T> {
     return this.catch {
         if(BaseUrlConfig.isDebug){
             println("$label error : ${it.message.toString()}")
         }
-        action.invoke(this,label,it)
+        action?.invoke(this,label,it)
     }
 }
 

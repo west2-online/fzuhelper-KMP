@@ -9,6 +9,7 @@ val voyagerVersion = "1.0.0"
 
 plugins {
     val sqlDelightVersion = "2.0.1"
+    val androidxRoom = "2.7.0-alpha01"
     kotlin("multiplatform")
     id("com.android.library")
     id("org.jetbrains.compose")
@@ -134,6 +135,17 @@ kotlin {
 
                 val latest_release = "Beta-0.0.5"
                 implementation("io.github.thechance101:chart:$latest_release")
+
+                val ksoup_version = "0.1.2"
+                implementation("com.fleeksoft.ksoup:ksoup:$ksoup_version")
+
+                val androidxRoom = "2.7.0-alpha01"
+                val sqlite = "2.5.0-SNAPSHOT"
+
+//                implementation("androidx.room:room-compiler:$androidxRoom")
+//                implementation("androidx:room:room-runtime:$androidxRoom")
+//                implementation("androidx:sqlite:sqlite-bundled:$sqlite")
+
             }
         }
         val androidMain by getting {
@@ -182,6 +194,7 @@ kotlin {
         }
     }
 }
+
 
 android {
     compileSdk = (findProperty("android.compileSdk") as String).toInt()

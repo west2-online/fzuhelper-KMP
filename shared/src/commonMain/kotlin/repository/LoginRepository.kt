@@ -21,7 +21,6 @@ import io.ktor.utils.io.charsets.Charset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
-import kotlinx.serialization.Serializable
 
 class LoginRepository(private val loginClient : LoginClient) {
     val client = loginClient.client
@@ -170,11 +169,7 @@ enum class LoginResult{
     LoginError
 }
 
-@Serializable
-data class JwchTokenLoginResponseDto(
-    val code: Int,
-    val info: String
-)
+
 
 class SimpleSubstitutionCipher(private val key: String) {
     // 加密

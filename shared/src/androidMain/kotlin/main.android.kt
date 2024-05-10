@@ -59,7 +59,6 @@ actual fun ByteArray.asImageBitmap(): ImageBitmap{
 }
 
 actual fun HttpClientConfig<*>.configureForPlatform() {
-
     engine {
         this as OkHttpConfig
         config {

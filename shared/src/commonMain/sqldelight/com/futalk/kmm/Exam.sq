@@ -1,0 +1,18 @@
+CREATE TABLE Exam (
+    examId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name Text NOT NULL,
+    xuefen Text NOT NULL,
+    teacher Text NOT NULL,
+    address Text NOT NULL,
+    zuohao Text NOT NULL
+);
+
+selectAllExams:
+SELECT * FROM Exam;
+
+clearAllExams:
+DELETE FROM Exam;
+
+insertNewExams:
+INSERT INTO Exam (name,xuefen,teacher,address,zuohao) VALUES (?,?,?,?,?);
+

@@ -1,0 +1,33 @@
+CREATE TABLE IF NOT EXISTS CourseBean (
+    courseId INTEGER PRIMARY KEY AUTOINCREMENT,
+    kcName TEXT NOT NULL ,
+    kcLocation TEXT NOT NULL,
+    kcStartTime INTEGER NOT NULL,
+    kcEndTime INTEGER NOT NULL,
+    kcStartWeek INTEGER NOT NULL,
+    kcEndWeek INTEGER NOT NULL,
+    kcIsDouble INTEGER NOT NULL,
+    kcIsSingle INTEGER NOT NULL,
+    kcWeekend INTEGER NOT NULL,
+    kcYear INTEGER NOT NULL,
+    kcXuenian INTEGER NOT NULL,
+    kcNote TEXT NOT NULL,
+    kcBackgroundId INTEGER NOT NULL,
+    shoukeJihua TEXT NOT NULL,
+    jiaoxueDagang TEXT NOT NULL,
+    teacher TEXT NOT NULL,
+    priority INTEGER NOT NULL,
+    type INTEGER NOT NULL
+);
+
+insertCourse:
+INSERT INTO CourseBean (kcName,kcLocation,kcStartTime,kcEndTime,kcStartWeek,kcEndWeek,kcIsDouble,kcIsSingle,kcWeekend,kcYear,kcXuenian,kcNote,kcBackgroundId,shoukeJihua,jiaoxueDagang,teacher,priority,type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+
+getAllCourse:
+SELECT * FROM CourseBean;
+
+clearCourse:
+DELETE FROM CourseBean;
+
+deleteCourseByXq:
+DELETE FROM CourseBean WHERE kcXuenian = ? AND kcYear = ? ;

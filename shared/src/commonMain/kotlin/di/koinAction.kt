@@ -4,6 +4,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import com.liftric.kvault.KVault
 import config.BaseUrlConfig
 import configureForPlatform
+import dao.KValueAction
 import initStore
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -15,12 +16,20 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.HttpRequestPipeline
 import io.ktor.client.statement.HttpReceivePipeline
+import io.ktor.client.statement.readBytes
 import io.ktor.client.statement.request
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.encodeBase64
 import io.ktor.util.pipeline.PipelinePhase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.plus
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import repository.ClassScheduleRepository
 import repository.EmptyHouseRepository
 import repository.FeedbackRepository
 import repository.LoginRepository
@@ -54,7 +63,82 @@ import util.encode.encode
 import viewModelDefinition
 import kotlin.random.Random
 import kotlin.random.nextInt
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
+class ClassSchedule(
+    private val classScheduleRepository: ClassScheduleRepository,
+    private val kVaultAction:KValueAction
+){
+    var client:HttpClient? = null
+    private var upDataTime = Clock.System.now().plus(-50, DateTimeUnit.MINUTE)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun getClassScheduleClient() : HttpClient { if (client == null || Clock.System.now() - upDataTime > 20.toDuration(DurationUnit.MINUTES)) {
+            val client : HttpClient = HttpClient {
+                install(ContentNegotiation) {
+                    json()
+                }
+                install(
+                    DefaultRequest
+                ){
+                    url(BaseUrlConfig.BaseUrl)
+                }
+                install(Logging)
+                install(HttpCookies){}
+                install(HttpRedirect) {
+                    checkHttpMethod = false
+                }
+                configure()
+            }
+            classScheduleRepository.apply {
+                val userName = kVaultAction.getUserName()
+                val password = kVaultAction.getSchoolPassword()
+                if(userName == null || password == null){
+                    TODO()
+                    return@apply
+                }
+                var id = ""
+                var num = ""
+                client.getVerifyCode()
+                    .map {
+                        it.encodeBase64()
+                    }
+                    .flatMapConcat { verifyCodeForParse ->
+                        client.loginStudent(
+                            user = userName,
+                            pass = password,
+                            verifyCode = verifyCodeForParse
+                        )
+                    }
+                    .flatMapConcat {
+                    val url = it.call.request.url.toString()
+                    id = url.split("id=")[1].split("&")[0]
+                    num = url.split("num=")[1].split("&")[0]
+                    val token = it.readBytes().decodeToString().split("var token = \"")[1].split("\";")[0]
+                    client.loginByToken(token)
+                }
+                    .flatMapConcat {
+                        val queryMap = hashMapOf(
+                            "id" to id,
+                            "num" to num,
+                            "ssourl" to "https://jwcjwxt2.fzu.edu.cn",
+                            "hosturl" to "https://jwcjwxt2.fzu.edu.cn:81"
+                        )
+                        client.loginCheckXs(queryMap)
+                    }
+                    .collect{
+                        upDateClientTime()
+                    }
+            }
+            return client
+        }
+        return client!!
+    }
+
+    private fun upDateClientTime(){
+        upDataTime = Clock.System.now()
+    }
+}
 class LoginClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
@@ -74,6 +158,24 @@ class LoginClient(
     }
 )
 
+class SchoolClient(
+    val client : HttpClient = HttpClient{
+        install(ContentNegotiation) {
+            json()
+        }
+        install(
+            DefaultRequest
+        ){
+            url(BaseUrlConfig.BaseUrl)
+        }
+        install(Logging)
+        install(HttpCookies){}
+        install(HttpRedirect) {
+            checkHttpMethod = false
+        }
+        configure()
+    }
+)
 class ShareClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
