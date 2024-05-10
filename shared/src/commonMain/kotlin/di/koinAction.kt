@@ -4,7 +4,11 @@ import cafe.adriel.voyager.navigator.Navigator
 import com.liftric.kvault.KVault
 import config.BaseUrlConfig
 import configureForPlatform
+import dao.ClassScheduleDao
+import dao.Dao
+import dao.ExamDao
 import dao.KValueAction
+import dao.YearOpensDao
 import initStore
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -44,6 +48,7 @@ import repository.SplashRepository
 import repository.WeatherRepository
 import ui.compose.Action.ActionViewModel
 import ui.compose.Authentication.AuthenticationViewModel
+import ui.compose.ClassSchedule.ClassScheduleViewModel
 import ui.compose.EmptyHouse.EmptyHouseVoyagerViewModel
 import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.Log.LogViewModel
@@ -70,65 +75,66 @@ class ClassSchedule(
     private val classScheduleRepository: ClassScheduleRepository,
     private val kVaultAction:KValueAction
 ){
+
     var client:HttpClient? = null
     private var upDataTime = Clock.System.now().plus(-50, DateTimeUnit.MINUTE)
+
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun getClassScheduleClient() : HttpClient { if (client == null || Clock.System.now() - upDataTime > 20.toDuration(DurationUnit.MINUTES)) {
-            val client : HttpClient = HttpClient {
+            val client = HttpClient() {
                 install(ContentNegotiation) {
                     json()
                 }
-                install(
-                    DefaultRequest
-                ){
-                    url(BaseUrlConfig.BaseUrl)
-                }
-                install(Logging)
                 install(HttpCookies){}
                 install(HttpRedirect) {
                     checkHttpMethod = false
                 }
-                configure()
+                configureForPlatform()
             }
             classScheduleRepository.apply {
-                val userName = kVaultAction.getUserName()
-                val password = kVaultAction.getSchoolPassword()
-                if(userName == null || password == null){
-                    TODO()
-                    return@apply
-                }
+//                val userName = kVaultAction.getUserName()
+//                val password = kVaultAction.getSchoolPassword()
+//                if(userName == null || password == null){
+//
+//                    return@apply
+//                }
                 var id = ""
                 var num = ""
-                client.getVerifyCode()
-                    .map {
-                        it.encodeBase64()
-                    }
-                    .flatMapConcat { verifyCodeForParse ->
-                        client.loginStudent(
-                            user = userName,
-                            pass = password,
-                            verifyCode = verifyCodeForParse
-                        )
-                    }
-                    .flatMapConcat {
-                    val url = it.call.request.url.toString()
-                    id = url.split("id=")[1].split("&")[0]
-                    num = url.split("num=")[1].split("&")[0]
-                    val token = it.readBytes().decodeToString().split("var token = \"")[1].split("\";")[0]
-                    client.loginByToken(token)
+                client.apply {
+                    getVerifyCode()
+                        .map {
+                            it.encodeBase64()
+                        }
+                        .flatMapConcat { verifyCodeForParse ->
+                            parseVerifyCodeFormWest2(verifyCodeForParse)
+                        }.flatMapConcat { verifyCode ->
+                            loginStudent(
+                                user = "102101624",
+                                pass = "351172abc2015@",
+                                verifyCode = verifyCode
+                            )
+                        }
+                        .flatMapConcat {
+                            val url = it.call.request.url.toString()
+                            id = url.split("id=")[1].split("&")[0]
+                            num = url.split("num=")[1].split("&")[0]
+                            val token = it.readBytes().decodeToString().split("var token = \"")[1].split("\";")[0]
+                            loginByToken(token)
+                        }
+                        .flatMapConcat {
+                            val queryMap = hashMapOf(
+                                "id" to id,
+                                "num" to num,
+                                "ssourl" to "https://jwcjwxt2.fzu.edu.cn",
+                                "hosturl" to "https://jwcjwxt2.fzu.edu.cn:81"
+                            )
+                            loginCheckXs(queryMap)
+                        }
+                        .collect{
+                            upDateClientTime()
+                        }
                 }
-                    .flatMapConcat {
-                        val queryMap = hashMapOf(
-                            "id" to id,
-                            "num" to num,
-                            "ssourl" to "https://jwcjwxt2.fzu.edu.cn",
-                            "hosturl" to "https://jwcjwxt2.fzu.edu.cn:81"
-                        )
-                        client.loginCheckXs(queryMap)
-                    }
-                    .collect{
-                        upDateClientTime()
-                    }
+
             }
             return client
         }
@@ -219,7 +225,12 @@ fun appModule(
     single {
         Setting(get())
     }
-
+    single {
+        KValueAction(get())
+    }
+    single {
+        ClassSchedule(get(),get())
+    }
     single {
         systemAction
     }
@@ -314,6 +325,23 @@ fun appModule(
     single {
         Toast(globalScope)
     }
+    single {
+        Dao(
+            get(),
+            get(),
+            get()
+        )
+    }
+    single {
+        ClassScheduleDao()
+    }
+    single {
+        ExamDao()
+    }
+    single {
+        YearOpensDao()
+    }
+
 }
 fun Module.repositoryList(){
     single {
@@ -352,6 +380,9 @@ fun Module.repositoryList(){
     single {
         EmptyHouseRepository(get())
     }
+    single {
+        ClassScheduleRepository()
+    }
 }
 fun Module.viewModel(){
     viewModelDefinition {
@@ -374,6 +405,9 @@ fun Module.viewModel(){
     }
     single {
         PostDetailViewModel(get(),get(),get())
+    }
+    single {
+        ClassScheduleViewModel(get(),get(),get(),get(),get())
     }
     viewModelDefinition {
         ManageViewModel(get(),get())

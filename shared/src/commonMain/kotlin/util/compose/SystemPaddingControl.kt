@@ -13,6 +13,12 @@ fun Modifier.parentStatusControl(
     boolean: Boolean
 ) = if (boolean) this else this.statusBarsPadding()
 
+fun Modifier.parentStatusControl(
+    parentPaddingControl: ParentPaddingControl
+) = if (parentPaddingControl.parentStatusControl) this else this.statusBarsPadding()
+
+
+
 fun Modifier.parentNavigationControl(
     boolean: Boolean
 ) = if (boolean) this else this.navigationBarsPadding()

@@ -1,8 +1,6 @@
 package ui.compose.ClassSchedule
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
-import androidx.compose.ui.graphics.ImageBitmap
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.fleeksoft.ksoup.Ksoup
@@ -12,12 +10,12 @@ import dao.KValueAction
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import di.ClassSchedule
 import di.CookieUtil
+import di.ShareClient
 import di.database
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,47 +28,73 @@ import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
 import repository.ClassScheduleRepository
 import repository.WeekData
-import util.flow.catchWithMassage
 import util.flow.collectWithMassage
 import util.flow.launchInDefault
-import util.network.NetworkResult
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ClassScheduleViewModel (
     private val kValueAction: KValueAction,
     private val classScheduleRepository: ClassScheduleRepository,
     private val classSchedule: ClassSchedule,
-    private val dao: Dao
+    private val dao: Dao,
+    private val shareClient: ShareClient
 ):ViewModel(){
-    class ClassScheduleUiState {
-        val selectYear = MutableStateFlow<Int>(0)
-        val selectMonth = MutableStateFlow<Int>(0)
-        val selectDay = MutableStateFlow<Int>(0)
+    class ClassScheduleUiState(
+        private val kValueAction: KValueAction,
+    ) {
+        val selectYear = MutableStateFlow<Int>(kValueAction.getDateStartYear() ?: 2023)
+        val selectMonth = MutableStateFlow<Int>(kValueAction.getDateStartMonth() ?: 1)
+        val selectDay = MutableStateFlow<Int>(kValueAction.getDateStartDay() ?: 1)
+        fun refreshStartDate(){
+            selectDay.value = kValueAction.getDateStartDay() ?: 1
+            selectMonth.value = kValueAction.getDateStartMonth() ?: 1
+            selectYear.value = kValueAction.getDateStartYear() ?: 2023
+        }
     }
-    val classScheduleUiState = ClassScheduleUiState()
+    val classScheduleUiState = ClassScheduleUiState(kValueAction)
+
+    init {
+        viewModelScope.launchInDefault {
+            classScheduleRepository.apply {
+                shareClient.client.apply {
+                    getWeek()
+                        .map {
+                            it.apply {
+                                kValueAction.setCurrentWeek(nowWeek)
+                                kValueAction.setCurrentXn(curXuenian)
+                                kValueAction.setCurrentXq(curXueqi)
+                                currentYear.value = getXueQi()
+                                currentWeek.value = nowWeek
+                            }
+                        }
+                        .flatMapConcat {
+                            getSchoolCalendar(it.getXueQi())
+                                .retry(10)
+                                .map { result->
+                                    parseBeginDateReset(it.getXueQi(),result)
+                                }
+                        }.collect{
+                            classScheduleUiState.refreshStartDate()
+                        }
+                }
+            }
+        }
+    }
+
+    var currentYear = MutableStateFlow<String?>(kValueAction.getCurrentYear())
+    var currentWeek = MutableStateFlow<Int>(kValueAction.getCurrentWeek() ?: 1)
+
+    val scrollState = ScrollState(initial = 0)
+    val academicYearSelectsDialogState = MutableStateFlow(false)
+    val courseDialog = MutableStateFlow<CourseBean?>(null)
+
+
     private var course : Flow<List<CourseBean>> = database.classScheduleQueries
         .getAllCourse()
         .asFlow()
         .mapToList(Dispatchers.IO)
 
-    var currentYear = MutableStateFlow<String?>(null)
-    var currentWeek = MutableStateFlow<Int>(1)
-    val yearOptions = database.yearOptionsQueries
-        .getAllYearOptions()
-        .asFlow()
-        .mapToList(Dispatchers.IO)
 
-    val scrollState = ScrollState(initial = 0)
-    @OptIn(ExperimentalFoundationApi::class)
-
-
-    val academicYearSelectsDialogState = MutableStateFlow(false)
-    val courseDialog = MutableStateFlow<CourseBean?>(null)
-
-    val refreshDialog = MutableStateFlow(false)
-    var refreshDialogVerificationCode =  MutableStateFlow<ImageBitmap?>(null)
-    val refreshVerificationCodeState  =  MutableStateFlow<NetworkResult<String>>(NetworkResult.LoadingWithAction())
-    val refreshClickAble = MutableStateFlow(true)
-    val refreshButtonState = MutableStateFlow<NetworkResult<String>>(NetworkResult.LoadingWithAction())
     val courseForShow = currentYear
         .combine(course){
             currentYear,course -> course.filter {
@@ -83,13 +107,19 @@ class ClassScheduleViewModel (
             listOf()
         )
 
+
+    val yearOptions = database.yearOptionsQueries
+        .getAllYearOptions()
+        .asFlow()
+        .mapToList(Dispatchers.IO)
+
+
     @OptIn(ExperimentalCoroutinesApi::class)
     fun refreshInitData(){
         viewModelScope.launch(Dispatchers.IO) {
             classScheduleRepository.apply {
-                val client = async {
-                    classSchedule.getClassScheduleClient()
-                }.await()
+                val client =  classSchedule.getClassScheduleClient()
+
                 client.getWeek()
                     .map {
                         it.apply {
@@ -100,14 +130,11 @@ class ClassScheduleViewModel (
                             currentWeek.value = nowWeek
                         }
                     }
-                    .catchWithMassage { label, throwable ->
-                        TODO()
-                    }
                     .flatMapConcat {
                         client.getSchoolCalendar(it.getXueQi())
                             .retry(10)
                             .map { result->
-                                parseBeginDate(it.getXueQi(),result)
+                                parseBeginDateReset(it.getXueQi(),result)
                             }
                     }.collect {
                         client.getCourseFromNetwork()
@@ -117,6 +144,7 @@ class ClassScheduleViewModel (
         }
     }
 
+    //获取课程
     @OptIn(ExperimentalCoroutinesApi::class)
     fun HttpClient.getCourseFromNetwork(){
         viewModelScope.launchInDefault {
@@ -125,7 +153,6 @@ class ClassScheduleViewModel (
                 id ?: run{
                     return@launchInDefault
                 }
-                getExamData()
                 this@getCourseFromNetwork.getCourseStateHTML(id)
                     .zip(
                         this@getCourseFromNetwork.getWeek()
@@ -154,6 +181,7 @@ class ClassScheduleViewModel (
         }
     }
 
+    //获取非当前学期的课程
     @OptIn(ExperimentalCoroutinesApi::class)
     fun HttpClient.getOtherCourseFromNetwork(
         loadedYear : String,
@@ -194,6 +222,7 @@ class ClassScheduleViewModel (
         }
     }
 
+    //获取考试
     private fun HttpClient.getExamData(){
         viewModelScope.launch(Dispatchers.IO) {
             val xq = kValueAction.getCurrentXq()
@@ -213,100 +242,8 @@ class ClassScheduleViewModel (
         viewModelScope.launch(Dispatchers.IO) {
             val client = classSchedule.getClassScheduleClient()
             client.getCourseFromNetwork()
-//            else{
-//                refreshDialog.value = true
-////                BlockLoginPageRepository.getVerifyCode().catch {
-////                    refreshVerificationCodeState.value = WhetherVerificationCode.FAIL
-////                }.collectWithError {
-////                    val bitmap = BitmapFactory.decodeByteArray(it, 0, it.size)
-////                    refreshDialogVerificationCode.value = bitmap.asImageBitmap()
-////                    refreshVerificationCodeState.value = WhetherVerificationCode.SUCCESS
-////                }
-//            }
         }
     }
-
-//    fun refreshWithVerificationCode(verification:String){
-//        viewModelScope.launch(Dispatchers.IO) {
-//            refreshButtonState.logicIfNotLoading {
-//                val passwordState = kValueAction.getSchoolPassword()
-//                val usernameState = kValueAction.getCurrentWeek()
-//                if (passwordState == null || usernameState == null){
-//                    TODO()
-//                    return@logicIfNotLoading
-//                }
-//                classSchedule
-//                BlockLoginPageRepository.loginStudent(
-//                    pass = passwordState,
-//                    user = usernameState,
-//                    captcha = verification,
-//                    everyErrorAction = {
-//                        refreshCourse()
-//                        refreshButtonState.value = ButtonState.Normal
-//                    }
-//                )
-//                    .flatMapConcat {
-//                        BlockLoginPageRepository.loginByTokenForIdInUrl(
-//                            result = it,
-//                            failedToGetAccount = {
-//                                easyToast(it.message.toString())
-//                                refreshButtonState.value = ButtonState.Normal
-//                            },
-//                            elseMistake = { error ->
-//                                easyToast(error.message.toString())
-//                                refreshButtonState.value = ButtonState.Normal
-//                            }
-//                        ).retryWhen{ error, tryTime ->
-//                            error.message == "获取account失败" && tryTime <= 3
-//                        }
-//                            .catchWithMassage {
-//                                if(it.message == "获取account失败"){
-//                                    refreshButtonState.value = ButtonState.Normal
-//                                    easyToast(it.message.toString())
-//                                }
-//                                else{
-//                                    refreshButtonState.value = ButtonState.Normal
-//                                    easyToast(it.message.toString())
-//                                }
-//                            }.flowIO()
-//                    }
-//                    .flatMapConcat {
-//                        BlockLoginPageRepository.loadCookieData(
-//                            queryMap = it,
-//                            user = usernameState
-//                        )
-//                    }
-//                    .flatMapConcat {
-//                        BlockLoginPageRepository.checkTheUserInformation(
-//                            user = usernameState,
-//                            serialNumberHandling = {
-//
-//                            }
-//                        ).catchWithMassage {
-//                            refreshButtonState.value = ButtonState.Normal
-//                        }
-//                    }
-//                    .collectWithError{ loginResult ->
-//                        when(loginResult){
-//                            LoginResult.LoginError->{
-//                                refreshButtonState.value = ButtonState.Normal
-//                                easyToast("刷新失败")
-//                            }
-//                            LoginResult.LoginSuccess->{
-//                                setUserDataStore(UserPreferencesKey.USER_DATA_VALIDITY_PERIOD,
-//                                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-//                                easyToast("刷新成功")
-//                                refreshButtonState.value = ButtonState.Normal
-//                                getCourseFromNetwork()
-//                            }
-//                        }
-//                    }
-//            }
-//        }
-//        viewModelScope.launch(Dispatchers.IO) {
-//            getExamData()
-//        }
-//    }
 
     fun changeCurrentYear(newValue:String){
         viewModelScope.launch {
@@ -315,24 +252,16 @@ class ClassScheduleViewModel (
                  classSchedule.getClassScheduleClient().getSchoolCalendar(newValue)
                      .retry(10)
                      .map { result->
-                         parseBeginDate(newValue,result)
+                         return@map parseBeginDateReset(newValue,result)
                      }
                      .collectWithMassage { label, data ->
-                         TODO()
+
                      }
             }
         }
     }
 
-    data class ExamBean(
-        var name: String = "",
-        var xuefen: String = "",
-        var teacher: String = "",
-        var address: String = "",
-        var zuohao: String = ""
-    )
-
-    fun parseExamsHTML(result: String): List<ExamBean> {
+    private fun parseExamsHTML(result: String): List<ExamBean> {
         val exams = ArrayList<ExamBean>()
         val document = Ksoup.parse(result)
         val examElements = document.select("table[id=ContentPlaceHolder1_DataList_xxk]")
@@ -369,7 +298,7 @@ class ClassScheduleViewModel (
      * 解析开学时间网页
      * @param result 获取到的网页
      */
-    private suspend fun parseBeginDate(xq: String, result: String) {
+    private fun parseBeginDateReset(xq: String, result: String) {
         val document = Ksoup.parse(result)
         val select = document.getElementsByTag("select")[0]
         val option = select.getElementsByAttributeValueStarting("value", xq)
@@ -383,6 +312,9 @@ class ClassScheduleViewModel (
                 setDateStartYear(beginYear)
                 setDateStartDay(beginDay)
             }
+            println(beginMonth)
+            println(beginYear)
+            println(beginDay)
 //            println(beginMonth)
 //                val calendar = Calendar.getInstance()
 //                calendar.set(beginYear, beginMonth - 1, beginDay, 0, 0, 0)
@@ -403,3 +335,10 @@ class ClassScheduleViewModel (
     }
 }
 
+data class ExamBean(
+    var name: String = "",
+    var xuefen: String = "",
+    var teacher: String = "",
+    var address: String = "",
+    var zuohao: String = ""
+)

@@ -21,11 +21,10 @@ import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import util.math.Integer
 
-class ClassScheduleRepository (
-
-){
+class ClassScheduleRepository {
     suspend fun HttpClient.loginStudent(
         user: String,
         pass: String,
@@ -91,8 +90,8 @@ class ClassScheduleRepository (
                 headers {
                     append("X-Requested-With", "XMLHttpRequest")
                 }
-            }.body<JwchTokenLoginResponseDto>()
-            emit(response)
+            }.bodyAsText(Charset.forName("GB2312"))
+            emit(Json.decodeFromString<JwchTokenLoginResponseDto>(response))
         }
     }
 
@@ -140,6 +139,7 @@ class ClassScheduleRepository (
             emit(response)
         }
     }
+
     suspend fun HttpClient.getCourses(xq:String,stateHTML:String):Flow<Map<String,String>>{
         return flow {
             val viewStateMap = parseCourseStateHTML(stateHTML)

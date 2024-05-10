@@ -28,6 +28,7 @@ class GrepTest {
             "ABC 123"
         )
     }
+
     @Test
     fun grep(lines: List<String>, pattern: String, action: (String) -> Unit) {
         val encodedPemContent: String = PEM.encode(
@@ -67,5 +68,6 @@ class GrepTest {
             println(data.version.last().canUse)
         }
     }
+
 
 }

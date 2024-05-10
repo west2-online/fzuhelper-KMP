@@ -18,11 +18,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Share
@@ -44,6 +42,7 @@ import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import ui.compose.Action.ActionVoyagerScreen
+import ui.compose.ClassSchedule.ClassScheduleVoyagerScreen
 import ui.compose.Massage.MassageVoyagerScreen
 import ui.compose.Person.PersonVoyagerScreen
 import ui.compose.Post.PostVoyagerScreen
@@ -58,6 +57,11 @@ enum class MainItems(
     val unSelectImageVector: ImageVector,
     val selectImageVector: ImageVector,
 ){
+    CLASS(
+        "课表",
+        unSelectImageVector = Icons.Outlined.Home,
+        selectImageVector = Icons.Filled.Home,
+    ),
     POST(
         "主页",
         unSelectImageVector = Icons.Outlined.Home,
@@ -68,11 +72,11 @@ enum class MainItems(
         unSelectImageVector = Icons.Outlined.Share,
         selectImageVector = Icons.Filled.Share,
     ),
-    MASSAGE(
-        "消息",
-        unSelectImageVector = Icons.Outlined.Email,
-        selectImageVector = Icons.Filled.Email,
-    ),
+//    MASSAGE(
+//        "消息",
+//        unSelectImageVector = Icons.Outlined.Email,
+//        selectImageVector = Icons.Filled.Email,
+//    ),
 
     PERSON(
         "个人",
@@ -88,7 +92,7 @@ class MainVoyagerScreen(
 ) : Screen {
     @Composable
     override fun Content() {
-        TabNavigator(PostVoyagerScreen(
+        TabNavigator(ClassScheduleVoyagerScreen(
             parentPaddingControl = ParentPaddingControl(
                 parentNavigatorControl = true
             )
@@ -134,9 +138,9 @@ class MainVoyagerScreen(
                                         .align(Alignment.Center)
                                 )
                             }
+                            BottomClassTab()
                             BottomPostTab()
                             BottomActionTab()
-                            BottomMassageTab()
                             BottomPersonTab()
                         }
                     }
@@ -231,10 +235,48 @@ fun RowScope.BottomActionTab(){
     )
 }
 
+//@Composable
+//fun RowScope.BottomMassageTab(){
+//    val currentTabNavigator = LocalTabNavigator.current
+//    val item = MainItems.Class
+//    this.BottomNavigationItem(
+//        icon = {
+//            val imageVector = remember(currentTabNavigator.current) {
+//                mutableStateOf(
+//                    if( currentTabNavigator.current is MassageVoyagerScreen){
+//                        item.selectImageVector
+//                    } else{
+//                        item.unSelectImageVector
+//                    }
+//                )
+//            }
+//            Crossfade (
+//                imageVector.value
+//            ){
+//                Icon(
+//                    it,
+//                    contentDescription = null,
+//                    modifier = Modifier
+//                )
+//            }
+//        },
+//        label = { Text(item.tag) },
+//        selected = currentTabNavigator.current is PostVoyagerScreen,
+//        onClick = {
+//            currentTabNavigator.current = MassageVoyagerScreen(
+//                ParentPaddingControl(false,true)
+//            )
+//        },
+//        selectedContentColor = MaterialTheme.colors.primaryVariant,
+//        modifier = Modifier
+//    )
+//}
+//
+
 @Composable
-fun RowScope.BottomMassageTab(){
+fun RowScope.BottomClassTab(){
     val currentTabNavigator = LocalTabNavigator.current
-    val item = MainItems.MASSAGE
+    val item = MainItems.CLASS
     this.BottomNavigationItem(
         icon = {
             val imageVector = remember(currentTabNavigator.current) {
@@ -257,10 +299,10 @@ fun RowScope.BottomMassageTab(){
             }
         },
         label = { Text(item.tag) },
-        selected = currentTabNavigator.current is PostVoyagerScreen,
+        selected = currentTabNavigator.current is ClassScheduleVoyagerScreen,
         onClick = {
-            currentTabNavigator.current = MassageVoyagerScreen(
-                ParentPaddingControl(false,true)
+            currentTabNavigator.current = ClassScheduleVoyagerScreen(
+                parentPaddingControl = ParentPaddingControl(false,true)
             )
         },
         selectedContentColor = MaterialTheme.colors.primaryVariant,

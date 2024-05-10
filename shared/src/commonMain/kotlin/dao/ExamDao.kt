@@ -1,14 +1,14 @@
 package dao
 
 import di.database
-import ui.compose.ClassSchedule.ClassScheduleViewModel
+import ui.compose.ClassSchedule.ExamBean
 
 class ExamDao {
     private fun clearAllExam(){
         database.examQueries.clearAllExams()
     }
 
-    fun insertExam(list: List<ClassScheduleViewModel.ExamBean>){
+    fun insertExam(list: List<ExamBean>){
         clearAllExam()
         database.examQueries.transaction {
             list.forEach {

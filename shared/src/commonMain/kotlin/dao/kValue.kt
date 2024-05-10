@@ -8,19 +8,20 @@ const val CurrentXnKey = "98732304A26DE50AA3AB0482E1EDE29D"
 const val CurrentXqKey = "0FB02FA9044F857DDE2698969CDBD922"
 const val CurrentWeekKey = "3A71102348BA4E0FCB7FF023B620FF41"
 const val UserSchoolIdKey = "EEA8B39A11F52C4D3008558D5A2A1FD4"
-const val DataStartDayKey = ""
-const val DataStartMonthKey = ""
-const val DataStartYearKey = ""
+const val DataStartDayKey = "80565831CC70729C3E63CE4519801927"
+const val DataStartMonthKey = "B3D7460CEE2F189E12B9CE307FE78E6A"
+const val DataStartYearKey = "EAFA832A834A4A09612AF4D1E80BCCBF"
+
 class KValueAction(
     private val kValue:KVault
 ) {
+
     fun getUserName(): String? {
         return kValue.string(SchoolUserNameKey)
     }
     fun setUserName(userName : String): Boolean {
         return kValue.set(SchoolUserNameKey,userName)
     }
-
     fun getSchoolPassword(): String? {
         return kValue.string(SchoolPasswordKey)
     }
@@ -35,6 +36,7 @@ class KValueAction(
         return kValue.int(CurrentXnKey)
     }
 
+
     fun setCurrentXq(currentXq:Int): Boolean {
         return kValue.set(CurrentXqKey,currentXq)
     }
@@ -42,11 +44,20 @@ class KValueAction(
         return kValue.int(CurrentXqKey)
     }
 
-    fun getCurrentWeek(): String? {
-        return kValue.string(CurrentWeekKey)
+    fun getCurrentWeek(): Int? {
+        return kValue.int(CurrentWeekKey)
     }
     fun setCurrentWeek(currentWeek:Int): Boolean {
         return kValue.set(CurrentWeekKey,currentWeek)
+    }
+
+    fun getCurrentYear():String?{
+        val curXueqi = getCurrentXq()
+        val curXuenian = getCurrentXn()
+        if(curXueqi == null || curXuenian == null){
+            return null
+        }
+        return "${curXueqi}0$curXuenian}"
     }
 
     fun getUserSchoolId(): String? {

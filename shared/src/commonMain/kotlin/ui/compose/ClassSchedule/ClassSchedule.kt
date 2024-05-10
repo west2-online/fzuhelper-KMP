@@ -30,7 +30,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
@@ -65,15 +64,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.futalk.kmm.CourseBean
 import com.futalk.kmm.YearOptions
+import config.CurrentZone
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.koinInject
+import util.compose.ParentPaddingControl
 import util.compose.ScrollSelection
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentStatusControl
+import kotlin.jvm.Transient
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -82,7 +87,7 @@ import kotlin.time.toDuration
 @Composable
 fun ClassSchedule(
     classScheduleViewModel: ClassScheduleViewModel = koinInject<ClassScheduleViewModel>(),
-    openDrawer : ()->Unit = {}
+    parentPaddingControl: ParentPaddingControl,
 ){
     val pageNumber = remember {
         mutableStateOf(30)
@@ -93,92 +98,84 @@ fun ClassSchedule(
     ) {
         pageNumber.value
     }
-//    val sidebarSlideState = viewModel.scrollState
     val courseDialog by classScheduleViewModel.courseDialog.collectAsState()
     val academicYearSelectsDialogState by classScheduleViewModel.academicYearSelectsDialogState.collectAsState()
-    val refreshDialogState by classScheduleViewModel.refreshDialog.collectAsState()
-    val refreshDialogVerificationCode = classScheduleViewModel.refreshDialogVerificationCode.collectAsState()
     val yearOptionsBean by classScheduleViewModel.yearOptions.collectAsState(listOf())
     val currentWeek by classScheduleViewModel.currentWeek.collectAsState()
     LaunchedEffect(currentWeek){
         pagerState.animateScrollToPage(classScheduleViewModel.currentWeek.value - 1)
     }
-    LaunchedEffect(Unit){
-        classScheduleViewModel.refreshInitData()
-    }
     Column {
-        TopAppBar(
-            navigationIcon = {
-
-            },
-            title = {
-                Text(text = "第${pagerState.currentPage + 1}周")
-            },
-            actions = {
-                IconButton(onClick = {
-                    openDrawer.invoke()
-                }) {
-                    Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = null)
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .parentStatusControl(parentPaddingControl = parentPaddingControl),
+            verticalAlignment = Alignment.CenterVertically,
+        ){
+            Text(
+                text = "  第${pagerState.currentPage + 1}周",
+                modifier = Modifier
+                    .weight(1f)
+            )
+            IconButton(onClick = {
+                classScheduleViewModel.refreshInitData()
+            }) {
+                Icon(imageVector = Icons.Filled.Refresh, contentDescription = null)
+            }
+            var expanded by remember { mutableStateOf(false) }
+            Surface(
+                modifier = Modifier
+                    .wrapContentSize()
+            ){
+                IconButton(onClick = { expanded = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
                 }
-                IconButton(onClick = {
-                    classScheduleViewModel.refreshCourse()
-                }) {
-                    Icon(imageVector = Icons.Filled.Refresh, contentDescription = null)
-                }
-                var expanded by remember { mutableStateOf(false) }
-                Surface(
-                    modifier = Modifier
-                        .wrapContentSize()
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
                 ) {
-                    IconButton(onClick = { expanded = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(text = "学年") },
-                            onClick = {
-                                expanded = false
-                                classScheduleViewModel.academicYearSelectsDialogState.value = true
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Outlined.Edit,
-                                    contentDescription = null
-                                )
-                            },
-                            trailingIcon = {
-                                Text(classScheduleViewModel.currentYear.collectAsState().value.toString(),
-                                    textAlign = TextAlign.Center)
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Settings") },
-                            onClick = { /* Handle settings! */ },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Outlined.Settings,
-                                    contentDescription = null
-                                )
-                            })
-                        DropdownMenuItem(
-                            text = { Text("Send Feedback") },
-                            onClick = { /* Handle send feedback! */ },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Outlined.Email,
-                                    contentDescription = null
-                                )
-                            },
-                            trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
-                    }
+                    DropdownMenuItem(
+                        text = { Text(text = "学年") },
+                        onClick = {
+                            expanded = false
+                            classScheduleViewModel.academicYearSelectsDialogState.value = true
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Edit,
+                                contentDescription = null
+                            )
+                        },
+                        trailingIcon = {
+                            Text(classScheduleViewModel.currentYear.collectAsState().value.toString(),
+                                textAlign = TextAlign.Center)
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Settings") },
+                        onClick = { /* Handle settings! */ },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Settings,
+                                contentDescription = null
+                            )
+                        })
+                    DropdownMenuItem(
+                        text = { Text("Send Feedback") },
+                        onClick = { /* Handle send feedback! */ },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Email,
+                                contentDescription = null
+                            )
+                        },
+                        trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
                 }
             }
-        )
+        }
         TimeOfWeekColumn(
-            week = pagerState.currentPage,
+            week = pagerState.currentPage + 1,
             startMonthState = classScheduleViewModel.classScheduleUiState.selectMonth.collectAsState(),
             startYearState = classScheduleViewModel.classScheduleUiState.selectYear.collectAsState(),
             startDayState = classScheduleViewModel.classScheduleUiState.selectDay.collectAsState()
@@ -207,7 +204,8 @@ fun ClassSchedule(
                         week = pagerState.currentPage + 1,
                         startMonthState = classScheduleViewModel.classScheduleUiState.selectMonth.collectAsState(),
                         startYearState = classScheduleViewModel.classScheduleUiState.selectYear.collectAsState(),
-                        startDayState = classScheduleViewModel.classScheduleUiState.selectDay.collectAsState())
+                        startDayState = classScheduleViewModel.classScheduleUiState.selectDay.collectAsState()
+                    )
                     Row(
                         Modifier
                             .fillMaxSize()
@@ -399,22 +397,6 @@ fun Sidebar(
 }
 
 
-
-
-
-
-//@Composable
-//@Preview
-//fun ClassDialogPreview(){
-//    val showDialog = remember {
-//        mutableStateOf(true)
-//    }
-//    ClassDialog(title = "", message = "", showClassDialog = showDialog) {
-//        showDialog.value = false
-//    }
-//}
-
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ClassDialog(
@@ -553,7 +535,14 @@ fun TimeOfWeekColumn(
             modifier = Modifier
                 .width(20.dp)
                 .wrapContentHeight(),
-            text = "${getMonthByWeek(week,startYear,startMonth,startDay)}",
+            text = "${
+                getMonthByWeek(
+                    week = week,
+                    startYear = startYear,
+                    startMonth = startMonth,
+                    startDay = startDay
+                )
+            }",
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
         )
@@ -589,7 +578,12 @@ fun TimeOfMonthColumn(
     ) {
         WeekDay.values().forEachIndexed{ index,_ ->
             Text(
-                text = getDataByWeek(week,index, startYear,startMonth,startDay).toString(),
+                text = getDataByWeek(
+                    week = week,
+                    day = index,
+                    startYear = startYear,
+                    startMonth = startMonth,
+                    startDay = startDay).toString(),
                 modifier = Modifier
                     .weight(1f)
                     .wrapContentHeight(),
@@ -615,19 +609,18 @@ fun TimeOfMonthColumn(
 
 fun getDataByWeek(week: Int, day: Int, startYear: Int, startMonth: Int, startDay: Int, ): Int {
     //创建一个自定义年月日的日期，使用Calendar.set
-    val time = LocalDateTime(startYear, startMonth, startDay, 16, 57, 0, 0).toInstant(TimeZone.of("UTC+8"))
+    val time = LocalDateTime(startYear, startMonth, startDay, 16, 57, 0, 0).toInstant(CurrentZone)
         .plus(((week - 1) * 7).toDuration(DurationUnit.DAYS))
         .plus(day.toDuration(DurationUnit.DAYS))
-    return time.toLocalDateTime(TimeZone.of("UTC+8")).dayOfMonth
+    return time.toLocalDateTime(CurrentZone).dayOfMonth
 }
 
 
 fun getMonthByWeek(week: Int,startYear:Int, startMonth:Int,startDay:Int):Int{
     //创建一个自定义年月日的日期，使用Calendar.set
-    val time = LocalDateTime(startYear, startMonth-1, startDay, 16, 57, 0, 0).toInstant(TimeZone.of("UTC+8"))
+    val time = LocalDateTime(startYear, startMonth, startDay, 12, 0, 0, 1).toInstant(CurrentZone)
         .plus(((week - 1) * 7).toDuration(DurationUnit.DAYS))
-
-    return time.toLocalDateTime(TimeZone.of("UTC+8")).monthNumber + 1
+    return time.toLocalDateTime(CurrentZone).monthNumber
 }
 
 val ClassScheduleNotificationDisplayProperties = listOf("教室","教师","节数","周数","备注",)
@@ -827,5 +820,28 @@ fun CourseBean.toCourseBeanForShow():CourseBeanForShow{
         priority = this.priority,
         type = this.type,
     )
+}
+
+class ClassScheduleVoyagerScreen(
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+):Tab{
+    @Composable
+    override fun Content() {
+        ClassSchedule(
+            parentPaddingControl = parentPaddingControl
+        )
+    }
+
+    override val options: TabOptions
+        @Composable
+        get(){
+            return remember {
+                TabOptions(
+                    index = 0u,
+                    title = ""
+                )
+            }
+        }
 }
 
