@@ -13,7 +13,7 @@ import kotlin.coroutines.CoroutineContext
 
 suspend fun <T>Flow<T>.catchWithMassage (
     label: String = "",
-    action:  (suspend kotlinx.coroutines.flow.FlowCollector<T>.(label:String,kotlin.Throwable) -> kotlin.Unit)?,
+    action:  (suspend kotlinx.coroutines.flow.FlowCollector<T>.(label:String,kotlin.Throwable) -> kotlin.Unit)? = null,
 ): Flow<T> {
     return this.catch {
         if(BaseUrlConfig.isDebug){

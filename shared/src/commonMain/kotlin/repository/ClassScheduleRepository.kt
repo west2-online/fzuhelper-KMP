@@ -4,7 +4,6 @@ import com.fleeksoft.ksoup.Ksoup
 import config.JWCH_BASE_URL
 import config.SCHOOL_CALENDAR_URL
 import data.classSchedule.GetVerifyCodeFormWest2
-import di.CookieUtil
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitForm
@@ -17,12 +16,11 @@ import io.ktor.http.Parameters
 import io.ktor.utils.io.charsets.Charset
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import util.math.Integer
+import util.math.parseInt
 
 class ClassScheduleRepository {
     val charSet = Charset.forName("GB2312")
@@ -70,11 +68,11 @@ class ClassScheduleRepository {
         }
     }
 
-    suspend fun HttpClient.getExamStateHTML(): Flow<String> {
+    suspend fun HttpClient.getExamStateHTML(id: String): Flow<String> {
         return flow {
             val data = this@getExamStateHTML.get("/student/xkjg/examination/exam_list.aspx"){
                 url {
-                    parameters.append("id",CookieUtil.id)
+                    parameters.append("id",id)
                 }
             }.bodyAsText()
             emit(data)
@@ -110,14 +108,14 @@ class ClassScheduleRepository {
                         parameters.append(it.key,it.value)
                     }
                 }
-            }.body<HttpResponse>()
+            }
             emit(response)
         }
     }
 
     suspend fun HttpClient.getCourseState(id: String):Flow<HttpResponse>{
         return flow {
-            val response = this@getCourseState.get ("/student/xkjg/wdxk/xkjg_list.aspx"){
+            val response = this@getCourseState.get ("${JWCH_BASE_URL}/student/xkjg/wdxk/xkjg_list.aspx"){
                 url{
                     parameters.append("id",id)
                 }
@@ -126,7 +124,7 @@ class ClassScheduleRepository {
         }
     }
 
-    suspend fun HttpClient.getCourses(
+    private suspend fun HttpClient.getCourses(
         id: String,
         xuenian: String,
         event: String,
@@ -134,15 +132,18 @@ class ClassScheduleRepository {
     ):Flow<HttpResponse>{
         return flow{
             val response = this@getCourses.submitForm(
-                "/student/xkjg/wdxk/xkjg_list.aspx",
+                "${JWCH_BASE_URL}/student/xkjg/wdxk/xkjg_list.aspx",
                 formParameters = Parameters.build {
-                    append("id", id)
                     append("ctl00\$ContentPlaceHolder1\$DDL_xnxq", xuenian)
                     append("__EVENTVALIDATION", event)
                     append("__VIEWSTATE", state)
                     append("ctl00\$ContentPlaceHolder1\$BT_submit", "确定")
                 }
-            )
+            ){
+                url {
+                    parameters.append("id",id)
+                }
+            }
             emit(response)
         }
     }
@@ -157,38 +158,26 @@ class ClassScheduleRepository {
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun HttpClient.getCoursesHTML(
         viewStateMap:Map<String,String>,
-        xq: String,onGetOptions : (List<String>)->Unit = {}
+        xq: String,onGetOptions : (List<String>)->Unit = {},
+        id: String
     ):Flow<List<CourseBeanForTemp>>{
         return this@getCoursesHTML.getCourses(
-            CookieUtil.id,
+            id,
             xq,
             viewStateMap["EVENTVALIDATION"] ?: "",
             viewStateMap["VIEWSTATE"] ?: ""
-        ).flatMapConcat {
-            val result = it.bodyAsText()
-            flow{
-                val data =  parseCoursesHTML(xq, result,onGetOptions=onGetOptions)
-                emit(data)
-            }
+        ).map {
+            val result = it.bodyAsText(charSet)
+            parseCoursesHTML(xq, result,onGetOptions=onGetOptions)
         }
     }
 
-    private suspend fun parseCourseStateHTML(result: String): Map<String, String> {
-        val document = Ksoup.parse(result)
-        //设置常用参数
-        val VIEWSTATE = document.getElementById("__VIEWSTATE")?.attr("value")
-        val EVENTVALIDATION = document.getElementById("__EVENTVALIDATION")?.attr("value")
-        val params = HashMap<String, String>()
-        params["VIEWSTATE"] = VIEWSTATE!!
-        params["EVENTVALIDATION"] = EVENTVALIDATION!!
-        return params
-    }
 
     suspend fun HttpClient.getCourseStateHTML(
         id : String
     ): Flow<String> {
         return flow {
-            val response = this@getCourseStateHTML.get("/student/xkjg/wdxk/xkjg_list.aspx"){
+            val response = this@getCourseStateHTML.get("${JWCH_BASE_URL}/student/xkjg/wdxk/xkjg_list.aspx"){
                 url{
                     parameters.append("id",id)
                 }
@@ -196,6 +185,34 @@ class ClassScheduleRepository {
             emit(response)
         }
     }
+
+    suspend fun HttpClient.getWeek():Flow<WeekData>{
+        return flow {
+            val response = this@getWeek.get("https://jwcjwxt2.fzu.edu.cn:82/week.asp").bodyAsText(Charset.forName("GB2312"))
+            emit(response)
+        }.map {
+            parseWeekHTML(it)
+        }
+    }
+
+    fun HttpClient.getSchoolCalendar(xq: String): Flow<String> {
+        return flow {
+            val response = this@getSchoolCalendar.get("$SCHOOL_CALENDAR_URL/xl.asp").bodyAsText(Charset.forName("GB2312"))
+            emit(response)
+        }
+    }
+
+    private suspend fun parseWeekHTML(result: String): WeekData {
+        val nowWeek = result.split("var week = \"")[1].split("\";")[0].toInt()
+        val curXuenian = result.split("var xq = \"")[1].split("\";")[0].toInt()
+        val curYear = result.split("var xn = \"")[1].split("\";")[0].toInt()
+        return WeekData(
+            nowWeek = nowWeek,
+            curXuenian = curXuenian,
+            curXueqi = curYear
+        )
+    }
+
     private suspend fun parseCoursesHTML(
         xueNian: String,
         result: String,
@@ -205,8 +222,8 @@ class ClassScheduleRepository {
         //解析学年
         val yearStr = xueNian.substring(0, 4)
         val xuenianStr = xueNian.substring(4, 6)
-        val year = Integer.parseInt(yearStr)
-        val xuenian = Integer.parseInt(xuenianStr)
+        val year = parseInt(yearStr)
+        val xuenian = parseInt(xuenianStr)
         val document = Ksoup.parse(result)
         //添加学期列表
         val options = document.select("option")
@@ -261,19 +278,19 @@ class ClassScheduleRepository {
                 try {
                     val contents = string.split("&nbsp;")
                     val week = contents[0].split("-")
-                    val startWeek = Integer.parseInt(week[0])
-                    val endWeek = Integer.parseInt(week[1])
+                    val startWeek = parseInt(week[0].replace("\n","").replace(" ",""))
+                    val endWeek = parseInt(week[1])
                     kc.kcStartWeek = startWeek
                     kc.kcEndWeek = endWeek
-                    val weekend = Integer.parseInt(contents[1].substring(2, 3))
+                    val weekend = parseInt(contents[1].substring(2, 3))
                     kc.kcWeekend = weekend
 
                     when {
                         contents[1].contains("单") -> {
                             val timeStr = contents[1].substring(4, contents[1].length - 4)
                             val time = timeStr.split("-")
-                            val startTime = Integer.parseInt(time[0])
-                            val endTime = Integer.parseInt(time[1])
+                            val startTime = parseInt(time[0])
+                            val endTime = parseInt(time[1])
                             kc.kcStartTime = startTime
                             kc.kcEndTime = endTime
                             kc.kcIsDouble = false
@@ -282,8 +299,8 @@ class ClassScheduleRepository {
                         contents[1].contains("双") -> {
                             val timeStr = contents[1].substring(4, contents[1].length - 4)
                             val time = timeStr.split("-")
-                            val startTime = Integer.parseInt(time[0])
-                            val endTime = Integer.parseInt(time[1])
+                            val startTime = parseInt(time[0])
+                            val endTime = parseInt(time[1])
                             kc.kcStartTime = startTime
                             kc.kcEndTime = endTime
                             kc.kcIsSingle = false
@@ -291,8 +308,8 @@ class ClassScheduleRepository {
                         else -> {
                             val timeStr = contents[1].substring(4, contents[1].length - 1)
                             val time = timeStr.split("-")
-                            val startTime = Integer.parseInt(time[0])
-                            val endTime = Integer.parseInt(time[1])
+                            val startTime = parseInt(time[0])
+                            val endTime = parseInt(time[1])
                             kc.kcStartTime = startTime
                             kc.kcEndTime = endTime
                         }
@@ -341,33 +358,16 @@ class ClassScheduleRepository {
     }
 
 
-    suspend fun HttpClient.getWeek():Flow<WeekData>{
-        return flow {
-            val response = this@getWeek.get("https://jwcjwxt2.fzu.edu.cn:82/week.asp").bodyAsText(Charset.forName("GB2312"))
-            emit(response)
-        }.map {
-            parseWeekHTML(it)
-        }
+    private suspend fun parseCourseStateHTML(result: String): Map<String, String> {
+        val document = Ksoup.parse(result)
+        //设置常用参数
+        val VIEWSTATE = document.getElementById("__VIEWSTATE")?.attr("value")
+        val EVENTVALIDATION = document.getElementById("__EVENTVALIDATION")?.attr("value")
+        val params = HashMap<String, String>()
+        params["VIEWSTATE"] = VIEWSTATE!!
+        params["EVENTVALIDATION"] = EVENTVALIDATION!!
+        return params
     }
-
-    private suspend fun parseWeekHTML(result: String): WeekData {
-        val nowWeek = result.split("var week = \"")[1].split("\";")[0].toInt()
-        val curXuenian = result.split("var xq = \"")[1].split("\";")[0].toInt()
-        val curYear = result.split("var xn = \"")[1].split("\";")[0].toInt()
-        return WeekData(
-            nowWeek = nowWeek,
-            curXuenian = curXuenian,
-            curXueqi = curYear
-        )
-    }
-
-    fun HttpClient.getSchoolCalendar(xq: String): Flow<String> {
-        return flow {
-            val response = this@getSchoolCalendar.get("$SCHOOL_CALENDAR_URL/xl.asp").bodyAsText(Charset.forName("GB2312"))
-            emit(response)
-        }
-    }
-
 }
 
 

@@ -20,8 +20,6 @@ class KValueAction(
     private val kValue:KVault
 ) {
 
-
-
     val schoolUserName = KValueStringDate(SchoolUserNameKey,MutableStateFlow(null))
     val schoolPassword = KValueStringDate(SchoolPasswordKey,MutableStateFlow(null))
     val currentXn = KValueIntDate(CurrentXnKey,MutableStateFlow(null))

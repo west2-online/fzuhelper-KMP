@@ -4,13 +4,15 @@ import di.database
 import repository.CourseBeanForTemp
 
 class ClassScheduleDao {
-    fun clearClassSchedule(){
-        database.classScheduleQueries.clearCourse()
+//    private fun clearClassSchedule(){
+//        database.classScheduleQueries.clearCourse()
+//    }
+    private fun clearClassScheduleByXueNian(kcXuenian:Int, kcYear: Int){
+        database.classScheduleQueries.deleteCourseByXq(kcXuenian = kcXuenian.toLong(), kcYear = kcYear.toLong())
     }
-
-    fun insertClassSchedule( list : List<CourseBeanForTemp> ){
+    fun insertClassScheduleByXueNian(list : List<CourseBeanForTemp>, kcXuenian:Int, kcYear: Int){
         database.transaction {
-            clearClassSchedule()
+            clearClassScheduleByXueNian(kcXuenian = kcXuenian, kcYear = kcYear)
             list.forEach {
                 it.apply {
                     database.classScheduleQueries.insertCourse(

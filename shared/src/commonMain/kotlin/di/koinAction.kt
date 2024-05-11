@@ -26,8 +26,10 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.encodeBase64
 import io.ktor.util.pipeline.PipelinePhase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retry
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.plus
@@ -80,8 +82,9 @@ class ClassSchedule(
     private var upDataTime = Clock.System.now().plus(-50, DateTimeUnit.MINUTE)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun getClassScheduleClient() : HttpClient { if (client == null || Clock.System.now() - upDataTime > 20.toDuration(DurationUnit.MINUTES)) {
-            val client = HttpClient() {
+    suspend fun getClassScheduleClient() : HttpClient? {
+        if (client == null || Clock.System.now() - upDataTime > 20.toDuration(DurationUnit.MINUTES)) {
+            val newClient = HttpClient() {
                 install(ContentNegotiation) {
                     json()
                 }
@@ -95,12 +98,11 @@ class ClassSchedule(
 //                val userName = kVaultAction.getUserName()
 //                val password = kVaultAction.getSchoolPassword()
 //                if(userName == null || password == null){
-//
 //                    return@apply
 //                }
                 var id = ""
                 var num = ""
-                client.apply {
+                newClient.apply {
                     getVerifyCode()
                         .map {
                             it.encodeBase64()
@@ -118,6 +120,7 @@ class ClassSchedule(
                             val url = it.call.request.url.toString()
                             id = url.split("id=")[1].split("&")[0]
                             num = url.split("num=")[1].split("&")[0]
+
                             val context = it.readBytes().decodeToString()
                             val token = context.split("var token = \"")[1].split("\";")[0]
                             loginByToken(token)
@@ -128,15 +131,21 @@ class ClassSchedule(
                                 num = num
                             )
                         }
+                        .retry(3)
+                        .catch {
+                            client = null
+                        }
                         .collect{
+                            val url = it.call.request.url.toString()
+                            kVaultAction.userSchoolId.setValue(url.split("id=")[1].split("&")[0])
                             upDateClientTime()
                         }
                 }
 
             }
-            return client
+            return newClient
         }
-        return client!!
+        return client
     }
 
     private fun upDateClientTime(){

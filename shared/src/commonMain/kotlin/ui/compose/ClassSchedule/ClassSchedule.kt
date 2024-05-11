@@ -29,6 +29,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
@@ -74,10 +75,14 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.koinInject
+import util.compose.EasyToast
 import util.compose.ParentPaddingControl
 import util.compose.ScrollSelection
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentStatusControl
+import util.compose.rememberToastState
+import util.compose.toastBindNetworkResult
+import util.network.CollectWithContent
 import kotlin.jvm.Transient
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -89,6 +94,8 @@ fun ClassSchedule(
     classScheduleViewModel: ClassScheduleViewModel = koinInject<ClassScheduleViewModel>(),
     parentPaddingControl: ParentPaddingControl,
 ){
+    val toastState = rememberToastState()
+    toastState.toastBindNetworkResult(classScheduleViewModel.refreshState.collectAsState())
     val pageNumber = remember {
         mutableStateOf(30)
     }
@@ -105,155 +112,191 @@ fun ClassSchedule(
     LaunchedEffect(currentWeek){
         pagerState.animateScrollToPage(classScheduleViewModel.selectWeek.value - 1)
     }
-    Column {
-        Row (
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .parentStatusControl(parentPaddingControl = parentPaddingControl),
-            verticalAlignment = Alignment.CenterVertically,
-        ){
-            Text(
-                text = "  第${pagerState.currentPage + 1}周",
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ){
+        Column {
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-            )
-            IconButton(onClick = {
-                classScheduleViewModel.refreshInitData()
-            }) {
-                Icon(imageVector = Icons.Filled.Refresh, contentDescription = null)
-            }
-            var expanded by remember { mutableStateOf(false) }
-            Surface(
-                modifier = Modifier
-                    .wrapContentSize()
-            ){
-                IconButton(onClick = { expanded = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
-                }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(text = "学年") },
-                        onClick = {
-                            expanded = false
-                            classScheduleViewModel.academicYearSelectsDialogState.value = true
-                        },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.Edit,
-                                contentDescription = null
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .parentStatusControl(parentPaddingControl = parentPaddingControl),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "  第${pagerState.currentPage + 1}周",
+                    modifier = Modifier
+                        .weight(1f)
+                )
+                IconButton(onClick = {
+                    classScheduleViewModel.refreshClassDate()
+                }) {
+                    classScheduleViewModel.refreshState.collectAsState().CollectWithContent(
+                        loading = {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .aspectRatio(1f)
+                                    .wrapContentSize(Alignment.Center)
+                                    .fillMaxSize(0.8f)
                             )
                         },
-                        trailingIcon = {
-                            Text(classScheduleViewModel.selectYear.collectAsState().value.toString(),
-                                textAlign = TextAlign.Center)
+                        content = {
+                            Icon(imageVector = Icons.Filled.Refresh, contentDescription = null)
                         }
                     )
-                    DropdownMenuItem(
-                        text = { Text("Settings") },
-                        onClick = { /* Handle settings! */ },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.Settings,
-                                contentDescription = null
-                            )
-                        })
-                    DropdownMenuItem(
-                        text = { Text("Send Feedback") },
-                        onClick = { /* Handle send feedback! */ },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.Email,
-                                contentDescription = null
-                            )
-                        },
-                        trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
+                }
+                var expanded by remember { mutableStateOf(false) }
+                Surface(
+                    modifier = Modifier
+                        .wrapContentSize()
+                ) {
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(text = "学年") },
+                            onClick = {
+                                expanded = false
+                                classScheduleViewModel.academicYearSelectsDialogState.value = true
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Outlined.Edit,
+                                    contentDescription = null
+                                )
+                            },
+                            trailingIcon = {
+                                Text(
+                                    classScheduleViewModel.selectYear.collectAsState().value.toString(),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Settings") },
+                            onClick = { /* Handle settings! */ },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Outlined.Settings,
+                                    contentDescription = null
+                                )
+                            })
+                        DropdownMenuItem(
+                            text = { Text("Send Feedback") },
+                            onClick = { /* Handle send feedback! */ },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Outlined.Email,
+                                    contentDescription = null
+                                )
+                            },
+                            trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
+                    }
                 }
             }
-        }
-        TimeOfWeekColumn(
-            week = pagerState.currentPage + 1,
-            startMonthState = classScheduleViewModel.classScheduleUiState.startMonth.collectAsState(1),
-            startYearState = classScheduleViewModel.classScheduleUiState.startYear.collectAsState(2023),
-            startDayState = classScheduleViewModel.classScheduleUiState.startDay.collectAsState(1)
-        )
-        Row (
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ){
-            Surface(modifier = Modifier
-                .padding(top = 20.dp)
-                .wrapContentWidth()
-                .fillMaxHeight()){
-                Sidebar(
-                    classScheduleViewModel.scrollState
+            TimeOfWeekColumn(
+                week = pagerState.currentPage + 1,
+                startMonthState = classScheduleViewModel.classScheduleUiState.startMonth.collectAsState(
+                    1
+                ),
+                startYearState = classScheduleViewModel.classScheduleUiState.startYear.collectAsState(
+                    2023
+                ),
+                startDayState = classScheduleViewModel.classScheduleUiState.startDay.collectAsState(
+                    1
                 )
-            }
-            HorizontalPager(
+            )
+            Row(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight(),
-                state = pagerState,
-            ){ page->
-                Column {
-                    TimeOfMonthColumn(
-                        week = pagerState.currentPage + 1,
-                        startMonthState = classScheduleViewModel.classScheduleUiState.startMonth.collectAsState(1),
-                        startYearState = classScheduleViewModel.classScheduleUiState.startYear.collectAsState(2023),
-                        startDayState = classScheduleViewModel.classScheduleUiState.startDay.collectAsState(1)
+                    .fillMaxWidth()
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .wrapContentWidth()
+                        .fillMaxHeight()
+                ) {
+                    Sidebar(
+                        classScheduleViewModel.scrollState
                     )
-                    Row(
-                        Modifier
-                            .fillMaxSize()
-                            .verticalScroll(classScheduleViewModel.scrollState)
-                    ) {
-                        WeekDay.values().forEachIndexed { weekIndex, value ->
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .requiredHeight((11 * 75).dp)
-                            ) {
-                                classScheduleViewModel.courseForShow.collectAsState().value.let { courseBeans ->
-                                    courseBeans
-                                        .filter {
-                                            it.kcStartWeek <= page+1 && it.kcEndWeek >= page+1 && (it.kcIsDouble.toInt() == 1 && ((page+1)%2 == 0) || it.kcIsSingle.toInt() == 1 && ((page+1)%2 == 1))
-                                        }
-                                        .filter { courseBeanData ->
-                                            courseBeanData.kcWeekend.toInt() == weekIndex + 1
-                                        }.sortedBy { courseBean ->
-                                            courseBean.kcStartTime
-                                        }.let {
-                                            it.forEachIndexed { index, item ->
-                                                if (index == 0) {
-                                                    EmptyClassCard(
-                                                        item.kcStartTime - 1
-                                                    )
-                                                } else {
-                                                    EmptyClassCard(
-                                                        it[index].kcStartTime - it[index - 1].kcEndTime - 1
-                                                    )
-                                                }
-                                                if(index == 0){
-                                                    ClassCard(
-                                                        item,
-                                                        detailAboutCourse = {
-                                                            classScheduleViewModel.courseDialog.value = it
-                                                        }
-                                                    )
-                                                } else if(it[index].kcStartTime > it[index - 1].kcEndTime){
-                                                    ClassCard(
-                                                        item,
-                                                        detailAboutCourse = {
-                                                            classScheduleViewModel.courseDialog.value = it
-                                                        }
-                                                    )
+                }
+                HorizontalPager(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    state = pagerState,
+                ) { page ->
+                    Column {
+                        TimeOfMonthColumn(
+                            week = pagerState.currentPage + 1,
+                            startMonthState = classScheduleViewModel.classScheduleUiState.startMonth.collectAsState(
+                                1
+                            ),
+                            startYearState = classScheduleViewModel.classScheduleUiState.startYear.collectAsState(
+                                2023
+                            ),
+                            startDayState = classScheduleViewModel.classScheduleUiState.startDay.collectAsState(
+                                1
+                            )
+                        )
+                        Row(
+                            Modifier
+                                .fillMaxSize()
+                                .verticalScroll(classScheduleViewModel.scrollState)
+                        ) {
+                            WeekDay.values().forEachIndexed { weekIndex, value ->
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .requiredHeight((11 * 75).dp)
+                                ) {
+                                    classScheduleViewModel.courseForShow.collectAsState().value.let { courseBeans ->
+                                        courseBeans
+                                            .filter {
+                                                it.kcStartWeek <= page + 1 && it.kcEndWeek >= page + 1 && (it.kcIsDouble.toInt() == 1 && ((page + 1) % 2 == 0) || it.kcIsSingle.toInt() == 1 && ((page + 1) % 2 == 1))
+                                            }
+                                            .filter { courseBeanData ->
+                                                courseBeanData.kcWeekend.toInt() == weekIndex + 1
+                                            }.sortedBy { courseBean ->
+                                                courseBean.kcStartTime
+                                            }.let {
+                                                it.forEachIndexed { index, item ->
+                                                    if (index == 0) {
+                                                        EmptyClassCard(
+                                                            item.kcStartTime - 1
+                                                        )
+                                                    } else {
+                                                        EmptyClassCard(
+                                                            it[index].kcStartTime - it[index - 1].kcEndTime - 1
+                                                        )
+                                                    }
+                                                    if (index == 0) {
+                                                        ClassCard(
+                                                            item,
+                                                            detailAboutCourse = {
+                                                                classScheduleViewModel.courseDialog.value =
+                                                                    it
+                                                            }
+                                                        )
+                                                    } else if (it[index].kcStartTime > it[index - 1].kcEndTime) {
+                                                        ClassCard(
+                                                            item,
+                                                            detailAboutCourse = {
+                                                                classScheduleViewModel.courseDialog.value =
+                                                                    it
+                                                            }
+                                                        )
+                                                    }
                                                 }
                                             }
-                                        }
+                                    }
                                 }
                             }
                         }
@@ -261,25 +304,26 @@ fun ClassSchedule(
                 }
             }
         }
-    }
-    courseDialog?.let {
-        ClassDialog(
-            courseBean = it,
-            onDismissRequest = {
-                classScheduleViewModel.courseDialog.value = null
-            }
-        )
-    }
-    if(academicYearSelectsDialogState){
-        AcademicYearSelectsDialog(
-            onDismissRequest = {
-                classScheduleViewModel.academicYearSelectsDialogState.value = false
-            },
-            commit = {
-                classScheduleViewModel.changeCurrentYear(it)
-            },
-            list = yearOptionsBean
-        )
+        courseDialog?.let {
+            ClassDialog(
+                courseBean = it,
+                onDismissRequest = {
+                    classScheduleViewModel.courseDialog.value = null
+                }
+            )
+        }
+        if (academicYearSelectsDialogState) {
+            AcademicYearSelectsDialog(
+                onDismissRequest = {
+                    classScheduleViewModel.academicYearSelectsDialogState.value = false
+                },
+                commit = {
+                    classScheduleViewModel.changeCurrentYear(it)
+                },
+                list = yearOptionsBean
+            )
+        }
+        EasyToast(toastState)
     }
 }
 
