@@ -9,11 +9,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
+import io.ktor.client.request.headers
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readBytes
 import io.ktor.http.Parameters
-import io.ktor.http.headers
 import io.ktor.utils.io.charsets.Charset
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +25,7 @@ import kotlinx.serialization.json.Json
 import util.math.Integer
 
 class ClassScheduleRepository {
+    val charSet = Charset.forName("GB2312")
     suspend fun HttpClient.loginStudent(
         user: String,
         pass: String,
@@ -68,6 +69,7 @@ class ClassScheduleRepository {
             emit(verifyCodeForParse)
         }
     }
+
     suspend fun HttpClient.getExamStateHTML(): Flow<String> {
         return flow {
             val data = this@getExamStateHTML.get("/student/xkjg/examination/exam_list.aspx"){
@@ -83,23 +85,28 @@ class ClassScheduleRepository {
         return flow {
             val response = this@loginByToken.submitForm(
                 url = "https://jwcjwxt2.fzu.edu.cn/Sfrz/SSOLogin",
-                formParameters =  Parameters.build {
+                formParameters = Parameters.build {
                     append("token", token)
                 }
-            ){
+            ) {
                 headers {
                     append("X-Requested-With", "XMLHttpRequest")
                 }
-            }.bodyAsText(Charset.forName("GB2312"))
+            }.readBytes().decodeToString()
             emit(Json.decodeFromString<JwchTokenLoginResponseDto>(response))
         }
     }
 
-    suspend fun HttpClient.loginCheckXs(map: Map<String, String>): Flow<HttpResponse> {
+    suspend fun HttpClient.loginCheckXs(id: String,num:String): Flow<HttpResponse> {
         return flow {
             val response = this@loginCheckXs.get("https://jwcjwxt2.fzu.edu.cn:81/loginchk_xs.aspx") {
                 url { url ->
-                    map.forEach {
+                    mapOf(
+                        "id" to id,
+                        "num" to num,
+                        "ssourl" to "https://jwcjwxt2.fzu.edu.cn",
+                        "hosturl" to "https://jwcjwxt2.fzu.edu.cn:81"
+                    ).forEach {
                         parameters.append(it.key,it.value)
                     }
                 }
@@ -409,9 +416,13 @@ data class CourseBeanForTemp(
 )
 
 
-
 @Serializable
 data class JwchTokenLoginResponseDto(
     var code: Int, // 200
-    var info: String // 登录成功
+    var info: String, // 登录成功
+    var data : Data
 )
+
+
+@Serializable
+class Data()

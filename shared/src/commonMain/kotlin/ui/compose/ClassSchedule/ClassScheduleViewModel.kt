@@ -40,15 +40,16 @@ class ClassScheduleViewModel (
     private val shareClient: ShareClient
 ):ViewModel(){
     class ClassScheduleUiState(
-        private val kValueAction: KValueAction,
+        kValueAction: KValueAction,
     ) {
-        val selectYear = MutableStateFlow<Int>(kValueAction.getDateStartYear() ?: 2023)
-        val selectMonth = MutableStateFlow<Int>(kValueAction.getDateStartMonth() ?: 1)
-        val selectDay = MutableStateFlow<Int>(kValueAction.getDateStartDay() ?: 1)
-        fun refreshStartDate(){
-            selectDay.value = kValueAction.getDateStartDay() ?: 1
-            selectMonth.value = kValueAction.getDateStartMonth() ?: 1
-            selectYear.value = kValueAction.getDateStartYear() ?: 2023
+        val startYear = kValueAction.dataStartYear.currentValue.map {
+            return@map it?:2023
+        }
+        val startMonth = kValueAction.dataStartMonth.currentValue.map {
+            return@map it?:1
+        }
+        val startDay = kValueAction.dataStartDay.currentValue.map {
+            return@map it?:1
         }
     }
     val classScheduleUiState = ClassScheduleUiState(kValueAction)
@@ -60,11 +61,11 @@ class ClassScheduleViewModel (
                     getWeek()
                         .map {
                             it.apply {
-                                kValueAction.setCurrentWeek(nowWeek)
-                                kValueAction.setCurrentXn(curXuenian)
-                                kValueAction.setCurrentXq(curXueqi)
-                                currentYear.value = getXueQi()
-                                currentWeek.value = nowWeek
+                                kValueAction.currentWeek.setValue(nowWeek)
+                                kValueAction.currentXn.setValue(curXuenian)
+                                kValueAction.currentXq.setValue(curXueqi)
+                                selectYear.value = getXueQi()
+                                selectWeek.value = nowWeek
                             }
                         }
                         .flatMapConcat {
@@ -73,16 +74,14 @@ class ClassScheduleViewModel (
                                 .map { result->
                                     parseBeginDateReset(it.getXueQi(),result)
                                 }
-                        }.collect{
-                            classScheduleUiState.refreshStartDate()
-                        }
+                        }.collect{}
                 }
             }
         }
     }
 
-    var currentYear = MutableStateFlow<String?>(kValueAction.getCurrentYear())
-    var currentWeek = MutableStateFlow<Int>(kValueAction.getCurrentWeek() ?: 1)
+    var selectYear = MutableStateFlow(kValueAction.getCurrentYear())
+    var selectWeek = MutableStateFlow<Int>(kValueAction.currentWeek.currentValue.value ?: 1)
 
     val scrollState = ScrollState(initial = 0)
     val academicYearSelectsDialogState = MutableStateFlow(false)
@@ -95,7 +94,7 @@ class ClassScheduleViewModel (
         .mapToList(Dispatchers.IO)
 
 
-    val courseForShow = currentYear
+    val courseForShow = selectYear
         .combine(course){
             currentYear,course -> course.filter {
                 "${it.kcYear}0${it.kcXuenian}" == currentYear
@@ -119,15 +118,14 @@ class ClassScheduleViewModel (
         viewModelScope.launch(Dispatchers.IO) {
             classScheduleRepository.apply {
                 val client =  classSchedule.getClassScheduleClient()
-
                 client.getWeek()
                     .map {
                         it.apply {
-                            kValueAction.setCurrentWeek(nowWeek)
-                            kValueAction.setCurrentXn(curXuenian)
-                            kValueAction.setCurrentXq(curXueqi)
-                            currentYear.value = getXueQi()
-                            currentWeek.value = nowWeek
+                            kValueAction.currentWeek.setValue(nowWeek)
+                            kValueAction.currentXn.setValue(curXuenian)
+                            kValueAction.currentXq.setValue(curXueqi)
+                            selectYear.value = getXueQi()
+                            selectWeek.value = nowWeek
                         }
                     }
                     .flatMapConcat {
@@ -149,7 +147,7 @@ class ClassScheduleViewModel (
     fun HttpClient.getCourseFromNetwork(){
         viewModelScope.launchInDefault {
             classScheduleRepository.apply{
-                val id = kValueAction.getUserSchoolId()
+                val id = kValueAction.userSchoolId.currentValue.value
                 id ?: run{
                     return@launchInDefault
                 }
@@ -193,7 +191,7 @@ class ClassScheduleViewModel (
             }.map{
                 it.yearOptionsName
             }.forEach { yearOptionsName ->
-                yearOptionsName?.let { xq ->
+                yearOptionsName.let { xq ->
                     classScheduleRepository.apply{
                         this@getOtherCourseFromNetwork.getCourseStateHTML(
                             CookieUtil.id
@@ -206,10 +204,7 @@ class ClassScheduleViewModel (
                                 this@getOtherCourseFromNetwork.getCoursesHTML(
                                     it,
                                     xq,
-                                    onGetOptions = {
-//                                        yearOptionsFromNetwork ->
-//                                        yearOptions.value = yearOptionsFromNetwork
-                                    }
+                                    onGetOptions = {}
                                 )
                             }
                             .collect { initCourseBean ->
@@ -225,7 +220,7 @@ class ClassScheduleViewModel (
     //获取考试
     private fun HttpClient.getExamData(){
         viewModelScope.launch(Dispatchers.IO) {
-            val xq = kValueAction.getCurrentXq()
+            val xq = kValueAction.currentXq.currentValue.value
             classScheduleRepository.apply {
                 this@getExamData.getExamStateHTML()
                     .map {
@@ -247,7 +242,7 @@ class ClassScheduleViewModel (
 
     fun changeCurrentYear(newValue:String){
         viewModelScope.launch {
-            currentYear.emit(newValue)
+            selectYear.emit(newValue)
             classScheduleRepository.apply {
                  classSchedule.getClassScheduleClient().getSchoolCalendar(newValue)
                      .retry(10)
@@ -298,7 +293,7 @@ class ClassScheduleViewModel (
      * 解析开学时间网页
      * @param result 获取到的网页
      */
-    private fun parseBeginDateReset(xq: String, result: String) {
+    private suspend fun parseBeginDateReset(xq: String, result: String) {
         val document = Ksoup.parse(result)
         val select = document.getElementsByTag("select")[0]
         val option = select.getElementsByAttributeValueStarting("value", xq)
@@ -308,9 +303,9 @@ class ClassScheduleViewModel (
             val beginMonth = value.substring(10, 12).toInt()
             val beginDay = value.substring(12, 14).toInt()
             kValueAction.apply {
-                setDateStartMonth(beginMonth)
-                setDateStartYear(beginYear)
-                setDateStartDay(beginDay)
+                dataStartDay.setValue(beginDay)
+                dataStartMonth.setValue(beginMonth)
+                dataStartYear.setValue(beginYear)
             }
             println(beginMonth)
             println(beginYear)

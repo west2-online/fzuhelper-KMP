@@ -101,9 +101,9 @@ fun ClassSchedule(
     val courseDialog by classScheduleViewModel.courseDialog.collectAsState()
     val academicYearSelectsDialogState by classScheduleViewModel.academicYearSelectsDialogState.collectAsState()
     val yearOptionsBean by classScheduleViewModel.yearOptions.collectAsState(listOf())
-    val currentWeek by classScheduleViewModel.currentWeek.collectAsState()
+    val currentWeek by classScheduleViewModel.selectWeek.collectAsState()
     LaunchedEffect(currentWeek){
-        pagerState.animateScrollToPage(classScheduleViewModel.currentWeek.value - 1)
+        pagerState.animateScrollToPage(classScheduleViewModel.selectWeek.value - 1)
     }
     Column {
         Row (
@@ -148,7 +148,7 @@ fun ClassSchedule(
                             )
                         },
                         trailingIcon = {
-                            Text(classScheduleViewModel.currentYear.collectAsState().value.toString(),
+                            Text(classScheduleViewModel.selectYear.collectAsState().value.toString(),
                                 textAlign = TextAlign.Center)
                         }
                     )
@@ -176,9 +176,9 @@ fun ClassSchedule(
         }
         TimeOfWeekColumn(
             week = pagerState.currentPage + 1,
-            startMonthState = classScheduleViewModel.classScheduleUiState.selectMonth.collectAsState(),
-            startYearState = classScheduleViewModel.classScheduleUiState.selectYear.collectAsState(),
-            startDayState = classScheduleViewModel.classScheduleUiState.selectDay.collectAsState()
+            startMonthState = classScheduleViewModel.classScheduleUiState.startMonth.collectAsState(1),
+            startYearState = classScheduleViewModel.classScheduleUiState.startYear.collectAsState(2023),
+            startDayState = classScheduleViewModel.classScheduleUiState.startDay.collectAsState(1)
         )
         Row (
             modifier = Modifier
@@ -202,9 +202,9 @@ fun ClassSchedule(
                 Column {
                     TimeOfMonthColumn(
                         week = pagerState.currentPage + 1,
-                        startMonthState = classScheduleViewModel.classScheduleUiState.selectMonth.collectAsState(),
-                        startYearState = classScheduleViewModel.classScheduleUiState.selectYear.collectAsState(),
-                        startDayState = classScheduleViewModel.classScheduleUiState.selectDay.collectAsState()
+                        startMonthState = classScheduleViewModel.classScheduleUiState.startMonth.collectAsState(1),
+                        startYearState = classScheduleViewModel.classScheduleUiState.startYear.collectAsState(2023),
+                        startDayState = classScheduleViewModel.classScheduleUiState.startDay.collectAsState(1)
                     )
                     Row(
                         Modifier

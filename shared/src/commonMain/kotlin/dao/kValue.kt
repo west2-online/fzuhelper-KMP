@@ -1,6 +1,10 @@
 package dao
 
 import com.liftric.kvault.KVault
+import di.globalScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import util.flow.launchInIO
 
 const val SchoolUserNameKey = "92AEF5095C772825C850D10E90A14C83"
 const val SchoolPasswordKey = "3B89515ED1D172F821C5F96DB93B68D4"
@@ -16,75 +20,70 @@ class KValueAction(
     private val kValue:KVault
 ) {
 
-    fun getUserName(): String? {
-        return kValue.string(SchoolUserNameKey)
-    }
-    fun setUserName(userName : String): Boolean {
-        return kValue.set(SchoolUserNameKey,userName)
-    }
-    fun getSchoolPassword(): String? {
-        return kValue.string(SchoolPasswordKey)
-    }
-    fun setSchoolPassword(password:String): Boolean {
-        return kValue.set(SchoolPasswordKey,password)
-    }
-
-    fun setCurrentXn(currentXn:Int): Boolean {
-        return kValue.set(CurrentXnKey,currentXn)
-    }
-    fun getCurrentXn(): Int? {
-        return kValue.int(CurrentXnKey)
-    }
 
 
-    fun setCurrentXq(currentXq:Int): Boolean {
-        return kValue.set(CurrentXqKey,currentXq)
-    }
-    fun getCurrentXq(): Int? {
-        return kValue.int(CurrentXqKey)
-    }
+    val schoolUserName = KValueStringDate(SchoolUserNameKey,MutableStateFlow(null))
+    val schoolPassword = KValueStringDate(SchoolPasswordKey,MutableStateFlow(null))
+    val currentXn = KValueIntDate(CurrentXnKey,MutableStateFlow(null))
+    val currentXq = KValueIntDate(CurrentXqKey,MutableStateFlow(null))
+    val currentWeek = KValueIntDate(CurrentWeekKey,MutableStateFlow(null))
+    val userSchoolId = KValueStringDate(UserSchoolIdKey,MutableStateFlow(null))
+    val dataStartDay = KValueIntDate(DataStartDayKey,MutableStateFlow(null))
+    val dataStartMonth = KValueIntDate(DataStartMonthKey,MutableStateFlow(null))
+    val dataStartYear = KValueIntDate(DataStartYearKey,MutableStateFlow(null))
 
-    fun getCurrentWeek(): Int? {
-        return kValue.int(CurrentWeekKey)
-    }
-    fun setCurrentWeek(currentWeek:Int): Boolean {
-        return kValue.set(CurrentWeekKey,currentWeek)
-    }
 
     fun getCurrentYear():String?{
-        val curXueqi = getCurrentXq()
-        val curXuenian = getCurrentXn()
+        val curXueqi = currentXq.currentValue.value
+        val curXuenian = currentXn.currentValue.value
         if(curXueqi == null || curXuenian == null){
             return null
         }
         return "${curXueqi}0$curXuenian}"
     }
 
-    fun getUserSchoolId(): String? {
-        return kValue.string(UserSchoolIdKey)
-    }
-    fun setUserSchoolId(userSchoolId:Int): Boolean {
-        return kValue.set(UserSchoolIdKey,userSchoolId)
+
+
+
+    inner class KValueStringDate (
+        val key: String,
+        private val data:MutableStateFlow<String?>
+    ){
+        val currentValue = data.asStateFlow()
+        private suspend fun  store(state:MutableStateFlow<String?>, key:String){
+            state.collect{
+                state.value?.let { it1 -> kValue.set(key, it1) }
+            }
+        }
+        suspend fun setValue(newValue:String?){
+            data.emit(newValue)
+        }
+        init {
+            globalScope.launchInIO {
+                data.value = kValue.string(key)
+                store(data,key)
+            }
+        }
     }
 
-    fun getDateStartDay(): Int? {
-        return kValue.int(DataStartDayKey)
-    }
-    fun setDateStartDay(startDay : Int): Boolean {
-        return kValue.set(DataStartDayKey,startDay)
-    }
-
-    fun getDateStartMonth(): Int? {
-        return kValue.int(DataStartMonthKey)
-    }
-    fun setDateStartMonth(startMonth:Int): Boolean {
-        return kValue.set(DataStartMonthKey,startMonth)
-    }
-
-    fun getDateStartYear(): Int? {
-        return kValue.int(DataStartYearKey)
-    }
-    fun setDateStartYear(startYear:Int): Boolean {
-        return kValue.set(DataStartYearKey,startYear)
+    inner class KValueIntDate (
+        val key: String,
+        private val data:MutableStateFlow<Int?>
+    ){
+        val currentValue = data.asStateFlow()
+        private suspend fun  store(state:MutableStateFlow<Int?>, key:String){
+            state.collect{
+                state.value?.let { it1 -> kValue.set(key, it1) }
+            }
+        }
+        suspend fun setValue(newValue:Int?){
+            data.emit(newValue)
+        }
+        init {
+            globalScope.launchInIO {
+                data.value = kValue.int(key)
+                store(data,key)
+            }
+        }
     }
 }

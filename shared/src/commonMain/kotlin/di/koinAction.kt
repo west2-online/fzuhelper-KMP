@@ -118,17 +118,15 @@ class ClassSchedule(
                             val url = it.call.request.url.toString()
                             id = url.split("id=")[1].split("&")[0]
                             num = url.split("num=")[1].split("&")[0]
-                            val token = it.readBytes().decodeToString().split("var token = \"")[1].split("\";")[0]
+                            val context = it.readBytes().decodeToString()
+                            val token = context.split("var token = \"")[1].split("\";")[0]
                             loginByToken(token)
                         }
                         .flatMapConcat {
-                            val queryMap = hashMapOf(
-                                "id" to id,
-                                "num" to num,
-                                "ssourl" to "https://jwcjwxt2.fzu.edu.cn",
-                                "hosturl" to "https://jwcjwxt2.fzu.edu.cn:81"
+                            loginCheckXs(
+                                id = id,
+                                num = num
                             )
-                            loginCheckXs(queryMap)
                         }
                         .collect{
                             upDateClientTime()
