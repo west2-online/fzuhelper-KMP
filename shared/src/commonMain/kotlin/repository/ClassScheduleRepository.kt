@@ -14,7 +14,6 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readBytes
 import io.ktor.http.Parameters
 import io.ktor.utils.io.charsets.Charset
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -24,6 +23,8 @@ import util.math.parseInt
 
 class ClassScheduleRepository {
     val charSet = Charset.forName("GB2312")
+
+    //登录第一步
     suspend fun HttpClient.loginStudent(
         user: String,
         pass: String,
@@ -47,6 +48,7 @@ class ClassScheduleRepository {
         }
     }
 
+    //识别验证码
     suspend fun HttpClient.parseVerifyCodeFormWest2(
         verifyCodeForParse:String
     ): Flow<String> {
@@ -61,12 +63,14 @@ class ClassScheduleRepository {
         }
     }
 
+    //获取验证码
     suspend fun HttpClient.getVerifyCode():Flow<ByteArray>{
         return flow {
             val verifyCodeForParse = this@getVerifyCode.get("https://jwcjwxt1.fzu.edu.cn/plus/verifycode.asp").readBytes()
             emit(verifyCodeForParse)
         }
     }
+
 
     suspend fun HttpClient.getExamStateHTML(id: String): Flow<String> {
         return flow {
@@ -79,6 +83,7 @@ class ClassScheduleRepository {
         }
     }
 
+    //用token登录 登录第二步
     suspend fun HttpClient.loginByToken(token: String): Flow<JwchTokenLoginResponseDto> {
         return flow {
             val response = this@loginByToken.submitForm(
@@ -95,6 +100,7 @@ class ClassScheduleRepository {
         }
     }
 
+    //登录第三步
     suspend fun HttpClient.loginCheckXs(id: String,num:String): Flow<HttpResponse> {
         return flow {
             val response = this@loginCheckXs.get("https://jwcjwxt2.fzu.edu.cn:81/loginchk_xs.aspx") {
@@ -124,6 +130,7 @@ class ClassScheduleRepository {
         }
     }
 
+    //获取课程
     private suspend fun HttpClient.getCourses(
         id: String,
         xuenian: String,
@@ -155,7 +162,6 @@ class ClassScheduleRepository {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun HttpClient.getCoursesHTML(
         viewStateMap:Map<String,String>,
         xq: String,onGetOptions : (List<String>)->Unit = {},
@@ -186,6 +192,7 @@ class ClassScheduleRepository {
         }
     }
 
+    //获取当前学期信息
     suspend fun HttpClient.getWeek():Flow<WeekData>{
         return flow {
             val response = this@getWeek.get("https://jwcjwxt2.fzu.edu.cn:82/week.asp").bodyAsText(Charset.forName("GB2312"))
@@ -195,14 +202,19 @@ class ClassScheduleRepository {
         }
     }
 
+    //获取某个学期的起始日期
     fun HttpClient.getSchoolCalendar(xq: String): Flow<String> {
         return flow {
-            val response = this@getSchoolCalendar.get("$SCHOOL_CALENDAR_URL/xl.asp").bodyAsText(Charset.forName("GB2312"))
+            val response = this@getSchoolCalendar.get("$SCHOOL_CALENDAR_URL/xl.asp"){
+                url {
+                    parameters.append("xq",xq)
+                }
+            }.bodyAsText(Charset.forName("GB2312"))
             emit(response)
         }
     }
 
-    private suspend fun parseWeekHTML(result: String): WeekData {
+    private fun parseWeekHTML(result: String): WeekData {
         val nowWeek = result.split("var week = \"")[1].split("\";")[0].toInt()
         val curXuenian = result.split("var xq = \"")[1].split("\";")[0].toInt()
         val curYear = result.split("var xn = \"")[1].split("\";")[0].toInt()
@@ -213,7 +225,7 @@ class ClassScheduleRepository {
         )
     }
 
-    private suspend fun parseCoursesHTML(
+    private fun parseCoursesHTML(
         xueNian: String,
         result: String,
         onGetOptions : (List<String>)->Unit = {}
@@ -232,6 +244,7 @@ class ClassScheduleRepository {
             optionStr.add(element.attr("value"))
         }
         onGetOptions.invoke(optionStr.toList())
+
 //        if (optionStr.isEmpty()) {
 //            throw ApiException("term is empty!")
 //        }
@@ -240,6 +253,7 @@ class ClassScheduleRepository {
         val removeLocationPrefix = fun(location: String) = location
             .removePrefix("铜盘")
             .removePrefix("旗山")
+
         //开始解析课表
         val courseEles =
             document.select("tr[onmouseover=c=this.style.backgroundColor;this.style.backgroundColor='#CCFFaa']")
@@ -327,7 +341,6 @@ class ClassScheduleRepository {
                 var matcher =
                     Regex("(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*调至\\s*(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*(\\S*)")
                         .matchEntire(note)
-//                matcher.groupValues
                 while (matcher!=null) {
                     matcher.groupValues.get(5)
                     val toWeek = matcher.groupValues[5].toIntOrNull() ?: 0
@@ -361,7 +374,7 @@ class ClassScheduleRepository {
     }
 
 
-    private suspend fun parseCourseStateHTML(result: String): Map<String, String> {
+    private fun parseCourseStateHTML(result: String): Map<String, String> {
         val document = Ksoup.parse(result)
         //设置常用参数
         val VIEWSTATE = document.getElementById("__VIEWSTATE")?.attr("value")

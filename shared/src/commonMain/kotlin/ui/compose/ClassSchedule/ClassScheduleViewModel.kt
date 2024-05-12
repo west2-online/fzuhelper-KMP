@@ -257,7 +257,6 @@ class ClassScheduleViewModel (
                             .flatMapConcat { stateHtml ->
                                 getCourses(xq,stateHtml)
                             }
-
                             .flatMapConcat {
                                 this@getOtherCourseFromNetwork.getCoursesHTML(
                                     it,
