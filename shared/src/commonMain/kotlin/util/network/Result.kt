@@ -13,8 +13,6 @@ import androidx.compose.ui.Modifier
 import annotation.ImportantFunction
 import di.database
 import di.globalScope
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.header
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.Clock
@@ -61,7 +59,7 @@ interface NetworkResult<T> {
 }
 
 fun <T>networkError(rawError: String,error: String) = NetworkResult.Error<T>(Throwable(rawError),Throwable(error))
-fun <T>networkError(rawError: Error,error: String) = NetworkResult.Error<T>(Throwable(rawError),Throwable(error))
+fun <T>networkError(rawError: Throwable,error: String) = NetworkResult.Error<T>(Throwable(rawError),Throwable(error))
 fun networkSuccess(success: String) = NetworkResult.Success<String>(success)
 
 
@@ -414,7 +412,3 @@ suspend fun <T> NetworkResult<T>.toast(
     }
 }
 
-
-fun HttpRequestBuilder.token(token:String){
-    this.header("Authorization",token)
-}

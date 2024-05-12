@@ -23,16 +23,22 @@ import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.zip
 import repository.ClassScheduleRepository
 import repository.WeekData
+import util.flow.actionWithLabel
 import util.flow.catchWithMassage
 import util.flow.collectWithMassage
 import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
+import util.network.networkError
+import util.network.resetWithLog
 import util.network.resetWithoutLog
 
+/*
+    Create by NOSAE on 2024/5/12
+    初始加载 当前学期的 开始年 开始月 开始日
+*/
 @OptIn(ExperimentalCoroutinesApi::class)
 class ClassScheduleViewModel (
     private val kValueAction: KValueAction,
@@ -44,54 +50,17 @@ class ClassScheduleViewModel (
     class ClassScheduleUiState(
         kValueAction: KValueAction,
     ) {
-        val startYear = kValueAction.dataStartYear.currentValue.map {
-            return@map it?:2023
-        }
-        val startMonth = kValueAction.dataStartMonth.currentValue.map {
-            return@map it?:1
-        }
-        val startDay = kValueAction.dataStartDay.currentValue.map {
-            return@map it?:1
-        }
+        val startYear = MutableStateFlow(kValueAction.dataStartYear.currentValue.value ?: 2023)
+        val startMonth = MutableStateFlow(kValueAction.dataStartMonth.currentValue.value ?: 1)
+        val startDay = MutableStateFlow(kValueAction.dataStartDay.currentValue.value ?: 1)
     }
-    val classScheduleUiState = ClassScheduleUiState(kValueAction)
 
-    init {
-        viewModelScope.launchInDefault(Dispatchers.Unconfined) {
-            classScheduleRepository.apply {
-                shareClient.client.apply {
-                    getWeek()
-                        .map {
-                            it.apply {
-                                kValueAction.currentWeek.setValue(nowWeek)
-                                kValueAction.currentXn.setValue(curXuenian)
-                                kValueAction.currentXq.setValue(curXueqi)
-                                selectYear.value = getXueQi()
-                                selectWeek.value = nowWeek
-                            }
-                        }
-                        .flatMapConcat {
-                            getSchoolCalendar(it.getXueQi())
-                                .retry(10)
-                                .map { result->
-                                    parseBeginDateReset(it.getXueQi(),result)
-                                }
-                        }
-                        .catchWithMassage(
-                            label = "更新当前学期",
-                            action = null
-                        )
-                        .collect{}
-                }
-            }
-        }
-    }
+    val classScheduleUiState = ClassScheduleUiState(kValueAction)
 
     var selectYear = MutableStateFlow(kValueAction.getCurrentYear())
     var selectWeek = MutableStateFlow<Int>(kValueAction.currentWeek.currentValue.value ?: 1)
 
     val scrollState = ScrollState(initial = 0)
-    val academicYearSelectsDialogState = MutableStateFlow(false)
     val courseDialog = MutableStateFlow<CourseBean?>(null)
     val refreshState = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
 
@@ -120,13 +89,52 @@ class ClassScheduleViewModel (
         .mapToList(Dispatchers.IO)
 
 
+    init {
+        viewModelScope.launchInDefault(Dispatchers.Unconfined) {
+            classScheduleRepository.apply {
+                shareClient.client.apply {
+                    getWeek()
+                        .map {
+                            it.apply {
+                                kValueAction.currentWeek.setValue(nowWeek)
+                                kValueAction.currentXn.setValue(curXuenian)
+                                kValueAction.currentXq.setValue(curXueqi)
+                                selectYear.value = getXueQi()
+                                selectWeek.value = nowWeek
+                            }
+                        }
+                        .flatMapConcat {
+                            getSchoolCalendar(it.getXueQi())
+                                .retry(10)
+                                .map { result->
+                                    parseBeginDateReset(
+                                        it.getXueQi()
+                                        ,result,
+                                        true
+                                    )
+                                }
+                        }
+                        .catchWithMassage(
+                            label = "更新当前学期",
+                            action = null
+                        )
+                        .collect{}
+                }
+            }
+        }
+    }
+
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun refreshClassDate(){
+    fun refreshClassData(){
         viewModelScope.launchInDefault(Dispatchers.IO) {
             refreshState.logicIfNotLoading {
                 classScheduleRepository.apply {
                     val client = classSchedule.getClassScheduleClient() ?: run {
-                        refreshState.resetWithoutLog(NetworkResult.Error(Throwable("登录失败"),Throwable("登录失败")))
+                        refreshState.resetWithLog(
+                            logLabel = "登录失败",
+                            NetworkResult.Error(Throwable("登录失败"),Throwable("登录失败"))
+                        )
                         return@logicIfNotLoading
                     }
                     with(client) {
@@ -143,7 +151,10 @@ class ClassScheduleViewModel (
                             .catchWithMassage(
                                 label = "更新当前学期失败",
                                 action = { label , error ->
-                                    refreshState.resetWithoutLog(NetworkResult.Error(Throwable("更新当前学期失败"),error))
+                                    refreshState.resetWithLog(
+                                        logLabel = "更新当前学期失败",
+                                        NetworkResult.Error(Throwable("更新当前学期失败"),error)
+                                    )
                                 }
                             )
                             .flatMapConcat {
@@ -153,15 +164,15 @@ class ClassScheduleViewModel (
                                         parseBeginDateReset(it.getXueQi(),result)
                                     }
                             }
-                            .catchWithMassage(
+                            .actionWithLabel(
                                 label = "更新开学日期失败",
-                                action = { label , error ->
-                                    refreshState.resetWithoutLog(NetworkResult.Error(Throwable("更新开学日期失败"),error))
+                                catchAction = { label , error ->
+                                    refreshState.resetWithLog(label,networkError(error,"更新开学日期失败"))
+                                },
+                                collectAction = { label , data ->
+                                    getCourseFromNetwork()
                                 }
                             )
-                            .collect {
-                                getCourseFromNetwork()
-                            }
                     }
                 }
             }
@@ -174,36 +185,46 @@ class ClassScheduleViewModel (
         with(classScheduleRepository){
             val id = kValueAction.userSchoolId.currentValue.value
             id ?: run{
-                refreshState.resetWithoutLog(NetworkResult.Error(Throwable("id无效"),Throwable("id无效")))
+                refreshState.resetWithLog(
+                    logLabel = "id有误",
+                    NetworkResult.Error(Throwable("获取课程失败"),Throwable("id有误"))
+                )
                 return@with
             }
             with(this@getCourseFromNetwork) {
                 getCourseStateHTML(id)
-                .zip(
-                    getWeek()
-                ){ stateHTML , weekDataOnFlow ->
-                    CourseData(stateHTML = stateHTML, weekData = weekDataOnFlow)
-                }
-                .collect { courseData ->
-                    val weekData = courseData.weekData
-                    val currentXq = "${weekData.curXueqi}0${weekData.curXuenian}"
-                    getCourses( currentXq,courseData.stateHTML)
-                        .flatMapConcat {
-                            getCoursesHTML(
-                                it,
-                                currentXq,
-                                onGetOptions = { yearOptionsFromNetwork ->
-                                    dao.yearOpensDao.insertYearOpens(yearOptionsFromNetwork)
-                                },
-                                id
-                            )
-                        }
-                        .collect { initCourseBean ->
-                            dao.classScheduleDao.insertClassScheduleByXueNian(initCourseBean,weekData.curXueqi,weekData.curXuenian)
-                            refreshState.resetWithoutLog(NetworkResult.Success("刷新成功"))
-                            getOtherCourseFromNetwork(currentXq)
-                        }
-                }
+                    .catchWithMassage { label, throwable ->
+                        refreshState.resetWithLog(label,networkError(throwable,"更新失败"))
+                    }
+                    .flatMapConcat { stateHTML ->
+                        getWeek()
+                            .map { weekDataOnFlow ->
+                                CourseData(stateHTML = stateHTML, weekData = weekDataOnFlow)
+                            }
+                    }
+                    .catchWithMassage { label, throwable ->
+                        refreshState.resetWithLog(label,networkError(throwable,"更新失败"))
+                    }
+                    .collect { courseData ->
+                        val weekData = courseData.weekData
+                        val currentXq = "${weekData.curXueqi}0${weekData.curXuenian}"
+                        getCourses( currentXq,courseData.stateHTML)
+                            .flatMapConcat {
+                                getCoursesHTML(
+                                    it,
+                                    currentXq,
+                                    onGetOptions = { yearOptionsFromNetwork ->
+                                        dao.yearOpensDao.insertYearOpens(yearOptionsFromNetwork)
+                                    },
+                                    id
+                                )
+                            }
+                            .collect { initCourseBean ->
+                                dao.classScheduleDao.insertClassScheduleByXueNian(initCourseBean,weekData.curXueqi,weekData.curXuenian)
+                                refreshState.resetWithoutLog(NetworkResult.Success("刷新成功"))
+                                getOtherCourseFromNetwork(currentXq)
+                            }
+                    }
             }
         }
     }
@@ -211,12 +232,12 @@ class ClassScheduleViewModel (
     //获取非当前学期的课程
     @OptIn(ExperimentalCoroutinesApi::class)
     fun HttpClient.getOtherCourseFromNetwork(
-        loadedYear : String,
+        currentXq : String,
     ){
         viewModelScope.launchInDefault(Dispatchers.IO) {
             val yearOptions = dao.yearOpensDao.getAllYearOpens()
             yearOptions.filter {
-                it.yearOptionsName != loadedYear && it.yearOptionsName!=""
+                it.yearOptionsName != currentXq && it.yearOptionsName!=""
             }.map{
                 it.yearOptionsName
             }.forEach { yearOptionsName ->
@@ -224,7 +245,10 @@ class ClassScheduleViewModel (
                     with(classScheduleRepository){
                         val id = kValueAction.userSchoolId.currentValue.value
                         id ?: run{
-                            refreshState.resetWithoutLog(NetworkResult.Error(Throwable("id无效"),Throwable("id无效")))
+                            refreshState.resetWithLog(
+                                logLabel = "id有误",
+                                NetworkResult.Error(Throwable("获取课程失败"),Throwable("id有误"))
+                            )
                             return@with
                         }
                         this@getOtherCourseFromNetwork.getCourseStateHTML(
@@ -251,6 +275,7 @@ class ClassScheduleViewModel (
         }
     }
 
+
     //获取考试
     private fun HttpClient.getExamData(){
         viewModelScope.launchInDefault(Dispatchers.IO) {
@@ -258,7 +283,10 @@ class ClassScheduleViewModel (
             with(classScheduleRepository) {
                 val id = kValueAction.userSchoolId.currentValue.value
                 id ?: run{
-                    refreshState.resetWithoutLog(NetworkResult.Error(Throwable("id无效"),Throwable("id无效")))
+                    refreshState.resetWithLog(
+                        logLabel = "id有误",
+                        NetworkResult.Error(Throwable("获取课程失败"),Throwable("id有误"))
+                    )
                     return@with
                 }
                 this@getExamData.getExamStateHTML(id)
@@ -271,7 +299,6 @@ class ClassScheduleViewModel (
             }
         }
     }
-
 
     fun changeCurrentYear(newValue:String){
         viewModelScope.launchInDefault {
@@ -329,7 +356,11 @@ class ClassScheduleViewModel (
      * 解析开学时间网页
      * @param result 获取到的网页
      */
-    private suspend fun parseBeginDateReset(xq: String, result: String) {
+    private suspend fun parseBeginDateReset(
+        xq: String,
+        result: String,
+        save : Boolean = false
+    ) {
         val document = Ksoup.parse(result)
         val select = document.getElementsByTag("select")[0]
         val option = select.getElementsByAttributeValueStarting("value", xq)
@@ -338,14 +369,16 @@ class ClassScheduleViewModel (
             val beginYear = value.substring(6, 10).toInt()
             val beginMonth = value.substring(10, 12).toInt()
             val beginDay = value.substring(12, 14).toInt()
-            kValueAction.apply {
-                dataStartDay.setValue(beginDay)
-                dataStartMonth.setValue(beginMonth)
-                dataStartYear.setValue(beginYear)
+            if (save){
+                kValueAction.apply {
+                    dataStartDay.setValue(beginDay)
+                    dataStartMonth.setValue(beginMonth)
+                    dataStartYear.setValue(beginYear)
+                }
             }
-            println(beginMonth)
-            println(beginYear)
-            println(beginDay)
+            classScheduleUiState.startDay.emit(beginDay)
+            classScheduleUiState.startYear.emit(beginYear)
+            classScheduleUiState.startMonth.emit(beginMonth)
 //            println(beginMonth)
 //                val calendar = Calendar.getInstance()
 //                calendar.set(beginYear, beginMonth - 1, beginDay, 0, 0, 0)

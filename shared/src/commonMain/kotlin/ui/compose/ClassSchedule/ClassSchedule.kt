@@ -101,13 +101,15 @@ fun ClassSchedule(
         mutableStateOf(30)
     }
     val pagerState = rememberPagerState(
-        initialPage = 0,
+        initialPage = classScheduleViewModel.selectWeek.value - 1,
         initialPageOffsetFraction = 0f
     ) {
         pageNumber.value
     }
     val courseDialog by classScheduleViewModel.courseDialog.collectAsState()
-    val academicYearSelectsDialogState by classScheduleViewModel.academicYearSelectsDialogState.collectAsState()
+    val academicYearSelectsDialogState = remember {
+        mutableStateOf(false)
+    }
     val yearOptionsBean by classScheduleViewModel.yearOptions.collectAsState(listOf())
     val currentWeek by classScheduleViewModel.selectWeek.collectAsState()
     LaunchedEffect(currentWeek){
@@ -134,7 +136,7 @@ fun ClassSchedule(
                             .weight(1f)
                     )
                     IconButton(onClick = {
-                        classScheduleViewModel.refreshClassDate()
+                        classScheduleViewModel.refreshClassData()
                     }) {
                         classScheduleViewModel.refreshState.collectAsState().CollectWithContentInBox(
                             loading = {
@@ -172,7 +174,7 @@ fun ClassSchedule(
                                 text = { Text(text = "学年") },
                                 onClick = {
                                     expanded = false
-                                    classScheduleViewModel.academicYearSelectsDialogState.value = true
+                                    academicYearSelectsDialogState.value = true
                                 },
                                 leadingIcon = {
                                     Icon(
@@ -322,10 +324,10 @@ fun ClassSchedule(
                 }
             )
         }
-        if (academicYearSelectsDialogState) {
+        if (academicYearSelectsDialogState.value) {
             AcademicYearSelectsDialog(
                 onDismissRequest = {
-                    classScheduleViewModel.academicYearSelectsDialogState.value = false
+                    academicYearSelectsDialogState.value = false
                 },
                 commit = {
                     classScheduleViewModel.changeCurrentYear(it)
@@ -415,11 +417,6 @@ fun EmptyClassCard(
     }
 }
 
-//@Composable
-//@Preview(device = "spec:width=200px,height=2340px,dpi=440")
-//fun ClassCardPreview(){
-//    ClassCard()
-//}
 
 @Composable
 fun Sidebar(
@@ -475,7 +472,7 @@ fun ClassDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TopAppBar(
-                    title = { /*TODO*/ },
+                    title = {  },
                     actions = {
                         IconButton(onClick = { onDismissRequest.invoke() }) {
                             Icon(
