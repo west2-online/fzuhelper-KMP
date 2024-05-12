@@ -49,6 +49,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -114,6 +115,11 @@ fun ClassSchedule(
     val currentWeek by classScheduleViewModel.selectWeek.collectAsState()
     LaunchedEffect(currentWeek){
         pagerState.animateScrollToPage(classScheduleViewModel.selectWeek.value - 1)
+    }
+    DisposableEffect(currentWeek){
+        onDispose {
+
+        }
     }
     Box(
         modifier = Modifier
@@ -263,7 +269,7 @@ fun ClassSchedule(
                                 .fillMaxSize()
                                 .verticalScroll(classScheduleViewModel.scrollState)
                         ) {
-                            WeekDay.values().forEachIndexed { weekIndex, value ->
+                            WeekDay.entries.forEachIndexed { weekIndex, value ->
                                 Column(
                                     modifier = Modifier
                                         .weight(1f)
@@ -455,7 +461,6 @@ fun Sidebar(
 @Composable
 fun ClassDialog(
     courseBean: CourseBean,
-    backgroundColor: Color = Color(217, 217, 239),
     onDismissRequest: () -> Unit,
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
@@ -600,7 +605,7 @@ fun TimeOfWeekColumn(
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
         )
-        WeekDay.values().forEach { item ->
+        WeekDay.entries.forEach { item ->
             Text(
                 text = item.chineseName,
                 modifier = Modifier
@@ -663,18 +668,26 @@ fun TimeOfMonthColumn(
 
 fun getDataByWeek(week: Int, day: Int, startYear: Int, startMonth: Int, startDay: Int, ): Int {
     //创建一个自定义年月日的日期，使用Calendar.set
-    val time = LocalDateTime(startYear, startMonth, startDay, 16, 57, 0, 0).toInstant(CurrentZone)
-        .plus(((week - 1) * 7).toDuration(DurationUnit.DAYS))
-        .plus(day.toDuration(DurationUnit.DAYS))
-    return time.toLocalDateTime(CurrentZone).dayOfMonth
+    return try {
+        val time = LocalDateTime(startYear, startMonth, startDay, 16, 57, 0, 0).toInstant(CurrentZone)
+            .plus(((week - 1) * 7).toDuration(DurationUnit.DAYS))
+            .plus(day.toDuration(DurationUnit.DAYS))
+        time.toLocalDateTime(CurrentZone).dayOfMonth
+    }catch (e:Exception){
+        1
+    }
 }
 
 
 fun getMonthByWeek(week: Int,startYear:Int, startMonth:Int,startDay:Int):Int{
     //创建一个自定义年月日的日期，使用Calendar.set
-    val time = LocalDateTime(startYear, startMonth, startDay, 12, 0, 0, 1).toInstant(CurrentZone)
-        .plus(((week - 1) * 7).toDuration(DurationUnit.DAYS))
-    return time.toLocalDateTime(CurrentZone).monthNumber
+    return try {
+        val time = LocalDateTime(startYear, startMonth, startDay, 12, 0, 0, 1).toInstant(CurrentZone)
+            .plus(((week - 1) * 7).toDuration(DurationUnit.DAYS))
+        time.toLocalDateTime(CurrentZone).monthNumber
+    }catch (e:Exception){
+        1
+    }
 }
 
 val ClassScheduleNotificationDisplayProperties = listOf("教室","教师","节数","周数","备注",)
@@ -701,12 +714,7 @@ fun AcademicYearSelectsDialog(
         },
     commit: (String) -> Unit
 ){
-    var data = MutableStateFlow("null")
-
-    LaunchedEffect(Unit){
-        data.value = if(list.isNotEmpty()) list[0].yearOptionsName.toString() else "null"
-    }
-
+    val data = MutableStateFlow(if(list.isNotEmpty()) list[0].yearOptionsName.toString() else "null")
     val state = rememberLazyListState()
 
     Dialog(
