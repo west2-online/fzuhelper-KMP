@@ -18,9 +18,11 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Share
@@ -33,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.tab.CurrentTab
@@ -43,7 +46,6 @@ import kotlinx.coroutines.launch
 import org.example.library.MR
 import ui.compose.Action.ActionVoyagerScreen
 import ui.compose.ClassSchedule.ClassScheduleVoyagerScreen
-import ui.compose.Massage.MassageVoyagerScreen
 import ui.compose.Person.PersonVoyagerScreen
 import ui.compose.Post.PostVoyagerScreen
 import util.compose.BottomNavigationWithBottomPadding
@@ -59,11 +61,11 @@ enum class MainItems(
 ){
     CLASS(
         "课表",
-        unSelectImageVector = Icons.Outlined.Home,
-        selectImageVector = Icons.Filled.Home,
+        unSelectImageVector = Icons.Outlined.DateRange,
+        selectImageVector = Icons.Filled.DateRange,
     ),
     POST(
-        "主页",
+        "讨论",
         unSelectImageVector = Icons.Outlined.Home,
         selectImageVector = Icons.Filled.Home,
     ),
@@ -163,6 +165,15 @@ class MainVoyagerScreen(
 fun RowScope.BottomPostTab(){
     val currentTabNavigator = LocalTabNavigator.current
     val item = MainItems.POST
+    val textDecoration = remember(currentTabNavigator.current) {
+        mutableStateOf(
+            if( currentTabNavigator.current is PostVoyagerScreen){
+                TextDecoration.Underline
+            } else{
+                TextDecoration.None
+            }
+        )
+    }
     this.BottomNavigationItem(
         icon = {
             val imageVector = remember(currentTabNavigator.current) {
@@ -184,7 +195,7 @@ fun RowScope.BottomPostTab(){
                 )
             }
         },
-        label = { Text(item.tag) },
+        label = { Text(item.tag,textDecoration = textDecoration.value) },
         selected = currentTabNavigator.current is PostVoyagerScreen,
         onClick = {
             currentTabNavigator.current = PostVoyagerScreen(
@@ -202,6 +213,15 @@ fun RowScope.BottomPostTab(){
 fun RowScope.BottomActionTab(){
     val currentTabNavigator = LocalTabNavigator.current
     val item = MainItems.ACTION
+    val textDecoration = remember(currentTabNavigator.current) {
+        mutableStateOf(
+            if( currentTabNavigator.current is ActionVoyagerScreen){
+                TextDecoration.Underline
+            } else{
+                TextDecoration.None
+            }
+        )
+    }
     this.BottomNavigationItem(
         icon = {
             val imageVector = remember(currentTabNavigator.current) {
@@ -223,7 +243,7 @@ fun RowScope.BottomActionTab(){
                 )
             }
         },
-        label = { Text(item.tag) },
+        label = { Text(item.tag,textDecoration = textDecoration.value) },
         selected = currentTabNavigator.current is ActionVoyagerScreen,
         onClick = {
             currentTabNavigator.current = ActionVoyagerScreen(
@@ -277,17 +297,27 @@ fun RowScope.BottomActionTab(){
 fun RowScope.BottomClassTab(){
     val currentTabNavigator = LocalTabNavigator.current
     val item = MainItems.CLASS
+    val textDecoration = remember(currentTabNavigator.current) {
+        mutableStateOf(
+            if( currentTabNavigator.current is ClassScheduleVoyagerScreen){
+                TextDecoration.Underline
+            } else{
+                TextDecoration.None
+            }
+        )
+    }
     this.BottomNavigationItem(
         icon = {
             val imageVector = remember(currentTabNavigator.current) {
                 mutableStateOf(
-                    if( currentTabNavigator.current is MassageVoyagerScreen){
+                    if( currentTabNavigator.current is ClassScheduleVoyagerScreen){
                         item.selectImageVector
                     } else{
                         item.unSelectImageVector
                     }
                 )
             }
+
             Crossfade (
                 imageVector.value
             ){
@@ -298,7 +328,12 @@ fun RowScope.BottomClassTab(){
                 )
             }
         },
-        label = { Text(item.tag) },
+        label = {
+            Text(
+                item.tag,
+                textDecoration = textDecoration.value
+            )
+        },
         selected = currentTabNavigator.current is ClassScheduleVoyagerScreen,
         onClick = {
             currentTabNavigator.current = ClassScheduleVoyagerScreen(
@@ -314,6 +349,15 @@ fun RowScope.BottomClassTab(){
 fun RowScope.BottomPersonTab(){
     val currentTabNavigator = LocalTabNavigator.current
     val item = MainItems.PERSON
+    val textDecoration = remember(currentTabNavigator.current) {
+        mutableStateOf(
+            if( currentTabNavigator.current is PersonVoyagerScreen){
+                TextDecoration.Underline
+            } else{
+                TextDecoration.None
+            }
+        )
+    }
     this.BottomNavigationItem(
         icon = {
             val imageVector = remember(currentTabNavigator.current) {
@@ -335,7 +379,7 @@ fun RowScope.BottomPersonTab(){
                 )
             }
         },
-        label = { Text(item.tag) },
+        label = { Text(item.tag,textDecoration = textDecoration.value) },
         selected = currentTabNavigator.current is PersonVoyagerScreen,
         onClick = {
             currentTabNavigator.current = PersonVoyagerScreen(
