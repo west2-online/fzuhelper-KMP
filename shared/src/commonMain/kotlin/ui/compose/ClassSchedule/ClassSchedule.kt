@@ -1,6 +1,8 @@
 package ui.compose.ClassSchedule
 
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -31,8 +33,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Edit
@@ -49,7 +53,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -60,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -116,11 +120,11 @@ fun ClassSchedule(
     LaunchedEffect(currentWeek){
         pagerState.animateScrollToPage(classScheduleViewModel.selectWeek.value - 1)
     }
-    DisposableEffect(currentWeek){
-        onDispose {
-
-        }
-    }
+//    DisposableEffect(currentWeek){
+//        onDispose {
+//            classScheduleViewModel.selectWeek.value = pagerState.currentPage + 1
+//        }
+//    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -136,11 +140,55 @@ fun ClassSchedule(
                     modifier = Modifier.height(64.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ){
-                    Text(
-                        text = "  第${pagerState.currentPage + 1}周",
+                    Row (
                         modifier = Modifier
                             .weight(1f)
-                    )
+                    ){
+                        val weekExpanded = remember {
+                            mutableStateOf(false)
+                        }
+                        TextButton(
+                            onClick = {
+                                weekExpanded.value = true
+                            }
+                        ){
+                            Text(
+                                text = "  第${pagerState.currentPage + 1}周",
+                            )
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .rotate(
+                                        animateFloatAsState(
+                                            if( weekExpanded.value ) 0f else 180f,
+                                            animationSpec = tween(500)
+                                        ).value
+                                    )
+                            )
+                        }
+                        Box{
+                            DropdownMenu(
+                                expanded = weekExpanded.value,
+                                onDismissRequest = {
+                                    weekExpanded.value = false
+                                }
+                            ){
+                                (1..30).forEach {
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            classScheduleViewModel.selectWeek.value = it
+                                            weekExpanded.value = false
+                                        },
+                                        text = {
+                                            Text("第${it}周")
+                                        }
+                                    )
+                                }
+
+                            }
+                        }
+                    }
                     IconButton(onClick = {
                         classScheduleViewModel.refreshClassData()
                     }) {
