@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -82,7 +83,7 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.parentStatusControl
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
-import util.network.CollectWithContent
+import util.network.CollectWithContentInBox
 import kotlin.jvm.Transient
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -117,86 +118,95 @@ fun ClassSchedule(
             .fillMaxSize()
     ){
         Column {
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .parentStatusControl(parentPaddingControl = parentPaddingControl),
-                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = "  第${pagerState.currentPage + 1}周",
-                    modifier = Modifier
-                        .weight(1f)
-                )
-                IconButton(onClick = {
-                    classScheduleViewModel.refreshClassDate()
-                }) {
-                    classScheduleViewModel.refreshState.collectAsState().CollectWithContent(
-                        loading = {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .aspectRatio(1f)
-                                    .wrapContentSize(Alignment.Center)
-                                    .fillMaxSize(0.8f)
-                            )
-                        },
-                        content = {
-                            Icon(imageVector = Icons.Filled.Refresh, contentDescription = null)
-                        }
+                Row (
+                    modifier = Modifier.height(64.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ){
+                    Text(
+                        text = "  第${pagerState.currentPage + 1}周",
+                        modifier = Modifier
+                            .weight(1f)
                     )
-                }
-                var expanded by remember { mutableStateOf(false) }
-                Surface(
-                    modifier = Modifier
-                        .wrapContentSize()
-                ) {
-                    IconButton(onClick = { expanded = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(text = "学年") },
-                            onClick = {
-                                expanded = false
-                                classScheduleViewModel.academicYearSelectsDialogState.value = true
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Outlined.Edit,
-                                    contentDescription = null
+                    IconButton(onClick = {
+                        classScheduleViewModel.refreshClassDate()
+                    }) {
+                        classScheduleViewModel.refreshState.collectAsState().CollectWithContentInBox(
+                            loading = {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .aspectRatio(1f)
+                                        .wrapContentSize(Alignment.Center)
+                                        .fillMaxSize(0.8f)
                                 )
                             },
-                            trailingIcon = {
-                                Text(
-                                    classScheduleViewModel.selectYear.collectAsState().value.toString(),
-                                    textAlign = TextAlign.Center
+                            content = {
+                                Icon(
+                                    imageVector = Icons.Filled.Refresh,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
                                 )
                             }
                         )
-                        DropdownMenuItem(
-                            text = { Text("Settings") },
-                            onClick = { /* Handle settings! */ },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Outlined.Settings,
-                                    contentDescription = null
-                                )
-                            })
-                        DropdownMenuItem(
-                            text = { Text("Send Feedback") },
-                            onClick = { /* Handle send feedback! */ },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Outlined.Email,
-                                    contentDescription = null
-                                )
-                            },
-                            trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
+                    }
+                    var expanded by remember { mutableStateOf(false) }
+                    Surface(
+                        modifier = Modifier
+                            .wrapContentSize()
+                    ) {
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(text = "学年") },
+                                onClick = {
+                                    expanded = false
+                                    classScheduleViewModel.academicYearSelectsDialogState.value = true
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Edit,
+                                        contentDescription = null
+                                    )
+                                },
+                                trailingIcon = {
+                                    Text(
+                                        classScheduleViewModel.selectYear.collectAsState().value.toString(),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Settings") },
+                                onClick = { /* Handle settings! */ },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Settings,
+                                        contentDescription = null
+                                    )
+                                })
+                            DropdownMenuItem(
+                                text = { Text("Send Feedback") },
+                                onClick = { /* Handle send feedback! */ },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Email,
+                                        contentDescription = null
+                                    )
+                                },
+                                trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
+                        }
                     }
                 }
             }
@@ -342,6 +352,9 @@ fun ClassCard(
             .fillMaxWidth()
             .padding(vertical = 2.dp, horizontal = 2.dp)
             .clip(RoundedCornerShape(5.dp))
+            .background(
+                (if(isSystemInDarkTheme()) DarkColors.entries[courseBean.kcBackgroundId.toInt()].color else LightColors.entries[courseBean.kcBackgroundId.toInt()].color)
+            )
             .clickable {
                 detailAboutCourse.invoke(courseBean)
             }
@@ -889,3 +902,49 @@ class ClassScheduleVoyagerScreen(
         }
 }
 
+
+enum class LightColors(val color: Color) {
+    COLOR1(Color(0xFFECCDCD)),
+    COLOR2(Color(0xFFDDEEFF)),
+    COLOR3(Color(0xFFE6FFDD)),
+    COLOR4(Color(0xFFFFEDDD)),
+    COLOR5(Color(0xFFF9DDFF)),
+    COLOR6(Color(0xFFFFDDDD)),
+    COLOR7(Color(0xFFDDFFFB)),
+    COLOR8(Color(0xFFFFFDDD)),
+    COLOR9(Color(0xFFF2DDFF)),
+    COLOR10(Color(0xFFDDFFDD)),
+    COLOR11(Color(0xFFFFF7DD)),
+    COLOR12(Color(0xFFDDFFFF)),
+    COLOR13(Color(0xFFFCDDFF)),
+    COLOR14(Color(0xFFFFFBDD)),
+    COLOR15(Color(0xFFDDFFEF)),
+    COLOR16(Color(0xFFE2DDFF)),
+    COLOR17(Color(0xFFDDFFE3)),
+    COLOR18(Color(0xFFFFDDF6)),
+    COLOR19(Color(0xFFDDFFF7)),
+    COLOR20(Color(0xFFF0FFDD))
+}
+
+enum class DarkColors(val color: Color) {
+    COLOR1(Color(0xFFA56969)),  // 深色模式下的对应颜色1
+    COLOR2(Color(0xFF7A9ACC)),  // 深色模式下的对应颜色2
+    COLOR3(Color(0xFF7ACB9E)),  // 深色模式下的对应颜色3
+    COLOR4(Color(0xFFCB8F7A)),  // 深色模式下的对应颜色4
+    COLOR5(Color(0xFFC295D7)),  // 深色模式下的对应颜色5
+    COLOR6(Color(0xFFD7A4A4)),  // 深色模式下的对应颜色6
+    COLOR7(Color(0xFFA4D7C8)),  // 深色模式下的对应颜色7
+    COLOR8(Color(0xFFD7D7A1)),  // 深色模式下的对应颜色8
+    COLOR9(Color(0xFFBDA4D7)),  // 深色模式下的对应颜色9
+    COLOR10(Color(0xFFA4D7A4)), // 深色模式下的对应颜色10
+    COLOR11(Color(0xFFD7C2A4)), // 深色模式下的对应颜色11
+    COLOR12(Color(0xFFA4D7D7)), // 深色模式下的对应颜色12
+    COLOR13(Color(0xFFCDA4D7)), // 深色模式下的对应颜色13
+    COLOR14(Color(0xFFD7C7A4)), // 深色模式下的对应颜色14
+    COLOR15(Color(0xFFA4D7B6)), // 深色模式下的对应颜色15
+    COLOR16(Color(0xFFB0A4D7)), // 深色模式下的对应颜色16
+    COLOR17(Color(0xFFA4D7C1)), // 深色模式下的对应颜色17
+    COLOR18(Color(0xFFD7A4CD)), // 深色模式下的对应颜色18
+    COLOR19(Color(0xFFA4D7CE)), // 深色模式下的对应颜色19
+    COLOR20(Color(0xFFC5D7A4))  // 深色模式下的对应颜色20
+}
