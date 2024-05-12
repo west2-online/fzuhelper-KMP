@@ -322,37 +322,40 @@ class ClassScheduleRepository {
                     error("解析出错:$title")
                 }
             }
-//            if (note.isNotEmpty() && DataManager.courseImportNode) {
-//                //解析调课信息
-//                val matcher =
-//                    Pattern.compile("(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*调至\\s*(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*(\\S*)")
-//                        .matcher(note)
-//                while (matcher.find()) {
-//                    val toWeek = matcher.group(5)?.toIntOrNull() ?: 0
-//                    val toWeekend = matcher.group(6)?.toIntOrNull() ?: 0
-//                    val toStart = matcher.group(7)?.toIntOrNull() ?: 0
-//                    val toEnd = matcher.group(8)?.toIntOrNull() ?: 0
-//                    val toPlace = matcher.group(9) ?: ""
-//                    val kc = CourseBean()
-//                    kc.kcNote = note
-//                    kc.teacher = teacher
-//                    kc.jiaoxueDagang = jiaoxueDagang
-//                    kc.shoukeJihua = shoukeJihua
-//                    kc.kcBackgroundId = i
-//                    kc.kcYear = year
-//                    kc.kcXuenian = xuenian
-//                    kc.kcStartWeek = toWeek
-//                    kc.kcEndWeek = toWeek
-//                    kc.kcStartTime = toStart
-//                    kc.kcEndTime = toEnd
-//                    kc.kcIsSingle = true
-//                    kc.kcIsDouble = true
-//                    kc.kcLocation = removeLocationPrefix(toPlace)
-//                    kc.kcWeekend = toWeekend
-//                    kc.kcName = "[调课]$title"
-//                    tempCourses.add(kc)
-//                }
-//            }
+            if (note.isNotEmpty()) {
+                //解析调课信息
+                var matcher =
+                    Regex("(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*调至\\s*(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*(\\S*)")
+                        .matchEntire(note)
+//                matcher.groupValues
+                while (matcher!=null) {
+                    matcher.groupValues.get(5)
+                    val toWeek = matcher.groupValues[5].toIntOrNull() ?: 0
+                    val toWeekend = matcher.groupValues[6].toIntOrNull() ?: 0
+                    val toStart = matcher.groupValues[7].toIntOrNull() ?: 0
+                    val toEnd = matcher.groupValues[8].toIntOrNull() ?: 0
+                    val toPlace = matcher.groupValues[9] ?: ""
+                    val kc = CourseBeanForTemp()
+                    kc.kcNote = note
+                    kc.teacher = teacher
+                    kc.jiaoxueDagang = jiaoxueDagang
+                    kc.shoukeJihua = shoukeJihua
+                    kc.kcBackgroundId = i
+                    kc.kcYear = year
+                    kc.kcXuenian = xuenian
+                    kc.kcStartWeek = toWeek
+                    kc.kcEndWeek = toWeek
+                    kc.kcStartTime = toStart
+                    kc.kcEndTime = toEnd
+                    kc.kcIsSingle = true
+                    kc.kcIsDouble = true
+                    kc.kcLocation = removeLocationPrefix(toPlace)
+                    kc.kcWeekend = toWeekend
+                    kc.kcName = "[调课]$title"
+                    tempCourses.add(kc)
+                    matcher = matcher.next()
+                }
+            }
         }
         return tempCourses
     }
