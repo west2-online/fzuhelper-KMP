@@ -41,7 +41,6 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
@@ -86,11 +85,14 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.futalk.kmm.CourseBean
 import com.futalk.kmm.YearOptions
 import config.CurrentZone
+import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import org.example.library.MR
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.koin.compose.koinInject
 import util.compose.EasyToast
 import util.compose.ParentPaddingControl
@@ -105,7 +107,9 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalResourceApi::class
+)
 @Composable
 fun ClassSchedule(
     classScheduleViewModel: ClassScheduleViewModel = koinInject<ClassScheduleViewModel>(),
@@ -116,6 +120,7 @@ fun ClassSchedule(
     }
     val toastState = rememberToastState()
     toastState.toastBindNetworkResult(classScheduleViewModel.refreshState.collectAsState())
+    toastState.toastBindNetworkResult(classScheduleViewModel.refreshExamState.collectAsState())
     val pageNumber = remember {
         mutableStateOf(30)
     }
@@ -218,7 +223,17 @@ fun ClassSchedule(
                     IconButton(onClick = {
                         showExamList.value = true
                     }) {
-                        Icon(Icons.Default.Email,null)
+                        Icon(
+                            painter = painterResource(MR.images.exam).apply {
+                                    this.intrinsicSize
+                            },
+                            null,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .aspectRatio(1f)
+                                .wrapContentSize(Alignment.Center)
+                                .fillMaxSize(0.55f)
+                        )
                     }
                     IconButton(onClick = {
                         classScheduleViewModel.refreshClassData()
@@ -427,94 +442,96 @@ fun ClassSchedule(
                 currentYear = currentYear
             )
         }
-        EasyToast(toastState)
-    }
-    AnimatedVisibility(
-        showExamList.value,
-        enter = slideInVertically { fullHeight -> fullHeight  },
-        exit = slideOutVertically { fullHeight -> fullHeight  },
-        modifier = Modifier
-            .fillMaxSize()
-            .parentStatusControl(parentPaddingControl)
-            .padding(10.dp)
-    ) {
-        Surface (
+        AnimatedVisibility(
+            showExamList.value,
+            enter = slideInVertically { fullHeight -> fullHeight  },
+            exit = slideOutVertically { fullHeight -> fullHeight  },
             modifier = Modifier
                 .fillMaxSize()
-        ){
-            val examList = classScheduleViewModel.examList.collectAsState(listOf())
-            Column {
-                Row (
-                    modifier = Modifier.height(64.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                .parentStatusControl(parentPaddingControl)
+        ) {
+            Surface (
+                modifier = Modifier
+                    .fillMaxSize()
+            ){
+                val examList = classScheduleViewModel.examList.collectAsState(listOf())
+                Column (
+                    modifier = Modifier
+                        .padding(10.dp)
                 ){
                     Row (
-                        modifier = Modifier
-                            .weight(1f)
+                        modifier = Modifier.height(64.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ){
-                        val weekExpanded = remember {
-                            mutableStateOf(false)
-                        }
-                        TextButton(
-                            onClick = {
-                                weekExpanded.value = true
-                            }
+                        Row (
+                            modifier = Modifier
+                                .weight(1f)
                         ){
-                            Text(
-                                text = "考试列表",
+                            val weekExpanded = remember {
+                                mutableStateOf(false)
+                            }
+                            TextButton(
+                                onClick = {
+                                    weekExpanded.value = true
+                                }
+                            ){
+                                Text(
+                                    text = "考试列表",
+                                )
+                            }
+                        }
+
+                        IconButton(onClick = {
+                            showExamList.value = false
+                        }) {
+                            Icon(Icons.Default.KeyboardArrowDown,null)
+                        }
+                        IconButton(onClick = {
+                            classScheduleViewModel.refreshExamData()
+                        }) {
+                            classScheduleViewModel.refreshExamState.collectAsState().CollectWithContentInBox(
+                                loading = {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .aspectRatio(1f)
+                                            .wrapContentSize(Alignment.Center)
+                                            .fillMaxSize(0.8f)
+                                    )
+                                },
+                                content = {
+                                    Icon(
+                                        imageVector = Icons.Filled.Refresh,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                    )
+                                }
                             )
                         }
                     }
-
-                    IconButton(onClick = {
-                        showExamList.value = false
-                    }) {
-                        Icon(Icons.Default.KeyboardArrowDown,null)
-                    }
-                    IconButton(onClick = {
-                        classScheduleViewModel.refreshExamData()
-                    }) {
-                        classScheduleViewModel.refreshExamState.collectAsState().CollectWithContentInBox(
-                            loading = {
-                                CircularProgressIndicator(
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        items(examList.value.filter {
+                            it.address.isNotEmpty()
+                        }){
+                            Card {
+                                Column (
                                     modifier = Modifier
-                                        .fillMaxHeight()
-                                        .aspectRatio(1f)
-                                        .wrapContentSize(Alignment.Center)
-                                        .fillMaxSize(0.8f)
-                                )
-                            },
-                            content = {
-                                Icon(
-                                    imageVector = Icons.Filled.Refresh,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                )
-                            }
-                        )
-                    }
-                }
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    items(examList.value.filter {
-                        it.address.isNotEmpty()
-                    }){
-                        Card {
-                            Column (
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(10.dp),
-                                verticalArrangement = Arrangement.spacedBy(5.dp)
-                            ){
-                                with(it){
-                                    Text(examId.toString())
-                                    Text(name)
-                                    Text(xuefen)
-                                    Text(teacher)
-                                    Text(address)
-                                    Text(zuohao)
+                                        .fillMaxWidth()
+                                        .padding(10.dp),
+                                    verticalArrangement = Arrangement.spacedBy(5.dp)
+                                ){
+                                    with(it){
+                                        Text(
+                                            name,
+                                            fontSize = 20.sp
+                                        )
+                                        Text("学分: $xuefen")
+                                        Text("老师: $teacher")
+                                        Text("地址: $address")
+                                    }
                                 }
                             }
                         }
@@ -522,7 +539,9 @@ fun ClassSchedule(
                 }
             }
         }
+        EasyToast(toastState)
     }
+
 }
 
 
