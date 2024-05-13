@@ -77,12 +77,12 @@ class ClassSchedule(
     private val classScheduleRepository: ClassScheduleRepository,
     private val kVaultAction:KValueAction
 ){
-
-    var client:HttpClient? = null
+    private var client:HttpClient? = null
+    private var userSchoolId:String? = null
     private var upDataTime = Clock.System.now().plus(-50, DateTimeUnit.MINUTE)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun getClassScheduleClient() : HttpClient? {
+    suspend fun getClassScheduleClient() : Pair<HttpClient?,String?> {
         if (client == null || Clock.System.now() - upDataTime > 20.toDuration(DurationUnit.MINUTES)) {
             val newClient = HttpClient() {
                 install(ContentNegotiation) {
@@ -132,22 +132,26 @@ class ClassSchedule(
                             )
                         }
                         .retry(3)
+                        .map {
+                            val url = it.call.request.url.toString()
+                            client = newClient
+                            userSchoolId = url.split("id=")[1].split("&")[0]
+                            upDateClientTime()
+                        }
                         .catch {
                             client = null
+                            userSchoolId = null
                         }
                         .collect{
-                            val url = it.call.request.url.toString()
-                            kVaultAction.userSchoolId.setValue(url.split("id=")[1].split("&")[0])
-                            upDateClientTime()
+
                         }
                 }
 
             }
-            return newClient
+            return Pair(newClient,userSchoolId)
         }
-        return client
+        return Pair(client,userSchoolId)
     }
-
     private fun upDateClientTime(){
         upDataTime = Clock.System.now()
     }

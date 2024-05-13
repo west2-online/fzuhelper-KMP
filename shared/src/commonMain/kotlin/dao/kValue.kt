@@ -25,7 +25,7 @@ class KValueAction(
     val currentXn = KValueIntDate(CurrentXnKey,MutableStateFlow(null))
     val currentXq = KValueIntDate(CurrentXqKey,MutableStateFlow(null))
     val currentWeek = KValueIntDate(CurrentWeekKey,MutableStateFlow(null))
-    val userSchoolId = KValueStringDate(UserSchoolIdKey,MutableStateFlow(null))
+    private val userSchoolId = KValueStringDate(UserSchoolIdKey,MutableStateFlow(null))
     val dataStartDay = KValueIntDate(DataStartDayKey,MutableStateFlow(null))
     val dataStartMonth = KValueIntDate(DataStartMonthKey,MutableStateFlow(null))
     val dataStartYear = KValueIntDate(DataStartYearKey,MutableStateFlow(null))

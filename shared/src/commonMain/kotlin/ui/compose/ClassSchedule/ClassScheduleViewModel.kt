@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.fleeksoft.ksoup.Ksoup
 import com.futalk.kmm.CourseBean
+import configureForPlatform
 import dao.Dao
 import dao.KValueAction
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
@@ -12,6 +13,10 @@ import di.ClassSchedule
 import di.ShareClient
 import di.database
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpRedirect
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
@@ -63,6 +68,7 @@ class ClassScheduleViewModel (
     val scrollState = ScrollState(initial = 0)
     val courseDialog = MutableStateFlow<CourseBean?>(null)
     val refreshState = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
+    val refreshExamState = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
 
     private var course : Flow<List<CourseBean>> = database.classScheduleQueries
         .getAllCourse()
@@ -134,10 +140,18 @@ class ClassScheduleViewModel (
         viewModelScope.launchInDefault(Dispatchers.IO) {
             refreshState.logicIfNotLoading {
                 classScheduleRepository.apply {
-                    val client = classSchedule.getClassScheduleClient() ?: run {
+                    val studentData = classSchedule.getClassScheduleClient()
+                    val client = studentData.first ?: run {
                         refreshState.resetWithLog(
                             logLabel = "登录失败",
                             NetworkResult.Error(Throwable("登录失败"),Throwable("登录失败"))
+                        )
+                        return@logicIfNotLoading
+                    }
+                    val id = studentData.second ?: run{
+                        refreshState.resetWithLog(
+                            logLabel = "id有误",
+                            NetworkResult.Error(Throwable("获取课程失败"),Throwable("id有误"))
                         )
                         return@logicIfNotLoading
                     }
@@ -174,7 +188,7 @@ class ClassScheduleViewModel (
                                     refreshState.resetWithLog(label,networkError(error,"更新开学日期失败"))
                                 },
                                 collectAction = { label , data ->
-                                    getCourseFromNetwork()
+                                    getCourseFromNetwork(id)
                                 }
                             )
                     }
@@ -185,16 +199,10 @@ class ClassScheduleViewModel (
 
     //获取课程
     @OptIn(ExperimentalCoroutinesApi::class)
-    private suspend fun HttpClient.getCourseFromNetwork(){
+    private suspend fun HttpClient.getCourseFromNetwork(
+        id:String
+    ){
         with(classScheduleRepository){
-            val id = kValueAction.userSchoolId.currentValue.value
-            id ?: run{
-                refreshState.resetWithLog(
-                    logLabel = "id有误",
-                    NetworkResult.Error(Throwable("获取课程失败"),Throwable("id有误"))
-                )
-                return@with
-            }
             with(this@getCourseFromNetwork) {
                 getCourseStateHTML(id)
                     .catchWithMassage { label, throwable ->
@@ -226,7 +234,7 @@ class ClassScheduleViewModel (
                             .collect { initCourseBean ->
                                 dao.classScheduleDao.insertClassScheduleByXueNian(initCourseBean,weekData.curXueqi,weekData.curXuenian)
                                 refreshState.resetWithoutLog(NetworkResult.Success("刷新成功"))
-                                getOtherCourseFromNetwork(currentXq)
+                                getOtherCourseFromNetwork(currentXq,id)
                             }
                     }
             }
@@ -237,6 +245,7 @@ class ClassScheduleViewModel (
     @OptIn(ExperimentalCoroutinesApi::class)
     fun HttpClient.getOtherCourseFromNetwork(
         currentXq : String,
+        id :String
     ){
         viewModelScope.launchInDefault(Dispatchers.IO) {
             val yearOptions = dao.yearOpensDao.getAllYearOpens()
@@ -247,14 +256,6 @@ class ClassScheduleViewModel (
             }.forEach { yearOptionsName ->
                 yearOptionsName.let { xq ->
                     with(classScheduleRepository){
-                        val id = kValueAction.userSchoolId.currentValue.value
-                        id ?: run{
-                            refreshState.resetWithLog(
-                                logLabel = "id有误",
-                                NetworkResult.Error(Throwable("获取课程失败"),Throwable("id有误"))
-                            )
-                            return@with
-                        }
                         this@getOtherCourseFromNetwork.getCourseStateHTML(
                             id
                         )
@@ -279,19 +280,46 @@ class ClassScheduleViewModel (
     }
 
 
-    //获取考试
-    private fun HttpClient.getExamData(){
-        viewModelScope.launchInDefault(Dispatchers.IO) {
-            val xq = kValueAction.currentXq.currentValue.value
-            with(classScheduleRepository) {
-                val id = kValueAction.userSchoolId.currentValue.value
-                id ?: run{
+    fun refreshExamData(){
+        viewModelScope.launchInDefault {
+            refreshExamState.logicIfNotLoading {
+                val xq = kValueAction.currentXq.currentValue.value
+                val studentData = classSchedule.getClassScheduleClient()
+                val client = studentData.first ?: run {
+                    refreshState.resetWithLog(
+                        logLabel = "登录失败",
+                        NetworkResult.Error(Throwable("登录失败"),Throwable("登录失败"))
+                    )
+                    return@logicIfNotLoading
+                }
+                val id = studentData.second ?: run{
                     refreshState.resetWithLog(
                         logLabel = "id有误",
                         NetworkResult.Error(Throwable("获取课程失败"),Throwable("id有误"))
                     )
-                    return@with
+                    return@logicIfNotLoading
                 }
+                with(client){
+                    with(classScheduleRepository) {
+                        getExamStateHTML(id)
+                            .map {
+                                return@map(parseExamsHTML(it))
+                            }
+                            .collect {
+                                dao.examDao.insertExam(it)
+                            }
+                    }
+                }
+            }
+        }
+    }
+
+
+    //获取考试
+    private fun HttpClient.getExamData(id:String){
+        viewModelScope.launchInDefault(Dispatchers.IO) {
+            val xq = kValueAction.currentXq.currentValue.value
+            with(classScheduleRepository) {
                 this@getExamData.getExamStateHTML(id)
                     .map {
                         return@map(parseExamsHTML(it))
@@ -307,8 +335,15 @@ class ClassScheduleViewModel (
         viewModelScope.launchInDefault {
             selectYear.emit(newValue)
             classScheduleRepository.apply {
-                 val client = classSchedule.getClassScheduleClient() ?: run {
-                     return@apply
+                 val client = HttpClient() {
+                     install(ContentNegotiation) {
+                         json()
+                     }
+                     install(HttpCookies){}
+                     install(HttpRedirect) {
+                         checkHttpMethod = false
+                     }
+                     configureForPlatform()
                  }
                 client.getSchoolCalendar(newValue)
                      .retry(10)
