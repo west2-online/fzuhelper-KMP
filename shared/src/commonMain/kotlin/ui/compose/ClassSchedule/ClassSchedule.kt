@@ -1,8 +1,12 @@
 package ui.compose.ClassSchedule
 
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -26,6 +30,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -36,12 +41,14 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
@@ -60,6 +67,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,6 +86,7 @@ import com.futalk.kmm.CourseBean
 import com.futalk.kmm.YearOptions
 import config.CurrentZone
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -101,6 +110,9 @@ fun ClassSchedule(
     classScheduleViewModel: ClassScheduleViewModel = koinInject<ClassScheduleViewModel>(),
     parentPaddingControl: ParentPaddingControl,
 ){
+    val showExamList = rememberSaveable {
+        mutableStateOf(false)
+    }
     val toastState = rememberToastState()
     toastState.toastBindNetworkResult(classScheduleViewModel.refreshState.collectAsState())
     val pageNumber = remember {
@@ -189,6 +201,12 @@ fun ClassSchedule(
 
                             }
                         }
+                    }
+
+                    IconButton(onClick = {
+                        showExamList.value = true
+                    }) {
+                        Icon(Icons.Default.Email,null)
                     }
                     IconButton(onClick = {
                         classScheduleViewModel.refreshClassData()
@@ -391,6 +409,89 @@ fun ClassSchedule(
             )
         }
         EasyToast(toastState)
+    }
+    AnimatedVisibility(
+        showExamList.value,
+        enter = slideInVertically { fullHeight -> fullHeight  },
+        exit = slideOutVertically { fullHeight -> fullHeight  },
+        modifier = Modifier
+            .fillMaxSize()
+            .parentStatusControl(parentPaddingControl)
+            .padding(10.dp)
+    ) {
+        Surface (
+            modifier = Modifier
+                .fillMaxSize()
+        ){
+            val examList = classScheduleViewModel.examList.collectAsState(listOf())
+            Column {
+                Row (
+                    modifier = Modifier.height(64.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ){
+                    Row (
+                        modifier = Modifier
+                            .weight(1f)
+                    ){
+                        val weekExpanded = remember {
+                            mutableStateOf(false)
+                        }
+                        TextButton(
+                            onClick = {
+                                weekExpanded.value = true
+                            }
+                        ){
+                            Text(
+                                text = "考试列表",
+                            )
+                        }
+                    }
+
+                    IconButton(onClick = {
+                        showExamList.value = false
+                    }) {
+                        Icon(Icons.Default.KeyboardArrowDown,null)
+                    }
+                    IconButton(onClick = {
+                        TODO()
+                    }) {
+                        classScheduleViewModel.refreshState.collectAsState().CollectWithContentInBox(
+                            loading = {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .aspectRatio(1f)
+                                        .wrapContentSize(Alignment.Center)
+                                        .fillMaxSize(0.8f)
+                                )
+                            },
+                            content = {
+                                Icon(
+                                    imageVector = Icons.Filled.Refresh,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                )
+                            }
+                        )
+                    }
+                }
+                LazyColumn {
+                    items(examList.value){
+                        Card {
+                            with(it){
+                                Text(examId.toString())
+                                Text(name)
+                                Text(xuefen)
+                                Text(teacher)
+                                Text(address)
+                                Text(zuohao)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -674,56 +775,60 @@ fun TimeOfMonthColumn(
     startYearState: State<Int>,
     startDayState: State<Int>
 ){
-    val startMonth = startMonthState.value
-    val startYear = startYearState.value
-    val startDay = startDayState.value
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(20.dp),
+            .wrapContentHeight(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        WeekDay.values().forEachIndexed{ index,_ ->
-            Text(
-                text = getDataByWeek(
-                    week = week,
-                    day = index,
-                    startYear = startYear,
-                    startMonth = startMonth,
-                    startDay = startDay).toString(),
+        WeekDay.entries.forEachIndexed{ index, _ ->
+            val date = getDataByWeek(
+                week = week,
+                day = index,
+                startYear = startYearState.value,
+                startMonth = startMonthState.value,
+                startDay = startDayState.value
+            )
+            Column (
                 modifier = Modifier
                     .weight(1f)
                     .wrapContentHeight(),
-                textAlign = TextAlign.Center
-            )
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ){
+                Text(
+                    text = date.first.toString(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(
+                    modifier = Modifier.fillMaxWidth(1f)
+                        .wrapContentWidth(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.6f)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(100))
+                        .background(
+                            animateColorAsState(if (date.second) Color.Blue else Color.Transparent).value
+                        )
+                )
+            }
         }
     }
 }
 
-
-//fun getDataByWeek(week: Int,day:Int,startYear:Int, startMonth:Int,startDay:Int,):Int{
-//    //创建一个自定义年月日的日期，使用Calendar.set
-//    val calendar = Calendar.getInstance()
-//    calendar.set(startYear,startMonth-1,startDay)
-//    calendar.add(Calendar.WEEK_OF_YEAR,week-1)
-//    calendar.add(Calendar.DAY_OF_MONTH,day)
-//    val year = calendar.get(Calendar.YEAR)
-//    val month = calendar.get(Calendar.MONTH)+1
-//    val day = calendar.get(Calendar.DAY_OF_MONTH)
-//    return day
-//}
-
-
-fun getDataByWeek(week: Int, day: Int, startYear: Int, startMonth: Int, startDay: Int, ): Int {
-    //创建一个自定义年月日的日期，使用Calendar.set
+fun getDataByWeek(week: Int, day: Int, startYear: Int, startMonth: Int, startDay: Int, ): Pair<Int,Boolean>{
+    //创建一个自定义年月日的日期，使用kotlin datetime
     return try {
         val time = LocalDateTime(startYear, startMonth, startDay, 16, 57, 0, 0).toInstant(CurrentZone)
             .plus(((week - 1) * 7).toDuration(DurationUnit.DAYS))
             .plus(day.toDuration(DurationUnit.DAYS))
-        time.toLocalDateTime(CurrentZone).dayOfMonth
+        val currentDay = Clock.System.now().toLocalDateTime(CurrentZone)
+        val parseDay = time.toLocalDateTime(CurrentZone)
+        Pair(parseDay.dayOfMonth,(currentDay.year == parseDay.year && currentDay.dayOfYear == parseDay.dayOfYear))
     }catch (e:Exception){
-        1
+        Pair(1,false)
     }
 }
 
@@ -763,7 +868,7 @@ fun AcademicYearSelectsDialog(
         },
     commit: (String) -> Unit
 ){
-    val data = MutableStateFlow(if(list.isNotEmpty()) list[0].yearOptionsName.toString() else "null")
+    val data = MutableStateFlow(if(list.isNotEmpty()) list[0].yearOptionsName else "null")
     val state = rememberLazyListState()
 
     Dialog(
@@ -820,118 +925,7 @@ fun AcademicYearSelectsDialog(
 }
 
 
-//@Composable
-//fun ToRefreshDialog(
-//    onDismissRequest : ()->Unit = {},
-//    verificationCodeState:State<WhetherVerificationCode> = remember {
-//        mutableStateOf(WhetherVerificationCode.FAIL)
-//    },
-//    verificationCodeOnValueChange:(String) ->Unit = {
-//
-//    },
-//    verificationCodeText:State<String> =  remember {
-//        mutableStateOf("")
-//    },
-//    verificationCode: State<ImageBitmap?> = remember {
-//        mutableStateOf(null)
-//    },
-//    retryGetVerificationCode: ()->Unit={},
-//    refresh: ()->Unit={},
-//    buttonState: State<ButtonState> = remember {
-//        mutableStateOf(ButtonState.Normal)
-//    },
-//    clickAble : State<Boolean> = remember {
-//        mutableStateOf(false)
-//    }
-//){
-//    Dialog(onDismissRequest = onDismissRequest ) {
-//        Surface(
-//            modifier = Modifier
-//                .fillMaxHeight(0.7f)
-//                .clip(RoundedCornerShape(10.dp))
-//        ){
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .verticalScroll(rememberScrollState())
-//                    .padding(10.dp),
-//                verticalArrangement = Arrangement.Center,
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//                CaptchaLine(
-//                    verificationCodeState = verificationCodeState,
-//                    verificationCodeOnValueChange = verificationCodeOnValueChange,
-//                    verificationCodeText = verificationCodeText,
-//                    verificationCode = verificationCode,
-//                    retryGetVerificationCode = retryGetVerificationCode
-//                )
-//                LoadableButton(
-//                    modifier = Modifier
-//                        .padding(top = 20.dp),
-//                    onClick = refresh,
-//                    buttonState = buttonState.value,
-//                    normalContent = {
-//                        Text(text = "REFRESH")
-//                    },
-//                    enabled = buttonState.value == ButtonState.Normal && verificationCodeText.value != "",
-//                    loadingContent = {
-//                        CircularProgressIndicator(
-//                            modifier = Modifier
-//                                .fillMaxSize()
-//                                .padding(10.dp)
-//                        )
-//                    }
-//                )
-//            }
-//        }
-//    }
-//}
 
-data class CourseBeanForShow(
-     val courseId: Long,
-     val kcName: String,
-     val kcLocation: String,
-     val kcStartTime: Long,
-     val kcEndTime: Long,
-     val kcStartWeek: Long,
-     val kcEndWeek: Long,
-     val kcIsDouble: Long,
-     val kcIsSingle: Long,
-     val kcWeekend: Long,
-     val kcYear: Long,
-     val kcXuenian: Long,
-     val kcNote: String,
-     val kcBackgroundId: Long,
-     val shoukeJihua: String,
-     val jiaoxueDagang: String,
-     val teacher: String,
-     val priority: Long,
-     val type: Long,
-)
-
-fun CourseBean.toCourseBeanForShow():CourseBeanForShow{
-    return CourseBeanForShow(
-        courseId = this.courseId,
-        kcName = this.kcName,
-        kcLocation = this.kcLocation,
-        kcStartTime = this.kcStartTime,
-        kcEndTime = this.kcEndTime,
-        kcStartWeek = this.kcStartWeek,
-        kcEndWeek = this.kcEndWeek,
-        kcIsDouble = this.kcIsDouble,
-        kcIsSingle = this.kcIsSingle,
-        kcWeekend = this.kcWeekend,
-        kcYear = this.kcYear,
-        kcXuenian = this.kcXuenian,
-        kcNote = this.kcNote,
-        kcBackgroundId = this.kcBackgroundId,
-        shoukeJihua = this.shoukeJihua,
-        jiaoxueDagang = this.jiaoxueDagang,
-        teacher = this.teacher,
-        priority = this.priority,
-        type = this.type,
-    )
-}
 
 class ClassScheduleVoyagerScreen(
     @Transient

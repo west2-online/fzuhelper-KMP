@@ -88,6 +88,10 @@ class ClassScheduleViewModel (
         .asFlow()
         .mapToList(Dispatchers.IO)
 
+    val examList = database.examQueries
+        .selectAllExams()
+        .asFlow()
+        .mapToList(Dispatchers.IO)
 
     init {
         viewModelScope.launchInDefault(Dispatchers.Unconfined) {
