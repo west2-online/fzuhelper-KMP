@@ -64,6 +64,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -160,13 +161,19 @@ fun ClassSchedule(
                         val weekExpanded = remember {
                             mutableStateOf(false)
                         }
+
                         TextButton(
                             onClick = {
                                 weekExpanded.value = true
                             }
                         ){
+                            val isCurrent = remember(pagerState.currentPage,classScheduleViewModel.selectYear.collectAsState().value) {
+                                derivedStateOf {
+                                    classScheduleViewModel.isCurrentWeek(pagerState.currentPage + 1)
+                                }
+                            }
                             Text(
-                                text = "  第${pagerState.currentPage + 1}周",
+                                text = "  第${pagerState.currentPage + 1}周${if(isCurrent.value) "(当前)" else ""}",
                             )
                             Icon(
                                 imageVector = Icons.Default.KeyboardArrowDown,
@@ -188,13 +195,18 @@ fun ClassSchedule(
                                 }
                             ){
                                 (1..30).forEach {
+                                    val isCurrent = remember(pagerState.currentPage,classScheduleViewModel.selectYear.collectAsState().value) {
+                                        derivedStateOf {
+                                            classScheduleViewModel.isCurrentWeek(it)
+                                        }
+                                    }
                                     DropdownMenuItem(
                                         onClick = {
                                             classScheduleViewModel.selectWeek.value = it
                                             weekExpanded.value = false
                                         },
                                         text = {
-                                            Text("第${it}周")
+                                            Text("第${it}周${if(isCurrent.value) "(当前)" else ""}")
                                         }
                                     )
                                 }
@@ -256,8 +268,13 @@ fun ClassSchedule(
                                     )
                                 },
                                 trailingIcon = {
+                                    val isCurrent = remember(classScheduleViewModel.selectYear.collectAsState().value) {
+                                        derivedStateOf {
+                                            classScheduleViewModel.isCurrentYear()
+                                        }
+                                    }
                                     Text(
-                                        classScheduleViewModel.selectYear.collectAsState().value.toString(),
+                                        "${ classScheduleViewModel.selectYear.collectAsState().value }${if(isCurrent.value) "(当前)" else ""}",
                                         textAlign = TextAlign.Center
                                     )
                                 }
@@ -398,6 +415,7 @@ fun ClassSchedule(
             )
         }
         if (academicYearSelectsDialogState.value) {
+            val currentYear = classScheduleViewModel.currentYear.collectAsState()
             AcademicYearSelectsDialog(
                 onDismissRequest = {
                     academicYearSelectsDialogState.value = false
@@ -405,7 +423,8 @@ fun ClassSchedule(
                 commit = {
                     classScheduleViewModel.changeCurrentYear(it)
                 },
-                list = yearOptionsBean
+                list = yearOptionsBean,
+                currentYear = currentYear
             )
         }
         EasyToast(toastState)
@@ -453,9 +472,9 @@ fun ClassSchedule(
                         Icon(Icons.Default.KeyboardArrowDown,null)
                     }
                     IconButton(onClick = {
-                        TODO()
+                        classScheduleViewModel.refreshExamData()
                     }) {
-                        classScheduleViewModel.refreshState.collectAsState().CollectWithContentInBox(
+                        classScheduleViewModel.refreshExamState.collectAsState().CollectWithContentInBox(
                             loading = {
                                 CircularProgressIndicator(
                                     modifier = Modifier
@@ -476,16 +495,27 @@ fun ClassSchedule(
                         )
                     }
                 }
-                LazyColumn {
-                    items(examList.value){
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(examList.value.filter {
+                        it.address.isNotEmpty()
+                    }){
                         Card {
-                            with(it){
-                                Text(examId.toString())
-                                Text(name)
-                                Text(xuefen)
-                                Text(teacher)
-                                Text(address)
-                                Text(zuohao)
+                            Column (
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(5.dp)
+                            ){
+                                with(it){
+                                    Text(examId.toString())
+                                    Text(name)
+                                    Text(xuefen)
+                                    Text(teacher)
+                                    Text(address)
+                                    Text(zuohao)
+                                }
                             }
                         }
                     }
@@ -866,6 +896,7 @@ fun AcademicYearSelectsDialog(
                 yearOptionsId = 1
             )
         },
+    currentYear :State<String>,
     commit: (String) -> Unit
 ){
     val data = MutableStateFlow(if(list.isNotEmpty()) list[0].yearOptionsName else "null")
@@ -885,7 +916,6 @@ fun AcademicYearSelectsDialog(
                 )
                 .padding(10.dp)
         ) {
-
             ScrollSelection(
                 modifier = Modifier
                     .fillMaxWidth()

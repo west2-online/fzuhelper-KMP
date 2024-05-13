@@ -3,7 +3,10 @@ package dao
 import com.liftric.kvault.KVault
 import di.globalScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import util.flow.launchInIO
 
 const val SchoolUserNameKey = "92AEF5095C772825C850D10E90A14C83"
@@ -30,15 +33,19 @@ class KValueAction(
     val dataStartMonth = KValueIntDate(DataStartMonthKey,MutableStateFlow(null))
     val dataStartYear = KValueIntDate(DataStartYearKey,MutableStateFlow(null))
 
-
-    fun getCurrentYear():String?{
-        val curXueqi = currentXq.currentValue.value
-        val curXuenian = currentXn.currentValue.value
-        if(curXueqi == null || curXuenian == null){
-            return null
+    val currentYear = currentXq.currentValue
+        .combine(currentXn.currentValue){ curXueqi,curXuenian ->
+            if(curXueqi == null || curXuenian == null){
+                null
+            }
+            "${curXueqi}0$curXuenian"
         }
-        return "${curXueqi}0$curXuenian}"
-    }
+        .stateIn(
+            globalScope,
+            SharingStarted.Eagerly,
+            "202302"
+        )
+
 
 
     inner class KValueStringDate (

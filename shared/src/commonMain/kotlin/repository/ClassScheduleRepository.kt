@@ -74,7 +74,7 @@ class ClassScheduleRepository {
 
     suspend fun HttpClient.getExamStateHTML(id: String): Flow<String> {
         return flow {
-            val data = this@getExamStateHTML.get("/student/xkjg/examination/exam_list.aspx"){
+            val data = this@getExamStateHTML.get("https://jwcjwxt2.fzu.edu.cn:81/student/xkjg/examination/exam_list.aspx"){
                 url {
                     parameters.append("id",id)
                 }

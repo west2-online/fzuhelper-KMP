@@ -37,6 +37,7 @@ import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
 import util.network.networkError
+import util.network.networkSuccess
 import util.network.resetWithLog
 import util.network.resetWithoutLog
 
@@ -62,7 +63,8 @@ class ClassScheduleViewModel (
 
     val classScheduleUiState = ClassScheduleUiState(kValueAction)
 
-    var selectYear = MutableStateFlow(kValueAction.getCurrentYear())
+    val currentYear = kValueAction.currentYear
+    var selectYear = MutableStateFlow(kValueAction.currentYear.value)
     var selectWeek = MutableStateFlow<Int>(kValueAction.currentWeek.currentValue.value ?: 1)
 
     val scrollState = ScrollState(initial = 0)
@@ -134,6 +136,13 @@ class ClassScheduleViewModel (
         }
     }
 
+    fun isCurrentWeek( week:Int ):Boolean{
+        return kValueAction.currentWeek.currentValue.value == week && kValueAction.currentYear.value == selectYear.value
+    }
+
+    fun isCurrentYear():Boolean{
+        return kValueAction.currentYear.value == selectYear.value
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun refreshClassData(){
@@ -144,7 +153,7 @@ class ClassScheduleViewModel (
                     val client = studentData.first ?: run {
                         refreshState.resetWithLog(
                             logLabel = "登录失败",
-                            NetworkResult.Error(Throwable("登录失败"),Throwable("登录失败"))
+                            NetworkResult.Error(Throwable("获取课程失败,请重试"),Throwable("登录失败"))
                         )
                         return@logicIfNotLoading
                     }
@@ -243,7 +252,7 @@ class ClassScheduleViewModel (
 
     //获取非当前学期的课程
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun HttpClient.getOtherCourseFromNetwork(
+    private fun HttpClient.getOtherCourseFromNetwork(
         currentXq : String,
         id :String
     ){
@@ -307,6 +316,7 @@ class ClassScheduleViewModel (
                             }
                             .collect {
                                 dao.examDao.insertExam(it)
+                                refreshExamState.resetWithoutLog(networkSuccess("刷新考试记录成功"))
                             }
                     }
                 }
