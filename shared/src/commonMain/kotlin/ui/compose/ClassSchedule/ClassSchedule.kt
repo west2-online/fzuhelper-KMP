@@ -53,6 +53,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -120,11 +121,11 @@ fun ClassSchedule(
     LaunchedEffect(currentWeek){
         pagerState.animateScrollToPage(classScheduleViewModel.selectWeek.value - 1)
     }
-//    DisposableEffect(currentWeek){
-//        onDispose {
-//            classScheduleViewModel.selectWeek.value = pagerState.currentPage + 1
-//        }
-//    }
+    DisposableEffect(Unit){
+        onDispose {
+            classScheduleViewModel.selectWeek.value = pagerState.currentPage + 1
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
