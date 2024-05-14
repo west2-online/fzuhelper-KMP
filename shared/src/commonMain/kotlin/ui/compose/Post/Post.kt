@@ -13,9 +13,9 @@ import org.koin.compose.koinInject
 import ui.compose.Main.MainItems
 import ui.compose.Report.ReportType
 import ui.root.RootAction
-import ui.setting.SettingTransitions
 import util.compose.EasyToast
 import util.compose.ParentPaddingControl
+import util.compose.SettingTransitions
 import util.compose.defaultSelfPaddingControl
 import util.compose.rememberToastState
 import kotlin.jvm.Transient

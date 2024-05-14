@@ -915,7 +915,7 @@ fun AcademicYearSelectsDialog(
                 yearOptionsId = 1
             )
         },
-    currentYear :State<String>,
+    currentYear :State<String?>,
     commit: (String) -> Unit
 ){
     val data = MutableStateFlow(if(list.isNotEmpty()) list[0].yearOptionsName else "null")

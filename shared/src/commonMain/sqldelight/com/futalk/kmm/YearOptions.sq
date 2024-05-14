@@ -1,4 +1,4 @@
-CREATE TABLE YearOptions (
+CREATE TABLE IF NOT EXISTS YearOptions  (
     yearOptionsId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     yearOptionsName text NOT NULL
 );

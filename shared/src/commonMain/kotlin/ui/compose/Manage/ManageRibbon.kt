@@ -54,8 +54,8 @@ import kotlinx.coroutines.flow.filter
 import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.root.TokeJump
-import ui.setting.SettingTransitions
 import util.compose.EasyToast
+import util.compose.SettingTransitions
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
 import util.network.CollectWithContent

@@ -7,7 +7,8 @@ import configureForPlatform
 import dao.ClassScheduleDao
 import dao.Dao
 import dao.ExamDao
-import dao.KValueAction
+import dao.ThemeKValueAction
+import dao.UndergraduateKValueAction
 import dao.YearOpensDao
 import initStore
 import io.ktor.client.HttpClient
@@ -64,7 +65,7 @@ import ui.compose.Report.ReportViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.compose.Weather.WeatherViewModel
 import ui.root.RootAction
-import ui.setting.Setting
+
 import util.compose.Toast
 import util.encode.encode
 import viewModelDefinition
@@ -75,7 +76,7 @@ import kotlin.time.toDuration
 
 class ClassSchedule(
     private val classScheduleRepository: ClassScheduleRepository,
-    private val kVaultAction:KValueAction
+    private val kVaultAction:UndergraduateKValueAction
 ){
     private var client:HttpClient? = null
     private var userSchoolId:String? = null
@@ -234,10 +235,10 @@ fun appModule(
         rootAction
     }
     single {
-        Setting(get())
+        ThemeKValueAction(get())
     }
-    single {
-        KValueAction(get())
+    single{
+        UndergraduateKValueAction(get())
     }
     single {
         ClassSchedule(get(),get())

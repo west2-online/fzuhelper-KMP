@@ -27,9 +27,9 @@ import ui.compose.Report.ReportVoyagerScreen
 import ui.compose.Setting.SettingVoyagerScreen
 import ui.compose.Weather.WeatherVoyagerScreen
 import ui.compose.Webview.WebViewVoyagerScreen
-import ui.setting.SettingTransitions
 import util.compose.EasyToast
 import util.compose.FuTalkTheme
+import util.compose.SettingTransitions
 
 interface RootAction{
     fun reLogin()
@@ -104,7 +104,6 @@ fun RootUi(
     systemAction: SystemAction
 ){
     Navigator(MainVoyagerScreen()){ navigate ->
-        navigate.lastItem.key
         KoinApplication(application = {
             modules(
                 appModule(
@@ -193,7 +192,7 @@ fun RootUi(
             )
         }) {
             Box(modifier = Modifier.fillMaxSize()){
-                FuTalkTheme{
+                FuTalkTheme {
                     SettingTransitions(navigate)
                 }
                 EasyToast(toast = koinInject())

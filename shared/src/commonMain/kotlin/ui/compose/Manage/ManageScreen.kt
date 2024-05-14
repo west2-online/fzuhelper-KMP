@@ -32,8 +32,8 @@ import app.cash.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import org.koin.compose.koinInject
-import ui.setting.SettingTransitions
 import util.compose.ParentPaddingControl
+import util.compose.SettingTransitions
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import kotlin.jvm.Transient

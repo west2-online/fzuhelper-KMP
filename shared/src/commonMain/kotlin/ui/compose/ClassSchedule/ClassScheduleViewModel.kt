@@ -7,7 +7,7 @@ import com.fleeksoft.ksoup.Ksoup
 import com.futalk.kmm.CourseBean
 import configureForPlatform
 import dao.Dao
-import dao.KValueAction
+import dao.UndergraduateKValueAction
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import di.ClassSchedule
 import di.ShareClient
@@ -47,14 +47,14 @@ import util.network.resetWithoutLog
 */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ClassScheduleViewModel (
-    private val kValueAction: KValueAction,
+    private val kValueAction: UndergraduateKValueAction,
     private val classScheduleRepository: ClassScheduleRepository,
     private val classSchedule: ClassSchedule,
     private val dao: Dao,
     private val shareClient: ShareClient
 ):ViewModel(){
     class ClassScheduleUiState(
-        kValueAction: KValueAction,
+        kValueAction: UndergraduateKValueAction,
     ) {
         val startYear = MutableStateFlow(kValueAction.dataStartYear.currentValue.value ?: 2023)
         val startMonth = MutableStateFlow(kValueAction.dataStartMonth.currentValue.value ?: 1)

@@ -14,12 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
@@ -29,36 +25,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import dev.icerock.moko.resources.compose.fontFamilyResource
+import dao.ThemeKValueAction
+import di.globalScope
 import org.koin.compose.koinInject
-import ui.setting.Font
-import ui.setting.PageTransitions
-import ui.setting.Setting
-import ui.setting.ThemeStyle
-import ui.setting.toComposeTheme
 import util.compose.ParentPaddingControl
+import util.compose.ThemeStyle
 import util.compose.defaultSelfPaddingControl
-import util.compose.parentSystemControl
+import util.compose.toComposeTheme
+import util.compose.toTheme
+import util.flow.launchInDefault
 import kotlin.jvm.Transient
 
-
-class SettingVoyagerScreen(
+class ThemeSettingVoyagerScreen(
     @Transient
-    private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
-) : Screen {
-
+    private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl(),
+):Screen{
     @Composable
     override fun Content() {
-        val setting = koinInject<Setting>()
-        val theme = setting.theme.collectAsState()
-        val font = setting.font.collectAsState()
-        val transitions = setting.transitions.collectAsState()
+        val setting = koinInject<ThemeKValueAction>()
+        val theme = setting.themeToken.currentValue.collectAsState()
         Column(
             modifier = Modifier
-                .parentSystemControl(parentPaddingControl)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ){
+        ) {
             TopAppBar {
                 Text("主题设置")
             }
@@ -70,7 +59,7 @@ class SettingVoyagerScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                items(ThemeStyle.values()) {
+                items(ThemeStyle.entries.toTypedArray()) {
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
@@ -79,11 +68,13 @@ class SettingVoyagerScreen(
                             .padding(horizontal = 10.dp)
                             .border(
                                 width = 2.dp,
-                                color = animateColorAsState(if (theme.value == it) Color.Blue else Color.Transparent).value
+                                color = animateColorAsState(if (theme.value.toTheme() == it) Color.Blue else Color.Transparent).value
                             )
                             .padding(all = 10.dp)
                             .clickable {
-                                setting.changeTheme(it)
+                                globalScope.launchInDefault {
+                                    setting.themeToken.setValue(it.serializable)
+                                }
                             }
 
                     ) {
@@ -188,74 +179,6 @@ class SettingVoyagerScreen(
                     }
                 }
             }
-            TopAppBar {
-                Text("字体设置")
-            }
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(10.dp)
-            ) {
-                items(Font.values()) {
-                    Box(
-                        modifier = Modifier
-                            .padding(start = 10.dp)
-                            .wrapContentHeight()
-                            .wrapContentSize()
-                            .border(
-                                width = 2.dp,
-                                color = animateColorAsState(if (font.value == it) Color.Blue else Color.Transparent).value,
-                                shape = RoundedCornerShape(10 )
-                            )
-                            .padding(10.dp)
-                            .clickable {
-                                setting.changeFont(it)
-                            }
-
-                    ) {
-                        Text(
-                            "This is a test",
-                            fontFamily = fontFamilyResource(it.fontResource)
-                        )
-                    }
-                }
-            }
-            TopAppBar {
-                Text("界面切换动画")
-            }
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                items(PageTransitions.values()) {
-                    Box(
-                        modifier = Modifier
-                            .padding(start = 10.dp)
-                            .wrapContentHeight()
-                            .wrapContentSize()
-                            .border(
-                                width = 2.dp,
-                                color = animateColorAsState(if (transitions.value == it) Color.Blue else Color.Transparent).value,
-                                shape = RoundedCornerShape(10 )
-                            )
-                            .padding(10.dp)
-                            .clickable {
-                                setting.changeTransitions(it)
-                            }
-                    ) {
-                        Text(
-                            it.describe,
-                        )
-                    }
-                }
-            }
-
         }
     }
-
 }
