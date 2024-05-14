@@ -242,9 +242,6 @@ fun SettingTransitions(navigator: Navigator){
             transitions.value.toTransitions()
         }
     }
-    LaunchedEffect(transitions.value){
-        println("=====================================")
-    }
     when(currentTransitions.value){
         PageTransitions.FadeTransition -> FadeTransition(navigator)
         PageTransitions.SlideTransition -> SlideTransition(navigator)
