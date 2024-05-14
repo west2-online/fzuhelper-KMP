@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -31,6 +31,7 @@ import org.koin.compose.koinInject
 import util.compose.ParentPaddingControl
 import util.compose.ThemeStyle
 import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.toComposeTheme
 import util.compose.toTheme
 import util.flow.launchInDefault
@@ -47,17 +48,18 @@ class ThemeSettingVoyagerScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
         ) {
             TopAppBar {
                 Text("主题设置")
             }
-            LazyRow(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 items(ThemeStyle.entries.toTypedArray()) {
                     Box(
@@ -76,7 +78,6 @@ class ThemeSettingVoyagerScreen(
                                     setting.themeToken.setValue(it.serializable)
                                 }
                             }
-
                     ) {
                         Column {
                             Box(
