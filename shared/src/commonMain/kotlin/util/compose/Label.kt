@@ -64,8 +64,10 @@ fun Modifier.loadAction():Modifier{
         val text = rememberTextMeasurer()
         this.drawWithContent {
             val path = Path()
-            val padding = 222
-            val otherPadding = padding.toFloat()/2*(sqrt(3.0)).toFloat()
+
+//            val otherPadding = padding.toFloat()/2*(sqrt(3.0)).toFloat()
+            val otherPadding = (size.width/2)*0.8f
+            val padding = size.width/(sqrt(3.0)).toFloat()*2
             val list = listOf(
                 Offset(center.x+otherPadding,center.y - padding/2),
                 Offset(center.x,center.y - padding),
