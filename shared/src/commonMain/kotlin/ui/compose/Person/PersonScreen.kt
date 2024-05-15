@@ -55,11 +55,14 @@ import org.koin.compose.koinInject
 import ui.compose.Main.MainItems
 import ui.root.RootAction
 import util.compose.EasyToast
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.network.CollectWithContent
 import util.network.NetworkResult
 import util.network.logicWithTypeWithoutLimit
+import kotlin.jvm.Transient
 import kotlin.random.Random
 
 
@@ -68,12 +71,13 @@ import kotlin.random.Random
 fun PersonScreen(
     id:String? = null,
     modifier: Modifier = Modifier,
-    personViewModel: PersonViewModel = koinInject()
+    personViewModel: PersonViewModel = koinInject(),
+    parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ){
     val scope = rememberCoroutineScope()
     val userDataState = personViewModel.userData.collectAsState()
     LaunchedEffect(Unit){
-        personViewModel.getUserData(id)
+        personViewModel.initUserData(id)
     }
     val toast = rememberToastState()
     LaunchedEffect(userDataState.value,userDataState.value.key){
@@ -84,16 +88,15 @@ fun PersonScreen(
             }
         )
     }
-    Box(modifier = Modifier.fillMaxSize()){
+    Box(modifier = modifier){
         Column (
             modifier = Modifier
                 .fillMaxSize()
         ){
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(240.dp)
             ){
                 KamelImage(
                     resource = asyncPainterResource("https://picx.zhimg.com/80/v2-cee6c1a92831cd1566e4c5f9dd4a35f4_720w.webp?source=1def8aca"),
@@ -115,12 +118,12 @@ fun PersonScreen(
                     imageVector = Icons.Filled.Refresh,
                     contentDescription = null,
                     modifier = Modifier
-                        .offset(x = -10.dp,y = 10.dp)
-                        .align(Alignment.TopEnd)
+                        .offset(x = -10.dp,y = -10.dp)
+                        .align(Alignment.BottomEnd)
                         .size(40.dp)
                         .clip(CircleShape)
                         .clickable {
-                            personViewModel.getUserData(id)
+                            personViewModel.refreshUserData(id)
                         }
                         .padding(5.dp)
                 )
@@ -185,7 +188,8 @@ fun PersonScreen(
                             )
                         }
                     }
-                }
+                },
+                modifier = Modifier
             )
             val items = listOf("发布","动态","身份")
             val pageState = rememberPagerState {
@@ -245,7 +249,7 @@ fun PersonScreen(
                 }
             }
         }
-        EasyToast(toast = toast)
+        EasyToast( toast = toast )
     }
 }
 
@@ -371,15 +375,17 @@ fun randomColor(): Color {
 
 
 class PersonVoyagerScreen(
-    val modifier: Modifier,
-    private val userId: String?
+    @Transient val modifier: Modifier,
+    @Transient private val userId: String?,
+    @Transient val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ) : Tab {
 
     @Composable
     override fun Content() {
         PersonScreen(
             modifier = modifier,
-            id = userId
+            id = userId,
+            parentPaddingControl = parentPaddingControl
         )
     }
 

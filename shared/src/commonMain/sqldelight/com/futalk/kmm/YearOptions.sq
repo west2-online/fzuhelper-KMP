@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS YearOptions  (
+    yearOptionsId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    yearOptionsName text NOT NULL
+);
+
+getAllYearOptions:
+SELECT * FROM YearOptions;
+
+clearAllYearOptions:
+DELETE FROM YearOptions;
+
+insertYearOptions:
+INSERT INTO YearOptions (yearOptionsName) VALUES (?);

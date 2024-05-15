@@ -7,6 +7,7 @@ import com.futalk.kmm.FuTalkDatabase
 import com.liftric.kvault.KVault
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.HttpClientEngineConfig
 import org.koin.core.definition.Definition
 import org.koin.core.definition.KoinDefinition
 import org.koin.core.module.Module
@@ -29,7 +30,7 @@ expect inline fun <reified T : ViewModel> Module.viewModelDefinition(
 
 expect fun ByteArray.asImageBitmap(): ImageBitmap
 
-internal expect fun HttpClientConfig<*>.configureForPlatform()
+expect fun HttpClientConfig<*>.configureForPlatform()
 
 expect fun initStore(): KVault
 
@@ -64,3 +65,5 @@ fun createDatabase(): FuTalkDatabase {
 }
 
 expect fun getVersionFileName():String
+
+expect fun HttpClientEngineConfig.ktorConfig()

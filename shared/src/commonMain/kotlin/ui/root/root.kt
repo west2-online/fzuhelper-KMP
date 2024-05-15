@@ -1,13 +1,14 @@
 package ui.root
 
-import ImagePickerFactory
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import data.person.UserData.Data
 import di.SystemAction
 import di.appModule
-import getPlatformContext
 import initStore
 import kotlinx.coroutines.CoroutineScope
 import org.koin.compose.KoinApplication
@@ -16,7 +17,7 @@ import ui.compose.AboutUs.AboutUsVoyagerScreen
 import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
 import ui.compose.Feedback.FeedbackVoyagerScreen
 import ui.compose.Log.LogVoyagerScreen
-import ui.compose.Main.Main
+import ui.compose.Main.MainVoyagerScreen
 import ui.compose.Manage.ManageVoyagerScreen
 import ui.compose.ModifierInformation.ModifierInformationVoyagerScreen
 import ui.compose.QRCode.QRCodeVoyagerScreen
@@ -27,9 +28,9 @@ import ui.compose.Setting.SettingVoyagerScreen
 import ui.compose.SplashPage.SplashPageVoyagerScreen
 import ui.compose.Weather.WeatherVoyagerScreen
 import ui.compose.Webview.WebViewVoyagerScreen
-import ui.setting.SettingTransitions
+import util.compose.EasyToast
 import util.compose.FuTalkTheme
-
+import util.compose.SettingTransitions
 
 interface RootAction{
     fun reLogin()
@@ -41,6 +42,7 @@ interface RootAction{
     fun navigateFromActionToAboutUs()
     fun navigateFromAnywhereToManage()
     fun navigateFromAnywhereToWeather()
+    fun navigateFormLoginToMain()
     fun navigateFormAnywhereToRelease(initLabelList: List<String>)
     fun navigateFormPostToReport(type: ReportType)
     fun navigateFromAnywhereToWebView(url:String)
@@ -98,12 +100,12 @@ fun tokenJump(
     }
 }
 
+
 @Composable
 fun RootUi(
     systemAction: SystemAction
 ){
     Navigator(SplashPageVoyagerScreen()){ navigate ->
-        val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
         KoinApplication(application = {
             modules(
                 appModule(
@@ -118,7 +120,7 @@ fun RootUi(
                         }
 
                         override fun navigateFormSplashToMainPage() {
-                            navigate.replaceAll(Main)
+                            navigate.replaceAll(MainVoyagerScreen())
                         }
 
                         override fun navigateFormSplashToLoginAndRegister() {
@@ -130,11 +132,11 @@ fun RootUi(
                         }
 
                         override fun navigateFromActionToQRCodeScreen() {
-                            navigate.push(QRCodeVoyagerScreen)
+                            navigate.push(QRCodeVoyagerScreen())
                         }
 
                         override fun navigateFromActionToAboutUs() {
-                            navigate.push(AboutUsVoyagerScreen)
+                            navigate.push(AboutUsVoyagerScreen())
                         }
 
                         override fun navigateFromAnywhereToManage() {
@@ -142,9 +144,12 @@ fun RootUi(
                         }
 
                         override fun navigateFromAnywhereToWeather() {
-                            navigate.push(WeatherVoyagerScreen)
+                            navigate.push(WeatherVoyagerScreen())
                         }
 
+                        override fun navigateFormLoginToMain() {
+                            navigate.replaceAll(MainVoyagerScreen())
+                        }
                         override fun navigateFormAnywhereToRelease(initLabelList: List<String>){
                             navigate.push(ReleaseRouteVoyagerScreen(initLabelList))
                         }
@@ -162,7 +167,7 @@ fun RootUi(
                         }
 
                         override fun navigateFormAnywhereToMain() {
-                            navigate.push(Main)
+                            navigate.push(MainVoyagerScreen())
                         }
 
                         override fun navigateFormAnywhereToInformationModifier(userData: Data) {
@@ -188,8 +193,11 @@ fun RootUi(
                 )
             )
         }) {
-            FuTalkTheme{
-                SettingTransitions(navigate)
+            Box(modifier = Modifier.fillMaxSize()){
+                FuTalkTheme {
+                    SettingTransitions(navigate)
+                }
+                EasyToast(toast = koinInject())
             }
         }
     }

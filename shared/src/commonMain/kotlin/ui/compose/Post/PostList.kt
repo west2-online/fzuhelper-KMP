@@ -75,6 +75,9 @@ import kotlinx.coroutines.flow.filter
 import org.koin.compose.koinInject
 import util.compose.EasyToast
 import util.compose.Label
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.network.toEasyTime
 import kotlin.jvm.Transient
@@ -84,13 +87,15 @@ class PostListVoyagerScreen(
     val navigateToRelease: () -> Unit,
     @Transient
     val navigateToReport: (PostListItemData) -> Unit,
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ):Screen{
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val postDetailViewModel = koinInject<PostDetailViewModel>()
         PostList(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().parentSystemControl(parentPaddingControl),
             state = rememberLazyListState(),
             postListFlow = koinInject<PostListViewModel>().postListFlow.collectAsLazyPagingItems(),
             navigateToRelease = navigateToRelease,
@@ -99,6 +104,7 @@ class PostListVoyagerScreen(
                 postDetailViewModel.refreshPostById(postId = it)
                 navigator.push(PostDetailVoyagerScreen(
                     id = it,
+                    parentPaddingControl = parentPaddingControl.copyNew()
                 ))
             },
         )
@@ -135,7 +141,7 @@ fun PostList(
     Box(modifier = modifier){
         postListFlow.let{ postList ->
             LazyColumn(
-                modifier = modifier,
+                modifier = Modifier.fillMaxSize(),
                 state = state,
             ){
                 items(

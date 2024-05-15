@@ -47,8 +47,12 @@ import getPlatformContext
 import org.example.library.MR
 import org.koin.compose.koinInject
 import util.compose.EasyToast
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.network.toast
+import kotlin.jvm.Transient
 
 @Composable
 fun ModifierInformationScreen(
@@ -92,12 +96,13 @@ fun ModifierInformationScreen(
             imageByteArray.value = it
         }
     )
-    Box{
+    Box(
+        modifier = modifier
+    ){
         Column(
-            modifier = modifier
+            modifier = Modifier
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(vertical = 10.dp)
-                .padding(horizontal = 10.dp)
         ) {
             TextField(
                 value = username,
@@ -251,12 +256,18 @@ fun ModifierInformationScreen(
 
 
 class ModifierInformationVoyagerScreen(
+    @Transient
     private val userData: Data,
+    @Transient
+    private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ) :Screen{
     @Composable
     override fun Content() {
         ModifierInformationScreen(
-            userData
+            userData,
+            modifier = Modifier
+                .parentSystemControl(parentPaddingControl)
+                .padding(horizontal = 10.dp)
         )
     }
 }

@@ -101,6 +101,9 @@ import org.koin.compose.koinInject
 import ui.compose.Report.ReportType
 import util.compose.EasyToast
 import util.compose.Label
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.compose.shimmerLoadingAnimation
 import util.compose.toastBindNetworkResult
@@ -108,6 +111,7 @@ import util.network.CollectWithContent
 import util.network.logicWithTypeWithLimit
 import util.network.toEasyTime
 import util.network.toast
+import kotlin.jvm.Transient
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -209,12 +213,12 @@ fun PostDetail(
                             success = { postById ->
                                 Column {
                                     PersonalInformationAreaInDetail(
-                                        userName = postById.data.Post.User.username,
-                                        url = "${BaseUrlConfig.UserAvatar}/${postById.data.Post.User.avatar}"
+                                        userName = postById.Post.User.username,
+                                        url = "${BaseUrlConfig.UserAvatar}/${postById.Post.User.avatar}"
                                     )
-                                    Time(postById.data.Post.Time)
+                                    Time(postById.Post.Time)
                                     Text(
-                                        text = postById.data.Post.Title,
+                                        text = postById.Post.Title,
                                         fontSize = 20.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -224,15 +228,15 @@ fun PostDetail(
                                             .wrapContentHeight()
                                     ) {
                                         FlowRow {
-                                            postById.data.labelData?.let { labelList ->
+                                            postById.labelData?.let { labelList ->
                                                 labelList.forEach {
                                                     Label(it.Label)
                                                 }
                                             }
                                         }
                                     }
-                                    listOf<PostContent>().plus(postById.data.valueData ?: listOf())
-                                        .plus(postById.data.fileData ?: listOf()).sortedBy {
+                                    listOf<PostContent>().plus(postById.valueData ?: listOf())
+                                        .plus(postById.fileData ?: listOf()).sortedBy {
                                             it.order
                                         }.forEach {
                                             when (it) {
@@ -240,13 +244,13 @@ fun PostDetail(
                                                     ImageContent(it.fileName)
                                                 }
                                                 is ValueData -> {
-                                                    Text(it.value)
+                                                    TextContent(it.value)
                                                 }
                                             }
                                         }
                                     postDetailViewModel.postLikeSubmitState.collectAsState().value.logicWithTypeWithLimit(
                                         success = {
-                                            postDetailViewModel.refreshPostById(postById.data.Post.Id.toString())
+                                            postDetailViewModel.refreshPostById(postById.Post.Id.toString())
                                         }
                                     )
                                     Interaction(
@@ -254,9 +258,9 @@ fun PostDetail(
                                             .padding( top = 5.dp )
                                             .fillMaxWidth(0.6f)
                                             .wrapContentHeight(),
-                                        likeNumber = postById.data.Post.LikeNum,
+                                        likeNumber = postById.Post.LikeNum,
                                         like = {
-                                            postDetailViewModel.postLikes(postById.data.Post.Id)
+                                            postDetailViewModel.postLikes(postById.Post.Id)
                                             println(1)
                                         }
                                     )
@@ -913,26 +917,6 @@ fun CommentInPostDetail(
     }
 }
 
-@Composable
-fun ImageContent(
-    imageData: String
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .animateContentSize()
-    ){
-        KamelImage(
-            resource = asyncPainterResource("${BaseUrlConfig.PostImage}/${imageData}"),
-            null,
-            modifier = Modifier
-                .padding(top = 10.dp)
-                .fillMaxWidth(),
-            contentScale = ContentScale.Fit
-        )
-    }
-}
 
 //在评论树中的item
 @Composable
@@ -1195,6 +1179,8 @@ fun CommentStateSerializable.toCommentState():CommentState{
 
 class PostDetailVoyagerScreen(
     val id: String,
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ):Screen{
     @Composable
     override fun Content() {
@@ -1219,7 +1205,7 @@ class PostDetailVoyagerScreen(
             }
             PostDetail(
                 id = id,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().parentSystemControl(parentPaddingControl),
                 initPostDetail = {
 //                    postDetailViewModel.initPostById(it)
                 },

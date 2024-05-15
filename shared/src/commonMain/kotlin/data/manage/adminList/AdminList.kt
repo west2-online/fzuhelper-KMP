@@ -12,8 +12,7 @@ data class AdminList(
 ) {
     fun toNetworkResult(): NetworkResult<List<Admin>> {
         return when(code){
-            100,101 -> networkErrorWithLog(code,"权限不足")
-            1 -> NetworkResult.Success(data)
+            0 -> NetworkResult.Success(data)
             else -> networkErrorWithLog(code,"获取失败")
         }
     }

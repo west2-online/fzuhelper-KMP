@@ -1,5 +1,6 @@
 package ui.compose.Authentication
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,7 +31,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -51,18 +51,22 @@ import dev.icerock.moko.resources.compose.painterResource
 import org.example.library.MR
 import org.koin.compose.koinInject
 import util.compose.EasyToast
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.network.NetworkResult
+import kotlin.jvm.Transient
 
 @Composable
 fun Login(
     modifier: Modifier,
     navigateToRegister:()->Unit,
-    login:(userEmail:String,userPassword:String,captcha:String)->Unit,
-    getCaptcha:(userEmail:String)->Unit,
-    loginState: State<NetworkResult<String>>,
-    loginCaptcha:State<NetworkResult<String>>
+
 ){
+    val authenticationViewModel = koinInject<AuthenticationViewModel>()
+    val loginState = authenticationViewModel.loginState.collectAsState()
+    val loginCaptcha = authenticationViewModel.loginCaptcha.collectAsState()
     var userEmail by remember {
         mutableStateOf("")
     }
@@ -107,7 +111,10 @@ fun Login(
             }
         }
     }
-    Box( modifier = Modifier.fillMaxSize() ){
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ){
         LazyColumn (
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -189,7 +196,7 @@ fun Login(
                                 if(!editAble) {
                                     editAble = !editAble
                                 }
-                                getCaptcha(userEmail)
+                                authenticationViewModel.getLoginCaptcha(userEmail)
                             },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -229,19 +236,11 @@ fun Login(
                         ),
                         enabled = loginState.value !is NetworkResult.LoadingWithAction
                     ) {
-                        Icon(
-                            painter = painterResource(MR.images.register),
-                            "",
-                            modifier = Modifier
-                                .size(40.dp)
-                                .wrapContentSize(Alignment.Center)
-                                .fillMaxSize(0.6f)
-                        )
                         Text("未有账号")
                     }
                     Button(
                         onClick = {
-                            login.invoke(userEmail,userPassword,captcha)
+                            authenticationViewModel.login(userEmail,userPassword,captcha)
                         },
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(
@@ -253,16 +252,16 @@ fun Login(
                             .weight(1f),
                         enabled = loginAble.value
                     ) {
-                        val authenticationViewModel = koinInject <AuthenticationViewModel>()
-                        Box(
-                            modifier = Modifier.size(40.dp)
+                        Crossfade(
+                            loginState.value
                         ){
-                            if (authenticationViewModel.loginState.value is NetworkResult.LoadingWithAction){
+                            if ( it is NetworkResult.LoadingWithAction){
                                 CircularProgressIndicator(
                                     modifier = Modifier
                                         .size(40.dp)
                                         .wrapContentSize(Alignment.Center)
-                                        .fillMaxSize(0.6f)
+                                        .fillMaxSize(0.6f),
+                                    color = Color.Red
                                 )
                             }else {
                                 Icon(
@@ -275,7 +274,18 @@ fun Login(
                                 )
                             }
                         }
-                        Text("登录")
+                        Crossfade(
+                            authenticationViewModel.loginState.collectAsState().value
+                        ){
+                            when(it){
+                                is NetworkResult.LoadingWithAction -> {
+                                    Text("登录中...")
+                                }
+                                else -> {
+                                    Text("登录")
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -287,7 +297,10 @@ fun Login(
     }
 }
 
-class LoginVoyagerScreen: Screen {
+class LoginVoyagerScreen (
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+): Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
@@ -296,18 +309,11 @@ class LoginVoyagerScreen: Screen {
         Login(
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
                 .padding(10.dp),
             navigateToRegister = {
                 navigator.push(RegisterVoyagerScreen())
             },
-            login = { userEmail,userPassword,captcha ->
-                viewModel.login(userEmail,userPassword,captcha)
-            },
-            loginState = viewModel.loginState.collectAsState(),
-            getCaptcha = { userEmail ->
-                viewModel.getLoginCaptcha(userEmail)
-            },
-            loginCaptcha = viewModel.loginCaptcha.collectAsState(),
         )
     }
 }

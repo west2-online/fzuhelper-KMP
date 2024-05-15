@@ -45,12 +45,17 @@ import cafe.adriel.voyager.core.screen.Screen
 import data.weather.Forecast
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.network.CollectWithContent
+import kotlin.jvm.Transient
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WeatherScreen(
-    viewModel: WeatherViewModel = koinInject()
+    viewModel: WeatherViewModel = koinInject(),
+    modifier: Modifier = Modifier
 ){
     LaunchedEffect(Unit){
         viewModel.getFuZhouWeather()
@@ -177,7 +182,8 @@ fun WeatherScreen(
                 CircularProgressIndicator()
                 Text("加载中")
             }
-        }
+        },
+        modifier = modifier
     )
 }
 
@@ -383,9 +389,15 @@ fun PreviewForSevenDays(
 
 
 
-object WeatherVoyagerScreen:Screen{
+class WeatherVoyagerScreen(
+    @Transient
+    private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+):Screen{
     @Composable
     override fun Content() {
-        WeatherScreen()
+        WeatherScreen(
+            modifier = Modifier
+                .parentSystemControl(parentPaddingControl)
+        )
     }
 }

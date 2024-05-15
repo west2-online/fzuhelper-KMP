@@ -13,7 +13,7 @@ data class OpenImageAdd(
 
     fun toNetworkResult(): NetworkResult<String> {
         return when(code){
-            3 -> NetworkResult.Success("操作成功")
+            0 -> NetworkResult.Success("操作成功")
             else -> networkErrorWithLog(code,"操作失败")
         }
     }

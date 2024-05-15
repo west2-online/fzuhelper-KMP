@@ -166,7 +166,8 @@ inline fun Toast.toastBindNetworkResult(
 
 @Composable
 fun EasyToast(
-    toast : Toast = rememberToastState()
+    toast : Toast = rememberToastState(),
+    isParentStatusControl:Boolean = false
 ){
     AnimatedVisibility(
         toast.isShow.value,
@@ -175,6 +176,7 @@ fun EasyToast(
     ){
         Box(
             modifier = Modifier
+                .parentStatusControl(isParentStatusControl)
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(10.dp)

@@ -31,8 +31,8 @@ class ManageRepository(
             val result = client.submitForm(
                 "/manage/post/process",
                 formParameters = parameters{
-                    append("postId",postId.toString())
-                    append("status",status.toString())
+                    append("PostId",postId.toString())
+                    append("Status",status.toString())
                 }
             ).body<ProcessPost>()
             emit(result)
@@ -58,9 +58,9 @@ class ManageRepository(
             val result = client.submitForm(
                 "/manage/comment/process",
                 formParameters = parameters{
-                    append("commentId",commentId.toString())
-                    append("status",status.toString())
-                    append("postId",postId.toString())
+                    append("CommentId",commentId.toString())
+                    append("Status",status.toString())
+                    append("PostId",postId.toString())
                 }
             ).body<ProcessPost>()
             emit(result)
@@ -156,8 +156,8 @@ class ManageRepository(
         return flow<AdminLevelUpdate> {
             val response = client.submitForm("/manage/adminUpdate") {
                 formData {
-                    append("userId",userId)
-                    append("level",level)
+                    append("UserId",userId)
+                    append("Level",level)
                 }
             }.body<AdminLevelUpdate>()
             emit(response)

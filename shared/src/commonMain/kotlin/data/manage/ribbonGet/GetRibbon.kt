@@ -12,8 +12,7 @@ data class GetRibbon(
 ) {
     fun toNetworkResult(): NetworkResult<List<RibbonData>> {
         return when(code){
-            0 -> networkErrorWithLog(code,"获取失败")
-            1 -> NetworkResult.Success(this.data)
+            0 -> NetworkResult.Success(this.data)
             else -> networkErrorWithLog(code,"获取失败")
         }
     }

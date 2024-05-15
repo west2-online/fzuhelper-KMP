@@ -24,7 +24,7 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
     fun newPost(
         releasePageItemList: List<ReleasePageItem>,
         title: String,
-        labelList : List<String>
+        labelList : List<Int>
     ){
         viewModelScope.launch(Dispatchers.IO){
             _newPostState.logicIfNotLoading{

@@ -21,6 +21,9 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import com.bumble.appyx.navigation.integration.IosNodeHost
 import com.futalk.kmm.FuTalkDatabase
+import di.SystemAction
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.HttpClientEngineConfig
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.refTo
 import kotlinx.coroutines.channels.Channel
@@ -36,25 +39,25 @@ import platform.UIKit.UIViewController
 import platform.darwin.NSObject
 import platform.posix.memcpy
 import ui.root.RootNode
+import ui.root.RootUi
 import util.compose.FuTalkTheme
 
 
 actual fun getPlatformName(): String = "iOS"
 
-val backEvents: Channel<Unit> = Channel()
 
-fun MainViewController() = ComposeUIViewController { App()
+fun MainViewController() = ComposeUIViewController {
     FuTalkTheme {
-        IosNodeHost(
-            modifier = Modifier,
-            // See back handling section in the docs below!
-            onBackPressedEvents = backEvents.receiveAsFlow(),
-            integrationPoint = appyxV2IntegrationPoint
-        ) {
-            RootNode(
-                buildContext = it
+        RootUi(
+            systemAction = SystemAction(
+                onFinish = {
+
+                },
+                onBack = {
+
+                }
             )
-        }
+        )
     }
 }
 
@@ -179,4 +182,8 @@ actual fun createDriver(): SqlDriver {
 
 actual fun getVersionFileName():String{
     return "iosVersion.json"
+}
+
+actual fun HttpClientEngineConfig.ktorConfig() {
+
 }

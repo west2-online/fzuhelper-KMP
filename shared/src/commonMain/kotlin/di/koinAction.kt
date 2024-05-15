@@ -1,11 +1,15 @@
 package di
 
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.navigator.Navigator
 import com.liftric.kvault.KVault
 import config.BaseUrlConfig
 import configureForPlatform
+import dao.ClassScheduleDao
+import dao.Dao
+import dao.ExamDao
+import dao.ThemeKValueAction
+import dao.UndergraduateKValueAction
+import dao.YearOpensDao
 import initStore
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -13,15 +17,27 @@ import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.HttpRequestPipeline
 import io.ktor.client.statement.HttpReceivePipeline
-import io.ktor.http.headers
+import io.ktor.client.statement.readBytes
+import io.ktor.client.statement.request
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.encodeBase64
 import io.ktor.util.pipeline.PipelinePhase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retry
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.plus
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import repository.ClassScheduleRepository
+import repository.EmptyHouseRepository
 import repository.FeedbackRepository
 import repository.LoginRepository
 import repository.ManageRepository
@@ -35,6 +51,8 @@ import repository.SplashRepository
 import repository.WeatherRepository
 import ui.compose.Action.ActionViewModel
 import ui.compose.Authentication.AuthenticationViewModel
+import ui.compose.ClassSchedule.ClassScheduleViewModel
+import ui.compose.EmptyHouse.EmptyHouseVoyagerViewModel
 import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.Log.LogViewModel
 import ui.compose.Manage.ManageViewModel
@@ -47,10 +65,98 @@ import ui.compose.Report.ReportViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.compose.Weather.WeatherViewModel
 import ui.root.RootAction
-import ui.setting.Setting
-import util.compose.Toast
-import viewModelDefinition
 
+import util.compose.Toast
+import util.encode.encode
+import viewModelDefinition
+import kotlin.random.Random
+import kotlin.random.nextInt
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
+
+class ClassSchedule(
+    private val classScheduleRepository: ClassScheduleRepository,
+    private val kVaultAction:UndergraduateKValueAction
+){
+    private var client:HttpClient? = null
+    private var userSchoolId:String? = null
+    private var upDataTime = Clock.System.now().plus(-50, DateTimeUnit.MINUTE)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun getClassScheduleClient() : Pair<HttpClient?,String?> {
+        if (client == null || Clock.System.now() - upDataTime > 20.toDuration(DurationUnit.MINUTES)) {
+            val newClient = HttpClient() {
+                install(ContentNegotiation) {
+                    json()
+                }
+                install(HttpCookies){}
+                install(HttpRedirect) {
+                    checkHttpMethod = false
+                }
+                configureForPlatform()
+            }
+            classScheduleRepository.apply {
+//                val userName = kVaultAction.getUserName()
+//                val password = kVaultAction.getSchoolPassword()
+//                if(userName == null || password == null){
+//                    return@apply
+//                }
+                var id = ""
+                var num = ""
+                newClient.apply {
+                    getVerifyCode()
+                        .map {
+                            it.encodeBase64()
+                        }
+                        .flatMapConcat { verifyCodeForParse ->
+                            parseVerifyCodeFormWest2(verifyCodeForParse)
+                        }.flatMapConcat { verifyCode ->
+                            loginStudent(
+                                user = "102101624",
+                                pass = "351172abc2015@",
+                                verifyCode = verifyCode
+                            )
+                        }
+                        .flatMapConcat {
+                            val url = it.call.request.url.toString()
+                            id = url.split("id=")[1].split("&")[0]
+                            num = url.split("num=")[1].split("&")[0]
+
+                            val context = it.readBytes().decodeToString()
+                            val token = context.split("var token = \"")[1].split("\";")[0]
+                            loginByToken(token)
+                        }
+                        .flatMapConcat {
+                            loginCheckXs(
+                                id = id,
+                                num = num
+                            )
+                        }
+                        .retry(3)
+                        .map {
+                            val url = it.call.request.url.toString()
+                            client = newClient
+                            userSchoolId = url.split("id=")[1].split("&")[0]
+                            upDateClientTime()
+                        }
+                        .catch {
+                            client = null
+                            userSchoolId = null
+                        }
+                        .collect{
+
+                        }
+                }
+
+            }
+            return Pair(newClient,userSchoolId)
+        }
+        return Pair(client,userSchoolId)
+    }
+    private fun upDateClientTime(){
+        upDataTime = Clock.System.now()
+    }
+}
 class LoginClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
@@ -67,9 +173,45 @@ class LoginClient(
             checkHttpMethod = false
         }
         configure()
+    }.apply {
+        val encodePhase = PipelinePhase("Encode")
+        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
+        this.requestPipeline.intercept(encodePhase){
+            val time = Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = Random.nextInt(10..99)
+            val randomNumber2 = Random.nextInt(0..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
+        }
     }
 )
 
+class SchoolClient(
+    val client : HttpClient = HttpClient{
+        install(ContentNegotiation) {
+            json()
+        }
+        install(
+            DefaultRequest
+        ){
+            url(BaseUrlConfig.BaseUrl)
+        }
+        install(Logging)
+        install(HttpCookies){}
+        install(HttpRedirect) {
+            checkHttpMethod = false
+        }
+        configure()
+    }.apply {
+        val encodePhase = PipelinePhase("Encode")
+        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
+        this.requestPipeline.intercept(encodePhase){
+            val time = Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = Random.nextInt(10..99)
+            val randomNumber2 = Random.nextInt(0..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
+        }
+    }
+)
 class ShareClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
@@ -80,6 +222,15 @@ class ShareClient(
             checkHttpMethod = false
         }
         configure()
+    }.apply {
+        val encodePhase = PipelinePhase("Encode")
+        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
+        this.requestPipeline.intercept(encodePhase){
+            val time = Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = Random.nextInt(10..99)
+            val randomNumber2 = Random.nextInt(0..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
+        }
     }
 )
 
@@ -93,31 +244,18 @@ class WebClient(
             checkHttpMethod = false
         }
         configure()
+    }.apply {
+        val encodePhase = PipelinePhase("Encode")
+        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
+        this.requestPipeline.intercept(encodePhase){
+            val time = Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = Random.nextInt(10..99)
+            val randomNumber2 = Random.nextInt(0..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
+        }
     }
 )
 
-class TopBarState(){
-    val itemForSelect = mutableStateOf<List<SelectItem>?>(null)
-    val expanded = mutableStateOf(false)
-    val itemForSelectShow = derivedStateOf {
-        itemForSelect.value != null
-    }
-    fun registerItemForSelect(list:List<SelectItem>?){
-        itemForSelect.value = list
-    }
-    val title = mutableStateOf<String?>(null)
-
-}
-
-data class SelectItem(
-    val text : String,
-    val click : ()->Unit,
-)
-
-data class BackItem(
-    val label: String,
-    val click: () -> Unit
-)
 
 class SystemAction(
     val onBack :() -> Unit,
@@ -133,7 +271,13 @@ fun appModule(
         rootAction
     }
     single {
-        Setting(get())
+        ThemeKValueAction(get())
+    }
+    single{
+        UndergraduateKValueAction(get())
+    }
+    single {
+        ClassSchedule(get(),get())
     }
     single {
         systemAction
@@ -146,13 +290,6 @@ fun appModule(
             install(ContentNegotiation) {
                 json()
             }
-            headers {
-                val kVault = get<KVault>()
-                val token : String? = kVault.string(forKey = "token")
-                token?.let {
-                    append("Authorization",token)
-                }
-            }
             install(
                 DefaultRequest
             ){
@@ -163,12 +300,22 @@ fun appModule(
                 }
                 url(BaseUrlConfig.BaseUrl)
             }
-            install(Logging)
+            install(Logging){
+                level = LogLevel.BODY
+            }
             install(HttpCookies){}
             install(HttpRedirect) {
                 checkHttpMethod = false
             }
             configure()
+        }
+        val encodePhase = PipelinePhase("Encode")
+        client.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
+        client.requestPipeline.intercept(encodePhase){
+            val time = Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = Random.nextInt(10..99)
+            val randomNumber2 = Random.nextInt(0..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
         }
         val authPhase = PipelinePhase("Auth")
         client.receivePipeline.insertPhaseBefore(HttpReceivePipeline.Before,authPhase)
@@ -179,26 +326,40 @@ fun appModule(
                 get<RootAction>().reLogin()
             }
             if(it.status.value == 556){
-                val kVault = get<KVault>()
-                kVault.clear()
-                get<RootAction>().reLogin()
+                val toast = get<Toast>()
+                toast.addWarnToast("网络延迟过大")
             }
             if(it.status.value == 557){
                 get<RootAction>().popManage()
             }
         }
+        if(BaseUrlConfig.isDebug){
+            val LogRequest = PipelinePhase("LogRequest")
+            client.receivePipeline.insertPhaseAfter(HttpReceivePipeline.After,LogRequest)
+            client.receivePipeline.intercept(LogRequest){
+                println("----------------------request---------------------------")
+                println("request ${it.request.url} ${it.request.method}")
+                it.request.headers.forEach { s, strings ->
+                    println("header --> $s -> ${strings}")
+                }
+            }
+
+            val LogResponse = PipelinePhase("LogResponse")
+            client.receivePipeline.insertPhaseAfter(HttpReceivePipeline.After,LogResponse)
+            client.receivePipeline.intercept(LogResponse){
+                println("----------------------response---------------------------")
+                println("request ${it.request.url} ${it.request.method}")
+                it.headers.forEach { s, strings ->
+                    println("header --> $s -> $strings")
+                }
+            }
+        }
         return@single client
-    }
-    single {
-        TopBarState()
     }
     repositoryList()
     viewModel()
     single {
         initStore()
-    }
-    single {
-        val kVault = get<KVault>()
     }
     single {
         LoginClient()
@@ -210,9 +371,25 @@ fun appModule(
         WebClient()
     }
     single {
-        val scope = CoroutineScope(Job())
-        return@single Toast(scope)
+        Toast(globalScope)
     }
+    single {
+        Dao(
+            get(),
+            get(),
+            get()
+        )
+    }
+    single {
+        ClassScheduleDao()
+    }
+    single {
+        ExamDao()
+    }
+    single {
+        YearOpensDao()
+    }
+
 }
 fun Module.repositoryList(){
     single {
@@ -248,6 +425,12 @@ fun Module.repositoryList(){
     single {
         RibbonRepository(get())
     }
+    single {
+        EmptyHouseRepository(get())
+    }
+    single {
+        ClassScheduleRepository()
+    }
 }
 fun Module.viewModel(){
     viewModelDefinition {
@@ -271,6 +454,9 @@ fun Module.viewModel(){
     single {
         PostDetailViewModel(get(),get(),get())
     }
+    single {
+        ClassScheduleViewModel(get(),get(),get(),get(),get())
+    }
     viewModelDefinition {
         ManageViewModel(get(),get())
     }
@@ -288,6 +474,9 @@ fun Module.viewModel(){
     }
     viewModelDefinition {
         LogViewModel()
+    }
+    viewModelDefinition {
+        EmptyHouseVoyagerViewModel(get())
     }
 }
 fun HttpClientConfig<*>.configure() {

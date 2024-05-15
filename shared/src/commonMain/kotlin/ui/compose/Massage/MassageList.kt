@@ -59,6 +59,10 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
+import kotlin.jvm.Transient
 
 @Composable
 fun MassageList(
@@ -260,13 +264,17 @@ fun getRandoms(): MassageLabel {
     return MassageLabel.values().random()
 }
 
-class MassageVoyagerList: Screen {
+class MassageVoyagerList(
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+): Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         MassageList(
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
                 .padding(10.dp),
             navigateToMassageDetail = {
                 navigator.push(MassageDetailVoyagerScreen())

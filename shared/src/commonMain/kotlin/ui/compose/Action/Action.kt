@@ -45,11 +45,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
+import ui.compose.EmptyHouse.EmptyHouseVoyagerScreen
 import ui.compose.Test.TestVoyagerScreen
 import ui.root.RootAction
 import ui.root.tokenJump
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.math.takeover
 import util.network.CollectWithContent
+import kotlin.jvm.Transient
 
 @Composable
 fun Action(
@@ -134,7 +139,10 @@ private fun Carousel(
                 val pageState = rememberPagerState(
                     initialPage = 0,
                 ) {
-                    ribbonDataList.size
+                    if(ribbonDataList!=null){
+                        return@rememberPagerState ribbonDataList.size
+                    }
+                    0
                 }
                 val coroutineScope = rememberCoroutineScope()
 
@@ -142,30 +150,34 @@ private fun Carousel(
                     while (true) {
                         delay(4000)
                         coroutineScope.launch {
-                            pageState.animateScrollToPage((pageState.currentPage + 1).takeover(ribbonDataList.size)?:0 )
+                            if (ribbonDataList != null) {
+                                pageState.animateScrollToPage((pageState.currentPage + 1).takeover(ribbonDataList.size)?:0 )
+                            }
                         }
                     }
                 }
                 HorizontalPager(
                     state = pageState,
-                ) {
+                ) { index ->
                     val scope = rememberCoroutineScope()
                     val rootAction = koinInject<RootAction>()
-                    KamelImage(
-                        resource = asyncPainterResource("${BaseUrlConfig.RibbonImage}/${ribbonDataList[it].Image}"),
-                        null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable {
-                                   tokenJump(
-                                       tokenForParse = ribbonDataList[it].Action,
-                                       scope = scope,
-                                       fail = {},
-                                       rootAction = rootAction
-                                   )
-                            },
-                        contentScale = ContentScale.FillBounds
-                    )
+                    ribbonDataList?.let {
+                        KamelImage(
+                            resource = asyncPainterResource("${BaseUrlConfig.RibbonImage}/${it[index].Image}"),
+                            null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable {
+                                    tokenJump(
+                                        tokenForParse = ribbonDataList[index].Action,
+                                        scope = scope,
+                                        fail = {},
+                                        rootAction = rootAction
+                                    )
+                                },
+                            contentScale = ContentScale.FillBounds
+                        )
+                    }
                 }
             },
             error = {
@@ -205,7 +217,7 @@ enum class Functions(
 ){
     QRCODE(  functionName = "二维码生成", painter = MR.images.qrcode, { rootAction -> rootAction.navigateFromActionToQRCodeScreen() }),
 //    WebView( functionName = "新生宝典", painter = MR.images.login, { rootAction -> }),
-//    Weather(  functionName = "天气", painter = MR.images.cloud, { rootAction -> rootAction.navigateFromAnywhereToWeather()}),
+    Weather(  functionName = "天气", painter = MR.images.cloud, { rootAction -> rootAction.navigateFromAnywhereToWeather()}),
 //    Map(  functionName = "地图", painter = MR.images.close, { rootAction -> }),
     Test(functionName = "测试", painter = MR.images.close, { rootAction -> rootAction.navigateToScreen(TestVoyagerScreen())}),
     AboutUs(functionName = "关于我们", painter = MR.images.FuTalk ,  { rootAction -> rootAction.navigateFromActionToAboutUs()}),
@@ -213,11 +225,15 @@ enum class Functions(
     Feedback(functionName = "反馈", painter = MR.images.feedback2, { rootAction -> rootAction.navigateFromActionToFeedback() }),
     Setting(functionName = "设置", painter = MR.images.setting, { rootAction -> rootAction.navigateFormAnywhereToSetting() }),
     Log(functionName = "日志", painter = MR.images.log, { rootAction -> rootAction.navigateFormAnywhereToLog() }),
+    EmptyHouse(functionName = "空教室", painter =MR.images.emptyHouse, navigator = { rootAction -> rootAction.navigateToScreen(EmptyHouseVoyagerScreen()) })
 }
 
 
 
-object ActionVoyagerScreen : Tab {
+class ActionVoyagerScreen(
+    @Transient
+    private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Tab {
     override val options: TabOptions
         @Composable
         get(){
@@ -233,6 +249,7 @@ object ActionVoyagerScreen : Tab {
         Action(
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
                 .padding(10.dp)
         )
     }

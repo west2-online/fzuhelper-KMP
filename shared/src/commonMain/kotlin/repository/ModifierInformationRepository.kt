@@ -12,6 +12,7 @@ import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.http.parameters
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -23,10 +24,10 @@ class ModifierInformationRepository(val client: HttpClient) {
             val response = client.submitForm(
                 url = "/user/userDataUpdate",
                 formParameters = parameters {
-                    append("username",username.normalize(Form.NFKD))
-                    append("age",age)
-                    append("grade",grade.normalize(Form.NFKD))
-                    append("location",location.normalize(Form.NFKD))
+                    append("Username",username.normalize(Form.NFKD))
+                    append("Age",age)
+                    append("Grade",grade.normalize(Form.NFKD))
+                    append("Location",location.normalize(Form.NFKD))
                 }
             ).body<ModifierData>()
             emit(response)
@@ -39,10 +40,10 @@ class ModifierInformationRepository(val client: HttpClient) {
                 setBody(
                     MultiPartFormDataContent(
                         formData {
-                            append("data",byteArray,
+                            append("content",byteArray,
                                 Headers.build {
-                                    append("isImage", "true")
-                                    append("Content-Disposition", "form-data")
+                                    append(HttpHeaders.ContentType, "image/png")
+                                    append("Content-Disposition", "filename=contentImage")
                                 }
                             )
                         }

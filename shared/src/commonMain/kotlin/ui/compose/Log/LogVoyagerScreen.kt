@@ -14,8 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import org.koin.compose.koinInject
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
+import kotlin.jvm.Transient
 
-class LogVoyagerScreen :Screen{
+class LogVoyagerScreen(
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) :Screen{
     @Composable
     override fun Content() {
         val loginViewModel = koinInject<LogViewModel>()
@@ -23,6 +30,7 @@ class LogVoyagerScreen :Screen{
         LazyColumn (
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
         ){
             items(logData.value) {
                 Column {

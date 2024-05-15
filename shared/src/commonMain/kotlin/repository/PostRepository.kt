@@ -28,7 +28,7 @@ class PostRepository(private val client: HttpClient) {
     fun newPost(
         releasePageItemList: List<ReleasePageItem>,
         title: String,
-        labelList: List<String>
+        labelList: List<Int>
     ): Flow<NewPostResponse> {
         return flow {
             val response = client.post("/post/new") {
@@ -38,22 +38,22 @@ class PostRepository(private val client: HttpClient) {
                             releasePageItemList.forEachIndexed{ index,item->
                                 when (item) {
                                     is ReleasePageItem.ImageItem -> {
-                                        append(index.toString(),item.image.value!!,
+                                        append("image",item.image.value!!,
                                             Headers.build {
                                                 append("order", index.toString())
-                                                append("isImage", "true")
                                                 append(HttpHeaders.ContentType, "image/png")
                                                 append(HttpHeaders.ContentDisposition, "filename=${index}")
                                             }
                                         )
                                     }
                                     is ReleasePageItem.TextItem -> {
-                                        append( index.toString(),item.text.value.normalize(Form.NFKD),
+                                        append( "text","{\"order\":${index},\"value\":\"${item.text}\"}",
                                             Headers.build {
-                                                append("order", index.toString())
-                                                append("isText", "true")
                                                 append("Content-Type", "text/plain")
                                             })
+                                    }
+                                    is ReleasePageItem.LineChartItem -> {
+
                                     }
                                 }
                             }

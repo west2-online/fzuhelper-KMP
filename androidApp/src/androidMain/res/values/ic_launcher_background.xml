@@ -1,4 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#4285F4</color>
+
+<!--    <color name="primary_light">#F8E6B2</color>-->
+<!--    <color name="onPrimary_light">#A19163</color>-->
+<!--    <color name="primaryVariant_light">#575013</color>-->
+
+<!--    <color name="secondary_light">#AF9F6C</color>-->
+<!--    <color name="onSecondary_light">#8F7A3B</color>-->
+<!--    <color name="secondaryVariant_light">#FFBF00</color>-->
+
+<!--    <color name="surface_light">#F6E8BE</color>-->
+<!--    <color name="onSurface_light">#503C00</color>-->
+
+<!--    <color name="error_light">#FF0707</color>-->
+<!--    <color name="onError_light">#4E0B0B</color>-->
+
+<!--    <color name="background_light">#FFFFFF</color>-->
+<!--    <color name="onBackground_light">#000000</color>-->
+
+
+
+<!--    <color name="primary_dark">#3E3F40</color>-->
+<!--    <color name="onPrimary_dark">#6A6C77</color>-->
+<!--    <color name="primaryVariant_dark">#FFFFFF</color>-->
+<!--    <color name="secondary_dark">#2C2C2C</color>-->
+<!--    <color name="onSecondary_dark">#565B60</color>-->
+<!--    <color name="secondaryVariant_dark">#FFFFFF</color>-->
+<!--    <color name="surface_dark">#2B2D30</color>-->
+<!--    <color name="onSurface_dark">#FFFFFF</color>-->
+<!--    <color name="error_dark">#533B40</color>-->
+<!--    <color name="onError_dark">#43101A</color>-->
+<!--    <color name="background_dark">#303030</color>-->
+<!--    <color name="onBackground_dark">#FFFFFF</color>-->
+
 </resources>

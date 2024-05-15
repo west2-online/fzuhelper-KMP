@@ -59,10 +59,14 @@ import org.example.library.MR
 import org.koin.compose.koinInject
 import repository.TokenData
 import util.compose.EasyToast
+import util.compose.ParentPaddingControl
 import util.compose.Toast
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.network.CollectWithContent
 import util.network.NetworkResult
 import util.network.logicWithTypeWithLimit
+import kotlin.jvm.Transient
 
 @Composable
 fun Register(
@@ -518,7 +522,10 @@ fun Register(
     }
 }
 
-class RegisterVoyagerScreen : Screen {
+class RegisterVoyagerScreen(
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Screen {
     @Composable
     override fun Content() {
         val navigate = LocalNavigator.currentOrThrow
@@ -529,6 +536,7 @@ class RegisterVoyagerScreen : Screen {
         Register(
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
                 .padding(10.dp),
             register = { email, password, captcha,studentCode,studentPassword->
                 viewModel.register(email,password,captcha,studentCode,studentPassword)

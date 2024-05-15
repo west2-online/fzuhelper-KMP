@@ -5,9 +5,11 @@ val ktor_version = "2.3.5"
 val serialization_version = "1.6.2"
 val markdown_version = "0.10.0"
 val sqlDelightVersion = "2.0.1"
+val voyagerVersion = "1.0.0"
 
 plugins {
     val sqlDelightVersion = "2.0.1"
+    val androidxRoom = "2.7.0-alpha01"
     kotlin("multiplatform")
     id("com.android.library")
     id("org.jetbrains.compose")
@@ -44,8 +46,12 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material)
+//                implementation(compose.uiTooling)
+//                implementation(compose.components.uiToolingPreview)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
+                implementation(compose.material3)
+
                 //图像
                 implementation("media.kamel:kamel-image:0.7.3")
                 implementation("io.ktor:ktor-client-core:$ktor_version")
@@ -88,63 +94,67 @@ kotlin {
                 // QRcode 生成周期
                 implementation("io.github.alexzhirkevich:qrose:1.0.0-beta02")
 
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0-RC")
 
                 //分页
                 implementation("app.cash.paging:paging-common:3.3.0-alpha02-0.4.0")
                 implementation("app.cash.paging:paging-compose-common:3.3.0-alpha02-0.4.0")
 
-                implementation(compose.material3)
+
 
                 implementation("com.doist.x:normalize:1.0.5")
+
                 //加密库
                 implementation("dev.whyoleg.cryptography:cryptography-core:0.2.0")
+
 //              //webview
                 implementation("io.github.kevinnzou:compose-webview-multiplatform:1.8.8")
 
                 implementation("com.mikepenz:multiplatform-markdown-renderer:${markdown_version}")
 
                 //appyx导航
-
                 implementation("com.bumble.appyx:appyx-navigation:$appyx_version")
                 implementation("com.bumble.appyx:appyx-interactions:$appyx_version")
                 implementation("com.bumble.appyx:backstack:$appyx_version")
                 implementation("com.bumble.appyx:spotlight:$appyx_version")
-//                api("com.bumble.appyx:utils-material3:$appyx_version")
-                //voyager
 
-                val voyagerVersion = "1.0.0"
-
-                // Multiplatform
-
-                // Navigator
+                // Voyager
                 implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
-
-                // Screen Model
                 implementation("cafe.adriel.voyager:voyager-screenmodel:$voyagerVersion")
-
-                // BottomSheetNavigator
                 implementation("cafe.adriel.voyager:voyager-bottom-sheet-navigator:$voyagerVersion")
-
-                // TabNavigator
                 implementation("cafe.adriel.voyager:voyager-tab-navigator:$voyagerVersion")
-
-                // Transitions
                 implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
 
                 //sqlDelight
                 implementation("app.cash.sqldelight:coroutines-extensions:$sqlDelightVersion")
                 implementation("app.cash.sqldelight:coroutines-extensions:$sqlDelightVersion")
+
+//                //加密
+//                implementation("com.ionspin.kotlin:multiplatform-crypto-libsodium-bindings:0.9.1")
+                implementation("dev.whyoleg.cryptography:cryptography-serialization-pem:0.3.0")
+
+                val latest_release = "Beta-0.0.5"
+                implementation("io.github.thechance101:chart:$latest_release")
+
+                val ksoup_version = "0.1.2"
+                implementation("com.fleeksoft.ksoup:ksoup:$ksoup_version")
+
+                val androidxRoom = "2.7.0-alpha01"
+                val sqlite = "2.5.0-SNAPSHOT"
+
+//                implementation("androidx.room:room-compiler:$androidxRoom")
+//                implementation("androidx:room:room-runtime:$androidxRoom")
+//                implementation("androidx:sqlite:sqlite-bundled:$sqlite")
+
             }
         }
         val androidMain by getting {
             dependsOn(commonMain)
             dependencies {
-                api("androidx.activity:activity-compose:1.7.2")
+                api("androidx.activity:activity-compose:1.9.0-beta01")
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.10.1")
                 implementation("io.ktor:ktor-client-okhttp:$ktor_version")
-
                 //koin
                 implementation("io.insert-koin:koin-android:$koin_version")
                 api("dev.icerock.moko:mvvm-livedata-material:0.16.1") // api mvvm-livedata, Material library android extensions
@@ -178,8 +188,13 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
+
+        val test by creating {
+            dependsOn(commonMain)
+        }
     }
 }
+
 
 android {
     compileSdk = (findProperty("android.compileSdk") as String).toInt()

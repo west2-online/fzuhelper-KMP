@@ -12,8 +12,8 @@ data class NewPostResponse(
 ){
     fun toNetworkResult(): NetworkResult<String> {
         return when(code){
-            0 -> networkErrorWithLog(code,"在帖子中缺少标题")
-            4 -> NetworkResult.Success("发布成功")
+            0 -> networkErrorWithLog(code,"缺少标题")
+            1 -> NetworkResult.Success("发布成功")
             else -> networkErrorWithLog(code,"发布失败")
         }
     }

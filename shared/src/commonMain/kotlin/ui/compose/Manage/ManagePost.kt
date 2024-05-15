@@ -49,6 +49,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import ui.compose.Post.ImageContent
 import ui.compose.Post.PersonalInformationAreaInDetail
+import ui.compose.Post.TextContent
 import ui.compose.Post.Time
 import util.compose.EasyToast
 import util.compose.Label
@@ -111,9 +112,8 @@ object ManagePostVoyagerScreen:Screen{
                                             is FileData -> {
                                                 ImageContent(it.fileName)
                                             }
-
                                             is ValueData -> {
-                                                Text(it.value)
+                                                TextContent(it.value)
                                             }
                                         }
                                     }

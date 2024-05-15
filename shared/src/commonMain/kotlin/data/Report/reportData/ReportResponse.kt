@@ -12,9 +12,7 @@ data class ReportResponse(
 ){
     fun toNetworkResult(): NetworkResult<String> {
         return when(code){
-            1 -> networkErrorWithLog(code,"举报失败")
-            0 -> networkErrorWithLog(code,"信心不足")
-            2 -> NetworkResult.Success("举报成功")
+            0 -> NetworkResult.Success("举报成功")
             else -> networkErrorWithLog(code,"举报失败")
         }
     }

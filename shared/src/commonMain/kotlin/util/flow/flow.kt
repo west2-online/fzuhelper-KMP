@@ -10,17 +10,16 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 suspend fun <T>Flow<T>.catchWithMassage (
     label: String = "",
-    action: suspend kotlinx.coroutines.flow.FlowCollector<T>.(label:String,kotlin.Throwable) -> kotlin.Unit,
+    action:  (suspend kotlinx.coroutines.flow.FlowCollector<T>.(label:String,kotlin.Throwable) -> kotlin.Unit)? = null,
 ): Flow<T> {
     return this.catch {
         if(BaseUrlConfig.isDebug){
             println("$label error : ${it.message.toString()}")
         }
-        action.invoke(this,label,it)
+        action?.invoke(this,label,it)
     }
 }
 
@@ -51,7 +50,17 @@ suspend fun <T>Flow<T>.actionWithLabel(
 }
 
 fun CoroutineScope.launchInDefault(
-    context: CoroutineContext = EmptyCoroutineContext,
+    context: CoroutineContext = Dispatchers.Default,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend CoroutineScope.() -> Unit
+){
+    this.launch (
+        context, start, block
+    )
+}
+
+fun CoroutineScope.launchInIO(
+    context: CoroutineContext = Dispatchers.IO,
     start: CoroutineStart = CoroutineStart.DEFAULT,
     block: suspend CoroutineScope.() -> Unit
 ){

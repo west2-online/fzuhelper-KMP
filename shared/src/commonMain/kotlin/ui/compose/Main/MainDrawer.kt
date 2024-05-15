@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -45,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.liftric.kvault.KVault
+import config.CurrentZone
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import di.SystemAction
@@ -55,37 +57,27 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.minus
-import kotlinx.datetime.todayIn
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.root.getRootAction
-import kotlin.time.Duration.Companion.days
 
 fun getPassedRange(): Float {
     // 获取当前日期
-    val currentDate = Clock.System.todayIn(TimeZone.UTC)
-
-    // 获取今年的开始日期
-    val startOfYear = LocalDate(currentDate.year, 1, 1)
-
-    // 计算已经过去的天数
-    val daysPassed = currentDate.minus(startOfYear).days
+    val currentDate = Clock.System.now().toLocalDateTime(CurrentZone).date.dayOfYear
 
     // 获取今年总天数
-    val daysInYear = 365.days // 注意：这里假设每年都是 365 天
+    val daysInYear = 365 // 注意：这里假设每年都是 365 天
 
     // 计算已经过去的天数比例
-    return (daysPassed.toFloat() / daysInYear.inWholeDays)
+    return (currentDate.toFloat() / daysInYear)
 }
+
 @Composable
 fun MainDrawer(
     modifier: Modifier = Modifier,
 ){
-
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -97,6 +89,7 @@ fun MainDrawer(
             }
             Row (
                 modifier = Modifier
+                    .statusBarsPadding()
                     .fillMaxWidth()
                     .height(100.dp)
                     .clip(RoundedCornerShape(10.dp))

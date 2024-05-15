@@ -2,7 +2,7 @@ package ui.compose.Post
 
 import app.cash.paging.Pager
 import app.cash.paging.PagingConfig
-import data.post.PostById.PostById
+import data.post.PostById.PostData
 import data.post.PostCommentPreview.Data
 import data.post.PostCommentPreview.PostCommentPreview
 import data.post.PostCommentTree.PostCommentTree
@@ -34,7 +34,7 @@ class PostDetailViewModel(
     private val rootAction: RootAction
 ):ViewModel() {
 
-    private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostById>>(
+    private val _currentPostDetail = CMutableStateFlow(MutableStateFlow<NetworkResult<PostData>>(
         NetworkResult.UnSend()
     ))
     val currentPostDetail = _currentPostDetail.asStateFlow()
@@ -82,7 +82,7 @@ class PostDetailViewModel(
                             _currentPostDetail.resetWithLog(label, networkErrorWithLog(error,"帖子获取失败"))
                         },
                         collectAction = { label,data ->
-                            _currentPostDetail.resetWithLog(label,NetworkResult.Success(data))
+                            _currentPostDetail.resetWithLog(label,data.toNetworkResult())
                         }
                     )
 

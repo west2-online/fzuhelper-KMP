@@ -1,5 +1,6 @@
 package ui.compose.AboutUs
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -13,13 +14,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.mikepenz.markdown.compose.Markdown
 import ui.compose.Main.MainItems
-import util.compose.loadAction
+import util.compose.ParentPaddingControl
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
+import kotlin.jvm.Transient
+import kotlin.math.sqrt
 
 
 @Composable
@@ -31,12 +44,105 @@ fun AboutUsScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
+        val rate = androidx.compose.animation.core.Animatable(1f)
+//        LaunchedEffect(Unit){
+//            withContext(Dispatchers.IO){
+//                rate.animateTo(
+//                    1f,
+//                    tween(1000)
+//                )
+//            }
+//        }
+        val text = rememberTextMeasurer()
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
         ){
-                Box(modifier = Modifier.fillMaxSize(0.5f).align(Alignment.Center).loadAction())
+            Canvas(modifier = Modifier.align(Alignment.Center).fillMaxSize(0.5f)){
+                val padding = size.height/2
+                val otherPadding = padding/2*(sqrt(3.0)).toFloat()
+                val path1 = Path()
+                val path2 = Path()
+                val path1List = listOf(
+                    Offset(center.x+otherPadding,center.y - padding/2),
+                    Offset(center.x,center.y - padding),
+                    Offset(center.x-otherPadding,center.y-padding/2),
+                    Offset(center.x-otherPadding,center.y+padding/2),
+                    Offset(center.x,center.y + padding),
+                    Offset(center.x,center.y ),
+                    Offset(center.x+otherPadding,center.y - padding/2),
+                )
+                val path2List = listOf(
+                    Offset(center.x+otherPadding,center.y - padding/2),
+                    Offset(center.x,center.y),
+                    Offset(center.x,center.y + padding),
+                    Offset(center.x+otherPadding,center.y + padding/2),
+                    Offset(center.x+otherPadding,center.y - padding/2),
+                )
+                path1List.forEachIndexed { index, offset ->
+                    when (index) {
+                        0 -> {
+                            path1.moveTo(offset.x,offset.y)
+                        }
+                        path1List.size - 1 -> {
+                            path1.lineTo(offset.x,offset.y)
+                            path1.close()
+                        }
+                        else -> {
+                            path1.lineTo(offset.x,offset.y)
+                        }
+                    }
+                }
+                path2List.forEachIndexed { index, offset ->
+                    when (index) {
+                        0 -> {
+                            path2.moveTo(offset.x,offset.y)
+                        }
+                        path1List.size - 1 -> {
+                            path2.lineTo(offset.x,offset.y)
+                            path2.close()
+                        }
+                        else -> {
+                            path2.lineTo(offset.x,offset.y)
+                        }
+                    }
+                }
+
+                clipRect (bottom = rate.value * padding * 4 + size.height/2 - 2*padding){
+                    drawPath(path1, brush = Brush.linearGradient(
+                        listOf(
+                            Color(23,65,217),
+                            Color(21,77,222),
+                            Color(140,157,202),
+                        ),
+                        start = Offset(center.x,center.y - padding),
+                        end = Offset(center.x,center.y + padding)
+                    ))
+
+
+                }
+                clipRect(top = center.y + padding - rate.value * padding/2*3 , bottom = size.height) {
+                    drawPath(path2,
+                        brush = Brush.linearGradient(
+                            listOf(
+                                Color(38,185,176),
+                                Color(202,234,232),
+                            ),
+                            start = Offset(center.x,center.y + padding),
+                            end = Offset(center.x+otherPadding,center.y - padding/2)
+                        )
+                    )
+                }
+                rotate(330f, Offset(center.x,center.y)){
+                    val data = text.measure("FuTalk")
+                    drawText(
+                        data,
+                        topLeft = Offset(center.x,center.y),
+                    )
+                }
+
+            }
         }
         Markdown(
             content = markdown,
@@ -81,13 +187,16 @@ https://futalker.github.io
 """.trimIndent()
 
 
-
-object AboutUsVoyagerScreen:Tab{
+class AboutUsVoyagerScreen(
+    @Transient
+    private val parentPaddingControl : ParentPaddingControl = defaultSelfPaddingControl()
+) : Tab {
     @Composable
     override fun Content() {
         AboutUsScreen(
             modifier = Modifier
                 .fillMaxSize()
+                .parentSystemControl(parentPaddingControl)
         )
     }
 

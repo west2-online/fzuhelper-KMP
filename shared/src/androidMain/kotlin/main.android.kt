@@ -19,7 +19,9 @@ import com.futalk.kmm.FuTalkDatabase
 import com.liftric.kvault.KVault
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.engine.okhttp.OkHttpConfig
+import okhttp3.Protocol
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.definition.Definition
 import org.koin.core.definition.KoinDefinition
@@ -58,17 +60,18 @@ actual fun ByteArray.asImageBitmap(): ImageBitmap{
 }
 
 actual fun HttpClientConfig<*>.configureForPlatform() {
-
     engine {
+
         this as OkHttpConfig
         config {
+            protocols(listOf(Protocol.HTTP_1_1))
 //            val trustAllCert = AllCertsTrustManager()
 //            val sslContext = SSLContext.getInstance("SSL")
 //            sslContext.init(null, arrayOf(trustAllCert), SecureRandom())
 //            sslSocketFactory(sslContext.socketFactory, trustAllCert)
             sslSocketFactory(getSSLSocketFactory, trustAllCerts[0])
-            connectTimeout(5, TimeUnit.SECONDS)
-            readTimeout(10, TimeUnit.SECONDS)
+            connectTimeout(20, TimeUnit.SECONDS)
+            readTimeout(20, TimeUnit.SECONDS)
         }
     }
 }
@@ -154,3 +157,8 @@ actual fun createDriver(): SqlDriver {
 actual fun getVersionFileName():String{
     return "androidVersion.json"
 }
+
+actual fun HttpClientEngineConfig.ktorConfig() {
+
+}
+

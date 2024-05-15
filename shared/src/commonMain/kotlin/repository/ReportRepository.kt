@@ -16,9 +16,9 @@ class ReportRepository (
             val response = client.submitForm(
                 "/report/comment",
                 formParameters = Parameters.build {
-                    append("postId",postId)
-                    append("commentId",commentId)
-                    append("typeId",typeId.toString())
+                    append("PostId",postId)
+                    append("CommentId",commentId)
+                    append("TypeId",typeId.toString())
                 }
             ).body<ReportResponse>()
             emit(response)
@@ -30,8 +30,8 @@ class ReportRepository (
             val response = client.submitForm(
                 "/report/post",
                 formParameters = Parameters.build {
-                    append("postId",postId)
-                    append("typeId",typeId.toString())
+                    append("PostId",postId)
+                    append("TypeId",typeId.toString())
                 }
             ).body<ReportResponse>()
             emit(response)

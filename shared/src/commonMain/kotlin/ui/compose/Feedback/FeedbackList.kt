@@ -54,10 +54,14 @@ import kotlinx.coroutines.flow.filter
 import org.koin.compose.koinInject
 import util.compose.EasyToast
 import util.compose.Label
+import util.compose.ParentPaddingControl
 import util.compose.ThemeCard
 import util.compose.Toast
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.network.toEasyTime
+import kotlin.jvm.Transient
 
 @Composable
 fun FeedbackList(
@@ -84,9 +88,9 @@ fun FeedbackList(
             }
     }
 
-    Box(modifier = Modifier){
+    Box(modifier = modifier){
         LazyColumn (
-            modifier = modifier,
+            modifier = Modifier.fillMaxSize(),
             state = state
         ){
             items(feedbackListFlow.itemCount){
@@ -231,7 +235,10 @@ fun DiscussInList(
     }
 }
 
-class FeedbackListVoyagerScreen() :Screen{
+class FeedbackListVoyagerScreen(
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) :Screen{
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
@@ -239,7 +246,8 @@ class FeedbackListVoyagerScreen() :Screen{
         val toastState = rememberToastState()
         FeedbackList(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .parentSystemControl(parentPaddingControl),
             navigateToDetail = { postId ->
                 navigator.push(FeedbackDetailVoyagerScreen(postId))
             },

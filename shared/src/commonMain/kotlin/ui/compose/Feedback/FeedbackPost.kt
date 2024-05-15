@@ -23,10 +23,14 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import org.koin.compose.koinInject
 import util.compose.EasyToast
+import util.compose.ParentPaddingControl
 import util.compose.Toast
+import util.compose.defaultSelfPaddingControl
+import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.network.NetworkResult
 import util.network.toast
+import kotlin.jvm.Transient
 
 @Composable
 fun FeedbackPost(
@@ -111,14 +115,18 @@ enum class FeedbackType(val describe:String,val code:Int){
     Suggest("软件建议", code = 1)
 }
 
-class FeedbackPostVoyagerScreen():Screen{
+class FeedbackPostVoyagerScreen(
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+):Screen{
     @Composable
     override fun Content() {
         val viewModel: FeedBackViewModel = koinInject()
         val toastState = rememberToastState()
         FeedbackPost(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .parentSystemControl(parentPaddingControl),
             submit = { content, type ->
                 viewModel.submitNewFeedback(content, type)
             },

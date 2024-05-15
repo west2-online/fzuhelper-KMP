@@ -13,12 +13,18 @@ import org.koin.compose.koinInject
 import ui.compose.Main.MainItems
 import ui.compose.Report.ReportType
 import ui.root.RootAction
-import ui.setting.SettingTransitions
 import util.compose.EasyToast
+import util.compose.ParentPaddingControl
+import util.compose.SettingTransitions
+import util.compose.defaultSelfPaddingControl
 import util.compose.rememberToastState
+import kotlin.jvm.Transient
 
 
-object PostVoyagerScreen : Tab {
+class PostVoyagerScreen(
+    @Transient
+    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Tab {
     override val options: TabOptions
         @Composable
         get() {
@@ -48,6 +54,7 @@ object PostVoyagerScreen : Tab {
                 navigateToReport = {
                     rootAction.navigateFormPostToReport(ReportType.PostReportType(id = it.Post.Id.toString(),it.Post))
                 },
+                parentPaddingControl = parentPaddingControl
             )){ navigator ->
                 SettingTransitions(navigator)
             }

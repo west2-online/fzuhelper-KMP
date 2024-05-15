@@ -1,11 +1,9 @@
 package data.person.UserData
 
-import com.bumble.appyx.utils.multiplatform.Parcelable
 import com.bumble.appyx.utils.multiplatform.Parcelize
 import kotlinx.serialization.Serializable
 
 
-@Parcelize
 @Serializable
 data class Data(
     val Id:Int,
@@ -16,4 +14,4 @@ data class Data(
     val location: String,
     val username: String,
     val avatar : String
-):Parcelable
+)

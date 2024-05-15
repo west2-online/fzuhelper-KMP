@@ -3,9 +3,7 @@ package ui.compose.SplashPage
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -82,8 +80,7 @@ class SplashPageVoyagerScreen():Screen{
                         contentScale = ContentScale.FillBounds,
                         onLoading = {
                             Box(modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(0.5f)
+                                .fillMaxSize()
                                 .shimmerLoadingAnimation(
                                     colorList = listOf(
                                         Color.Black.copy(alpha = 0.1f),
@@ -93,7 +90,6 @@ class SplashPageVoyagerScreen():Screen{
                                         Color.Black.copy(alpha = 0.1f),
                                     )
                                 )
-                                .animateContentSize()
                             )
                         }
                     )
@@ -105,8 +101,7 @@ class SplashPageVoyagerScreen():Screen{
                 },
                 content = {
                     Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(0.5f)
+                        .fillMaxSize()
                         .shimmerLoadingAnimation(
                             colorList = listOf(
                                 Color.Black.copy(alpha = 0.1f),

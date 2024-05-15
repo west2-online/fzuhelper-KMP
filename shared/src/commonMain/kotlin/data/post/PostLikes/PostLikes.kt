@@ -12,9 +12,8 @@ data class PostLikes(
 ) {
     fun toNetworkResult(): NetworkResult<String> {
         return when(code){
-            0,1 -> networkErrorWithLog(code,"点赞失败")
-            2 ->  networkErrorWithLog(code,"已经点赞了")
-            3 -> NetworkResult.Success("点赞成功")
+            0 ->  networkErrorWithLog(code,"已经点赞了")
+            1 -> NetworkResult.Success("点赞成功")
             else -> networkErrorWithLog(code,"点赞失败")
         }
     }

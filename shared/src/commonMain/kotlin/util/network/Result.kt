@@ -13,8 +13,6 @@ import androidx.compose.ui.Modifier
 import annotation.ImportantFunction
 import di.database
 import di.globalScope
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.header
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.Clock
@@ -61,13 +59,18 @@ interface NetworkResult<T> {
 }
 
 fun <T>networkError(rawError: String,error: String) = NetworkResult.Error<T>(Throwable(rawError),Throwable(error))
-fun <T>networkError(rawError: Error,error: String) = NetworkResult.Error<T>(Throwable(rawError),Throwable(error))
+fun <T>networkError(rawError: Throwable,error: String) = NetworkResult.Error<T>(Throwable(rawError),Throwable(error))
 fun networkSuccess(success: String) = NetworkResult.Success<String>(success)
 
 
 fun <T>networkErrorWithLog( errorCode :Int,newDescribe : String ) = NetworkResult.Error<T>(
     rawError = Throwable("Error Code : $errorCode"),
     errorForShow = Throwable(newDescribe)
+)
+
+fun <T>networkErrorWithLog( errorCode :Int,newThrowable: Throwable ) = NetworkResult.Error<T>(
+    rawError = Throwable("Error Code : $errorCode"),
+    errorForShow = newThrowable
 )
 
 fun <T>networkErrorWithLog( error :Throwable,newDescribe : String ) = NetworkResult.Error<T>(
@@ -258,7 +261,7 @@ fun <T>T.logicWithNullCheckInCompose(
 }
 
 @ImportantFunction
-suspend fun <T> MutableStateFlow<NetworkResult<T>>.resetWithLog(logLabel:String, newValue : NetworkResult<T>){
+suspend fun <T> MutableStateFlow<NetworkResult<T>>.resetWithLog(logLabel:String, newValue: NetworkResult<T>){
     if(newValue is NetworkResult.Error){
         globalScope.launchInDefault {
             var errorMassage = ""
@@ -409,7 +412,3 @@ suspend fun <T> NetworkResult<T>.toast(
     }
 }
 
-
-fun HttpRequestBuilder.token(token:String){
-    this.header("Authorization",token)
-}
