@@ -298,7 +298,7 @@ fun PostItem(
                     labels?.let {
                         it.forEach {
                             item {
-                                Label(it.Label)
+                                Label(it.Value)
                             }
                         }
                     }

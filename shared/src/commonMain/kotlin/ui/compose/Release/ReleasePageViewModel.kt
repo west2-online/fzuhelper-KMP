@@ -1,5 +1,6 @@
 package ui.compose.Release
 
+import data.share.Label
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +20,10 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
     private val _newPostState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
         NetworkResult.UnSend()))
     val newPostState = _newPostState.asStateFlow()
+
+
+    private var _labelList = CMutableStateFlow<NetworkResult<List<Label>>>(MutableStateFlow(NetworkResult.UnSend()))
+    val labelList = _labelList.asStateFlow()
 
     //发布新的帖子
     fun newPost(
@@ -66,6 +71,23 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
                         _newPostState.resetWithLog(label,networkErrorWithLog(error,"发布失败"))
                     }
                 )
+            }
+        }
+    }
+
+    fun getUserLabel(){
+        viewModelScope.launch {
+            _labelList.logicIfNotLoading {
+                releaseRepository.getUserLabel()
+                    .actionWithLabel(
+                        "getUserLabel/getUserLabel",
+                        catchAction = {label, error ->
+                            _labelList.resetWithLog(label, networkErrorWithLog(error,"获取标签失败"))
+                        },
+                        collectAction = { label, data ->
+                            _labelList.resetWithoutLog(NetworkResult.Success(data.data))
+                        }
+                    )
             }
         }
     }

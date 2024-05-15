@@ -41,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,12 +56,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import data.person.UserLabel.UserLabel
 import data.share.Label
 import dev.icerock.moko.resources.compose.painterResource
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.get
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
@@ -72,6 +69,7 @@ import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
 import util.network.CollectWithContent
+import util.network.NetworkResult
 import util.network.logicWithTypeWithLimit
 import kotlin.jvm.Transient
 
@@ -87,41 +85,32 @@ fun ReleasePageScreen(
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
     var preview by remember { mutableStateOf(false) }
-    val labelList = remember {
-        mutableStateListOf<LabelForSelect>()
+    val labelListFromNetwork = viewModel.labelList.collectAsState()
+    val labelList = remember (labelListFromNetwork.value){
+        derivedStateOf {
+            initLabel.map {
+                LabelForSelect(it.Id,it.Value,false,LabelType.Init)
+            }.plus(labelListFromNetwork.value.let {
+                return@let when(it){
+                    is NetworkResult.Success<List<Label>> -> it.dataForShow.map {
+                        LabelForSelect(it.Id,it.Value,true,LabelType.Person)
+                    }
+                    else -> listOf<LabelForSelect>()
+                }
+            })
+        }
     }
     toastState.toastBindNetworkResult(viewModel.newPostState.collectAsState())
     viewModel.newPostState.value.logicWithTypeWithLimit (
         success = {
             releasePageItems.clear()
-            labelList.forEach {
+            labelList.value.forEach {
                 it.close()
             }
         }
     )
-    val client = koinInject<HttpClient>()
     LaunchedEffect(Unit){
-        labelList.add(LabelForSelect(0,"学习"))
-        labelList.add(LabelForSelect(1,"生活"))
-        initLabel.forEach {
-            labelList.add(LabelForSelect(it.Id,it.Label,false,LabelType.Init))
-        }
-    }
-    LaunchedEffect(Unit){
-        try {
-            labelList.filter {
-                it.labelType == LabelType.Person
-            }.forEach {
-                labelList.remove(it)
-            }
-            val userLabelList = client.get("/user/label").body<UserLabel>()
-            userLabelList.data.forEach {
-                labelList.add(LabelForSelect(it.Id,it.Label, labelType = LabelType.Person))
-            }
-            toastState.addToast("获取个人标签成功")
-        }catch (e:Exception){
-            toastState.addWarnToast("获取个人标签失败")
-        }
+        viewModel.getUserLabel()
     }
 
     Column (
@@ -135,9 +124,9 @@ fun ReleasePageScreen(
                 .padding(horizontal = 10.dp)
         ){ isPreview ->
             if (isPreview) {
-                PreviewContent(lazyListState, title, releasePageItems,labelList)
+                PreviewContent(lazyListState, title, releasePageItems,labelList.value)
             } else {
-                ReleaseContent(lazyListState, title, releasePageItems,labelList,toastState)
+                ReleaseContent(lazyListState, title, releasePageItems,labelList.value,toastState)
             }
         }
         Row (
@@ -259,22 +248,7 @@ fun ReleasePageScreen(
             }
             FloatingActionButton(
                 onClick = {
-                    scope.launch {
-                        try {
-                            labelList.filter {
-                                it.labelType == LabelType.Person
-                            }.forEach {
-                                labelList.remove(it)
-                            }
-                            val userLabelList = client.get("/user/label").body<UserLabel>()
-                            userLabelList.data.forEach {
-                                labelList.add(LabelForSelect(it.Id,it.Label, labelType = LabelType.Person))
-                            }
-                            toastState.addToast("刷新个人标签成功")
-                        }catch (e:Exception){
-                            toastState.addWarnToast("刷新个人标签失败")
-                        }
-                    }
+                    viewModel.getUserLabel()
                 },
                 modifier = Modifier
                     .padding(10.dp)
@@ -326,20 +300,7 @@ fun ReleasePageScreen(
             FloatingActionButton(
                 onClick = {
                     scope.launch {
-                        try {
-                            labelList.filter {
-                                it.labelType == LabelType.Person
-                            }.forEach {
-                                labelList.remove(it)
-                            }
-                            val userLabelList = client.get("/user/label").body<UserLabel>()
-                            userLabelList.data.forEach {
-                                labelList.add(LabelForSelect(it.Id,it.Label, labelType = LabelType.Person))
-                            }
-                            toastState.addToast("刷新个人标签成功")
-                        }catch (e:Exception){
-                            toastState.addWarnToast("刷新个人标签失败")
-                        }
+                        viewModel.getUserLabel()
                     }
                 },
                 modifier = Modifier
@@ -363,7 +324,7 @@ fun ReleasePageScreen(
             FloatingActionButton(
                 onClick = {
                     scope.launch {
-                        viewModel.newPost(releasePageItems.toList(),title.value,labelList.filter { it.isSelect.value }.toList().map { it.id })
+                        viewModel.newPost(releasePageItems.toList(),title.value,labelList.value.filter { it.isSelect.value }.toList().map { it.id })
                     }
                 },
                 modifier = Modifier
@@ -424,7 +385,7 @@ fun ReleaseContent(
     lazyListState : LazyListState,
     title:MutableState<String>,
     releasePageItems:SnapshotStateList<ReleasePageItem>,
-    labelList : SnapshotStateList<LabelForSelect>,
+    labelList : List<LabelForSelect>,
     toast: Toast
 ){
     val scope = rememberCoroutineScope()

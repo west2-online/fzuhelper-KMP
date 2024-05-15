@@ -30,7 +30,7 @@ fun PreviewContent(
     lazyListState: LazyListState,
     title: MutableState<String>,
     releasePageItems: SnapshotStateList<ReleasePageItem>,
-    labelList: SnapshotStateList<LabelForSelect>
+    labelList: List<LabelForSelect>
 ){
     LazyColumn(
         modifier = Modifier

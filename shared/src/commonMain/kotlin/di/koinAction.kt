@@ -402,7 +402,7 @@ fun appModule(
                 get<RootAction>().popManage()
             }
         }
-        if(BaseUrlConfig.isDebug){
+        if(false){
             val LogRequest = PipelinePhase("LogRequest")
             client.receivePipeline.insertPhaseAfter(HttpReceivePipeline.After,LogRequest)
             client.receivePipeline.intercept(LogRequest){

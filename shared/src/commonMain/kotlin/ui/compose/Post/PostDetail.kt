@@ -230,7 +230,7 @@ fun PostDetail(
                                         FlowRow {
                                             postById.labelData?.let { labelList ->
                                                 labelList.forEach {
-                                                    Label(it.Label)
+                                                    Label(it.Value)
                                                 }
                                             }
                                         }

@@ -1,5 +1,6 @@
 package repository
 
+import data.person.UserLabel.UserLabel
 import data.post.PostById.PostById
 import data.post.PostCommentNew.PostCommentNew
 import data.post.PostCommentPreview.PostCommentPreview
@@ -67,6 +68,13 @@ class PostRepository(private val client: HttpClient) {
                 )
             }.body<NewPostResponse>()
             emit(response)
+        }
+    }
+
+    suspend fun getUserLabel():Flow<UserLabel>{
+        return flow {
+            val userLabelList = client.get("/user/label").body<UserLabel>()
+            emit(userLabelList)
         }
     }
 
