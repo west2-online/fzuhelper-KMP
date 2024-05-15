@@ -62,10 +62,10 @@ import ui.compose.Post.PostDetailViewModel
 import ui.compose.Post.PostListViewModel
 import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Report.ReportViewModel
+import ui.compose.Setting.SettingViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.compose.Weather.WeatherViewModel
 import ui.root.RootAction
-
 import util.compose.Toast
 import util.encode.encode
 import viewModelDefinition
@@ -76,7 +76,8 @@ import kotlin.time.toDuration
 
 class ClassSchedule(
     private val classScheduleRepository: ClassScheduleRepository,
-    private val kVaultAction:UndergraduateKValueAction
+    private val kVaultAction:UndergraduateKValueAction,
+    val toast: Toast
 ){
     private var client:HttpClient? = null
     private var userSchoolId:String? = null
@@ -96,11 +97,12 @@ class ClassSchedule(
                 configureForPlatform()
             }
             classScheduleRepository.apply {
-//                val userName = kVaultAction.getUserName()
-//                val password = kVaultAction.getSchoolPassword()
-//                if(userName == null || password == null){
-//                    return@apply
-//                }
+                val userName = kVaultAction.schoolUserName.currentValue.value
+                val password = kVaultAction.schoolPassword.currentValue.value
+                if(userName == null || password == null){
+                    toast.addWarnToast("未登录,请到设置中登录")
+                    return@apply
+                }
                 var id = ""
                 var num = ""
                 newClient.apply {
@@ -112,8 +114,8 @@ class ClassSchedule(
                             parseVerifyCodeFormWest2(verifyCodeForParse)
                         }.flatMapConcat { verifyCode ->
                             loginStudent(
-                                user = "102101624",
-                                pass = "351172abc2015@",
+                                user = userName,
+                                pass = password,
                                 verifyCode = verifyCode
                             )
                         }
@@ -155,6 +157,73 @@ class ClassSchedule(
     }
     private fun upDateClientTime(){
         upDataTime = Clock.System.now()
+    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun verifyYourAccount(
+        userName:String,
+        password:String,
+        failAction :suspend (VerifyYourAccountError)->Unit,
+        success:suspend  ()->Unit
+    ){
+        val newClient = HttpClient() {
+            install(ContentNegotiation) {
+                json()
+            }
+            install(HttpCookies){}
+            install(HttpRedirect) {
+                checkHttpMethod = false
+            }
+            configureForPlatform()
+        }
+        classScheduleRepository.apply {
+            var id = ""
+            var num = ""
+            newClient.apply {
+                getVerifyCode()
+                    .map {
+                        it.encodeBase64()
+                    }
+                    .catch {
+                        failAction.invoke(VerifyYourAccountError.ValidationFailed)
+                    }
+                    .flatMapConcat { verifyCodeForParse ->
+                        parseVerifyCodeFormWest2(verifyCodeForParse)
+                    }.flatMapConcat { verifyCode ->
+                        loginStudent(
+                            user = userName,
+                            pass = password,
+                            verifyCode = verifyCode
+                        )
+                    }
+                    .flatMapConcat {
+                        val url = it.call.request.url.toString()
+                        id = url.split("id=")[1].split("&")[0]
+                        num = url.split("num=")[1].split("&")[0]
+
+                        val context = it.readBytes().decodeToString()
+                        val token = context.split("var token = \"")[1].split("\";")[0]
+                        loginByToken(token)
+                    }
+                    .flatMapConcat {
+                        loginCheckXs(
+                            id = id,
+                            num = num
+                        )
+                    }
+                    .retry(3)
+                    .catch {
+                        failAction.invoke(VerifyYourAccountError.LoginFailed)
+                    }
+                    .collect{
+                        success.invoke()
+                    }
+            }
+        }
+    }
+
+    enum class VerifyYourAccountError{
+        ValidationFailed,
+        LoginFailed
     }
 }
 class LoginClient(
@@ -277,7 +346,7 @@ fun appModule(
         UndergraduateKValueAction(get())
     }
     single {
-        ClassSchedule(get(),get())
+        ClassSchedule(get(),get(),get())
     }
     single {
         systemAction
@@ -456,6 +525,9 @@ fun Module.viewModel(){
     }
     single {
         ClassScheduleViewModel(get(),get(),get(),get(),get())
+    }
+    single {
+        SettingViewModel(get(),get())
     }
     viewModelDefinition {
         ManageViewModel(get(),get())

@@ -151,7 +151,7 @@ fun RootUi(
                             navigate.replaceAll(MainVoyagerScreen())
                         }
                         override fun navigateFormAnywhereToRelease(initLabelList: List<String>){
-                            navigate.push(ReleaseRouteVoyagerScreen(initLabelList))
+                            navigate.push(ReleaseRouteVoyagerScreen(listOf()))
                         }
 
                         override fun navigateFormPostToReport(type: ReportType) {

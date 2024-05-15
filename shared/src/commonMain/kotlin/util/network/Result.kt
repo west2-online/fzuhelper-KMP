@@ -58,8 +58,8 @@ interface NetworkResult<T> {
 
 }
 
-fun <T>networkError(rawError: String,error: String) = NetworkResult.Error<T>(Throwable(rawError),Throwable(error))
-fun <T>networkError(rawError: Throwable,error: String) = NetworkResult.Error<T>(Throwable(rawError),Throwable(error))
+fun <T>networkError(errorForShow: String, error: String) = NetworkResult.Error<T>(Throwable(errorForShow),Throwable(error))
+fun <T>networkError(errorForShow: Throwable, error: String) = NetworkResult.Error<T>(Throwable(errorForShow),Throwable(error))
 fun networkSuccess(success: String) = NetworkResult.Success<String>(success)
 
 
