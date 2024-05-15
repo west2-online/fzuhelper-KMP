@@ -173,6 +173,15 @@ class LoginClient(
             checkHttpMethod = false
         }
         configure()
+    }.apply {
+        val encodePhase = PipelinePhase("Encode")
+        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
+        this.requestPipeline.intercept(encodePhase){
+            val time = Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = Random.nextInt(10..99)
+            val randomNumber2 = Random.nextInt(0..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
+        }
     }
 )
 
@@ -192,6 +201,15 @@ class SchoolClient(
             checkHttpMethod = false
         }
         configure()
+    }.apply {
+        val encodePhase = PipelinePhase("Encode")
+        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
+        this.requestPipeline.intercept(encodePhase){
+            val time = Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = Random.nextInt(10..99)
+            val randomNumber2 = Random.nextInt(0..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
+        }
     }
 )
 class ShareClient(
@@ -204,6 +222,15 @@ class ShareClient(
             checkHttpMethod = false
         }
         configure()
+    }.apply {
+        val encodePhase = PipelinePhase("Encode")
+        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
+        this.requestPipeline.intercept(encodePhase){
+            val time = Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = Random.nextInt(10..99)
+            val randomNumber2 = Random.nextInt(0..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
+        }
     }
 )
 
@@ -217,6 +244,15 @@ class WebClient(
             checkHttpMethod = false
         }
         configure()
+    }.apply {
+        val encodePhase = PipelinePhase("Encode")
+        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
+        this.requestPipeline.intercept(encodePhase){
+            val time = Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = Random.nextInt(10..99)
+            val randomNumber2 = Random.nextInt(0..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
+        }
     }
 )
 

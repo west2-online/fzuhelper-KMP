@@ -25,6 +25,7 @@ import ui.compose.Release.ReleaseRouteVoyagerScreen
 import ui.compose.Report.ReportType
 import ui.compose.Report.ReportVoyagerScreen
 import ui.compose.Setting.SettingVoyagerScreen
+import ui.compose.SplashPage.SplashPageVoyagerScreen
 import ui.compose.Weather.WeatherVoyagerScreen
 import ui.compose.Webview.WebViewVoyagerScreen
 import util.compose.EasyToast
@@ -104,7 +105,7 @@ fun tokenJump(
 fun RootUi(
     systemAction: SystemAction
 ){
-    Navigator(MainVoyagerScreen()){ navigate ->
+    Navigator(SplashPageVoyagerScreen()){ navigate ->
         KoinApplication(application = {
             modules(
                 appModule(

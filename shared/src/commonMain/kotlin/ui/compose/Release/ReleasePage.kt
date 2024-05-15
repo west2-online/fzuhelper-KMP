@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import data.person.UserLabel.UserLabel
+import data.share.Label
 import dev.icerock.moko.resources.compose.painterResource
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -78,7 +79,7 @@ import kotlin.jvm.Transient
 fun ReleasePageScreen(
     modifier: Modifier = Modifier,
     viewModel: ReleasePageViewModel = koinInject(),
-    initLabel: List<String> = listOf()
+    initLabel: List<Label> = listOf()
 ){
     val toastState = rememberToastState()
     val releasePageItems = remember { mutableStateListOf<ReleasePageItem>() }
@@ -100,10 +101,10 @@ fun ReleasePageScreen(
     )
     val client = koinInject<HttpClient>()
     LaunchedEffect(Unit){
-        labelList.add(LabelForSelect("学习"))
-        labelList.add(LabelForSelect("生活"))
+        labelList.add(LabelForSelect(0,"学习"))
+        labelList.add(LabelForSelect(1,"生活"))
         initLabel.forEach {
-            labelList.add(LabelForSelect(it,false,LabelType.Init))
+            labelList.add(LabelForSelect(it.Id,it.Label,false,LabelType.Init))
         }
     }
     LaunchedEffect(Unit){
@@ -115,7 +116,7 @@ fun ReleasePageScreen(
             }
             val userLabelList = client.get("/user/label").body<UserLabel>()
             userLabelList.data.forEach {
-                labelList.add(LabelForSelect(it.Label, labelType = LabelType.Person))
+                labelList.add(LabelForSelect(it.Id,it.Label, labelType = LabelType.Person))
             }
             toastState.addToast("获取个人标签成功")
         }catch (e:Exception){
@@ -267,7 +268,7 @@ fun ReleasePageScreen(
                             }
                             val userLabelList = client.get("/user/label").body<UserLabel>()
                             userLabelList.data.forEach {
-                                labelList.add(LabelForSelect(it.Label, labelType = LabelType.Person))
+                                labelList.add(LabelForSelect(it.Id,it.Label, labelType = LabelType.Person))
                             }
                             toastState.addToast("刷新个人标签成功")
                         }catch (e:Exception){
@@ -333,7 +334,7 @@ fun ReleasePageScreen(
                             }
                             val userLabelList = client.get("/user/label").body<UserLabel>()
                             userLabelList.data.forEach {
-                                labelList.add(LabelForSelect(it.Label, labelType = LabelType.Person))
+                                labelList.add(LabelForSelect(it.Id,it.Label, labelType = LabelType.Person))
                             }
                             toastState.addToast("刷新个人标签成功")
                         }catch (e:Exception){
@@ -362,7 +363,7 @@ fun ReleasePageScreen(
             FloatingActionButton(
                 onClick = {
                     scope.launch {
-                        viewModel.newPost(releasePageItems.toList(),title.value,labelList.filter { it.isSelect.value }.toList().map { it.label })
+                        viewModel.newPost(releasePageItems.toList(),title.value,labelList.filter { it.isSelect.value }.toList().map { it.id })
                     }
                 },
                 modifier = Modifier
@@ -601,7 +602,7 @@ fun ReleaseContent(
 
 
 class ReleaseRouteVoyagerScreen(
-    private val initLabel : List<String> = listOf(),
+    private val initLabel : List<Label> = listOf(),
     @Transient
     val parentPaddingControl : ParentPaddingControl = defaultSelfPaddingControl()
 ):Screen{
@@ -635,6 +636,7 @@ fun SnapshotStateList<ReleasePageItem>.downOrder(index:Int){
 }
 
 class LabelForSelect(
+    val id:Int,
     val label : String,
     private val canChange :Boolean = true,
     val labelType: LabelType = LabelType.Official

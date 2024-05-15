@@ -28,7 +28,7 @@ class PostRepository(private val client: HttpClient) {
     fun newPost(
         releasePageItemList: List<ReleasePageItem>,
         title: String,
-        labelList: List<String>
+        labelList: List<Int>
     ): Flow<NewPostResponse> {
         return flow {
             val response = client.post("/post/new") {
