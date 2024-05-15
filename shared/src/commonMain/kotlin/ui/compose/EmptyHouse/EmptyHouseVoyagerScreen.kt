@@ -41,11 +41,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,6 +56,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import asImageBitmap
 import cafe.adriel.voyager.core.screen.Screen
+import config.CurrentZone
 import configureForPlatform
 import data.emptyRoom.UnAvailable
 import io.ktor.client.HttpClient
@@ -68,17 +65,10 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.readBytes
 import io.ktor.http.Cookie
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
-import kotlinx.datetime.format
+import kotlinx.datetime.*
+import kotlinx.datetime.Instant.Companion.fromEpochMilliseconds
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.todayIn
 import org.koin.compose.koinInject
 import ui.compose.Test.CustomCookiesStorage
 import util.compose.EasyToast
@@ -90,6 +80,8 @@ import util.network.CollectWithContentInBox
 import util.network.NetworkResult
 import util.network.logicWithTypeWithLimit
 import kotlin.jvm.Transient
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class EmptyHouseVoyagerScreen(
     @Transient
@@ -146,7 +138,18 @@ class EmptyHouseVoyagerScreen(
         }
         val scaffoldState = rememberScaffoldState()
         val date = rememberDatePickerState(
-            initialSelectedDateMillis = Clock.System.todayIn(TimeZone.UTC).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+            initialSelectedDateMillis = Clock.System.todayIn(TimeZone.UTC).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
+            selectableDates = object : SelectableDates {
+                // Blocks Sunday and Saturday from being selected.
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    return fromEpochMilliseconds(utcTimeMillis).toLocalDateTime(CurrentZone).dayOfYear >= Clock.System.now().toLocalDateTime(CurrentZone).dayOfYear && fromEpochMilliseconds(utcTimeMillis).toLocalDateTime(CurrentZone).dayOfYear < Clock.System.now().toLocalDateTime(CurrentZone).dayOfYear + 5
+                }
+
+                // Allow selecting dates from year 2023 forward.
+                override fun isSelectableYear(year: Int): Boolean {
+                    return year == Clock.System.now().toLocalDateTime(CurrentZone).year
+                }
+            }
         )
         val selectDate = remember {
             derivedStateOf {
@@ -333,11 +336,11 @@ class EmptyHouseVoyagerScreen(
                                   title = {
                                       Text("选择日期", modifier = Modifier.padding(start = 20.dp))
                                   },
-                                  dateValidator = {
-                                      val currentDate: LocalDate = Clock.System.todayIn(TimeZone.UTC)
-                                      val zeroTime = currentDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
-                                      return@DatePicker zeroTime <= it
-                                  },
+//                                  dateValidator = {
+//                                      val currentDate: LocalDate = Clock.System.todayIn(TimeZone.UTC)
+//                                      val zeroTime = currentDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+//                                      return@DatePicker zeroTime <= it
+//                                  },
                                   showModeToggle = false
                               )
                           }
