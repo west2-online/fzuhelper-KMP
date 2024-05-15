@@ -48,7 +48,7 @@ class PostRepository(private val client: HttpClient) {
                                         )
                                     }
                                     is ReleasePageItem.TextItem -> {
-                                        append( "text","{\"order\":${index},\"value\":\"${item.text}\"}",
+                                        append( "text","{\"order\":${index},\"value\":\"${item.text.value}\"}",
                                             Headers.build {
                                                 append("Content-Type", "text/plain")
                                             })
