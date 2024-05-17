@@ -8,9 +8,21 @@ import io.ktor.http.Parameters
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
+/**
+ * 举报的仓库层
+ * @property client HttpClient
+ * @constructor
+ */
 class ReportRepository (
     private val client: HttpClient
 ){
+    /**
+     * 举报评论
+     * @param commentId String
+     * @param typeId Int
+     * @param postId String
+     * @return Flow<ReportResponse>
+     */
     fun reportComment(commentId:String,typeId:Int,postId:String): Flow<ReportResponse> {
         return flow {
             val response = client.submitForm(
@@ -25,6 +37,12 @@ class ReportRepository (
         }
     }
 
+    /**
+     * 举报帖子
+     * @param typeId Int
+     * @param postId String
+     * @return Flow<ReportResponse>
+     */
     fun reportPost(typeId:Int,postId:String): Flow<ReportResponse> {
         return flow {
             val response = client.submitForm(
