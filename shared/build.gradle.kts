@@ -193,12 +193,13 @@ kotlin {
             dependsOn(commonMain)
         }
     }
+    task("testClasses")
 }
 
 
 android {
     compileSdk = (findProperty("android.compileSdk") as String).toInt()
-    namespace = "com.myapplication.common"
+    namespace = "com.fzu.futalk.common"
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
