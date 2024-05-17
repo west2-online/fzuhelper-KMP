@@ -7,6 +7,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import util.flow.launchInIO
 
+/**
+ * 键值对的保存String
+ * @property key String 保存的key
+ * @property data MutableStateFlow<String?> 值，用于更新，更新此自动会自动触发值保存到kValue
+ * @property kValue KVault 底层的键值对对象
+ * @property currentValue StateFlow<String?> 用于监听值
+ * @constructor
+ */
 class KValueStringDate (
     val key: String,
     private val data: MutableStateFlow<String?>,
@@ -30,6 +38,14 @@ class KValueStringDate (
     }
 }
 
+/**
+ * 键值对的保存Int
+ * @property key String 保存的key
+ * @property data MutableStateFlow<String?> 值，用于更新，更新此自动会自动触发值保存到kValue
+ * @property kValue KVault 底层的键值对对象
+ * @property currentValue StateFlow<String?> 用于监听值
+ * @constructor
+ */
 class KValueIntDate (
     val key: String,
     private val data: MutableStateFlow<Int?>,
