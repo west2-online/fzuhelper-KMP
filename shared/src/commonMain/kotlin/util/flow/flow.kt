@@ -9,8 +9,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
 
+/**
+ * 对flow的catch函数进行包装，在isDebug为true的情况下，用label输出日志
+ * @receiver Flow<T>
+ * @param label String
+ * @param action [@kotlin.ExtensionFunctionType] SuspendFunction3<FlowCollector<T>, [@kotlin.ParameterName] String, Throwable, Unit>?
+ * @return Flow<T>
+ */
 suspend fun <T>Flow<T>.catchWithMassage (
     label: String = "",
     action:  (suspend kotlinx.coroutines.flow.FlowCollector<T>.(label:String,kotlin.Throwable) -> kotlin.Unit)? = null,
@@ -23,6 +29,12 @@ suspend fun <T>Flow<T>.catchWithMassage (
     }
 }
 
+/**
+ * 对flow的collect进行包装，在isDebug为true的情况下，用label输出结果
+ * @receiver Flow<T>
+ * @param label String
+ * @param action SuspendFunction2<[@kotlin.ParameterName] String, [@kotlin.ParameterName] T, Unit>
+ */
 suspend fun <T>Flow<T>.collectWithMassage (
     label: String = "",
     action: suspend (label: String,data : T)->Unit,
@@ -35,6 +47,13 @@ suspend fun <T>Flow<T>.collectWithMassage (
     }
 }
 
+/**
+ * 集合 collectWithMassage 和 catchWithMassage，共享同一个label
+ * @receiver Flow<T>
+ * @param label String
+ * @param catchAction [@kotlin.ExtensionFunctionType] SuspendFunction3<FlowCollector<T>, [@kotlin.ParameterName] String, [@kotlin.ParameterName] Throwable, Unit>
+ * @param collectAction SuspendFunction2<[@kotlin.ParameterName] String, [@kotlin.ParameterName] T, Unit>
+ */
 suspend fun <T>Flow<T>.actionWithLabel(
     label : String,
     catchAction: suspend kotlinx.coroutines.flow.FlowCollector<T>.(label:String,error:kotlin.Throwable) -> kotlin.Unit,
@@ -49,22 +68,32 @@ suspend fun <T>Flow<T>.actionWithLabel(
     )
 }
 
+/**
+ * 开启一个运行在 CoroutineStart.DEFAULT 的协程
+ * @receiver CoroutineScope
+ * @param start CoroutineStart
+ * @param block [@kotlin.ExtensionFunctionType] SuspendFunction1<CoroutineScope, Unit>
+ */
 fun CoroutineScope.launchInDefault(
-    context: CoroutineContext = Dispatchers.Default,
     start: CoroutineStart = CoroutineStart.DEFAULT,
     block: suspend CoroutineScope.() -> Unit
 ){
     this.launch (
-        context, start, block
+        Dispatchers.Default, start, block
     )
 }
 
+/**
+ * 开启一个运行在 CoroutineStart.IO 的协程
+ * @receiver CoroutineScope
+ * @param start CoroutineStart
+ * @param block [@kotlin.ExtensionFunctionType] SuspendFunction1<CoroutineScope, Unit>
+ */
 fun CoroutineScope.launchInIO(
-    context: CoroutineContext = Dispatchers.IO,
     start: CoroutineStart = CoroutineStart.DEFAULT,
     block: suspend CoroutineScope.() -> Unit
 ){
     this.launch (
-        context, start, block
+        Dispatchers.IO, start, block
     )
 }
