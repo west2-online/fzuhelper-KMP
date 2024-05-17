@@ -19,7 +19,6 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.request.HttpRequestPipeline
 import io.ktor.client.statement.HttpReceivePipeline
 import io.ktor.client.statement.readBytes
 import io.ktor.client.statement.request
@@ -69,7 +68,6 @@ import ui.root.RootAction
 import util.compose.Toast
 import util.encode.encode
 import viewModelDefinition
-import kotlin.random.Random
 import kotlin.random.nextInt
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -242,16 +240,7 @@ class LoginClient(
             checkHttpMethod = false
         }
         configure()
-    }.apply {
-        val encodePhase = PipelinePhase("Encode")
-        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
-        this.requestPipeline.intercept(encodePhase){
-            val time = Clock.System.now().toEpochMilliseconds()/1000
-            val randomNumber1 = Random.nextInt(10..99)
-            val randomNumber2 = Random.nextInt(0..9)
-            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
-        }
-    }
+    }.encodeAction()
 )
 
 class SchoolClient(
@@ -270,16 +259,7 @@ class SchoolClient(
             checkHttpMethod = false
         }
         configure()
-    }.apply {
-        val encodePhase = PipelinePhase("Encode")
-        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
-        this.requestPipeline.intercept(encodePhase){
-            val time = Clock.System.now().toEpochMilliseconds()/1000
-            val randomNumber1 = Random.nextInt(10..99)
-            val randomNumber2 = Random.nextInt(0..9)
-            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
-        }
-    }
+    }.encodeAction()
 )
 class ShareClient(
     val client : HttpClient = HttpClient{
@@ -291,16 +271,7 @@ class ShareClient(
             checkHttpMethod = false
         }
         configure()
-    }.apply {
-        val encodePhase = PipelinePhase("Encode")
-        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
-        this.requestPipeline.intercept(encodePhase){
-            val time = Clock.System.now().toEpochMilliseconds()/1000
-            val randomNumber1 = Random.nextInt(10..99)
-            val randomNumber2 = Random.nextInt(0..9)
-            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
-        }
-    }
+    }.encodeAction()
 )
 
 class WebClient(
@@ -313,16 +284,7 @@ class WebClient(
             checkHttpMethod = false
         }
         configure()
-    }.apply {
-        val encodePhase = PipelinePhase("Encode")
-        this.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
-        this.requestPipeline.intercept(encodePhase){
-            val time = Clock.System.now().toEpochMilliseconds()/1000
-            val randomNumber1 = Random.nextInt(10..99)
-            val randomNumber2 = Random.nextInt(0..9)
-            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
-        }
-    }
+    }.encodeAction()
 )
 
 
@@ -378,14 +340,6 @@ fun appModule(
             }
             configure()
         }
-        val encodePhase = PipelinePhase("Encode")
-        client.requestPipeline.insertPhaseBefore(HttpRequestPipeline.Send,encodePhase)
-        client.requestPipeline.intercept(encodePhase){
-            val time = Clock.System.now().toEpochMilliseconds()/1000
-            val randomNumber1 = Random.nextInt(10..99)
-            val randomNumber2 = Random.nextInt(0..9)
-            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
-        }
         val authPhase = PipelinePhase("Auth")
         client.receivePipeline.insertPhaseBefore(HttpReceivePipeline.Before,authPhase)
         client.receivePipeline.intercept(authPhase){
@@ -423,7 +377,7 @@ fun appModule(
                 }
             }
         }
-        return@single client
+        return@single client.encodeAction()
     }
     repositoryList()
     viewModel()
@@ -553,4 +507,17 @@ fun Module.viewModel(){
 }
 fun HttpClientConfig<*>.configure() {
     configureForPlatform()
+}
+
+fun HttpClient.encodeAction():HttpClient{
+    return this.apply {
+        val encodePhase = PipelinePhase("Encode")
+        this.requestPipeline.insertPhaseBefore(io.ktor.client.request.HttpRequestPipeline.Send,encodePhase)
+        this.requestPipeline.intercept(encodePhase){
+            val time = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()/1000
+            val randomNumber1 = kotlin.random.Random.nextInt(10..99)
+            val randomNumber2 = kotlin.random.Random.nextInt(1..9)
+            this.context.headers.append("Encode", "${randomNumber1}${randomNumber2}_${encode(randomNumber1,randomNumber2,time)}")
+        }
+    }
 }
