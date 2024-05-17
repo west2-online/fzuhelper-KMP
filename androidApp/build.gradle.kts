@@ -40,6 +40,22 @@ android {
     kotlin {
         jvmToolchain(17)
     }
+    signingConfigs {
+        create("release") {
+            storeFile = file("futalk.jks")
+            storePassword = "futalk"
+            keyAlias = "futalk"
+            keyPassword = "futalk"
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("release")
+        }
+        release {
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
 //    buildTypes {
 //        debug {
 //            initWith debug
