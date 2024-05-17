@@ -64,7 +64,7 @@ import util.compose.Toast
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import util.compose.rememberToastState
-import util.network.CollectWithContent
+import util.network.CollectWithContentInBox
 import util.network.NetworkResult
 import util.network.toEasyTime
 import util.network.toast
@@ -96,12 +96,11 @@ fun FeedbackDetail(
     val comment = remember {
         mutableStateOf("")
     }
-    detailState.CollectWithContent(
+    detailState.CollectWithContentInBox(
         success = {
             Box(
-                modifier = modifier
+                modifier = Modifier
             ){
-
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -245,7 +244,8 @@ fun FeedbackDetail(
         },
         error = {
             Text("加载失败")
-        }
+        },
+        modifier = modifier
     )
 }
 

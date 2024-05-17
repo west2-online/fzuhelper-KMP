@@ -50,7 +50,9 @@ fun FeedbackPost(
         )
     }
 
-    Column {
+    Column (
+        modifier = modifier
+    ){
         val content = remember {
             mutableStateOf("")
         }
