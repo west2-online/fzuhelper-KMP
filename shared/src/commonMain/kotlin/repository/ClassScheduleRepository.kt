@@ -21,10 +21,21 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import util.math.parseInt
 
+/**
+ * 有关课程的相关api
+ * @property charSet Charset 设置教务处常用的编码方式
+ */
 class ClassScheduleRepository {
-    val charSet = Charset.forName("GB2312")
+    private val charSet = Charset.forName("GB2312")
 
-    //登录第一步
+    /**
+     * 登录第一步
+     * @receiver HttpClient
+     * @param user String 账号
+     * @param pass String 密码
+     * @param verifyCode String 验证码
+     * @return Flow<HttpResponse>
+     */
     suspend fun HttpClient.loginStudent(
         user: String,
         pass: String,
@@ -48,7 +59,12 @@ class ClassScheduleRepository {
         }
     }
 
-    //识别验证码
+    /**
+     * 利用西二在线的服务器识别验证码
+     * @receiver HttpClient
+     * @param verifyCodeForParse String
+     * @return Flow<String>
+     */
     suspend fun HttpClient.parseVerifyCodeFormWest2(
         verifyCodeForParse:String
     ): Flow<String> {
@@ -63,7 +79,11 @@ class ClassScheduleRepository {
         }
     }
 
-    //获取验证码
+    /**
+     * 从教务处获取验证码
+     * @receiver HttpClient
+     * @return Flow<ByteArray>
+     */
     suspend fun HttpClient.getVerifyCode():Flow<ByteArray>{
         return flow {
             val verifyCodeForParse = this@getVerifyCode.get("https://jwcjwxt1.fzu.edu.cn/plus/verifycode.asp").readBytes()
@@ -71,7 +91,12 @@ class ClassScheduleRepository {
         }
     }
 
-
+    /**
+     * 获取课程的html文件
+     * @receiver HttpClient
+     * @param id String 学生id 真正的
+     * @return Flow<String>
+     */
     suspend fun HttpClient.getExamStateHTML(id: String): Flow<String> {
         return flow {
             val data = this@getExamStateHTML.get("https://jwcjwxt2.fzu.edu.cn:81/student/xkjg/examination/exam_list.aspx"){
@@ -83,7 +108,12 @@ class ClassScheduleRepository {
         }
     }
 
-    //用token登录 登录第二步
+    /**
+     * 用token登录教务处
+     * @receiver HttpClient
+     * @param token String
+     * @return Flow<JwchTokenLoginResponseDto>
+     */
     suspend fun HttpClient.loginByToken(token: String): Flow<JwchTokenLoginResponseDto> {
         return flow {
             val response = this@loginByToken.submitForm(
@@ -100,7 +130,13 @@ class ClassScheduleRepository {
         }
     }
 
-    //登录第三步
+    /**
+     * 通过该请求加载cookie
+     * @receiver HttpClient
+     * @param id String 学生id 临时的
+     * @param num String
+     * @return Flow<HttpResponse>
+     */
     suspend fun HttpClient.loginCheckXs(id: String,num:String): Flow<HttpResponse> {
         return flow {
             val response = this@loginCheckXs.get("https://jwcjwxt2.fzu.edu.cn:81/loginchk_xs.aspx") {
@@ -119,18 +155,15 @@ class ClassScheduleRepository {
         }
     }
 
-    suspend fun HttpClient.getCourseState(id: String):Flow<HttpResponse>{
-        return flow {
-            val response = this@getCourseState.get ("${JWCH_BASE_URL}/student/xkjg/wdxk/xkjg_list.aspx"){
-                url{
-                    parameters.append("id",id)
-                }
-            }
-            emit(response)
-        }
-    }
-
-    //获取课程
+    /**
+     * 获取课程的html
+     * @receiver HttpClient
+     * @param id String
+     * @param xuenian String
+     * @param event String
+     * @param state String
+     * @return Flow<HttpResponse>
+     */
     private suspend fun HttpClient.getCourses(
         id: String,
         xuenian: String,
@@ -155,13 +188,28 @@ class ClassScheduleRepository {
         }
     }
 
-    suspend fun HttpClient.getCourses(xq:String,stateHTML:String):Flow<Map<String,String>>{
+    /**
+     * 解析课程html
+     * @param xq String
+     * @param stateHTML String 需要解析的html
+     * @return Flow<Map<String,String>>
+     */
+    suspend fun getCourses(xq: String, stateHTML: String):Flow<Map<String,String>>{
         return flow {
             val viewStateMap = parseCourseStateHTML(stateHTML)
             emit(viewStateMap)
         }
     }
 
+    /**
+     * 获取课程的html
+     * @receiver HttpClient
+     * @param viewStateMap Map<String, String> 需要发送的参数
+     * @param xq String
+     * @param onGetOptions Function1<List<String>, Unit> 得到可选学期后的操作
+     * @param id String
+     * @return Flow<List<CourseBeanForTemp>>
+     */
     suspend fun HttpClient.getCoursesHTML(
         viewStateMap:Map<String,String>,
         xq: String,onGetOptions : (List<String>)->Unit = {},
@@ -178,7 +226,12 @@ class ClassScheduleRepository {
         }
     }
 
-
+    /**
+     *
+     * @receiver HttpClient
+     * @param id String
+     * @return Flow<String>
+     */
     suspend fun HttpClient.getCourseStateHTML(
         id : String
     ): Flow<String> {
@@ -192,7 +245,11 @@ class ClassScheduleRepository {
         }
     }
 
-    //获取当前学期信息
+    /**
+     * 获取当前学期，学年，当前周的信息
+     * @receiver HttpClient
+     * @return Flow<WeekData>
+     */
     suspend fun HttpClient.getWeek():Flow<WeekData>{
         return flow {
             val response = this@getWeek.get("https://jwcjwxt2.fzu.edu.cn:82/week.asp").bodyAsText(Charset.forName("GB2312"))
@@ -202,7 +259,12 @@ class ClassScheduleRepository {
         }
     }
 
-    //获取某个学期的起始日期
+    /**
+     * 获取每个学期的起始日期，包括年月日
+     * @receiver HttpClient
+     * @param xq String
+     * @return Flow<String> 返回html
+     */
     fun HttpClient.getSchoolCalendar(xq: String): Flow<String> {
         return flow {
             val response = this@getSchoolCalendar.get("$SCHOOL_CALENDAR_URL/xl.asp"){
@@ -214,6 +276,11 @@ class ClassScheduleRepository {
         }
     }
 
+    /**
+     * 解析 getSchoolCalendar 得到的html
+     * @param result String
+     * @return WeekData
+     */
     private fun parseWeekHTML(result: String): WeekData {
         val nowWeek = result.split("var week = \"")[1].split("\";")[0].toInt()
         val curXuenian = result.split("var xq = \"")[1].split("\";")[0].toInt()
@@ -225,6 +292,14 @@ class ClassScheduleRepository {
         )
     }
 
+
+    /**
+     * 解析获取课程的html
+     * @param xueNian String
+     * @param result String
+     * @param onGetOptions Function1<List<String>, Unit>
+     * @return List<CourseBeanForTemp> 返回课程list
+     */
     private fun parseCoursesHTML(
         xueNian: String,
         result: String,
@@ -373,7 +448,11 @@ class ClassScheduleRepository {
         return tempCourses
     }
 
-
+    /**
+     * 解析课程的初始页，得到接下来需要的参数
+     * @param result String
+     * @return Map<String, String>
+     */
     private fun parseCourseStateHTML(result: String): Map<String, String> {
         val document = Ksoup.parse(result)
         //设置常用参数
@@ -386,12 +465,22 @@ class ClassScheduleRepository {
     }
 }
 
-
+/**
+ * 当前学期的信息
+ * @property nowWeek Int
+ * @property curXuenian Int
+ * @property curXueqi Int
+ * @constructor
+ */
 data class WeekData(
     val nowWeek : Int,
     val curXuenian: Int,
     val curXueqi: Int
 ){
+    /**
+     * 获取根据计算得到的学期信息 202301
+     * @return String
+     */
     fun getXueQi():String{
         return "${this.curXueqi}0${this.curXuenian}"
     }
@@ -408,7 +497,29 @@ data class WeekData(
     }
 }
 
-
+/**
+ * 解析出的课程信息
+ * @property courseId Long 数据库自生成id
+ * @property kcName String 课程名
+ * @property kcLocation String 课程位置
+ * @property kcStartTime Int
+ * @property kcEndTime Int
+ * @property kcStartWeek Int 课程开始周
+ * @property kcEndWeek Int 课程结束周
+ * @property kcIsDouble Boolean 是不是双周
+ * @property kcIsSingle Boolean 是不是单周
+ * @property kcWeekend Int 在星期几
+ * @property kcYear Int
+ * @property kcXuenian Int
+ * @property kcNote String 课程备注
+ * @property kcBackgroundId Int futalk分配给课程的颜色
+ * @property shoukeJihua String 课程计划
+ * @property jiaoxueDagang String 教学大纲
+ * @property teacher String 老师
+ * @property priority Long
+ * @property type Int 类型
+ * @constructor
+ */
 data class CourseBeanForTemp(
     var courseId: Long = 0,
     var kcName: String = "",
@@ -431,7 +542,13 @@ data class CourseBeanForTemp(
     var type: Int = 0
 )
 
-
+/**
+ * 用于登录序列化的类
+ * @property code Int
+ * @property info String
+ * @property data Data
+ * @constructor
+ */
 @Serializable
 data class JwchTokenLoginResponseDto(
     var code: Int, // 200

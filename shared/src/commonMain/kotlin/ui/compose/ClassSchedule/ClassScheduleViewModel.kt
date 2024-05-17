@@ -229,7 +229,7 @@ class ClassScheduleViewModel (
                     .collect { courseData ->
                         val weekData = courseData.weekData
                         val currentXq = "${weekData.curXueqi}0${weekData.curXuenian}"
-                        getCourses( currentXq,courseData.stateHTML)
+                        getCourses(currentXq, courseData.stateHTML)
                             .flatMapConcat {
                                 getCoursesHTML(
                                     it,
@@ -269,7 +269,7 @@ class ClassScheduleViewModel (
                             id
                         )
                             .flatMapConcat { stateHtml ->
-                                getCourses(xq,stateHtml)
+                                getCourses(xq, stateHtml)
                             }
                             .flatMapConcat {
                                 this@getOtherCourseFromNetwork.getCoursesHTML(
