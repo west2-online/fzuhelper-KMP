@@ -301,7 +301,7 @@ class ManageViewModel(
     fun getUserDataByEmail(email:String){
         viewModelScope.launchInDefault {
             _userByEmail.logicIfNotLoading {
-                repository.getEmailByEmail(email)
+                repository.getUserByEmail(email)
                     .actionWithLabel(
                         label = "getUserDataByEmail/getEmailByEmail",
                         catchAction = { label,error ->
