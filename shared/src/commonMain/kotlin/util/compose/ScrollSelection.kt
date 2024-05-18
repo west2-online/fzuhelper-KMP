@@ -32,7 +32,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
@@ -46,7 +45,19 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalTextApi::class)
+
+/**
+ * 滑动选择ui
+ * @param modifier Modifier
+ * @param textList List<String> 可选的text列表
+ * @param textStyle TextStyle text的渲染style
+ * @param padding PaddingValues
+ * @param state LazyListState 可监听的lazyState
+ * @param unselectedScale Float 未被选中时的缩放大小
+ * @param selectedScale Float 选中时的缩放大小
+ * @param onItemSelected Function2<[@kotlin.ParameterName] Int, [@kotlin.ParameterName] String, Unit> 选中后的回调
+ * @param backgroundContent [@androidx.compose.runtime.Composable] [@kotlin.ExtensionFunctionType] Function1<BoxScope, Unit>? 背景颜色
+ */
 @Composable
 fun ScrollSelection(
     modifier: Modifier = Modifier,
