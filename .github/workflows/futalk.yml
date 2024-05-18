@@ -1,5 +1,5 @@
 name: 文档部署🚀
-run-name: ${{ github.actor }} 正在部署官方网站
+run-name: ${{ github.actor }} 正在部署文档
 on: [push]
 permissions:
   contents: write
@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
-          java-version: '21'
+          java-version: '17'
           name: 设置java版本
       - name: 查看环境
         run: pwd
@@ -22,11 +22,11 @@ jobs:
         run: chmod +x gradlew
       - name: 验证gradle环境
         run : sudo ./gradlew --version
-      - name: 生成部署文件
+      - name: 生成文档
         run: ./gradlew :shared:dokkaHtml
       - name: 验证文件
         run: tree shared/build/dokka/html
-      - name: 部署 🚀
+      - name: 部署文档 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: shared/build/dokka/html
