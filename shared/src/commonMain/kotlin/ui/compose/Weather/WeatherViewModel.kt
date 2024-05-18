@@ -13,6 +13,13 @@ import util.network.logicIfNotLoading
 import util.network.networkErrorWithLog
 import util.network.resetWithLog
 
+/**
+ * 天气的逻辑
+ * @property repository WeatherRepository
+ * @property _weatherDataOfFuZhou CMutableStateFlow<NetworkResult<WeatherData>>
+ * @property weatherDataOfFuZhou StateFlow<NetworkResult<WeatherData>>
+ * @constructor
+ */
 class WeatherViewModel(
     val repository: WeatherRepository
 ):ViewModel(){
@@ -20,6 +27,10 @@ class WeatherViewModel(
         NetworkResult.UnSend()))
     val weatherDataOfFuZhou = _weatherDataOfFuZhou.asStateFlow()
 
+    /**
+     * Get fu zhou weather
+     * 获取福州的天气
+     */
     fun getFuZhouWeather(){
         viewModelScope.launch {
             _weatherDataOfFuZhou.logicIfNotLoading {
@@ -36,4 +47,5 @@ class WeatherViewModel(
             }
         }
     }
+
 }
