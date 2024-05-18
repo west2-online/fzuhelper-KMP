@@ -40,6 +40,7 @@ data class LoginResponse(
             22 -> networkErrorWithLog(code,"验证码申请过于频繁")
             23 -> networkErrorWithLog(code,"申请验证码时缺失邮箱")
             24 -> networkErrorWithLog(code,"申请验证码时，邮箱格式错误")
+            25 -> networkErrorWithLog(code,"该邮箱未注册")
             else -> networkErrorWithLog(code,"登录失败")
         }
     }
