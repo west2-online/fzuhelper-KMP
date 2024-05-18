@@ -19,6 +19,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+/**
+ * 自实现底部栏，使用沉浸式
+ * @param modifier Modifier
+ * @param backgroundColor Color
+ * @param contentColor Color
+ * @param elevation Dp
+ * @param isNavigationBarsPadding Boolean
+ * @param content [@androidx.compose.runtime.Composable] [@kotlin.ExtensionFunctionType] Function1<RowScope, Unit>
+ */
 @Composable
 fun BottomNavigationWithBottomPadding (
     modifier: Modifier = Modifier,
