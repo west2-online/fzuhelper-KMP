@@ -57,11 +57,14 @@ import util.math.takeover
 import util.network.CollectWithContent
 import kotlin.jvm.Transient
 
+/**
+ * 功能页的界面
+ * @param modifier Modifier
+ */
 @Composable
 fun Action(
     modifier: Modifier,
 ){
-    val rootAction = koinInject<RootAction>()
     Column(
         modifier = modifier,
     ) {
@@ -113,7 +116,11 @@ fun Action(
     }
 }
 
-
+/**
+ * 轮播图界面
+ * @param modifier Modifier
+ * @param refreshCarousel Function0<Unit> 刷新轮播图的逻辑
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Carousel(
@@ -211,6 +218,13 @@ private fun Carousel(
     }
 }
 
+/**
+ * 可用功能的枚举类
+ * @property functionName String 功能名
+ * @property painter ImageResource 功能的图标
+ * @property navigator Function1<RootAction, Unit> 点击功能的逻辑
+ * @constructor
+ */
 enum class Functions(
     val functionName: String,
     val painter: ImageResource,
@@ -232,7 +246,12 @@ enum class Functions(
 }
 
 
-
+/**
+ * 功能页的一级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @property options TabOptions
+ * @constructor
+ */
 class ActionVoyagerScreen(
     @Transient
     private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
