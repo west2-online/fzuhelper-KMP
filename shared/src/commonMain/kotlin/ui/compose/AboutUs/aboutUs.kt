@@ -34,7 +34,10 @@ import util.compose.parentSystemControl
 import kotlin.jvm.Transient
 import kotlin.math.sqrt
 
-
+/**
+ * 关于我们的ui
+ * @param modifier Modifier
+ */
 @Composable
 fun AboutUsScreen(
     modifier: Modifier = Modifier
@@ -154,6 +157,9 @@ fun AboutUsScreen(
     }
 }
 
+/**
+ * Markdown 显示的markdown
+ */
 val markdown = """
 ### 欢迎使用FuTalk🤗
 
@@ -186,7 +192,12 @@ https://futalker.github.io
 
 """.trimIndent()
 
-
+/**
+ * 关于我们的一级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @property options TabOptions
+ * @constructor
+ */
 class AboutUsVoyagerScreen(
     @Transient
     private val parentPaddingControl : ParentPaddingControl = defaultSelfPaddingControl()
