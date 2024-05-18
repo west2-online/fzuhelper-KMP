@@ -16,6 +16,15 @@ import util.network.networkErrorWithLog
 import util.network.resetWithLog
 import util.network.resetWithoutLog
 
+/**
+ * 发布页逻辑
+ * @property releaseRepository PostRepository
+ * @property _newPostState CMutableStateFlow<NetworkResult<String>>
+ * @property newPostState StateFlow<NetworkResult<String>>
+ * @property _labelList CMutableStateFlow<NetworkResult<List<Label>>>
+ * @property labelList StateFlow<NetworkResult<List<Label>>>
+ * @constructor
+ */
 class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewModel() {
     private val _newPostState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
         NetworkResult.UnSend()))
@@ -25,7 +34,12 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
     private var _labelList = CMutableStateFlow<NetworkResult<List<Label>>>(MutableStateFlow(NetworkResult.UnSend()))
     val labelList = _labelList.asStateFlow()
 
-    //发布新的帖子
+    /**
+     * 发布新帖子
+     * @param releasePageItemList List<ReleasePageItem>
+     * @param title String
+     * @param labelList List<Int>
+     */
     fun newPost(
         releasePageItemList: List<ReleasePageItem>,
         title: String,
@@ -75,6 +89,10 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
         }
     }
 
+    /**
+     * Get user label
+     * 获取用户可用的label
+     */
     fun getUserLabel(){
         viewModelScope.launch {
             _labelList.logicIfNotLoading {

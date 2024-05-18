@@ -58,11 +58,25 @@ import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import org.example.library.MR
 
+/**
+ * Release page item
+ * 发布页的item接口
+ * @constructor Create empty Release page item
+ */
 sealed interface ReleasePageItem{
 
+    /**
+     * 文本类
+     * @property text MutableState<String>
+     */
     class TextItem() : ReleasePageItem{
         var text = mutableStateOf<String>("")
     }
+
+    /**
+     * 图片类
+     * @property image MutableState<ByteArray?>
+     */
     class ImageItem() : ReleasePageItem{
         var image = mutableStateOf<ByteArray?>(null)
     }
@@ -89,6 +103,17 @@ class LineParametersDataItem {
     val y = mutableStateOf<String>("")
 }
 
+/**
+ * 文本发布item
+ * @param modifier Modifier
+ * @param onValueChange Function1<String, Unit>
+ * @param onEmojiChange Function1<String, Unit>
+ * @param overflow Function1<Int, Unit> 文本超过大小时自适应动画结束时的回调
+ * @param delete Function0<Unit>
+ * @param moveUp Function0<Unit>
+ * @param moveDown Function0<Unit>
+ * @param text State<String>
+ */
 @Composable
 fun ReleasePageItemText(
     modifier: Modifier,
@@ -234,6 +259,15 @@ fun ReleasePageItemText(
     }
 }
 
+/**
+ * 图像发布item
+ * @param modifier Modifier
+ * @param delete Function0<Unit>
+ * @param moveUp Function0<Unit>
+ * @param moveDown Function0<Unit>
+ * @param onImagePicked Function1<ByteArray, Unit> 挑选图片
+ * @param image State<ByteArray?>
+ */
 @Composable
 fun ReleasePageItemImage(
     modifier: Modifier,
