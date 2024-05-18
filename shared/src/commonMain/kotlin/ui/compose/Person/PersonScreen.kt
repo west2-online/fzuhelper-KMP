@@ -65,7 +65,13 @@ import util.network.logicWithTypeWithoutLimit
 import kotlin.jvm.Transient
 import kotlin.random.Random
 
-
+/**
+ * 个人界面显示ui
+ * @param id String?
+ * @param modifier Modifier
+ * @param personViewModel PersonViewModel
+ * @param parentPaddingControl ParentPaddingControl
+ */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun PersonScreen(
@@ -253,6 +259,11 @@ fun PersonScreen(
     }
 }
 
+/**
+ * 用户信息展示
+ * @param modifier Modifier
+ * @param userData State<NetworkResult<UserData>>
+ */
 @Composable
 fun PersonalInformationInPerson(
     modifier: Modifier = Modifier,
@@ -333,22 +344,11 @@ fun PersonalInformationInPerson(
     }
 }
 
-fun State<NetworkResult<UserData>>.string(
-    success:String = "加载失败",
-    error:String = "加载失败",
-    unSend:String = "加载失败",
-    loading:String = "加载失败"
-):String{
-    return when(this.value){
-        is NetworkResult.Success-> success
-        is NetworkResult.Error -> error
-        is NetworkResult.UnSend -> unSend
-        is NetworkResult.LoadingWithAction -> loading
-        else -> "加载失败"
-    }
-}
 
-
+/**
+ * 显示用户的身份
+ * @param identity String
+ */
 @Composable
 fun IdentityLabel(
     identity:String
@@ -367,13 +367,23 @@ fun IdentityLabel(
     }
 }
 
+/**
+ * 获取随机颜色
+ * @return Color
+ */
 fun randomColor(): Color {
     return Color(Random.nextInt(100,255),Random.nextInt(100,255),Random.nextInt(100,255))
 }
 
 
-
-
+/**
+ * 用户界面 二级界面
+ * @property modifier Modifier
+ * @property userId String?
+ * @property parentPaddingControl ParentPaddingControl
+ * @property options TabOptions
+ * @constructor
+ */
 class PersonVoyagerScreen(
     @Transient val modifier: Modifier,
     @Transient private val userId: String?,
