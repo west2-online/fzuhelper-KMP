@@ -12,7 +12,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -32,12 +31,23 @@ import dev.icerock.moko.resources.compose.fontFamilyResource
 import org.example.library.MR
 import org.koin.compose.koinInject
 
+/**
+ * 界面变换动画的枚举类
+ * @property serializable String 用于储存与恢复的序列化值
+ * @property describe String 描述
+ * @constructor
+ */
 enum class PageTransitions(val serializable: String,val describe : String){
     FadeTransition(serializable = "FadeTransition", describe = "淡入淡出过渡"),
     SlideTransition(serializable = "SlideTransition", describe = "滑动过渡"),
     ScaleTransition(serializable = "ScaleTransition", describe = "大小变换过渡")
 }
 
+/**
+ * 可用主题的枚举类
+ * @property serializable String 用于储存与恢复的序列化值
+ * @constructor
+ */
 enum class ThemeStyle(val serializable: String){
     ThemeOne("ThemeOne"),
     ThemeTow("ThemeTow"),
@@ -47,6 +57,12 @@ enum class ThemeStyle(val serializable: String){
     ThemeSix("ThemeSix")
 }
 
+/**
+ * 可用字体枚举类
+ * @property serializable String 用于储存与恢复的序列化值
+ * @property fontResource FontResource
+ * @constructor
+ */
 enum class FontStyle(val serializable: String, val fontResource: FontResource){
     MulishLight("MulishLight", MR.fonts.Mulish.light),
     MadimiOne("MadimiOne", MR.fonts.MadimiOne.regular),
@@ -56,10 +72,12 @@ enum class FontStyle(val serializable: String, val fontResource: FontResource){
     ZhiMangXing("ZhiMangXing", MR.fonts.ZhiMangXing.regular)
 }
 
-
+/**
+ * futalk的主题处理
+ * @param content [@androidx.compose.runtime.Composable] Function0<Unit>
+ */
 @Composable
 fun FuTalkTheme(
-
     content:@Composable () -> Unit,
 ){
 
@@ -72,17 +90,12 @@ fun FuTalkTheme(
             themeStyle.value.toTheme().toComposeTheme()
         }
     }
-
     val fontStyle = setting.fontToken.currentValue.collectAsState()
     val fontState = remember( fontStyle.value ) {
         derivedStateOf {
             fontStyle.value.toFont().fontResource
         }
     }
-    LaunchedEffect(themeStyle.value){
-        println("################################")
-    }
-
     val primary by  animateColorAsState( if (!isSystemInDarkTheme())  themeState.value.primaryInLightTheme else themeState.value.primaryInDarkTheme)
     val onPrimary by  animateColorAsState( if (!isSystemInDarkTheme())  themeState.value.onPrimaryInLightTheme else themeState.value.onPrimaryInDarkTheme)
     val primaryVariant by  animateColorAsState( if (!isSystemInDarkTheme())  themeState.value.primaryVariantInLightTheme else themeState.value.primaryVariantInDarkTheme)
@@ -131,6 +144,11 @@ fun FuTalkTheme(
     )
 }
 
+/**
+ * 用序列化的值来恢复字体，为空或未找到返回枚举类的第一个
+ * @receiver String?
+ * @return FontStyle
+ */
 fun String?.toFont(): FontStyle {
     this?:return FontStyle.entries.first()
     return FontStyle.entries.find {
@@ -138,6 +156,11 @@ fun String?.toFont(): FontStyle {
     }?:FontStyle.entries.first()
 }
 
+/**
+ * 用序列化的值来恢复主题，为空或未找到返回枚举类的第一个
+ * @receiver String?
+ * @return ThemeStyle
+ */
 fun String?.toTheme(): ThemeStyle {
     this?:return ThemeStyle.entries.first()
     return ThemeStyle.entries.find {
@@ -145,7 +168,22 @@ fun String?.toTheme(): ThemeStyle {
     }?: ThemeStyle.entries.first()
 }
 
-
+/**
+ * 与Material的theme相匹配
+ * @property primary Color
+ * @property primaryVariant Color
+ * @property secondary Color
+ * @property secondaryVariant Color
+ * @property background Color
+ * @property surface Color
+ * @property error Color
+ * @property onPrimary Color
+ * @property onSecondary Color
+ * @property onBackground Color
+ * @property onSurface Color
+ * @property onError Color
+ * @property isLight Boolean
+ */
 interface Theme {
     val primary: Color
     val primaryVariant: Color
@@ -194,6 +232,15 @@ interface Theme {
     ) : Theme
 }
 
+/**
+ * 实现加载的闪光效果
+ * @receiver Modifier
+ * @param widthOfShadowBrush Int
+ * @param angleOfAxisY Float
+ * @param durationMillis Int
+ * @param colorList List<Color>
+ * @return Modifier
+ */
 fun Modifier.shimmerLoadingAnimation(
     widthOfShadowBrush: Int = 500,
     angleOfAxisY: Float = 270f,
@@ -232,7 +279,10 @@ fun Modifier.shimmerLoadingAnimation(
 }
 
 
-
+/**
+ * 对voyager库中动画的封装，根据用用户的定义设置动画
+ * @param navigator Navigator 对哪个navigator进行处理
+ */
 @Composable
 fun SettingTransitions(navigator: Navigator){
     val setting =koinInject<ThemeKValueAction>()
@@ -249,6 +299,11 @@ fun SettingTransitions(navigator: Navigator){
     }
 }
 
+/**
+ * 用序列化的值来动画，为空或未找到返回枚举类的第一个
+ * @receiver String?
+ * @return PageTransitions
+ */
 fun String?.toTransitions(): PageTransitions {
     this?:return PageTransitions.entries.first()
     return PageTransitions.entries.find {
@@ -256,6 +311,11 @@ fun String?.toTransitions(): PageTransitions {
     }?: PageTransitions.entries.first()
 }
 
+/**
+ * 将ThemeStyle转为material可用的数据
+ * @receiver ThemeStyle
+ * @return ComposeTheme
+ */
 fun ThemeStyle.toComposeTheme():ComposeTheme{
     return when(this){
         ThemeStyle.ThemeOne -> ComposeTheme(
