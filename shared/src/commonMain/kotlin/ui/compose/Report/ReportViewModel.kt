@@ -11,6 +11,15 @@ import util.network.NetworkResult
 import util.network.networkErrorWithLog
 import util.network.resetWithLog
 
+/**
+ * 举报逻辑
+ * @property repository ReportRepository
+ * @property _reportCommentResponse CMutableStateFlow<NetworkResult<String>>
+ * @property reportCommentResponse StateFlow<NetworkResult<String>>
+ * @property _reportPostResponse CMutableStateFlow<NetworkResult<String>>
+ * @property reportPostResponse StateFlow<NetworkResult<String>>
+ * @constructor
+ */
 class ReportViewModel(
     private val repository: ReportRepository
 ):ViewModel() {
@@ -22,6 +31,12 @@ class ReportViewModel(
         NetworkResult.UnSend()))
     val reportPostResponse = _reportPostResponse.asStateFlow()
 
+    /**
+     * 举报评论
+     * @param commentId String
+     * @param typeId Int
+     * @param postId String
+     */
     fun reportComment(commentId:String,typeId:Int,postId:String){
         viewModelScope.launchInDefault {
             repository.reportComment(commentId, typeId, postId)
@@ -38,9 +53,11 @@ class ReportViewModel(
     }
 
 
-
-
-
+    /**
+     * 举报帖子
+     * @param typeId Int
+     * @param postId String
+     */
     fun reportPost(typeId:Int,postId:String){
         viewModelScope.launchInDefault {
             repository.reportPost(typeId, postId)

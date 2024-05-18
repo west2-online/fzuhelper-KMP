@@ -44,6 +44,11 @@ import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
 import kotlin.jvm.Transient
 
+/**
+ * 帖子举报界面
+ * @param modifier Modifier
+ * @param data Post
+ */
 @Composable
 fun PostReport(
     modifier: Modifier = Modifier,
@@ -167,6 +172,12 @@ fun PostReport(
     EasyToast(toastState)
 }
 
+/**
+ * 帖子举报界面 二级界面
+ * @property type PostReportType
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class PostRepostVoyagerScreen(
     @Transient
     val type : ReportType.PostReportType,

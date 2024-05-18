@@ -53,6 +53,11 @@ import util.compose.toastBindNetworkResult
 import util.network.toEasyTime
 import kotlin.jvm.Transient
 
+/**
+ * 举报评论的界面
+ * @param modifier Modifier
+ * @param commentData Comment
+ */
 @Composable
 fun CommentRepost(
     modifier: Modifier = Modifier,
@@ -263,6 +268,12 @@ fun PostReportInCommentReport(
     }
 }
 
+/**
+ * 举报界面 二级界面
+ * @property type CommentReportType
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class CommentReportVoyagerScreen(
     @Transient
     val type : ReportType.CommentReportType,
