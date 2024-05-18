@@ -9,6 +9,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: 更换当前目录
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '21'
+          name: 设置java版本
       - name: 查看环境
         run: pwd
       - name: 查看环境
