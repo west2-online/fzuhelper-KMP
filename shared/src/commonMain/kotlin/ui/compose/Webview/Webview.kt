@@ -13,7 +13,11 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import kotlin.jvm.Transient
 
-//自定义浏览器
+/**
+ * 自定义的浏览器界面 一级界面
+ * @param start String
+ * @param parentPaddingControl ParentPaddingControl
+ */
 @Composable
 fun OwnWebViewScreen(
     start: String,
