@@ -58,6 +58,11 @@ import util.compose.rememberToastState
 import util.network.NetworkResult
 import kotlin.jvm.Transient
 
+/**
+ * 登录的ui
+ * @param modifier Modifier
+ * @param navigateToRegister Function0<Unit> 切换至注册
+ */
 @Composable
 fun Login(
     modifier: Modifier,
@@ -297,6 +302,11 @@ fun Login(
     }
 }
 
+/**
+ * 登录的二级界面 登录的Screen
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class LoginVoyagerScreen (
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
