@@ -28,6 +28,23 @@ import util.network.logicIfNotLoading
 import util.network.networkErrorWithLog
 import util.network.resetWithLog
 
+/**
+ * 帖子详情的逻辑
+ * @property client HttpClient
+ * @property postRepository PostRepository
+ * @property rootAction RootAction
+ * @property _currentPostDetail CMutableStateFlow<NetworkResult<PostData>>
+ * @property currentPostDetail StateFlow<NetworkResult<PostData>>  帖子详情的结果
+ * @property _postCommentPreviewFlow CMutableStateFlow<Pager<Int, Data>?>
+ * @property postCommentPreviewFlow StateFlow<Pager<Int, Data>?> 帖子评论预览的结果
+ * @property _postCommentTreeFlow CMutableStateFlow<Pager<Int, Data>?>
+ * @property postCommentTreeFlow StateFlow<Pager<Int, Data>?> 帖子评论树的结果
+ * @property _commentSubmitState CMutableStateFlow<NetworkResult<String>>
+ * @property commentSubmitState StateFlow<NetworkResult<String>> 帖子发布的结果
+ * @property _postLikeSubmitState CMutableStateFlow<NetworkResult<String>>
+ * @property postLikeSubmitState StateFlow<NetworkResult<String>> 点赞帖子的结果
+ * @constructor
+ */
 class PostDetailViewModel(
     private val client: HttpClient,
     private val postRepository : PostRepository,
@@ -72,6 +89,10 @@ class PostDetailViewModel(
         }
     }
 
+    /**
+     * 根据id获取帖子详情
+     * @param id String
+     */
     private fun getPostById(id: String){
         viewModelScope.launch (Dispatchers.IO){
             _currentPostDetail.logicIfNotLoading {
@@ -98,10 +119,22 @@ class PostDetailViewModel(
 //        )
 //    }
 
+    /**
+     * 根据id 刷新帖子
+     * @param postId String
+     */
     fun refreshPostById(postId: String){
         getPostById(postId)
     }
 
+    /**
+     * 发布对帖子的评论
+     * @param parentId Int
+     * @param postId Int
+     * @param tree String
+     * @param content String
+     * @param image ByteArray?
+     */
     fun submitComment(parentId:Int,postId:Int,tree:String,content:String,image:ByteArray?){
         viewModelScope.launchInDefault {
             _commentSubmitState.logicIfNotLoading {
@@ -124,6 +157,11 @@ class PostDetailViewModel(
         rootAction.navigateFormPostToReport(type)
     }
 
+    /**
+     * 获取帖子的评论树
+     * @param treeStart String 树的开始
+     * @param postId String
+     */
     fun getPostCommentTree(treeStart: String,postId:String){
         viewModelScope.launch {
             _postCommentTreeFlow.value = Pager(
@@ -141,6 +179,10 @@ class PostDetailViewModel(
         }
     }
 
+    /**
+     * 帖子点赞
+     * @param postId Int
+     */
     fun postLikes(postId: Int){
         viewModelScope.launchInDefault {
             _postLikeSubmitState.logicIfNotLoading {

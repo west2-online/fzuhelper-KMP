@@ -20,7 +20,12 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.rememberToastState
 import kotlin.jvm.Transient
 
-
+/**
+ * 帖子界面 一级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @property options TabOptions
+ * @constructor
+ */
 class PostVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()

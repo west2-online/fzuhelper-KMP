@@ -15,6 +15,15 @@ import io.ktor.client.request.get
 import repository.PostRepository
 import ui.root.RootAction
 
+/**
+ * 帖子列表的逻辑
+ * @property postRepository PostRepository
+ * @property kVault KVault
+ * @property client HttpClient
+ * @property rootAction RootAction
+ * @property postListFlow Flow<PagingData<PostListItemData>>
+ * @constructor
+ */
 class PostListViewModel(
     private val postRepository:PostRepository,
     private val kVault: KVault,

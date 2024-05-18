@@ -82,6 +82,13 @@ import util.compose.rememberToastState
 import util.network.toEasyTime
 import kotlin.jvm.Transient
 
+/**
+ * 帖子列表的显示 二级界面
+ * @property navigateToRelease Function0<Unit>
+ * @property navigateToReport Function1<PostListItemData, Unit>
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class PostListVoyagerScreen(
     @Transient
     val navigateToRelease: () -> Unit,
@@ -112,6 +119,15 @@ class PostListVoyagerScreen(
 }
 
 
+/**
+ * 帖子列表的ui
+ * @param modifier Modifier
+ * @param state LazyListState
+ * @param postListFlow LazyPagingItems<PostListItemData>
+ * @param navigateToRelease Function0<Unit>
+ * @param navigateToReport Function1<PostListItemData, Unit>
+ * @param navigateToNewsDetail Function1<String, Unit>
+ */
 @Composable
 fun PostList(
     modifier: Modifier = Modifier,
@@ -236,7 +252,14 @@ fun PostList(
     }
 }
 
-
+/**
+ * 帖子列表item的ui
+ * @param navigateToNewsDetail Function1<String, Unit>
+ * @param navigateToReport Function1<PostListItemData, Unit>
+ * @param like Function0<Unit>
+ * @param postListItemData PostListItemData
+ * @param modifier Modifier
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PostItem(
@@ -439,7 +462,14 @@ fun PersonalInformationArea(
     }
 }
 
-
+/**
+ * 互动 区
+ * @param modifier Modifier
+ * @param likeNumber Int
+ * @param report Function0<Unit>
+ * @param share Function0<Unit>
+ * @param like Function0<Unit>
+ */
 @Composable
 fun Interaction(
     modifier: Modifier,
@@ -507,6 +537,12 @@ enum class NewsLabel(name:String) {
     OTHER("other"),
 }
 
+/**
+ * 帖子列表中的item的头像及用户名显示
+ * @param userAvatar String
+ * @param modifier Modifier
+ * @param userName String
+ */
 @Composable
 fun PersonalInformationAreaInList(
     userAvatar : String = "defaultAvatar.jpg",

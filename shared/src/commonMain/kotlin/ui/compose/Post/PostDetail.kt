@@ -33,7 +33,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -113,6 +112,19 @@ import util.network.toEasyTime
 import util.network.toast
 import kotlin.jvm.Transient
 
+
+/**
+ * 帖子详情页ui
+ * @param id String 帖子id
+ * @param modifier Modifier
+ * @param initPostDetail Function1<String, Unit> 初始化帖子
+ * @param postCommentPreview Pager<Int, Data>? 帖子评论分页
+ * @param postCommentTree StateFlow<Pager<Int, Data>?> 帖子评论树 评论树是评论的评论列表
+ * @param getPostCommentTree Function1<String, Unit> 获取帖子评论树
+ * @param submitComment Function5<[@kotlin.ParameterName] Int, [@kotlin.ParameterName] Int, [@kotlin.ParameterName] String, [@kotlin.ParameterName] String, [@kotlin.ParameterName] ByteArray?, Unit>
+ * @param commentReport Function1<[@kotlin.ParameterName] ReportType, Unit> 举报评论
+ * @param refreshCommentPreview Function0<Unit> 刷新评论分页
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PostDetail(
@@ -729,8 +741,10 @@ fun PostDetail(
 }
 
 
-
-
+/**
+ * 显示数据ui
+ * @param time String
+ */
 @Composable
 fun Time(time:String){
     val instant = Instant.parse(time)
@@ -741,6 +755,12 @@ fun Time(time:String){
     )
 }
 
+/**
+ * 显示个人信息
+ * @param url String 头像url
+ * @param modifier Modifier
+ * @param userName String
+ */
 @Composable
 fun PersonalInformationAreaInDetail(
     url : String = "https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg",
@@ -775,20 +795,12 @@ fun PersonalInformationAreaInDetail(
 }
 
 
-fun LazyListScope.newsDetailItem(
-    block:@Composable ()->Unit
-){
-    item {
-        Box(
-            modifier = Modifier
-                .padding(start = 50.dp)
-        ){
-            block()
-        }
-    }
-}
-
-
+/**
+ * 帖子评论详情
+ * @param commentGroup Data?
+ * @param click Function0<Unit>
+ * @param report Function1<[@kotlin.ParameterName] Comment, Unit>
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CommentInPostDetail(
@@ -918,7 +930,11 @@ fun CommentInPostDetail(
 }
 
 
-//在评论树中的item
+/**
+ * 在评论树中的item的ui
+ * @param data Data
+ * @param click Function1<Comment, Unit>
+ */
 @Composable
 fun CommentTreeItem(
     data : data.post.PostCommentTree.Data,
@@ -1139,7 +1155,12 @@ fun CommentTreeItem(
 }
 
 
-
+/**
+ * 创建新评论的数据
+ * @property isShow MutableState<Boolean> 是否显示该ui
+ * @property commentAt MutableState<Comment?> 要评论的对象
+ * @constructor
+ */
 class CommentState (
     val isShow: MutableState<Boolean> = mutableStateOf(false),
     val commentAt: MutableState<Comment?> = mutableStateOf(null)
@@ -1156,6 +1177,12 @@ class CommentState (
     }
 }
 
+/**
+ * 用于恢复的序列化操作
+ * @property isShow Boolean 是否显示
+ * @property commentAt Comment? 评论对象
+ * @constructor
+ */
 @Serializable
 data class CommentStateSerializable(
     val isShow :Boolean,
@@ -1176,7 +1203,12 @@ fun CommentStateSerializable.toCommentState():CommentState{
     )
 }
 
-
+/**
+ * 帖子详情页 二级界面
+ * @property id String
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class PostDetailVoyagerScreen(
     val id: String,
     @Transient
