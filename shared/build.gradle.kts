@@ -8,8 +8,8 @@ val sqlDelightVersion = "2.0.1"
 val voyagerVersion = "1.0.0"
 
 plugins {
+    id("org.jetbrains.dokka") version "1.9.20"
     val sqlDelightVersion = "2.0.1"
-    val androidxRoom = "2.7.0-alpha01"
     kotlin("multiplatform")
     id("com.android.library")
     id("org.jetbrains.compose")
