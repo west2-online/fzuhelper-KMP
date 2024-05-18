@@ -1,4 +1,4 @@
-package com.myapplication
+package com.fzu.futalk
 
 import MyApplication
 

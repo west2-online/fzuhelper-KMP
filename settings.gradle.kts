@@ -1,4 +1,4 @@
-rootProject.name = "MyApplication"
+rootProject.name = "FuTalk"
 
 include(":androidApp")
 include(":shared")

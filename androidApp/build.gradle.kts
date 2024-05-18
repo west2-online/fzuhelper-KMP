@@ -22,12 +22,12 @@ kotlin {
 
 android {
     compileSdk = 34
-    namespace = "com.myapplication"
+    namespace = "com.fzu.futalk"
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 
     defaultConfig {
-        applicationId = "com.myapplication.MyApplication"
+        applicationId = "com.fzu.futalk"
         minSdk = (findProperty("android.minSdk") as String).toInt()
         targetSdk = (findProperty("android.targetSdk") as String).toInt()
         versionCode = 1
@@ -39,6 +39,27 @@ android {
     }
     kotlin {
         jvmToolchain(17)
+    }
+    signingConfigs {
+        create("release") {
+            storeFile = file("futalk.jks")
+            storePassword = "futalk"
+            keyAlias = "futalk"
+            keyPassword = "futalk"
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("release")
+        }
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
     }
 //    buildTypes {
 //        debug {

@@ -1,4 +1,4 @@
-package com.myapplication
+package com.fzu.futalk
 
 import android.graphics.Color
 import android.os.Bundle

@@ -53,7 +53,7 @@ kotlin {
                 implementation(compose.material3)
 
                 //图像
-                implementation("media.kamel:kamel-image:0.7.3")
+                implementation("media.kamel:kamel-image:0.9.4")
                 implementation("io.ktor:ktor-client-core:$ktor_version")
                 implementation("io.ktor:ktor-client-logging:$ktor_version")
                 api("com.rickclephas.kmm:kmm-viewmodel-core:1.0.0-ALPHA-15")
@@ -158,7 +158,7 @@ kotlin {
                 //koin
                 implementation("io.insert-koin:koin-android:$koin_version")
                 api("dev.icerock.moko:mvvm-livedata-material:0.16.1") // api mvvm-livedata, Material library android extensions
-                api("dev.icerock.moko:mvvm-livedata-glide:0.16.1") // api mvvm-livedata, Glide library android extensions
+//                api("dev.icerock.moko:mvvm-livedata-glide:0.16.1") // api mvvm-livedata, Glide library android extensions
                 api("dev.icerock.moko:mvvm-livedata-swiperefresh:0.16.1") // api mvvm-livedata, SwipeRefreshLayout library android extensions
                 api("dev.icerock.moko:mvvm-databinding:0.16.1") // api mvvm-livedata, DataBinding support for Android
                 api("dev.icerock.moko:mvvm-viewbinding:0.16.1") // api mvvm-livedata, ViewBinding support for Android
@@ -193,12 +193,13 @@ kotlin {
             dependsOn(commonMain)
         }
     }
+    task("testClasses")
 }
 
 
 android {
     compileSdk = (findProperty("android.compileSdk") as String).toInt()
-    namespace = "com.myapplication.common"
+    namespace = "com.fzu.futalk.common"
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
