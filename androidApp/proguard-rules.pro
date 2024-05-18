@@ -21,3 +21,11 @@
 # hide the original source file name.
 
 -dontwarn org.slf4j.impl.StaticLoggerBinder
+
+-keepattributes *Annotation*
+
+# Keep all classes annotated with @Serializable
+-keep @kotlinx.serialization.Serializable class * {
+    <fields>;
+    <methods>;
+}
