@@ -6,24 +6,44 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import kotlinx.serialization.Serializable
 
+
 /**
- * 上层ui通知下层ui是否要处理padding，理论上要给予下层ui越大越好的权限
+ * 根据boolean使用statusBarsPadding()
+ * @receiver Modifier
+ * @param boolean Boolean
+ * @return Modifier
  */
 fun Modifier.parentStatusControl(
     boolean: Boolean
 ) = if (boolean) this else this.statusBarsPadding()
 
+/**
+ * 根据parentPaddingControl使用statusBarsPadding()
+ * @receiver Modifier
+ * @param parentPaddingControl ParentPaddingControl
+ * @return Modifier
+ */
 fun Modifier.parentStatusControl(
     parentPaddingControl: ParentPaddingControl
 ) = if (parentPaddingControl.parentStatusControl) this else this.statusBarsPadding()
 
 
-
+/**
+ * 根据 boolean参数使用 navigationBarsPadding()
+ * @receiver Modifier
+ * @param boolean Boolean
+ * @return Modifier
+ */
 fun Modifier.parentNavigationControl(
     boolean: Boolean
 ) = if (boolean) this else this.navigationBarsPadding()
 
-
+/**
+ * 根据 parentPaddingControl参数来使用statusBarsPadding()和navigationBarsPadding()
+ * @receiver Modifier
+ * @param parentPaddingControl ParentPaddingControl
+ * @return Modifier
+ */
 inline fun Modifier.parentSystemControl(
     parentPaddingControl: ParentPaddingControl
 ) = this.composed {
@@ -39,6 +59,12 @@ inline fun Modifier.parentSystemControl(
     return@composed modifier
 }
 
+/**
+ * 上层ui对下层ui的沉浸式通知，只是通知，不是强制
+ * @property parentStatusControl Boolean 上层是否已经处理了状态栏
+ * @property parentNavigatorControl Boolean 上层是否已经处理了底部栏
+ * @constructor
+ */
 @Serializable
 data class ParentPaddingControl(
     val parentStatusControl:Boolean = false,
@@ -49,11 +75,27 @@ data class ParentPaddingControl(
     }
 }
 
+/**
+ * 让 ui自行处理沉浸式
+ * @return ParentPaddingControl
+ */
 fun defaultSelfPaddingControl() = ParentPaddingControl()
 
+/**
+ * ui自己处理状态栏，无需关心底部栏
+ * @return ParentPaddingControl
+ */
 fun navigateSelfPaddingControl() = ParentPaddingControl(false,true)
 
+/**
+ * ui自己处理底部栏，无需关心状态栏
+ * @return ParentPaddingControl
+ */
 fun statusSelfPaddingControl() = ParentPaddingControl(true,false)
 
+/**
+ * ui无需关心沉浸式
+ * @return ParentPaddingControl
+ */
 fun allSelfPaddingControl() = ParentPaddingControl(true,true)
 
