@@ -53,7 +53,13 @@ import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
 import kotlin.jvm.Transient
 
-
+/**
+ * 底部栏的四个导航
+ * @property tag String
+ * @property unSelectImageVector ImageVector
+ * @property selectImageVector ImageVector
+ * @constructor
+ */
 enum class MainItems(
     val tag : String,
     val unSelectImageVector: ImageVector,
@@ -87,7 +93,11 @@ enum class MainItems(
     ),
 }
 
-
+/**
+ * 主要界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class MainVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
@@ -160,7 +170,10 @@ class MainVoyagerScreen(
     }
 }
 
-
+/**
+ * 帖子的跳转
+ * @receiver RowScope
+ */
 @Composable
 fun RowScope.BottomPostTab(){
     val currentTabNavigator = LocalTabNavigator.current
@@ -209,6 +222,10 @@ fun RowScope.BottomPostTab(){
     )
 }
 
+/**
+ * 功能页跳转
+ * @receiver RowScope
+ */
 @Composable
 fun RowScope.BottomActionTab(){
     val currentTabNavigator = LocalTabNavigator.current
@@ -293,6 +310,10 @@ fun RowScope.BottomActionTab(){
 //}
 //
 
+/**
+ * 课程跳转
+ * @receiver RowScope
+ */
 @Composable
 fun RowScope.BottomClassTab(){
     val currentTabNavigator = LocalTabNavigator.current
@@ -345,6 +366,10 @@ fun RowScope.BottomClassTab(){
     )
 }
 
+/**
+ * 个人界面跳转
+ * @receiver RowScope
+ */
 @Composable
 fun RowScope.BottomPersonTab(){
     val currentTabNavigator = LocalTabNavigator.current

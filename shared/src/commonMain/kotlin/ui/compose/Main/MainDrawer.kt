@@ -63,6 +63,10 @@ import org.example.library.MR
 import org.koin.compose.koinInject
 import ui.root.getRootAction
 
+/**
+ * 获取今年过去的比例
+ * @return Float
+ */
 fun getPassedRange(): Float {
     // 获取当前日期
     val currentDate = Clock.System.now().toLocalDateTime(CurrentZone).date.dayOfYear
@@ -74,6 +78,10 @@ fun getPassedRange(): Float {
     return (currentDate.toFloat() / daysInYear)
 }
 
+/**
+ * 侧边栏
+ * @param modifier Modifier
+ */
 @Composable
 fun MainDrawer(
     modifier: Modifier = Modifier,
@@ -196,6 +204,11 @@ fun PersonalInformation(
     }
 }
 
+/**
+ * 侧边栏的功能集合
+ * @param modifier Modifier
+ * @param kVault KVault
+ */
 @Composable
 fun Functions(
     modifier: Modifier = Modifier,
@@ -265,6 +278,13 @@ fun Functions(
     }
 }
 
+/**
+ * 侧边栏的item显示 用painter 为icon
+ * @param painter Painter
+ * @param onclick Function0<Unit>
+ * @param text String
+ * @param modifier Modifier
+ */
 @Composable
 fun FunctionsItem(
     painter: Painter,
@@ -300,7 +320,13 @@ fun FunctionsItem(
         )
     }
 }
-
+/**
+ * 侧边栏的item显示 imageVector 为icon
+ * @param imageVector Painter
+ * @param onclick Function0<Unit>
+ * @param text String
+ * @param modifier Modifier
+ */
 @Composable
 fun FunctionsItem(
     imageVector: ImageVector,
