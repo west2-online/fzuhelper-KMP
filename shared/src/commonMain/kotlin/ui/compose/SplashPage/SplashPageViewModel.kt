@@ -13,6 +13,14 @@ import util.network.logicIfNotLoading
 import util.network.networkErrorWithLog
 import util.network.resetWithLog
 
+/**
+ * 开屏页的逻辑
+ * @property splashRepository SplashRepository
+ * @property kVault KVault
+ * @property _imageState CMutableStateFlow<NetworkResult<String>>
+ * @property imageState StateFlow<NetworkResult<String>>
+ * @constructor
+ */
 class SplashPageViewModel(
     private val splashRepository: SplashRepository,
     private val kVault: KVault,
@@ -21,6 +29,10 @@ class SplashPageViewModel(
         NetworkResult.UnSend()))
     val imageState = _imageState.asStateFlow()
 
+    /**
+     * Get splash page image
+     * 获取开屏页界面结果
+     */
     fun getSplashPageImage(){
         viewModelScope.launch {
             _imageState.logicIfNotLoading {

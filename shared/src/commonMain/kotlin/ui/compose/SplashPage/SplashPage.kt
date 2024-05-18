@@ -31,7 +31,11 @@ import util.compose.shimmerLoadingAnimation
 import util.network.CollectWithContent
 import util.network.logicWithTypeWithoutLimit
 
-
+/**
+ * Splash page voyager screen
+ * 开屏页界面 一级界面
+ * @constructor Create empty Splash page voyager screen
+ */
 class SplashPageVoyagerScreen():Screen{
     @Composable
     override fun Content() {
