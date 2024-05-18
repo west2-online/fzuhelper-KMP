@@ -71,6 +71,16 @@ import util.network.toast
 import kotlin.jvm.Transient
 
 const val SpaceWeight = 0.2f
+
+/**
+ * 反馈详情的ui
+ * @param modifier Modifier
+ * @param detailState State<NetworkResult<Data>> detail结果
+ * @param getDetailData Function0<Unit> 获取初始的detail信息
+ * @param toastState Toast
+ * @param postNewComment Function1<[@kotlin.ParameterName] String, Unit> 发布新的评论
+ * @param commentState State<NetworkResult<String>> 发布评论的结果
+ */
 @Composable
 fun FeedbackDetail(
     modifier: Modifier,
@@ -249,6 +259,12 @@ fun FeedbackDetail(
     )
 }
 
+/**
+ * 用来显示反馈的状态
+ * @param time String 时间
+ * @param type LabelType 类型
+ * @param commit String 提交
+ */
 @Composable
 fun StateLabel(
     time :String = "",
@@ -298,6 +314,14 @@ fun StateLabel(
     }
 }
 
+/**
+ * 反馈状态
+ * @property background Color
+ * @property icon ImageResource
+ * @property value Int
+ * @property description String
+ * @constructor
+ */
 enum class LabelType(val background: Color, val icon: ImageResource, val value: Int, val description: String) {
     ActiveStatus(Color.Green, icon = MR.images.activeStatus, 0, "活跃状态"),
     Closed(Color.Red, icon = MR.images.close, 1, "已关闭"),
@@ -312,6 +336,13 @@ fun Int.toLabelType():LabelType{
     }?:LabelType.ActiveStatus
 }
 
+/**
+ * 讨论信息
+ * @param content String 内容
+ * @param time String 时间
+ * @param identity String 身份
+ * @param user User 用户
+ */
 @Composable
 fun Discuss(
     content:String,
@@ -358,6 +389,10 @@ fun Discuss(
     }
 }
 
+/**
+ * 编号
+ * @param id Int
+ */
 @Composable
 fun Numbering(
     id:Int
@@ -377,6 +412,12 @@ fun Numbering(
     }
 }
 
+/**
+ * 反馈详情的二级级界面
+ * @property feedbackId Int
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class FeedbackDetailVoyagerScreen(
     private val feedbackId : Int,
     @Transient
