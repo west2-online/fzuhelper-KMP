@@ -57,7 +57,10 @@ import util.network.NetworkResult
 import util.network.toEasyTime
 
 
-//评论展示页面
+/**
+ * 评论展示页面
+ * @param comment Comment
+ */
 @Composable
 fun CommentInReportDetail(
     comment: Comment,
@@ -148,6 +151,11 @@ fun CommentInReportDetail(
 }
 
 
+/**
+ * 处理评论界面
+ *
+ * @constructor Create empty Manage comment voyager screen
+ */
 object ManageCommentVoyagerScreen:Screen{
     @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
     @Composable

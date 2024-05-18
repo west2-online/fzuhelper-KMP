@@ -57,7 +57,11 @@ import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
 import util.network.NetworkResult
 
-
+/**
+ * 管理举报过多的帖子
+ *
+ * @constructor Create empty Manage post voyager screen
+ */
 object ManagePostVoyagerScreen:Screen{
     @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
     @Composable

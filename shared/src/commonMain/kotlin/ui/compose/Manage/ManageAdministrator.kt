@@ -72,11 +72,24 @@ import util.network.CollectWithContentInBox
 import util.network.getAvatarStatic
 import util.regex.matchEmail
 
+/**
+ * 审核管理员
+ */
 const val AuditManage = 0
+/**
+ * 主要管理员
+ */
 const val MainManage = 1
+/**
+ * 超级管理员 只允许给开发者
+ */
 const val SuperManage = 2
 
-
+/**
+ * 管理管理员界面
+ *
+ * @constructor Create empty Manage administrator voyager
+ */
 object ManageAdministratorVoyager : Screen{
     @Composable
     override fun Content() {
@@ -136,6 +149,11 @@ object ManageAdministratorVoyager : Screen{
     }
 }
 
+/**
+ * 添加管理员界面
+ *
+ * @constructor Create empty Feat administrator voyager screen
+ */
 object FeatAdministratorVoyagerScreen:Tab{
     override val options: TabOptions
         @Composable
@@ -217,6 +235,11 @@ object FeatAdministratorVoyagerScreen:Tab{
     }
 }
 
+/**
+ * 管理现有管理员界面
+ *
+ * @constructor Create empty Manage exist administrator voyager screen
+ */
 object ManageExistAdministratorVoyagerScreen : Tab{
     override val options: TabOptions
         @Composable
@@ -321,7 +344,11 @@ object ManageExistAdministratorVoyagerScreen : Tab{
     }
 }
 
-
+/**
+ *
+ * @property user User
+ * @constructor
+ */
 class ChangeUserLevel(
     val user: User
 ):Screen{
@@ -429,6 +456,11 @@ enum class AdministratorLevel(val describe:String,val levelName:String,val level
     AuditAdministratorLevel("负责审核的管理员权限","审核管理员", AuditManage)
 }
 
+/**
+ * 管理员显示用户
+ * @param user User
+ * @param changeUserLevel Function1<User, Unit>
+ */
 @Composable
 fun AdministratorShowUser(
     user: User,
@@ -481,6 +513,10 @@ fun AdministratorShowUser(
     }
 }
 
+/**
+ * 要添加的管理员信息预览
+ * @param user User
+ */
 @Composable
 fun FeatAdministratorShowUser(
     user: User
@@ -521,6 +557,13 @@ fun FeatAdministratorShowUser(
     }
 }
 
+/**
+ * 显示用户信息
+ * @param url String
+ * @param modifier Modifier
+ * @param userName String
+ * @param clickShowDetail Function0<Unit>
+ */
 @Composable
 fun PersonalInformationAreaInManage(
     url: String,

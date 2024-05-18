@@ -54,7 +54,12 @@ import util.compose.toastBindNetworkResult
 import util.network.CollectWithContent
 import util.network.NetworkResult
 
-
+/**
+ * 已有开屏页显示
+ * @param string String
+ * @param refresh Function0<Unit>
+ * @param delete Function0<Unit>
+ */
 @Composable
 fun OpenImageShow(
     string: String,
@@ -91,6 +96,11 @@ fun OpenImageShow(
     }
 }
 
+/**
+ * 管理开屏页
+ *
+ * @constructor Create empty Manage open image voyager screen
+ */
 object ManageOpenImageVoyagerScreen : Screen {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
