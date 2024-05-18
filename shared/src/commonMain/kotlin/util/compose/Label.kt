@@ -32,6 +32,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.sqrt
 
+/**
+ * 显示标签的ui
+ * @param string String
+ */
 @Composable
 fun Label(
     string: String,
@@ -165,6 +169,19 @@ fun Modifier.loadAction():Modifier{
     }
 }
 
+/**
+ * 对传统Card的进一步封装，可以控制内部Column的modifier
+ * @param cardModifier Modifier
+ * @param shape Shape
+ * @param backgroundColor Color
+ * @param contentColor Color
+ * @param border BorderStroke?
+ * @param elevation Dp
+ * @param columnModifier Modifier
+ * @param verticalArrangement Vertical
+ * @param horizontalAlignment Horizontal
+ * @param content [@androidx.compose.runtime.Composable] [@kotlin.ExtensionFunctionType] Function1<ColumnScope, Unit>
+ */
 @Composable
 fun ThemeCard(
     cardModifier: Modifier = Modifier,
