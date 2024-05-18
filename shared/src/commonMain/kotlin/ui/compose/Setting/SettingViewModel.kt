@@ -11,11 +11,24 @@ import util.network.networkError
 import util.network.networkSuccess
 import util.network.resetWithoutLog
 
+/**
+ * 设置的逻辑
+ * @property kValueAction UndergraduateKValueAction
+ * @property classSchedule ClassSchedule
+ * @property signInStatus MutableStateFlow<NetworkResult<String>>
+ * @constructor
+ */
 class SettingViewModel(
     val kValueAction: UndergraduateKValueAction,
     val classSchedule: ClassSchedule
 ):ViewModel() {
     val signInStatus = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
+
+    /**
+     * 验证账号
+     * @param userName String
+     * @param password String
+     */
     fun verifyTheAccount(
         userName:String,
         password:String,

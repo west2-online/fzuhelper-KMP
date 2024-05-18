@@ -37,6 +37,11 @@ import util.compose.toTheme
 import util.flow.launchInDefault
 import kotlin.jvm.Transient
 
+/**
+ * 主题设置
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class ThemeSettingVoyagerScreen(
     @Transient
     private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl(),

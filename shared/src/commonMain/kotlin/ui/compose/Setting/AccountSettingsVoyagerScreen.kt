@@ -34,6 +34,11 @@ import util.compose.toastBindNetworkResult
 import util.network.CollectWithContentInBox
 import kotlin.jvm.Transient
 
+/**
+ * 账号设置界面 二级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class AccountSettingsVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
