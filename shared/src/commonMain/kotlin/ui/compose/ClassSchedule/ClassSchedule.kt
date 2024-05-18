@@ -106,7 +106,11 @@ import kotlin.jvm.Transient
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-
+/**
+ * 课程表的ui
+ * @param classScheduleViewModel ClassScheduleViewModel
+ * @param parentPaddingControl ParentPaddingControl
+ */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
     ExperimentalResourceApi::class
 )
@@ -545,7 +549,11 @@ fun ClassSchedule(
 }
 
 
-
+/**
+ * 课程卡的ui
+ * @param courseBean CourseBean
+ * @param detailAboutCourse Function1<CourseBean, Unit>
+ */
 @Composable
 fun ClassCard(
     courseBean: CourseBean,
@@ -601,6 +609,10 @@ fun ClassCard(
 }
 
 
+/**
+ * 空课程卡的ui
+ * @param weight Long
+ */
 @Composable
 fun EmptyClassCard(
     weight: Long = 0
@@ -623,6 +635,10 @@ fun EmptyClassCard(
 }
 
 
+/**
+ * 侧边的课程显示
+ * @param sidebarSlideState ScrollState
+ */
 @Composable
 fun Sidebar(
     sidebarSlideState: ScrollState = rememberScrollState()
@@ -656,6 +672,11 @@ fun Sidebar(
 }
 
 
+/**
+ * 课程打开的详情Dialog
+ * @param courseBean CourseBean
+ * @param onDismissRequest Function0<Unit>
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ClassDialog(
@@ -771,7 +792,13 @@ fun ClassDialog(
 }
 
 
-
+/**
+ * 显示月份和星期几
+ * @param week Int
+ * @param startMonthState State<Int>
+ * @param startYearState State<Int>
+ * @param startDayState State<Int>
+ */
 @Composable
 fun TimeOfWeekColumn(
     week:Int,
@@ -817,6 +844,13 @@ fun TimeOfWeekColumn(
     }
 }
 
+/**
+ * 显示日期
+ * @param week Int
+ * @param startMonthState State<Int>
+ * @param startYearState State<Int>
+ * @param startDayState State<Int>
+ */
 @Composable
 fun TimeOfMonthColumn(
     week:Int,
@@ -867,6 +901,15 @@ fun TimeOfMonthColumn(
     }
 }
 
+/**
+ * 根据参数计算是在当前月的第几天
+ * @param week Int 第几周
+ * @param day Int 这周的第几天
+ * @param startYear Int 这学期的开始年
+ * @param startMonth Int 这学期的开始月
+ * @param startDay Int 这学期的开始日
+ * @return Pair<Int,Boolean> 第一是计算的第几天，第二是计算是否就是今天
+ */
 fun getDataByWeek(week: Int, day: Int, startYear: Int, startMonth: Int, startDay: Int, ): Pair<Int,Boolean>{
     //创建一个自定义年月日的日期，使用kotlin datetime
     return try {
@@ -881,7 +924,14 @@ fun getDataByWeek(week: Int, day: Int, startYear: Int, startMonth: Int, startDay
     }
 }
 
-
+/**
+ * 根据参数计算是在几月 根据的是显示界面的周一
+ * @param week Int 第几周
+ * @param startYear Int 这学期的开始年
+ * @param startMonth Int 这学期的开始月
+ * @param startDay Int 这学期的开始日
+ * @return Int
+ */
 fun getMonthByWeek(week: Int,startYear:Int, startMonth:Int,startDay:Int):Int{
     //创建一个自定义年月日的日期，使用Calendar.set
     return try {
@@ -893,6 +943,9 @@ fun getMonthByWeek(week: Int,startYear:Int, startMonth:Int,startDay:Int):Int{
     }
 }
 
+/**
+ * 课程表通知显示属性
+ */
 val ClassScheduleNotificationDisplayProperties = listOf("教室","教师","节数","周数","备注",)
 
 enum class WeekDay(val chineseName: String, val englishName: String) {
@@ -905,6 +958,13 @@ enum class WeekDay(val chineseName: String, val englishName: String) {
     SUNDAY("星期日", "Sunday"),
 }
 
+/**
+ * 学年选择对话框
+ * @param onDismissRequest Function0<Unit>
+ * @param list List<YearOptions>
+ * @param currentYear State<String?>
+ * @param commit Function1<String, Unit>
+ */
 @Composable
 fun AcademicYearSelectsDialog(
     onDismissRequest: ()->Unit = {},
@@ -974,8 +1034,12 @@ fun AcademicYearSelectsDialog(
 }
 
 
-
-
+/**
+ * 课程表 Voyager 二级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @property options TabOptions
+ * @constructor
+ */
 class ClassScheduleVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
@@ -999,7 +1063,11 @@ class ClassScheduleVoyagerScreen(
         }
 }
 
-
+/**
+ * 在不是暗夜模式下的课程渲染背景色
+ * @property color Color
+ * @constructor
+ */
 enum class LightColors(val color: Color) {
     COLOR1(Color(0xFFECCDCD)),
     COLOR2(Color(0xFFDDEEFF)),
@@ -1023,6 +1091,11 @@ enum class LightColors(val color: Color) {
     COLOR20(Color(0xFFF0FFDD))
 }
 
+/**
+ * 暗夜模式下的课程渲染背景色
+ * @property color Color
+ * @constructor
+ */
 enum class DarkColors(val color: Color) {
     COLOR1(Color(0xFFA56969)),  // 深色模式下的对应颜色1
     COLOR2(Color(0xFF7A9ACC)),  // 深色模式下的对应颜色2

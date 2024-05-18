@@ -61,7 +61,11 @@ import util.compose.toastBindNetworkResult
 import util.network.CollectWithContent
 import util.network.NetworkResult
 
-
+/**
+ * 管理轮播页
+ *
+ * @constructor Create empty Mange ribbon voyager screen
+ */
 class MangeRibbonVoyagerScreen():Screen{
     @Composable
     override fun Content() {
@@ -114,6 +118,11 @@ class MangeRibbonVoyagerScreen():Screen{
     }
 }
 
+/**
+ * 轮播页显示
+ * @param ribbonUrl String
+ * @param delete Function0<Unit>
+ */
 @Composable
 fun RibbonImageShow(
     ribbonUrl: String,
@@ -156,6 +165,11 @@ fun RibbonImageShow(
     }
 }
 
+/**
+ * 管理已有的轮播页
+ *
+ * @constructor Create empty Work with existing carousels voyager screen
+ */
 object WorkWithExistingCarouselsVoyagerScreen:Screen{
     @Composable
     override fun Content() {
@@ -205,6 +219,11 @@ object WorkWithExistingCarouselsVoyagerScreen:Screen{
     }
 }
 
+/**
+ * 添加新的轮播页
+ *
+ * @constructor Create empty Post new ribbon voyager screen
+ */
 object PostNewRibbonVoyagerScreen:Screen{
     @Composable
     override fun Content(){

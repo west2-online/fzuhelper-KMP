@@ -33,6 +33,11 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import kotlin.jvm.Transient
 
+/**
+ * 设置主界面 一级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class MainSettingVoyagerScreen(
     @Transient
     private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl(),

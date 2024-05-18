@@ -14,6 +14,10 @@ import config.BaseUrlConfig
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 
+/**
+ * 显示detail中的图片
+ * @param imageData String
+ */
 @Composable
 fun ImageContent(
     imageData: String
@@ -35,6 +39,10 @@ fun ImageContent(
     }
 }
 
+/**
+ * 显示detail中的文字
+ * @param text String
+ */
 @Composable
 fun TextContent(
     text :String

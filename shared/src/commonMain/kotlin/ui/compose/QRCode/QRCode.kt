@@ -60,7 +60,10 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import kotlin.jvm.Transient
 
-
+/**
+ * 二维码生成界面
+ * @param modifier Modifier
+ */
 @Composable
 fun QRCodeScreen(
     modifier: Modifier
@@ -277,7 +280,11 @@ fun QRCodeScreen(
     }
 }
 
-
+/**
+ * 二维码界面 一级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class QRCodeVoyagerScreen(
     @Transient
     val parentPaddingControl :ParentPaddingControl = defaultSelfPaddingControl()

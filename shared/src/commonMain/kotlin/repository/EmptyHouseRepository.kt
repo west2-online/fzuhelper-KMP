@@ -8,8 +8,25 @@ import io.ktor.http.parameters
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
+/**
+ * 空教室的相关仓库层 -- 需要重写
+ * @property client HttpClient
+ * @constructor
+ */
 class EmptyHouseRepository(val client:HttpClient) {
-
+    /**
+     * 用验证码获取课程
+     * @param verify String
+     * @param code String
+     * @param campus String
+     * @param build String
+     * @param roomType String
+     * @param date String
+     * @param start String
+     * @param end String
+     * @param key String
+     * @return Flow<EmptyRoomData>
+     */
     fun refreshEmptyRoom(
         verify : String,
         code : String,
@@ -40,6 +57,16 @@ class EmptyHouseRepository(val client:HttpClient) {
         }
     }
 
+    /**
+     * 刷新课程
+     * @param campus String
+     * @param date String
+     * @param roomType String
+     * @param start String
+     * @param end String
+     * @param build String
+     * @return Flow<EmptyRoomData>
+     */
     fun availableEmptyRoom(
         campus:String,
         date:String,

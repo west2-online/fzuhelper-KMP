@@ -15,6 +15,16 @@ import util.network.NetworkResult
 import util.network.networkErrorWithLog
 import util.network.resetWithLog
 
+/**
+ * 用户相关逻辑
+ * @property personRepository PersonRepository
+ * @property rootAction RootAction
+ * @property _userData CMutableStateFlow<NetworkResult<UserData>>
+ * @property userData StateFlow<NetworkResult<UserData>> 用户数据
+ * @property _personIdentityData CMutableStateFlow<NetworkResult<PersonIdentityData>>
+ * @property identityData StateFlow<NetworkResult<PersonIdentityData>> 用户身份数据
+ * @constructor
+ */
 class PersonViewModel(
     private val personRepository: PersonRepository,
     private val rootAction: RootAction
@@ -26,7 +36,11 @@ class PersonViewModel(
         NetworkResult.UnSend()))
     val identityData = _personIdentityData.asStateFlow()
 
-    fun getUserData(id:String?){
+    /**
+     * 根据id获取用户信息
+     * @param id String? 为空时获取自身，不为空时获取他人
+     */
+    private fun getUserData(id:String?){
         id?:run {
             viewModelScope.launch(Dispatchers.Default) {
                 personRepository.getUserDataMySelf()
@@ -64,6 +78,10 @@ class PersonViewModel(
         }
     }
 
+    /**
+     * 获取用户身份
+     * @param id String? 为空时获取自身，不为空时获取他人
+     */
     fun getIdentityData(id:String?){
         id?:run {
             viewModelScope.launch(Dispatchers.Default) {
@@ -95,6 +113,10 @@ class PersonViewModel(
         }
     }
 
+    /**
+     * 更新用户数据
+     * @param id String?
+     */
     fun refreshUserData(id: String?) {
         getUserData(id)
     }

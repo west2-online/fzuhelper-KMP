@@ -21,6 +21,18 @@ import util.network.logicIfNotLoading
 import util.network.networkErrorWithLog
 import util.network.resetWithLog
 
+/**
+ * 反馈逻辑
+ * @property feedbackRepository FeedbackRepository
+ * @property _submitResult CMutableStateFlow<NetworkResult<String>>
+ * @property submitResult StateFlow<NetworkResult<String>> 发布的结果
+ * @property _detailResult CMutableStateFlow<NetworkResult<Data>>
+ * @property detailResult StateFlow<NetworkResult<Data>> 获取详情的结果
+ * @property _commentResult CMutableStateFlow<NetworkResult<String>>
+ * @property commentResult StateFlow<NetworkResult<String>> 评论的结果
+ * @property postListFlow Flow<PagingData<Data>> 反馈list
+ * @constructor
+ */
 class FeedBackViewModel(
     private val feedbackRepository: FeedbackRepository
 ):ViewModel() {
@@ -36,6 +48,11 @@ class FeedBackViewModel(
         NetworkResult.UnSend()))
     val commentResult = _commentResult.asStateFlow()
 
+    /**
+     * 发布反馈
+     * @param content String
+     * @param type FeedbackType
+     */
     fun submitNewFeedback(content : String,type: FeedbackType){
         viewModelScope.launch {
             _submitResult.logicIfNotLoading {
@@ -52,6 +69,11 @@ class FeedBackViewModel(
             }
         }
     }
+
+    /**
+     * 获取特定的反馈详情
+     * @param id Int
+     */
     fun getFeedbackDetail(id:Int){
         viewModelScope.launch {
             _detailResult.logicIfNotLoading {
@@ -70,6 +92,11 @@ class FeedBackViewModel(
         }
     }
 
+    /**
+     * 发布反馈评论
+     * @param content String
+     * @param id Int
+     */
     fun postFeedbackDetailComment(content:String,id: Int){
         viewModelScope.launch {
             _commentResult.logicIfNotLoading{
@@ -87,6 +114,10 @@ class FeedBackViewModel(
         }
     }
 
+    /**
+     * Post list flow
+     * 反馈列表分页
+     */
     val postListFlow = Pager(
         PagingConfig(
             pageSize = 10,

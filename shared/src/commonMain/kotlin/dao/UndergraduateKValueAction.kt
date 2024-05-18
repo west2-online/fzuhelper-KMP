@@ -19,6 +19,20 @@ const val DataStartDayKey = "80565831CC70729C3E63CE4519801927"
 const val DataStartMonthKey = "B3D7460CEE2F189E12B9CE307FE78E6A"
 const val DataStartYearKey = "EAFA832A834A4A09612AF4D1E80BCCBF"
 
+/**
+ *
+ * @property kValue KVault 对底层操作对象的获取
+ * @property schoolUserName KValueStringDate 对教务处用户名的操作
+ * @property schoolPassword KValueStringDate 对教务处密码的操作
+ * @property currentXn KValueIntDate 对目前学年的操作
+ * @property currentXq KValueIntDate 对目前学期的操作
+ * @property currentWeek KValueIntDate 对目前周术的操作
+ * @property dataStartDay KValueIntDate 对开学日的操作
+ * @property dataStartMonth KValueIntDate 对开始月的操作
+ * @property dataStartYear KValueIntDate 对开始年的操作
+ * @property currentYear StateFlow<String?> 根据对currentXq和currentXn的计算获取当前学年 如202301
+ * @constructor
+ */
 class UndergraduateKValueAction(
     private val kValue:KVault
 ) {
@@ -28,7 +42,6 @@ class UndergraduateKValueAction(
     val currentXn = KValueIntDate(CurrentXnKey,MutableStateFlow(null),kValue)
     val currentXq = KValueIntDate(CurrentXqKey,MutableStateFlow(null),kValue)
     val currentWeek = KValueIntDate(CurrentWeekKey,MutableStateFlow(null),kValue)
-    private val userSchoolId = KValueStringDate(UserSchoolIdKey,MutableStateFlow(null),kValue)
     val dataStartDay = KValueIntDate(DataStartDayKey,MutableStateFlow(null),kValue)
     val dataStartMonth = KValueIntDate(DataStartMonthKey,MutableStateFlow(null),kValue)
     val dataStartYear = KValueIntDate(DataStartYearKey,MutableStateFlow(null),kValue)

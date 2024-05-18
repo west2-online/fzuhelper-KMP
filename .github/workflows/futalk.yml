@@ -1,0 +1,30 @@
+name: 文档部署🚀
+run-name: ${{ github.actor }} 正在部署官方网站
+on: [push]
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: 更换当前目录
+      - name: 查看环境
+        run: pwd
+      - name: 查看环境
+        run: ls
+      - name: 设置
+        run: chmod +x gradlew
+      - name: 验证gradle环境
+        run : sudo ./gradlew --version
+      - name: 生成部署文件
+        run: ./gradlew :shared:dokkaHtml
+      - name: 验证文件
+        run: tree shared/build/dokka/html
+      - name: 部署 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: shared/build/dokka/html
+          branch: docx
+#          repository-name: Futalker/test
+#          token: ${{ secrets.TOKEN }}

@@ -68,6 +68,19 @@ import util.network.NetworkResult
 import util.network.logicWithTypeWithLimit
 import kotlin.jvm.Transient
 
+/**
+ * 注册的ui
+ * @param modifier Modifier
+ * @param captchaState State<NetworkResult<String>> 获取futalk邮箱验证码
+ * @param registerState State<NetworkResult<String>> 注册的结果
+ * @param getCaptcha Function1<[@kotlin.ParameterName] String, Unit> 获取futalk验证码
+ * @param register Function5<[@kotlin.ParameterName] String, [@kotlin.ParameterName] String, [@kotlin.ParameterName] String, [@kotlin.ParameterName] String, [@kotlin.ParameterName] String, Unit> 注册的逻辑
+ * @param navigateToLogin Function0<Unit> 转到登录页
+ * @param verifyStudentID Function3<[@kotlin.ParameterName] String, [@kotlin.ParameterName] String, [@kotlin.ParameterName] String, Unit> 验证用户的教务处账号密码
+ * @param studentCaptchaState State<NetworkResult<ImageBitmap>> 教务处验证码的结果
+ * @param getStudentCaptcha Function0<Unit> 获取教务处验证码
+ * @param verifyStudentIDState State<NetworkResult<TokenData>> 验证学生的身份信息
+ */
 @Composable
 fun Register(
     modifier: Modifier,
@@ -522,6 +535,11 @@ fun Register(
     }
 }
 
+/**
+ * 注册的二级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class RegisterVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
@@ -544,7 +562,7 @@ class RegisterVoyagerScreen(
             getCaptcha = { email ->
                 viewModel.getRegisterCaptcha(email)
             },
-            captchaState = viewModel.captcha.collectAsState(),
+            captchaState = viewModel.registerCaptcha.collectAsState(),
             registerState = viewModel.registerState.collectAsState(),
             verifyStudentID = { studentCode, studentPassword,studentCaptcha ->
                 viewModel.verifyStudentID(studentCode,studentPassword, captcha = studentCaptcha)

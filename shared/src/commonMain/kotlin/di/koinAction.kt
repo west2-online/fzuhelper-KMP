@@ -72,6 +72,16 @@ import kotlin.random.nextInt
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+/**
+ * 对教务处client的相关处理
+ * @property classScheduleRepository ClassScheduleRepository 有关
+ * @property kVaultAction UndergraduateKValueAction
+ * @property toast Toast 用于提示的toast
+ * @property client HttpClient? 用于储存可用的教务处client
+ * @property userSchoolId String? 储存可用的学生id
+ * @property upDataTime Instant client更新时间
+ * @constructor
+ */
 class ClassSchedule(
     private val classScheduleRepository: ClassScheduleRepository,
     private val kVaultAction:UndergraduateKValueAction,
@@ -82,6 +92,10 @@ class ClassSchedule(
     private var upDataTime = Clock.System.now().plus(-50, DateTimeUnit.MINUTE)
 
     @OptIn(ExperimentalCoroutinesApi::class)
+    /**
+     * 获取可用于教务处请求的 client和学生id
+     * 如果失败则会返回Pair(null,null)
+     */
     suspend fun getClassScheduleClient() : Pair<HttpClient?,String?> {
         if (client == null || Clock.System.now() - upDataTime > 20.toDuration(DurationUnit.MINUTES)) {
             val newClient = HttpClient() {
@@ -153,9 +167,22 @@ class ClassSchedule(
         }
         return Pair(client,userSchoolId)
     }
+
+    /**
+     * Up date client time
+     *  更新client更新时间
+     */
     private fun upDateClientTime(){
         upDataTime = Clock.System.now()
     }
+
+    /**
+     * 用于验证账号密码是否正确
+     * @param userName String
+     * @param password String
+     * @param failAction SuspendFunction1<VerifyYourAccountError, Unit> 错误调用的逻辑
+     * @param success SuspendFunction0<Unit> 正确调用的逻辑
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun verifyYourAccount(
         userName:String,
@@ -219,11 +246,22 @@ class ClassSchedule(
         }
     }
 
+    /**
+     * Verify your account error
+     *
+     * @constructor Create empty Verify your account error
+     */
     enum class VerifyYourAccountError{
         ValidationFailed,
         LoginFailed
     }
 }
+
+/**
+ * 用于登录futalk的客户端
+ * @property client HttpClient
+ * @constructor
+ */
 class LoginClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
@@ -261,6 +299,12 @@ class SchoolClient(
         configure()
     }.encodeAction()
 )
+
+/**
+ * 用于共享的客户端
+ * @property client HttpClient
+ * @constructor
+ */
 class ShareClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
@@ -274,6 +318,11 @@ class ShareClient(
     }.encodeAction()
 )
 
+/**
+ * 用于web程序的客户端
+ * @property client HttpClient
+ * @constructor
+ */
 class WebClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
@@ -293,6 +342,13 @@ class SystemAction(
     val onFinish: () -> Unit
 )
 
+/**
+ * 用于全局di
+ * @param rootAction RootAction 对主页面路由的控制
+ * @param systemAction SystemAction 系统逻辑，如退出软件
+ * @param navigator Navigator 主页面路由
+ * @return Module
+ */
 fun appModule(
     rootAction: RootAction,
     systemAction: SystemAction,
@@ -414,6 +470,11 @@ fun appModule(
     }
 
 }
+
+/**
+ * 对仓库层的注入
+ * @receiver Module
+ */
 fun Module.repositoryList(){
     single {
         SplashRepository( get() )
@@ -455,6 +516,11 @@ fun Module.repositoryList(){
         ClassScheduleRepository()
     }
 }
+
+/**
+ * 对viewModel的注入
+ * @receiver Module
+ */
 fun Module.viewModel(){
     viewModelDefinition {
         AuthenticationViewModel( get(),get(),get())
@@ -505,10 +571,20 @@ fun Module.viewModel(){
         EmptyHouseVoyagerViewModel(get())
     }
 }
+
+/**
+ * 对client的特定平台设置，主要是为了兼容https
+ * @receiver HttpClientConfig<*>
+ */
 fun HttpClientConfig<*>.configure() {
     configureForPlatform()
 }
 
+/**
+ * 添加特定的header，防止爬虫
+ * @receiver HttpClient
+ * @return HttpClient
+ */
 fun HttpClient.encodeAction():HttpClient{
     return this.apply {
         val encodePhase = PipelinePhase("Encode")

@@ -1,5 +1,10 @@
 package util.math
 
+/**
+ * 解析int
+ * @param string String
+ * @return Int
+ */
 fun parseInt(string: String): Int {
     val data = string.toIntOrNull()
     data?:run{

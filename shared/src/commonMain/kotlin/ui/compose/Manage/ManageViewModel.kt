@@ -31,14 +31,41 @@ import util.network.networkErrorWithLog
 import util.network.resetWithLog
 import util.network.resetWithoutLog
 
-/*
-管理界面的ViewModel
+/**
+ * 管理界面的逻辑
+ * @property client HttpClient
+ * @property repository ManageRepository
+ * @property postReportPageList Flow<PagingData<PostReportData>>
+ * @property commentReportPageList Flow<PagingData<CommentReportData>>
+ * @property _openImageList CMutableStateFlow<NetworkResult<List<String>>>
+ * @property openImageList StateFlow<NetworkResult<List<String>>> 获取开屏页list
+ * @property _openImageDelete CMutableStateFlow<NetworkResult<String>>
+ * @property openImageDelete StateFlow<NetworkResult<String>> 删除开屏页的结果
+ * @property _openImageAdd CMutableStateFlow<NetworkResult<String>>
+ * @property openImageAdd StateFlow<NetworkResult<String>> 添加开屏页的结果
+ * @property _ribbonImageAdd CMutableStateFlow<NetworkResult<String>>
+ * @property ribbonImageAdd StateFlow<NetworkResult<String>> 添加轮播页的结果
+ * @property _ribbonList CMutableStateFlow<NetworkResult<List<RibbonData>>>
+ * @property ribbonList StateFlow<NetworkResult<List<RibbonData>>> 获取轮播页list的结果
+ * @property _ribbonDelete CMutableStateFlow<NetworkResult<String>>
+ * @property ribbonDelete StateFlow<NetworkResult<String>> 删除轮播页结果
+ * @property _userByEmail CMutableStateFlow<NetworkResult<User>>
+ * @property userByEmail StateFlow<NetworkResult<User>> 用邮箱获取用户的结果
+ * @property _adminList CMutableStateFlow<NetworkResult<List<Admin>>>
+ * @property adminList StateFlow<NetworkResult<List<Admin>>> 获取管理列表的结果
+ * @property _adminAdd CMutableStateFlow<NetworkResult<String>>
+ * @property adminAdd StateFlow<NetworkResult<String>> 添加管理员的结果
+ * @property _adminLevelUpdate CMutableStateFlow<NetworkResult<String>>
+ * @property adminLevelUpdate StateFlow<NetworkResult<String>> 更新管理员等级的结果
+ * @constructor
  */
 class ManageViewModel(
     val client : HttpClient,
     val repository: ManageRepository
 ):ViewModel() {
-    // 帖子举报分页数据
+    /**
+     * 帖子举报分页数据
+     */
     var postReportPageList = Pager(
         PagingConfig(
             pageSize = 10,
@@ -62,7 +89,9 @@ class ManageViewModel(
     }.flow
     .cachedIn(viewModelScope)
 
-    //评论举报分页数据
+    /**
+     * 评论举报分页数据
+     */
     var commentReportPageList = Pager(
         PagingConfig(
             pageSize = 10,
@@ -131,6 +160,10 @@ class ManageViewModel(
     private val _adminLevelUpdate = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
     var adminLevelUpdate = _adminLevelUpdate.asStateFlow()
 
+    /**
+     * Get open image
+     * 获取开屏页
+     */
     fun getOpenImage(){
         viewModelScope.launchInDefault {
             _openImageList.logicIfNotLoading{
@@ -149,6 +182,10 @@ class ManageViewModel(
         }
     }
 
+    /**
+     * Get ribbon data
+     * 获取轮播页列表
+     */
     fun getRibbonData(){
         viewModelScope.launchInDefault {
             _ribbonList.logicIfNotLoading {
@@ -166,6 +203,10 @@ class ManageViewModel(
         }
     }
 
+    /**
+     * Refresh
+     * 更新数据
+     */
     fun refresh(){
         getOpenImage()
         getRibbonData()
@@ -173,7 +214,12 @@ class ManageViewModel(
 
     }
 
-    //处理帖子
+    /**
+     * 处理被举报的帖子
+     * @param reportState MutableStateFlow<NetworkResult<String>>
+     * @param postId Int
+     * @param result PostProcessResult
+     */
     fun dealPost(reportState:MutableStateFlow<NetworkResult<String>>, postId:Int, result:PostProcessResult){
         viewModelScope.launchInDefault {
             reportState.logicIfNotLoading {
@@ -191,7 +237,14 @@ class ManageViewModel(
             }
         }
     }
-    //处理评论
+
+    /**
+     * 处理被举报的评论
+     * @param reportState MutableStateFlow<NetworkResult<String>>
+     * @param commentId Int
+     * @param postId Int
+     * @param result CommentProcessResult
+     */
     fun dealComment(reportState:MutableStateFlow<NetworkResult<String>>, commentId: Int, postId:Int, result:CommentProcessResult){
         viewModelScope.launchInDefault {
             reportState.logicIfNotLoading {
@@ -209,7 +262,10 @@ class ManageViewModel(
         }
     }
 
-    //删除开屏页
+    /**
+     * 删除开屏页
+     * @param openImageName String
+     */
     fun deleteOpenImage(openImageName : String){
         viewModelScope.launchInDefault {
             _openImageDelete.logicIfNotLoading {
@@ -230,7 +286,10 @@ class ManageViewModel(
         }
     }
 
-    //添加新的开屏页
+    /**
+     * 添加新的开屏页
+     * @param openImage ByteArray
+     */
     fun addOpenImage(openImage:ByteArray){
         viewModelScope.launchInDefault {
             _openImageAdd.logicIfNotLoading {
@@ -252,8 +311,11 @@ class ManageViewModel(
     }
 
 
-
-    //添加新的开轮播图
+    /**
+     * 添加新的开轮播图
+     * @param ribbonImage ByteArray
+     * @param ribbonAction String
+     */
     fun addRibbonImage(ribbonImage:ByteArray,ribbonAction:String){
         viewModelScope.launchInDefault {
             _ribbonImageAdd.logicIfNotLoading {
@@ -274,6 +336,10 @@ class ManageViewModel(
         }
     }
 
+    /**
+     * 删除轮播页
+     * @param imageName String
+     */
     fun deleteRibbon(imageName :String){
         viewModelScope.launchInDefault {
             _ribbonDelete.logicIfNotLoading (
@@ -297,11 +363,14 @@ class ManageViewModel(
         }
     }
 
-    //通过email获取user的信息
+    /**
+     * 通过email获取user的信息
+     * @param email String
+     */
     fun getUserDataByEmail(email:String){
         viewModelScope.launchInDefault {
             _userByEmail.logicIfNotLoading {
-                repository.getEmailByEmail(email)
+                repository.getUserByEmail(email)
                     .actionWithLabel(
                         label = "getUserDataByEmail/getEmailByEmail",
                         catchAction = { label,error ->
@@ -315,6 +384,10 @@ class ManageViewModel(
         }
     }
 
+    /**
+     * Refresh admin list
+     * 更新管理员列表
+     */
     fun refreshAdminList(){
         viewModelScope.launchInDefault {
             _adminList.logicIfNotLoading {
@@ -332,6 +405,10 @@ class ManageViewModel(
         }
     }
 
+    /**
+     * 添加管理员界面
+     * @param email String
+     */
     fun addManager(email: String){
         viewModelScope.launchInDefault {
             _adminAdd.logicIfNotLoading {
@@ -349,6 +426,11 @@ class ManageViewModel(
         }
     }
 
+    /**
+     * 更新管理员等级
+     * @param userId Int
+     * @param level Int
+     */
     fun adminLevelUpdate(userId :Int,level : Int){
         viewModelScope.launchInDefault {
             _adminLevelUpdate.logicIfNotLoading {
@@ -367,15 +449,26 @@ class ManageViewModel(
     }
 }
 
+/**
+ * 帖子处理结果
+ * @property value Int
+ * @constructor
+ */
 enum class PostProcessResult(val value : Int){
     BanPost(2),
     PassPost(0)
 }
 
+/**
+ * 评论处理结果
+ * @property value Int
+ * @constructor
+ */
 enum class CommentProcessResult(val value : Int){
     BanComment(2),
     PassComment(0)
 }
+
 
 class PostReportData(
     val postReportContextData: PostReportContextData,

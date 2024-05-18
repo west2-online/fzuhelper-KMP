@@ -54,6 +54,12 @@ import util.compose.rememberToastState
 import util.network.toast
 import kotlin.jvm.Transient
 
+/**
+ * 更新用户的数据的ui
+ * @param userData Data
+ * @param modifier Modifier
+ * @param viewModel ModifierInformationViewModel
+ */
 @Composable
 fun ModifierInformationScreen(
     userData: Data,
@@ -255,6 +261,12 @@ fun ModifierInformationScreen(
 }
 
 
+/**
+ * 更新用户的数据界面 一级界面
+ * @property userData Data
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class ModifierInformationVoyagerScreen(
     @Transient
     private val userData: Data,

@@ -63,6 +63,14 @@ import util.compose.rememberToastState
 import util.network.toEasyTime
 import kotlin.jvm.Transient
 
+/**
+ * 反馈列表显示
+ * @param modifier Modifier
+ * @param navigateToDetail Function1<[@kotlin.ParameterName] Int, Unit>
+ * @param navigateToPost Function0<Unit>
+ * @param feedbackListFlow LazyPagingItems<Data>
+ * @param toastState Toast
+ */
 @Composable
 fun FeedbackList(
     modifier: Modifier,
@@ -140,6 +148,11 @@ fun FeedbackList(
     }
 }
 
+/**
+ * 反馈列表中的item
+ * @param navigateToDetail Function1<[@kotlin.ParameterName] Int, Unit>
+ * @param feedback Data
+ */
 @Composable
 fun FeedbackListItem(
     navigateToDetail: (id: Int) -> Unit,
@@ -174,6 +187,8 @@ fun FeedbackListItem(
         )
     }
 }
+
+
 
 @Composable
 fun DiscussInList(
@@ -235,6 +250,11 @@ fun DiscussInList(
     }
 }
 
+/**
+ * 反馈列表 二级 屏幕
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class FeedbackListVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()

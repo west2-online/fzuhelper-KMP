@@ -51,6 +51,11 @@ import util.compose.parentSystemControl
 import util.network.CollectWithContent
 import kotlin.jvm.Transient
 
+/**
+ * 天气ui
+ * @param viewModel WeatherViewModel
+ * @param modifier Modifier
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WeatherScreen(
@@ -187,6 +192,13 @@ fun WeatherScreen(
     )
 }
 
+/**
+ * 折线图预览
+ * @param weatherDataList List<Forecast>
+ * @param modifier Modifier
+ * @param click Function1<Int, Unit>
+ * @param current Float
+ */
 @Composable
 fun PreviewForSevenDays(
     weatherDataList: List<Forecast>,
@@ -388,7 +400,11 @@ fun PreviewForSevenDays(
 }
 
 
-
+/**
+ * 天气界面 一级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class WeatherVoyagerScreen(
     @Transient
     private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()

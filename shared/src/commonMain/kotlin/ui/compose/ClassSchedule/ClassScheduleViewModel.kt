@@ -41,10 +41,27 @@ import util.network.networkSuccess
 import util.network.resetWithLog
 import util.network.resetWithoutLog
 
-/*
-    Create by NOSAE on 2024/5/12
-    初始加载 当前学期的 开始年 开始月 开始日
-*/
+/**
+ * 课程功能的相关功能
+ * @property kValueAction UndergraduateKValueAction
+ * @property classScheduleRepository ClassScheduleRepository
+ * @property classSchedule ClassSchedule
+ * @property dao Dao
+ * @property shareClient ShareClient
+ * @property classScheduleUiState ClassScheduleUiState 用于渲染的开始年月日
+ * @property currentYear StateFlow<String?> 当前学年
+ * @property selectYear MutableStateFlow<String?> 用户选中的年份
+ * @property selectWeek MutableStateFlow<Int> 用户选中的周数
+ * @property scrollState ScrollState 滑动的state
+ * @property courseDialog MutableStateFlow<CourseBean?> 课程dialog的显示
+ * @property refreshState MutableStateFlow<NetworkResult<String>> 刷新课程的状态
+ * @property refreshExamState MutableStateFlow<NetworkResult<String>> 刷新考试的状态
+ * @property course Flow<List<CourseBean>> 从数据库中获取保存的课程
+ * @property courseForShow StateFlow<List<CourseBean>> 根据用户选中学年计算需要显示的课程
+ * @property yearOptions Flow<List<YearOptions>> 用户可选的学年
+ * @property examList Flow<List<Exam>> 从数据库中得到的考试数据
+ * @constructor
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ClassScheduleViewModel (
     private val kValueAction: UndergraduateKValueAction,
@@ -101,8 +118,11 @@ class ClassScheduleViewModel (
         .asFlow()
         .mapToList(Dispatchers.IO)
 
+    /**
+     * 初始化会更新更新当前学期
+     */
     init {
-        viewModelScope.launchInDefault(Dispatchers.Unconfined) {
+        viewModelScope.launchInDefault {
             classScheduleRepository.apply {
                 shareClient.client.apply {
                     getWeek()
@@ -136,17 +156,30 @@ class ClassScheduleViewModel (
         }
     }
 
+    /**
+     * 是否是当前周
+     * @param week Int
+     * @return Boolean
+     */
     fun isCurrentWeek( week:Int ):Boolean{
         return kValueAction.currentWeek.currentValue.value == week && kValueAction.currentYear.value == selectYear.value
     }
 
+    /**
+     * 是否是当前年
+     * @return Boolean
+     */
     fun isCurrentYear():Boolean{
         return kValueAction.currentYear.value == selectYear.value
     }
 
+    /**
+     * Refresh class data
+     * 刷新课程信息
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     fun refreshClassData(){
-        viewModelScope.launchInDefault(Dispatchers.IO) {
+        viewModelScope.launchInDefault {
             refreshState.logicIfNotLoading {
                 classScheduleRepository.apply {
                     val studentData = classSchedule.getClassScheduleClient()
@@ -206,7 +239,11 @@ class ClassScheduleViewModel (
         }
     }
 
-    //获取课程
+    /**
+     * 获取课程，只获取当前课程
+     * @receiver HttpClient
+     * @param id String
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun HttpClient.getCourseFromNetwork(
         id:String
@@ -229,7 +266,7 @@ class ClassScheduleViewModel (
                     .collect { courseData ->
                         val weekData = courseData.weekData
                         val currentXq = "${weekData.curXueqi}0${weekData.curXuenian}"
-                        getCourses( currentXq,courseData.stateHTML)
+                        getCourses(currentXq, courseData.stateHTML)
                             .flatMapConcat {
                                 getCoursesHTML(
                                     it,
@@ -250,13 +287,18 @@ class ClassScheduleViewModel (
         }
     }
 
-    //获取非当前学期的课程
+    /**
+     * 获取非currentXq学期的课程
+     * @receiver HttpClient
+     * @param currentXq String
+     * @param id String
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun HttpClient.getOtherCourseFromNetwork(
         currentXq : String,
         id :String
     ){
-        viewModelScope.launchInDefault(Dispatchers.IO) {
+        viewModelScope.launchInDefault {
             val yearOptions = dao.yearOpensDao.getAllYearOpens()
             yearOptions.filter {
                 it.yearOptionsName != currentXq && it.yearOptionsName!=""
@@ -269,7 +311,7 @@ class ClassScheduleViewModel (
                             id
                         )
                             .flatMapConcat { stateHtml ->
-                                getCourses(xq,stateHtml)
+                                getCourses(xq, stateHtml)
                             }
                             .flatMapConcat {
                                 this@getOtherCourseFromNetwork.getCoursesHTML(
@@ -289,6 +331,10 @@ class ClassScheduleViewModel (
     }
 
 
+    /**
+     * 刷新考试数据
+     *
+     */
     fun refreshExamData(){
         viewModelScope.launchInDefault {
             refreshExamState.logicIfNotLoading {
@@ -324,23 +370,10 @@ class ClassScheduleViewModel (
         }
     }
 
-
-    //获取考试
-    private fun HttpClient.getExamData(id:String){
-        viewModelScope.launchInDefault(Dispatchers.IO) {
-            val xq = kValueAction.currentXq.currentValue.value
-            with(classScheduleRepository) {
-                this@getExamData.getExamStateHTML(id)
-                    .map {
-                        return@map(parseExamsHTML(it))
-                    }
-                    .collect {
-                        dao.examDao.insertExam(it)
-                    }
-            }
-        }
-    }
-
+    /**
+     * 更改当前学年
+     * @param newValue String
+     */
     fun changeCurrentYear(newValue:String){
         viewModelScope.launchInDefault {
             selectYear.emit(newValue)
@@ -367,6 +400,11 @@ class ClassScheduleViewModel (
         }
     }
 
+    /**
+     * 解析得到的考试html
+     * @param result String
+     * @return List<ExamBean>
+     */
     private fun parseExamsHTML(result: String): List<ExamBean> {
         val exams = ArrayList<ExamBean>()
         val document = Ksoup.parse(result)
@@ -391,10 +429,6 @@ class ClassScheduleViewModel (
         return exams
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        println("over_v")
-    }
 
     data class CourseData(
         val stateHTML:String,
@@ -447,6 +481,15 @@ class ClassScheduleViewModel (
     }
 }
 
+/**
+ * 考试的信息
+ * @property name String 考试名
+ * @property xuefen String 学分
+ * @property teacher String 老师
+ * @property address String 地址
+ * @property zuohao String 座号
+ * @constructor
+ */
 data class ExamBean(
     var name: String = "",
     var xuefen: String = "",

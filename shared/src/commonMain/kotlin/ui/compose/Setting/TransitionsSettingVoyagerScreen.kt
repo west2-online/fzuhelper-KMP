@@ -34,6 +34,11 @@ import util.compose.toTransitions
 import util.flow.launchInDefault
 import kotlin.jvm.Transient
 
+/**
+ * 界面变换动画设置
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class TransitionsSettingVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()

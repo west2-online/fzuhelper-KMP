@@ -8,6 +8,11 @@ import util.compose.SettingTransitions
 import util.compose.defaultSelfPaddingControl
 
 
+/**
+ * 反馈界面 一级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class FeedbackVoyagerScreen(
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ):Screen{

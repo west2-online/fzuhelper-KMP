@@ -12,6 +12,15 @@ import util.network.logicIfNotLoading
 import util.network.networkErrorWithLog
 import util.network.resetWithLog
 
+/**
+ * 更新用户逻辑
+ * @property repository ModifierInformationRepository
+ * @property _modifierUserdataState CMutableStateFlow<NetworkResult<String>>
+ * @property modifierUserdataState StateFlow<NetworkResult<String>> 更新用户信息的结果
+ * @property _modifierAvatarState CMutableStateFlow<NetworkResult<String>>
+ * @property modifierAvatarState StateFlow<NetworkResult<String>> 更新用户头像的结果
+ * @constructor
+ */
 class ModifierInformationViewModel(val repository : ModifierInformationRepository) :ViewModel(){
 
     private val _modifierUserdataState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
@@ -22,6 +31,13 @@ class ModifierInformationViewModel(val repository : ModifierInformationRepositor
         NetworkResult.UnSend()))
     val modifierAvatarState = _modifierAvatarState.asStateFlow()
 
+    /**
+     * 更新用户的信息
+     * @param username String
+     * @param age String
+     * @param grade String
+     * @param location String
+     */
     fun modifierUserdata(username:String, age:String, grade:String, location:String){
         viewModelScope.launch {
             _modifierUserdataState.logicIfNotLoading{
@@ -39,7 +55,10 @@ class ModifierInformationViewModel(val repository : ModifierInformationRepositor
         }
     }
 
-
+    /**
+     * 更新用户的头像
+     * @param imageByteArray ByteArray
+     */
     fun modifierUserAvatar(imageByteArray: ByteArray){
         viewModelScope.launch {
             _modifierAvatarState.logicIfNotLoading {

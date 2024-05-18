@@ -13,12 +13,28 @@ import util.network.logicIfNotLoading
 import util.network.networkErrorWithLog
 import util.network.resetWithLog
 
+/**
+ * 空教室逻辑
+ * @property emptyHouseRepository EmptyHouseRepository
+ * @property _availableEmptyRoomData CMutableStateFlow<NetworkResult<Map<String, List<EmptyRoom>?>?>>
+ * @property availableEmptyRoomData StateFlow<NetworkResult<Map<String, List<EmptyRoom>?>?>>
+ * @constructor
+ */
 class EmptyHouseVoyagerViewModel(
     private val emptyHouseRepository: EmptyHouseRepository
 ) :ViewModel(){
     private val _availableEmptyRoomData = CMutableStateFlow(MutableStateFlow<NetworkResult<Map<String, List<EmptyRoom>?>?>>(NetworkResult.UnSend()))
     val availableEmptyRoomData = _availableEmptyRoomData.asStateFlow()
 
+    /**
+     * 获取空教室
+     * @param campus String
+     * @param date String
+     * @param roomType String
+     * @param start String
+     * @param end String
+     * @param build String
+     */
     fun getAvailableEmptyRoomData(
         campus:String,
         date:String,
@@ -49,6 +65,18 @@ class EmptyHouseVoyagerViewModel(
         }
     }
 
+    /**
+     * 用验证码获取空教室
+     * @param verify String
+     * @param code String
+     * @param campus String
+     * @param build String
+     * @param roomType String
+     * @param date String
+     * @param start String
+     * @param end String
+     * @param key String
+     */
     fun refreshEmptyClassRoom(
         verify : String,
         code : String,

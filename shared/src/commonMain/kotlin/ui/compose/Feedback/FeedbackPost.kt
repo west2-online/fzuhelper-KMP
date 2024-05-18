@@ -32,6 +32,13 @@ import util.network.NetworkResult
 import util.network.toast
 import kotlin.jvm.Transient
 
+/**
+ * 发布新的反馈
+ * @param modifier Modifier
+ * @param submit Function2<[@kotlin.ParameterName] String, [@kotlin.ParameterName] FeedbackType, Unit> 发布逻辑
+ * @param toastState Toast
+ * @param submitResult State<NetworkResult<String>> 发布结果
+ */
 @Composable
 fun FeedbackPost(
     modifier: Modifier = Modifier,
@@ -112,11 +119,22 @@ fun FeedbackPost(
     }
 }
 
+/**
+ * 可选的反馈类型
+ * @property describe String
+ * @property code Int 用于发送到后端的值
+ * @constructor
+ */
 enum class FeedbackType(val describe:String,val code:Int){
     Bug("Bug 反馈", code = 0),
     Suggest("软件建议", code = 1)
 }
 
+/**
+ * 发布反馈界面 二级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class FeedbackPostVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()

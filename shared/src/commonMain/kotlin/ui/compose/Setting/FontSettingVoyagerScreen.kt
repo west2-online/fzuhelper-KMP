@@ -33,6 +33,11 @@ import util.compose.toFont
 import util.flow.launchInDefault
 import kotlin.jvm.Transient
 
+/**
+ * 字体设置界面 二级界面
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class FontSettingVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()

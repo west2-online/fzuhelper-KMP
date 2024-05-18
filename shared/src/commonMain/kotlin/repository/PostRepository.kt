@@ -24,8 +24,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import ui.compose.Release.ReleasePageItem
 
+/**
+ * 帖子的仓库层
+ * @property client HttpClient
+ * @constructor
+ */
 class PostRepository(private val client: HttpClient) {
-
+    /**
+     * 创建新的的帖子
+     * @param releasePageItemList List<ReleasePageItem> 帖子的每个item
+     * @param title String 标题
+     * @param labelList List<Int> 标签列表
+     * @return Flow<NewPostResponse>
+     */
     fun newPost(
         releasePageItemList: List<ReleasePageItem>,
         title: String,
@@ -71,6 +82,10 @@ class PostRepository(private val client: HttpClient) {
         }
     }
 
+    /**
+     * 获取个人可用的标签
+     * @return Flow<UserLabel>
+     */
     suspend fun getUserLabel():Flow<UserLabel>{
         return flow {
             val userLabelList = client.get("/user/label").body<UserLabel>()
@@ -78,18 +93,34 @@ class PostRepository(private val client: HttpClient) {
         }
     }
 
+    /**
+     * 获取特定帖子详情
+     * @param id String
+     * @return Flow<PostById>
+     */
     fun getPostById(id:String): Flow<PostById> {
         return flow {
             val response = client.get("/post/id/${id}").body<PostById>()
             emit(response)
         }
     }
+
     fun getPostByPage(page:String): Flow<PostList> {
         return flow {
             val response = client.get("/post/page/${page}").body<PostList>()
             emit(response)
         }
     }
+
+    /**
+     * 发布新的帖子评论
+     * @param parentId Int
+     * @param postId Int
+     * @param tree String
+     * @param content String
+     * @param image ByteArray?
+     * @return Flow<PostCommentNew>
+     */
     fun postNewComment(parentId:Int,postId:Int,tree:String,content:String,image:ByteArray?):Flow<PostCommentNew>{
         return flow {
             val response = client.post("/post/comment/new"){
@@ -127,6 +158,11 @@ class PostRepository(private val client: HttpClient) {
         }
     }
 
+    /**
+     * 点赞帖子
+     * @param postId Int
+     * @return Flow<PostLikes>
+     */
     fun postLike(postId: Int): Flow<PostLikes> {
         return flow<PostLikes> {
             val response = client.submitForm(
@@ -138,15 +174,6 @@ class PostRepository(private val client: HttpClient) {
         }
     }
 }
-enum class PostStatus(val value: Int, val translation: String) {
-    MissingTitleInPost(0, "在帖子中缺少标题"),
-    PostInitializationFailedInPost(1, "帖子初始化失败"),
-    PartParsingFailedInPost(2, "在帖子中解析部分失败"),
-    FailedToSaveData(3, "保存数据失败"),
-    ThePostWasPublishedSuccessfullyInPost(4, "帖子成功发布"),
-    MissingIDInPost(5, "在帖子中缺少ID"),
-    PostFetchFailedInPost(6, "获取帖子失败"),
-    ThePostWasSuccessfulInPost(7, "获取帖子成功");
-}
+
 
 

@@ -24,6 +24,13 @@ import ui.compose.PostDisplayShare.ReleasePageItemLineChartForShow
 import ui.compose.PostDisplayShare.ReleasePageItemTextForShow
 import util.compose.Label
 
+/**
+ * 发布帖子预览界面
+ * @param lazyListState LazyListState
+ * @param title MutableState<String>
+ * @param releasePageItems SnapshotStateList<ReleasePageItem>
+ * @param labelList List<LabelForSelect>
+ */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun PreviewContent(

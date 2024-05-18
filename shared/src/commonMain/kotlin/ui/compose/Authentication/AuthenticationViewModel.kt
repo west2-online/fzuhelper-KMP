@@ -20,14 +20,32 @@ import util.network.logicIfNotLoading
 import util.network.networkErrorWithLog
 import util.network.resetWithLog
 
-
+/**
+ * 登录注册的相关逻辑
+ * @property loginRepository LoginRepository
+ * @property kVault KVault
+ * @property rootAction RootAction
+ * @property _registerCaptcha CMutableStateFlow<NetworkResult<String>>
+ * @property registerCaptcha StateFlow<NetworkResult<String>> 获取注册验证码的结果
+ * @property _registerState CMutableStateFlow<NetworkResult<String>>
+ * @property registerState StateFlow<NetworkResult<String>> 注册的结果
+ * @property _studentCaptcha CMutableStateFlow<NetworkResult<ImageBitmap>>
+ * @property studentCaptcha StateFlow<NetworkResult<ImageBitmap>> 获取教务处验证码的结果
+ * @property _verifyStudentIDState CMutableStateFlow<NetworkResult<TokenData>>
+ * @property verifyStudentIDState StateFlow<NetworkResult<TokenData>> 验证学生教务处身份的结果
+ * @property _loginState CMutableStateFlow<NetworkResult<String>>
+ * @property loginState StateFlow<NetworkResult<String>> 登录的结果
+ * @property _loginCaptcha CMutableStateFlow<NetworkResult<String>>
+ * @property loginCaptcha StateFlow<NetworkResult<String>> 登录的验证码发送结果
+ * @constructor
+ */
 class AuthenticationViewModel(
     private val loginRepository: LoginRepository,
     private val kVault: KVault,
     private val rootAction: RootAction
 ) : ViewModel() {
-    private val _captcha = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
-    val captcha = _captcha.asStateFlow()
+    private val _registerCaptcha = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+    val registerCaptcha = _registerCaptcha.asStateFlow()
 
     private val _registerState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
         NetworkResult.UnSend()))
@@ -50,17 +68,21 @@ class AuthenticationViewModel(
         NetworkResult.UnSend()))
     val loginCaptcha = _loginCaptcha.asStateFlow()
 
+    /**
+     * 获取注册验证码
+     * @param email String
+     */
     fun getRegisterCaptcha(email:String){
         viewModelScope.launch{
-            _captcha.logicIfNotLoading {
+            _registerCaptcha.logicIfNotLoading {
                 loginRepository.getRegisterCaptcha(email = email)
                     .actionWithLabel(
                         "getRegisterCaptcha/getRegisterCaptcha",
                         catchAction = {label, error ->
-                            _captcha.resetWithLog(label,NetworkResult.Error(error,Throwable("申请失败,请稍后重试")))
+                            _registerCaptcha.resetWithLog(label,NetworkResult.Error(error,Throwable("申请失败,请稍后重试")))
                         },
                         collectAction = { label, data ->
-                            _captcha.resetWithLog(label,data.toNetworkResult())
+                            _registerCaptcha.resetWithLog(label,data.toNetworkResult())
                         }
                     )
             }
@@ -68,6 +90,14 @@ class AuthenticationViewModel(
         }
     }
 
+    /**
+     * 注册
+     * @param email String
+     * @param password String
+     * @param captcha String
+     * @param studentCode String
+     * @param studentPassword String
+     */
     fun register(
         email:String,password:String,captcha:String,studentCode:String,studentPassword:String
     ){
@@ -89,6 +119,12 @@ class AuthenticationViewModel(
         }
     }
 
+    /**
+     * 验证学生身份
+     * @param studentCode String
+     * @param studentPassword String
+     * @param captcha String
+     */
     fun verifyStudentID( studentCode : String, studentPassword:String,captcha:String){
         viewModelScope.launchInDefault{
             _verifyStudentIDState.logicIfNotLoading {
@@ -108,6 +144,10 @@ class AuthenticationViewModel(
         }
     }
 
+    /**
+     * Refresh student captcha
+     * 刷新教务处的验证码
+     */
     fun refreshStudentCaptcha(){
         viewModelScope.launch(Dispatchers.IO) {
             _studentCaptcha.logicIfNotLoading {
@@ -127,6 +167,12 @@ class AuthenticationViewModel(
         }
     }
 
+    /**
+     * 登录futalk
+     * @param email String
+     * @param password String
+     * @param captcha String
+     */
     fun login(email: String,password: String,captcha:String){
         viewModelScope.launch (Dispatchers.Default){
             _loginState.logicIfNotLoading {
@@ -148,6 +194,10 @@ class AuthenticationViewModel(
         }
     }
 
+    /**
+     * 获取登录的验证码
+     * @param email String
+     */
     fun getLoginCaptcha(email: String){
         viewModelScope.launchInDefault{
             loginRepository.getLoginCaptcha(email = email)
@@ -163,13 +213,6 @@ class AuthenticationViewModel(
                 )
         }
     }
-
-    private fun enterAuthor(){
-        val token : String? = kVault.string(forKey = "token")
-        token ?: return
-        rootAction.navigateFormAnywhereToMain()
-    }
-
 }
 
 

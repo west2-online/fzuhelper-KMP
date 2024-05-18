@@ -17,8 +17,20 @@ import io.ktor.http.parameters
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-
+/**
+ * 更新用户信息的仓库层
+ * @property client HttpClient
+ * @constructor
+ */
 class ModifierInformationRepository(val client: HttpClient) {
+    /**
+     * 更新用户的信息
+     * @param username String
+     * @param age String
+     * @param grade String
+     * @param location String
+     * @return Flow<ModifierData>
+     */
     fun modifierUserData(username:String, age:String, grade:String, location:String): Flow<ModifierData> {
         return flow {
             val response = client.submitForm(
@@ -34,6 +46,11 @@ class ModifierInformationRepository(val client: HttpClient) {
         }
     }
 
+    /**
+     * 更新用户的头像
+     * @param byteArray ByteArray
+     * @return Flow<ModifierAvatar>
+     */
     fun modifierAvatar(byteArray: ByteArray):Flow<ModifierAvatar>{
         return flow {
             val response : ModifierAvatar = client.post("/user/avatarUpdate"){
@@ -55,16 +72,3 @@ class ModifierInformationRepository(val client: HttpClient) {
     }
 }
 
-enum class ModifierDataStatus(val value: Int, val describe: String) {
-    AgeMustBeANumber(0, "年龄必须是数字"),
-    TheUpdateFailed(1, "更新失败"),
-    UpdateSuccessful(2, "更新成功")
-}
-
-
-enum class ModifierAvatarStatus(val value: Int, val describe: String) {
-    FileParsingFailed(0, "解析失败"),
-    FailedToSaveTheAvatar(1, "更新失败"),
-    FailedToUpdateTheAvatar(2, "更新失败"),
-    UpdateAvatarSuccessful(3,"更新成功")
-}

@@ -28,7 +28,11 @@ import com.aay.compose.lineChart.LineChart
 import com.aay.compose.lineChart.model.LineParameters
 import ui.compose.Release.ReleasePageItem
 
-
+/**
+ * 文本预览
+ * @param modifier Modifier
+ * @param text State<String>
+ */
 @Composable
 fun ReleasePageItemTextForShow(
     modifier: Modifier,
@@ -51,7 +55,11 @@ fun ReleasePageItemTextForShow(
     }
 }
 
-
+/**
+ * 图片预览
+ * @param modifier Modifier
+ * @param image MutableState<ByteArray?>
+ */
 @Composable
 fun ReleasePageItemImageForShow(
     modifier: Modifier,
@@ -78,8 +86,11 @@ fun ReleasePageItemImageForShow(
     )
 }
 
-
-@Composable
+/**
+ * 折线图预览
+ * @param releasePageItem LineChartItem
+ */
+@Composable 
 fun ReleasePageItemLineChartForShow(
     releasePageItem : ReleasePageItem.LineChartItem
 ){

@@ -9,6 +9,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * 日志逻辑
+ * @property logs Flow<List<NetworkErrorLog>>
+ */
 class LogViewModel: ViewModel() {
     val logs : Flow<List<NetworkErrorLog>> =
         database.networkLogQueries.getAllNetworkErrorLog()

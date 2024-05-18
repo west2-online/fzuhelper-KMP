@@ -36,25 +36,46 @@ import kotlinx.coroutines.sync.withLock
 import util.network.NetworkResult
 import util.network.toast
 
+/**
+ * toast基础类
+ * @property icon ImageVector? 用于显示的icon 目前未使用该参数
+ * @property text String 用于显示的text
+ * @property color Color 用于显示的颜色
+ * @constructor
+ */
 data class ToastImp(
     val icon : ImageVector? = null,
     val text: String,
     val color: Color = Color.Cyan
 )
 
+/**
+ * toast基础类的进一步封装
+ * @property scope CoroutineScope toast使用的协程域
+ * @property currentToast MutableState<ToastImp> 基于的ToastImp基础类
+ * @property isShow MutableState<Boolean> 是否显示
+ * @property mutex Mutex 用于控制显示的锁
+ * @constructor
+ */
 class Toast(private val scope: CoroutineScope) {
     var currentToast = mutableStateOf<ToastImp>(ToastImp(null,"", Color.Cyan))
         private set
     var isShow = mutableStateOf(false)
         private set
     private val mutex = Mutex()
-    suspend fun show(toast : ToastImp):Unit{
+
+    /**
+     * 显示toast 延迟2000毫米后会自动关闭toast
+     * @param toast ToastImp
+     * @return Unit
+     */
+    private suspend fun show(toast : ToastImp):Unit{
         if(!mutex.isLocked){
             mutex.withLock {
                 try {
                     currentToast.value = toast
                     isShow.value = true
-                }finally {
+                } finally {
                     delay(2000)
                     isShow.value = false
                 }
@@ -62,23 +83,40 @@ class Toast(private val scope: CoroutineScope) {
         }
     }
 
-    fun run (toast : ToastImp){
+    /**
+     * 对show的协程封装
+     * @param toast ToastImp
+     */
+    private fun run (toast : ToastImp){
         scope.launch {
             show(toast)
         }
     }
 
+    /**
+     * 添加普通的显示
+     * @param string String
+     * @param color Color
+     */
     fun addToast(string: String,color: Color = Color.Gray){
         run(ToastImp(Icons.Filled.Refresh,string, color))
     }
 
+    /**
+     * 添加警告显示
+     * @param string String
+     */
     fun addWarnToast(string: String){
         run(ToastImp(Icons.Filled.Refresh,string,Color(248, 102, 95)))
     }
 
 }
 
-
+/**
+ * 在compose函数中使用，即可自动使用该compose的协程域
+ * @param scope CoroutineScope
+ * @return Toast
+ */
 @Composable
 inline fun rememberToastState(
     scope: CoroutineScope = rememberCoroutineScope()
@@ -87,8 +125,15 @@ inline fun rememberToastState(
 }
 
 
-
-//未优化的方法
+/**
+ * 将NetworkResult<String>类型绑定到toast，自动监听，自动toast
+ * @receiver Toast
+ * @param networkResult1 State<NetworkResult<String>>?
+ * @param networkResult2 State<NetworkResult<String>>?
+ * @param networkResult3 State<NetworkResult<String>>?
+ * @param networkResult4 State<NetworkResult<String>>?
+ * @param networkResult5 State<NetworkResult<String>>?
+ */
 @Composable
 inline fun Toast.toastBindNetworkResult(
     networkResult1: State<NetworkResult<String>>? = null,
@@ -161,9 +206,11 @@ inline fun Toast.toastBindNetworkResult(
 }
 
 
-
-
-
+/**
+ * toast显示的ui，最好在Box中使用
+ * @param toast Toast
+ * @param isParentStatusControl Boolean
+ */
 @Composable
 fun EasyToast(
     toast : Toast = rememberToastState(),

@@ -73,6 +73,12 @@ import util.network.NetworkResult
 import util.network.logicWithTypeWithLimit
 import kotlin.jvm.Transient
 
+/**
+ * 发布页i
+ * @param modifier Modifier
+ * @param viewModel ReleasePageViewModel
+ * @param initLabel List<Label> 初始的label 一般用于有活动时，活动要求的指定标签，这些标签时必选的
+ */
 @Composable
 fun ReleasePageScreen(
     modifier: Modifier = Modifier,
@@ -365,18 +371,20 @@ fun ReleasePageScreen(
 }
 
 
-
-
-
-
-
-
+/**
+ * Emoji list
+ */
 val emojiList = listOf("😃","😄","😁","😆","😅","🤣","😂","🙂","😉","😊","😇","🥰","😍","🤩","😘","😗","😙","😏","😋","😛","😜","🤪","😝","🤗","🤭","🤫","🤔","🤤","🤠","🥳","😎","🤓","🧐","🙃","🤐","🤨","😐","😑","😶","😶","😒","🙄","😬","😮","🤥","😌","😔","😪","😴","😷","🤒","🤕","🤢","🤮","🤧","🥵","🥶","🥴","😵","😵","🤯","🥱","😕","😟","🙁","😮","😯","😲","😳","🥺","😦","😧","😨","😰","😥","😢","😭","😱","😖","😣","😞","😓","😩","😫","😤","😡","😠","🤬","👿")
 
 
-
-
-
+/**
+ * 显示发布页的内容
+ * @param lazyListState LazyListState
+ * @param title MutableState<String>
+ * @param releasePageItems SnapshotStateList<ReleasePageItem>
+ * @param labelList List<LabelForSelect>
+ * @param toast Toast
+ */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class,
     ExperimentalMaterial3Api::class
 )
@@ -561,7 +569,12 @@ fun ReleaseContent(
 }
 
 
-
+/**
+ * 发布页 一级界面
+ * @property initLabel List<Label>
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class ReleaseRouteVoyagerScreen(
     private val initLabel : List<Label> = listOf(),
     @Transient
@@ -578,6 +591,11 @@ class ReleaseRouteVoyagerScreen(
     }
 }
 
+/**
+ * 将index处的item上升
+ * @receiver SnapshotStateList<ReleasePageItem>
+ * @param index Int
+ */
 fun SnapshotStateList<ReleasePageItem>.upOrder(index:Int){
     if(index == this.indexOf(this.first())){
         return
@@ -587,6 +605,11 @@ fun SnapshotStateList<ReleasePageItem>.upOrder(index:Int){
     this[index] = temp
 }
 
+/**
+ * 将index处的item下降
+ * @receiver SnapshotStateList<ReleasePageItem>
+ * @param index Int
+ */
 fun SnapshotStateList<ReleasePageItem>.downOrder(index:Int){
     if(index == this.indexOf(this.last())){
         return
@@ -596,6 +619,16 @@ fun SnapshotStateList<ReleasePageItem>.downOrder(index:Int){
     this[index] = temp
 }
 
+/**
+ * 用于label选择的类
+ * @property id Int label的id
+ * @property label String label的值
+ * @property canChange Boolean label是否可以更改选中状态
+ * @property labelType LabelType 标签类型
+ * @property _isSelect MutableState<Boolean>
+ * @property isSelect State<Boolean> 是否选中
+ * @constructor
+ */
 class LabelForSelect(
     val id:Int,
     val label : String,

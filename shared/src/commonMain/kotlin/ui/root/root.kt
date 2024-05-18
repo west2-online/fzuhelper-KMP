@@ -32,6 +32,11 @@ import util.compose.EasyToast
 import util.compose.FuTalkTheme
 import util.compose.SettingTransitions
 
+/**
+ * Root action
+ * 用于第一层级的界面切换
+ * @constructor Create empty Root action
+ */
 interface RootAction{
     fun reLogin()
     fun finishLogin()
@@ -54,20 +59,40 @@ interface RootAction{
     fun navigateToScreen(screen: Screen)
 }
 
+
 @Composable
 fun getRootAction(): RootAction {
     return koinInject<RootAction>()
 }
+
+/**
+ * 解析token
+ * @property target String
+ * @property verifyFunction Function1<String, Boolean> 验证是否符合
+ * @property toActionString Function1<String, String> 解析成功的行为
+ * @constructor
+ */
 enum class TokeJump(
     val target:String,
     val verifyFunction:(String)->Boolean,
     val toActionString:(String)->String
 ){
+    /**
+     * Post
+     * 转到特定的post
+     * @constructor Create empty Post
+     */
     Post(target = "POST", verifyFunction = {
         it.toIntOrNull() == null
     }, toActionString = {
         "POST-${it}"
     }),
+
+    /**
+     * Web
+     * 转到特定的web网页
+     * @constructor Create empty Web
+     */
     WEB(target = "WEB", verifyFunction = {
         val regexString = ""
         val regex = Regex(regexString)
@@ -75,6 +100,12 @@ enum class TokeJump(
     }, toActionString = {
         "WEB-${it}"
     }),
+
+    /**
+     * Null
+     * 无
+     * @constructor Create empty Null
+     */
     Null(target = "NULL", verifyFunction = {
         it == "null"
     }, toActionString = {
@@ -100,7 +131,10 @@ fun tokenJump(
     }
 }
 
-
+/**
+ * 根ui
+ * @param systemAction SystemAction
+ */
 @Composable
 fun RootUi(
     systemAction: SystemAction
