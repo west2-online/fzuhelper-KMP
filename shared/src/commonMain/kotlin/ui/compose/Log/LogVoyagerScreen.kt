@@ -19,6 +19,11 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import kotlin.jvm.Transient
 
+/**
+ * 日志显示
+ * @property parentPaddingControl ParentPaddingControl
+ * @constructor
+ */
 class LogVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
