@@ -72,6 +72,17 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
                     _newPostState.resetWithoutLog(networkErrorWithLog(Throwable("至少要一个标签"),"至少要一个标签"))
                     return@logicIfNotLoading
                 }
+                if (
+                    list.filterIsInstance<ReleasePageItem.ImageItem>().any {
+                        it.let {
+                            (it.image.value?.size ?: 0) / 1024 / 1024 > 2
+                        }
+                    }
+                ){
+                    _newPostState.resetWithoutLog(networkErrorWithLog(Throwable("图片文件过大"),"图片文件过大"))
+                    return@logicIfNotLoading
+                }
+
                 releaseRepository.newPost(
                     releasePageItemList = list,
                     title = title,
