@@ -55,7 +55,8 @@ class LoadPageDataForPost(
         return PageLoadDataForPost(
             response,
             when{
-                response!!.isEmpty() -> null
+                response == null -> null
+                response.isEmpty() -> null
                 response.size < 10 -> null
                 else -> ( page + 1 )
             }
@@ -79,15 +80,12 @@ class EasyPageSourceForPost(
         return try {
             val page = params.key ?: 1
             val response = backend.searchUsers(page)
-            println("-----------------------------------------")
-            println(response.result)
             LoadResult.Page(
-                data = response.result!!,
+                data = response.result?: listOf(),
                 prevKey = null, // Only paging forward.
                 nextKey = response.nextPageNumber
             )
         } catch (e: Exception) {
-            println("____________________${e.message}")
             LoadResult.Error(Throwable("加载失败"))
         }
     }
