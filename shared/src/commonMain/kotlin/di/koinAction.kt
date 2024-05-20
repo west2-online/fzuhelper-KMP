@@ -8,6 +8,7 @@ import dao.ClassScheduleDao
 import dao.Dao
 import dao.ExamDao
 import dao.ThemeKValueAction
+import dao.TokenKValueAction
 import dao.UndergraduateKValueAction
 import dao.YearOpensDao
 import initStore
@@ -380,10 +381,10 @@ fun appModule(
             install(
                 DefaultRequest
             ){
-                val kVault = get<KVault>()
-                val token : String? = kVault.string(forKey = "token")
-                token?.let {
-                    headers.append("Authorization",token)
+                val tokenKValueAction = get<TokenKValueAction>()
+                val token = tokenKValueAction.token.currentValue
+                token.value?.let {
+                    headers.append("Authorization",it)
                 }
                 url(BaseUrlConfig.BaseUrl)
             }

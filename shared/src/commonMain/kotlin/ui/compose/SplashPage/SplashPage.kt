@@ -17,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import cafe.adriel.voyager.core.screen.Screen
-import com.liftric.kvault.KVault
 import config.BaseUrlConfig
+import dao.TokenKValueAction
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
@@ -61,15 +61,15 @@ class SplashPageVoyagerScreen():Screen{
                 show = false
             }
         }
-        val kVault = koinInject<KVault>()
-        val token : String? = kVault.string(forKey = "token")
+        val token = koinInject<TokenKValueAction>().token.currentValue.collectAsState()
+
         Box(
             modifier = Modifier.fillMaxSize()
                 .clickable {
-                    token?.let {
+                    token.value?.let {
                         rootAction.navigateFormSplashToMainPage()
                     }
-                    token?:let {
+                    token.value?:let {
                         rootAction.navigateFormSplashToLoginAndRegister()
                     }
                 }
