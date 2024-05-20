@@ -53,7 +53,6 @@ class PersonViewModel(
                             _userData.resetWithLog(label,data.toNetworkResult())
                         }
                     )
-
             }
         }
         id?.let {

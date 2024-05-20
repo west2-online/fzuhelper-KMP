@@ -436,6 +436,9 @@ fun appModule(
         }
         return@single client.encodeAction()
     }
+    single {
+        TokenKValueAction(get())
+    }
     repositoryList()
     viewModel()
     single {
@@ -553,7 +556,7 @@ fun Module.viewModel(){
     viewModelDefinition {
         ManageViewModel(get(),get())
     }
-    viewModelDefinition {
+    single {
         PersonViewModel(get(),get())
     }
     viewModelDefinition {
