@@ -1,31 +1,24 @@
 package ui.compose.EmptyHouse
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -35,10 +28,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.DatePicker
@@ -49,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -59,16 +51,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import asImageBitmap
 import cafe.adriel.voyager.core.screen.Screen
 import config.CurrentZone
-import configureForPlatform
-import data.emptyRoom.UnAvailable
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.cookies.HttpCookies
-import io.ktor.client.request.get
-import io.ktor.client.statement.readBytes
-import io.ktor.http.Cookie
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -83,17 +67,19 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
 import org.koin.compose.koinInject
-import ui.compose.Test.CustomCookiesStorage
 import util.compose.EasyToast
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.network.CollectWithContentInBox
-import util.network.NetworkResult
 import util.network.logicWithTypeWithLimit
 import kotlin.jvm.Transient
 
+class BuildForSelect(
+    val isSelect : MutableState<Boolean>,
+    val name : String
+)
 /**
  * 空教室一级屏幕
  * @property parentPaddingControl ParentPaddingControl
@@ -122,8 +108,13 @@ class EmptyHouseVoyagerScreen(
             mutableStateOf("旗山校区")
         }
         val buildForSelect = remember {
-            derivedStateOf {
-                campusList[selectCampus.value]
+            derivedStateOf <List<BuildForSelect>?>{
+                campusList[selectCampus.value]?.map {
+                    BuildForSelect(
+                        isSelect = mutableStateOf(it.second),
+                        name = it.first
+                    )
+                }
             }
         }
         val emptyData = emptyHouseVoyagerViewModel.availableEmptyRoomData.collectAsState()
@@ -131,17 +122,13 @@ class EmptyHouseVoyagerScreen(
             mutableStateOf<String?>("旗山校区")
         }
         val toastState = rememberToastState()
-        val refresh = remember {
-            mutableStateOf(false)
-        }
+
         emptyData.value.logicWithTypeWithLimit(
             error = {
-                if (it is UnAvailable){
-                    refresh.value = true
-                }
-                else{
-                    toastState.addWarnToast(it.message.toString())
-                }
+                toastState.addWarnToast(it.message.toString())
+            },
+            success = {
+                toastState.addToast("获取成功")
             }
         )
         LaunchedEffect(startClass.value){
@@ -149,9 +136,7 @@ class EmptyHouseVoyagerScreen(
                 endClass.value = startClass.value
             }
         }
-        LaunchedEffect(buildForSelect.value){
-            selectBuild.value = buildForSelect.value?.get(0)
-        }
+
         val scaffoldState = rememberScaffoldState()
         val date = rememberDatePickerState(
             initialSelectedDateMillis = Clock.System.todayIn(TimeZone.UTC).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
@@ -268,7 +253,7 @@ class EmptyHouseVoyagerScreen(
                                       },
                                       content = {
                                           Text(
-                                              selectBuild.value?:"无"
+                                              "选择教学楼"
                                           )
                                       }
                                   )
@@ -278,14 +263,19 @@ class EmptyHouseVoyagerScreen(
                                           expanded.value = false
                                       },
                                       content = {
-                                          buildForSelect.value?.forEach {
+                                          buildForSelect.value?.forEach { buildForSelect ->
                                               DropdownMenuItem(
                                                   onClick = {
-                                                      selectBuild.value = it
-                                                      expanded.value = false
+                                                      buildForSelect.isSelect.value = !buildForSelect.isSelect.value
                                                   }
                                               ){
-                                                  Text(it)
+                                                  Checkbox(
+                                                      checked = buildForSelect.isSelect.value,
+                                                      onCheckedChange = {
+                                                          buildForSelect.isSelect.value = !buildForSelect.isSelect.value
+                                                      }
+                                                  )
+                                                  Text(buildForSelect.name)
                                               }
                                           }
                                       }
@@ -363,7 +353,7 @@ class EmptyHouseVoyagerScreen(
                       }
                       FloatingActionButton(
                           onClick = {
-                              val buildForSend = selectBuild.value
+                              val buildForSend = buildForSelect.value
                               buildForSend?:run {
                                   return@FloatingActionButton
                               }
@@ -377,7 +367,11 @@ class EmptyHouseVoyagerScreen(
                                   roomType = "普通教室",
                                   start = startClass.value.toString(),
                                   end = endClass.value.toString(),
-                                  build = buildForSend
+                                  build = buildForSend.filter {
+                                      it.isSelect.value
+                                  }.map {
+                                      it.name
+                                  }
                               )
                           },
                           modifier = Modifier
@@ -388,151 +382,6 @@ class EmptyHouseVoyagerScreen(
                               imageVector = Icons.Filled.Refresh,
                               contentDescription = null
                           )
-                      }
-                      AnimatedVisibility(
-                          visible = refresh.value,
-                          exit = slideOutVertically {
-                              return@slideOutVertically it
-                          },
-                          enter = slideInVertically {
-                              return@slideInVertically it
-                          },
-                          modifier = Modifier
-                              .matchParentSize(),
-                      ){
-                          Surface (
-                              modifier = Modifier
-                                  .matchParentSize()
-                          ){
-                              val data = remember {
-                                  mutableStateOf<NetworkResult<ByteArray>>(NetworkResult.UnSend())
-                              }
-                              val cookie = remember {
-                                  mutableStateOf<Cookie?>(null)
-                              }
-                              val action = remember {
-                                  suspend {
-                                      try {
-                                          data.value = NetworkResult.LoadingWithAction()
-                                          val client = HttpClient(){
-                                              install(HttpCookies){
-                                                  storage = CustomCookiesStorage(cookie)
-                                              }
-                                              configureForPlatform()
-                                          }
-                                          val image = client.get("https://jwcjwxt1.fzu.edu.cn/plus/verifycode.asp").readBytes()
-                                          data.value = NetworkResult.Success(image)
-                                      }catch (e:Exception){
-                                          data.value = NetworkResult.Error(e,Throwable("获取失败"))
-                                          println(e.message)
-                                      }
-                                  }
-                              }
-                              LaunchedEffect(Unit){
-                                  action.invoke()
-                              }
-                              val captcha = remember {
-                                  mutableStateOf("")
-                              }
-                              Column (
-                                  modifier = Modifier
-                                      .fillMaxSize(),
-                                  verticalArrangement = Arrangement.Center,
-                                  horizontalAlignment = Alignment.CenterHorizontally
-                              ){
-                                  Row{
-                                      Spacer(modifier = Modifier.weight(1f))
-                                      Icon(
-                                          Icons.Filled.Close,
-                                          null,
-                                          modifier = Modifier
-                                              .size(50.dp)
-                                              .wrapContentSize(Alignment.Center)
-                                              .fillMaxSize(0.7f)
-                                              .clickable {
-                                                  refresh.value = false
-                                              }
-                                      )
-                                  }
-                                  data.CollectWithContentInBox(
-                                      success = {
-                                          Column (
-                                              verticalArrangement = Arrangement.spacedBy(20.dp),
-                                              horizontalAlignment = Alignment.CenterHorizontally
-                                          ){
-                                              Image(
-                                                  bitmap = it.asImageBitmap(),
-                                                  contentDescription = null,
-                                                  modifier = Modifier
-                                                      .clickable {
-                                                          scope.launch {
-                                                              action.invoke()
-                                                          }
-                                                      }
-                                                      .fillMaxWidth(0.6f)
-                                                      .aspectRatio(2f)
-                                              )
-                                              TextField(
-                                                  captcha.value,
-                                                  onValueChange = {
-                                                      captcha.value = it
-                                                  }
-                                              )
-                                              Button(
-                                                  onClick = {
-                                                      val verify = captcha.value
-                                                      if (verify.isEmpty()){
-                                                          toastState.addWarnToast("验证码不得为空")
-                                                          return@Button
-                                                      }
-                                                      val cookieForSend = cookie.value
-                                                      if (cookieForSend == null){
-                                                          toastState.addWarnToast("请从新加载验证码")
-                                                          return@Button
-                                                      }
-                                                      val buildForSend = selectBuild.value
-                                                      buildForSend?:run {
-                                                          return@Button
-                                                      }
-                                                      val dateForSend = selectDate.value
-                                                      dateForSend?:run {
-                                                          return@Button
-                                                      }
-                                                      refresh.value = false
-                                                      emptyHouseVoyagerViewModel.refreshEmptyClassRoom(
-                                                          verify = captcha.value,
-                                                          code = cookieForSend.value,
-                                                          campus = selectCampus.value,
-                                                          date = dateForSend,
-                                                          roomType = "普通教室",
-                                                          start = startClass.value.toString(),
-                                                          end = endClass.value.toString(),
-                                                          build = buildForSend,
-                                                          key = cookieForSend.name,
-                                                      )
-                                                  }
-                                              ){
-                                                  Text("获取")
-                                              }
-                                          }
-                                      },
-                                      error = {
-                                          Text("获取失败", modifier = Modifier.clickable {
-                                              scope.launch {
-                                                  action.invoke()
-                                              }
-                                          })
-                                      },
-                                      loading = {
-                                          CircularProgressIndicator()
-                                      },
-                                      modifier = Modifier
-                                          .padding(20.dp)
-                                          .fillMaxWidth()
-                                          .weight(1f)
-                                  )
-                              }
-                          }
                       }
                       EasyToast(toastState)
                   }
@@ -630,69 +479,63 @@ class EmptyHouseVoyagerScreen(
  */
 var campusList = mapOf(
     "旗山校区" to listOf(
-        "全部",
-        "第1学科群",
-        "第2学科群",
-        "第3学科群",
-        "第4学科群",
-        "第5学科群",
-        "公共教学楼东1",
-        "公共教学楼东2",
-        "公共教学楼东3",
-        "公共教学楼文科楼",
-        "公共教学楼西1",
-        "公共教学楼西2",
-        "公共教学楼西3",
-        "公共教学楼中楼",
-        "国家科技园",
-        "晋江楼",
-        "素拓中心",
-        "田径场",
-        "图书馆",
-        "音乐实训基地",
-        "紫金教学楼",
+        Pair("第1学科群",false),
+        Pair("第2学科群",false),
+        Pair("第3学科群",false),
+        Pair("第4学科群",false),
+        Pair("第5学科群",false),
+        Pair("公共教学楼东1",true),
+        Pair("公共教学楼东2",true),
+        Pair("公共教学楼东3",true),
+        Pair("公共教学楼文科楼",false),
+        Pair("公共教学楼西1",true),
+        Pair("公共教学楼西2",true),
+        Pair("公共教学楼西3",true),
+        Pair("公共教学楼中楼",true),
+        Pair("国家科技园",false),
+        Pair("晋江楼",false),
+        Pair("素拓中心",false),
+        Pair("田径场",false),
+        Pair("图书馆",false),
+        Pair("音乐实训基地",false),
+        Pair("紫金教学楼",false),
     ),
     "晋江校区" to listOf(
-        "全部",
-        "A区",
-        "B区中庭",
-        "田径场",
+        Pair("A区",true),
+        Pair("B区中庭",true),
+        Pair("田径场",true),
     ),
     "铜盘校区" to listOf(
-        "全部",
-        "A楼",
-        "B楼",
-        "铜盘田径场",
+        Pair("A楼",true),
+        Pair("B楼",true),
+        Pair("铜盘田径场",true),
     ),
     "怡山校区" to listOf(
-        "全部",
-        "北楼",
-        "地矿楼",
-        "电教",
-        "电气楼",
-        "东教",
-        "管理学院",
-        "机械楼",
-        "计算机楼",
-        "轻工楼",
-        "田径场",
-        "图书馆",
-        "土建楼",
-        "土乙楼",
-        "文科楼",
-        "物理楼",
-        "西教",
-        "至诚学院",
-        "子兴楼",
+        Pair("北楼",true),
+        Pair("地矿楼",true),
+        Pair("电教",true),
+        Pair("电气楼",true),
+        Pair("东教",true),
+        Pair("管理学院",true),
+        Pair("机械楼",true),
+        Pair("计算机楼",true),
+        Pair("轻工楼",true),
+        Pair("田径场",true),
+        Pair("图书馆",true),
+        Pair("土建楼",true),
+        Pair("土乙楼",true),
+        Pair("文科楼",true),
+        Pair("物理楼",true),
+        Pair("西教",true),
+        Pair("至诚学院",true),
+        Pair("子兴楼",true),
     ),
     "泉港校区" to listOf(
-        "全部",
-        "泉港教学楼",
-        "泉港实验一号楼",
+        Pair("泉港教学楼",true),
+        Pair("泉港实验一号楼",true),
     ),
     "厦门工艺美院" to listOf(
-        "全部",
-        "鼓浪屿校区",
-        "集美校区",
+        Pair("鼓浪屿校区",true),
+        Pair("集美校区",true),
     )
 )

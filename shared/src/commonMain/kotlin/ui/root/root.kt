@@ -2,10 +2,19 @@ package ui.root
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
+import config.BaseUrlConfig
 import data.person.UserData.Data
 import di.SystemAction
 import di.appModule
@@ -15,6 +24,7 @@ import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import ui.compose.AboutUs.AboutUsVoyagerScreen
 import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
+import ui.compose.EmptyHouse.EmptyHouseVoyagerScreen
 import ui.compose.Feedback.FeedbackVoyagerScreen
 import ui.compose.Log.LogVoyagerScreen
 import ui.compose.Main.MainVoyagerScreen
@@ -228,6 +238,19 @@ fun RootUi(
             )
         }) {
             Box(modifier = Modifier.fillMaxSize()){
+                if(BaseUrlConfig.isDebug){
+                    IconButton(
+                        onClick = {
+                            navigate.push(EmptyHouseVoyagerScreen())
+                        },
+                        modifier = Modifier
+                            .navigationBarsPadding()
+                            .systemBarsPadding()
+                            .offset(x = 10.dp,y = (-10).dp)
+                    ){
+                        Icon(Icons.Default.Add,null)
+                    }
+                }
                 FuTalkTheme {
                     SettingTransitions(navigate)
                 }
