@@ -346,7 +346,7 @@ fun ReleasePageItemImage(
             }
         }
         AnimatedVisibility(
-            (image.value?.size?:0)/1024/1024 > 2 ,
+            (image.value?.size?:0)/ 1024 / 8 > 5 ,
             modifier = Modifier
                 .wrapContentSize()
                 .padding(10.dp)

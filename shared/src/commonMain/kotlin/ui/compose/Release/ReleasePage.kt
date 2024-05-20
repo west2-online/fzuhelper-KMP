@@ -524,6 +524,10 @@ fun ReleaseContent(
                                         .animateContentSize()
                                         .animateItemPlacement(),
                                     onImagePicked = {
+                                        if ((it.size / 1024 / 8 ) > 5){
+                                            toast.addWarnToast("图片过大")
+                                            return@ReleasePageItemImage
+                                        }
                                         releasePageItem.image.value = it
                                     },
                                     image = releasePageItem.image,
