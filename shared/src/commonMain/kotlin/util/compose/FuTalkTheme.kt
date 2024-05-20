@@ -293,9 +293,9 @@ fun SettingTransitions(navigator: Navigator){
         }
     }
     when(currentTransitions.value){
-        PageTransitions.FadeTransition -> FadeTransition(navigator)
-        PageTransitions.SlideTransition -> SlideTransition(navigator)
-        PageTransitions.ScaleTransition -> ScaleTransition(navigator)
+        PageTransitions.FadeTransition -> FadeTransition(navigator,animationSpec = tween(100))
+        PageTransitions.SlideTransition -> SlideTransition(navigator,animationSpec = tween(100))
+        PageTransitions.ScaleTransition -> ScaleTransition(navigator,animationSpec = tween(100))
     }
 }
 

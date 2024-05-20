@@ -238,6 +238,9 @@ fun RootUi(
             )
         }) {
             Box(modifier = Modifier.fillMaxSize()){
+                FuTalkTheme {
+                    SettingTransitions(navigate)
+                }
                 if(BaseUrlConfig.isDebug){
                     IconButton(
                         onClick = {
@@ -250,9 +253,6 @@ fun RootUi(
                     ){
                         Icon(Icons.Default.Add,null)
                     }
-                }
-                FuTalkTheme {
-                    SettingTransitions(navigate)
                 }
                 EasyToast(toast = koinInject())
             }
