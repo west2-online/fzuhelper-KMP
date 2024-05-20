@@ -345,6 +345,14 @@ fun ReleasePageItemImage(
                 )
             }
         }
+        AnimatedVisibility(
+            (image.value?.size?:0)/1024/1024 > 2 ,
+            modifier = Modifier
+                .wrapContentSize()
+                .padding(10.dp)
+        ){
+            Text("图片过大,无法发送", color = Color.Red)
+        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
