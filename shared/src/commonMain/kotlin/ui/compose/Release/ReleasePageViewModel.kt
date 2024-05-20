@@ -75,7 +75,7 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
                 if (
                     list.filterIsInstance<ReleasePageItem.ImageItem>().any {
                         it.let {
-                            (it.image.value?.size ?: 0) / 1024 / 1024 > 2
+                            (it.image.value?.size ?: 0) / 1024 / 8 > 5
                         }
                     }
                 ){
