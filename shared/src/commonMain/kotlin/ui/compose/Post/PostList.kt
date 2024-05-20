@@ -209,6 +209,26 @@ fun PostList(
                                 }
                             }
                         }
+                        append is LoadState.NotLoading -> {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color.Gray)
+                                        .padding(10.dp)
+                                ){
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(vertical = 3.dp)
+                                            .fillMaxWidth(),
+                                        text = "已经到底了",
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
