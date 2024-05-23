@@ -13,6 +13,7 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
     id("dev.icerock.mobile.multiplatform-resources")
     kotlin("plugin.serialization") version "1.9.20"
     id("kotlin-parcelize")
@@ -46,12 +47,10 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material)
-//                implementation(compose.uiTooling)
-//                implementation(compose.components.uiToolingPreview)
+                implementation(compose.components.uiToolingPreview)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
                 implementation(compose.material3)
-
                 //图像
                 implementation("media.kamel:kamel-image:0.9.4")
                 implementation("io.ktor:ktor-client-core:$ktor_version")

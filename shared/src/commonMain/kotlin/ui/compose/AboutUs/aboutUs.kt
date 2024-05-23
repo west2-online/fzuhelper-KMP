@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.mikepenz.markdown.compose.Markdown
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import ui.compose.Main.MainItems
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
@@ -38,6 +39,7 @@ import kotlin.math.sqrt
  * 关于我们的ui
  * @param modifier Modifier
  */
+@Preview
 @Composable
 fun AboutUsScreen(
     modifier: Modifier = Modifier

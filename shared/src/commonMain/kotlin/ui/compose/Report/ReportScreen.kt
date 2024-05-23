@@ -7,8 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
-import com.bumble.appyx.utils.multiplatform.Parcelable
-import com.bumble.appyx.utils.multiplatform.Parcelize
 import com.bumble.appyx.utils.multiplatform.RawValue
 import data.share.Comment
 import data.share.Post
@@ -46,12 +44,11 @@ sealed interface ReportType{
 
 }
 
-sealed class ReportTarget : Parcelable {
+sealed class ReportTarget  {
 
-    @Parcelize
+
     class PostReportType(val type : @RawValue ReportType.PostReportType) : ReportTarget()
 
-    @Parcelize
     class CommentReportType(val type : @RawValue ReportType.CommentReportType) : ReportTarget()
 
 }

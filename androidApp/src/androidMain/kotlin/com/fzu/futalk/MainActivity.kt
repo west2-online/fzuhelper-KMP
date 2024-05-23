@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT,Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT,Color.TRANSPARENT)
         )
-        setContent {
+        this.setContent {
             RootUi(
                 systemAction = SystemAction(
                     onFinish = {

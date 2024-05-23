@@ -96,6 +96,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.example.library.MR
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import ui.compose.Report.ReportType
 import util.compose.EasyToast
@@ -112,6 +113,12 @@ import util.network.toEasyTime
 import util.network.toast
 import kotlin.jvm.Transient
 
+@Composable
+@Preview
+fun test(){
+
+}
+
 
 /**
  * 帖子详情页ui
@@ -127,6 +134,7 @@ import kotlin.jvm.Transient
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
+
 fun PostDetail(
     id: String,
     modifier: Modifier = Modifier,
