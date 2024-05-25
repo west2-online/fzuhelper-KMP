@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.fleeksoft.ksoup.Ksoup
 import com.futalk.kmm.CourseBean
+import com.futalk.kmm.Exam
 import configureForPlatform
 import dao.Dao
 import dao.UndergraduateKValueAction
@@ -34,6 +35,7 @@ import util.flow.actionWithLabel
 import util.flow.catchWithMassage
 import util.flow.collectWithMassage
 import util.flow.launchInDefault
+import util.math.parseIntWithNull
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
 import util.network.networkError
@@ -113,10 +115,69 @@ class ClassScheduleViewModel (
         .asFlow()
         .mapToList(Dispatchers.IO)
 
+    data class ExamAddressParse(
+        val year:Int?,
+        val month:Int?,
+        val startHour : Int?,
+        val startMinute : Int?,
+        val endHour : Int?,
+        val endMinute : Int?,
+        val address: String?
+    )
+
+    private fun (ExamAddressParse?).verify():ExamAddressParse?{
+        this?:return null
+        return if (
+            year == null ||
+            month == null ||
+            startHour == null ||
+            startMinute == null ||
+            endHour == null ||
+            endMinute == null ||
+            address == null
+        ){
+            null
+        }else {
+            this
+        }
+    }
+
+
+    data class ExamForShow(
+        val exam: Exam,
+        var examAddressParse:ExamAddressParse?
+    )
     val examList = database.examQueries
         .selectAllExams()
         .asFlow()
         .mapToList(Dispatchers.IO)
+        .map { exams ->
+            exams.filter {
+                it.address.isNotEmpty()
+            }.map{ exam ->
+                // 定义正则表达式
+                val datePattern = Regex("""(\d{4})年(\d{2})月(\d{2})日 (\d{2}):(\d{2})-(\d{2}):(\d{2}) (\S+)""").matchEntire(exam.address)
+                datePattern?:return@map ExamForShow(exam,null)
+                datePattern.groupValues.let {
+                    return@map ExamForShow(
+                        exam = exam,
+                        examAddressParse = ExamAddressParse(
+                            year = parseIntWithNull(it[1]),
+                            month = parseIntWithNull(it[2]),
+                            startHour = parseIntWithNull(it[3]),
+                            startMinute = parseIntWithNull(it[4]),
+                            endHour = parseIntWithNull(it[5]),
+                            endMinute = parseIntWithNull(it[6]),
+                            address = it[7]
+                        )
+                    )
+                }
+            }.map {
+                it.apply {
+                    examAddressParse = examAddressParse.verify()
+                }
+            }
+        }
 
     /**
      * 初始化会更新更新当前学期

@@ -89,6 +89,7 @@ import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.Month
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.example.library.MR
@@ -101,6 +102,7 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.parentStatusControl
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
+import util.math.parseInt
 import util.network.CollectWithContentInBox
 import kotlin.jvm.Transient
 import kotlin.time.DurationUnit
@@ -518,7 +520,7 @@ fun ClassSchedule(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         items(examList.value.filter {
-                            it.address.isNotEmpty()
+                            it.exam.address.isNotEmpty()
                         }){
                             Card {
                                 Column (
@@ -527,14 +529,62 @@ fun ClassSchedule(
                                         .padding(10.dp),
                                     verticalArrangement = Arrangement.spacedBy(5.dp)
                                 ){
+
                                     with(it){
+                                        val timeDatePeriod = remember {
+                                            mutableStateOf("解析中...")
+                                        }
+                                        val color = remember {
+                                            mutableStateOf(Color.Gray)
+                                        }
+                                        LaunchedEffect(Unit){
+                                            timeDatePeriod.value = "解析中..."
+                                            color.value = Color.Gray
+                                            try {
+                                                val datePattern = Regex("""(\d{4})年(\d{2})月(\d{2})日 (\d{2}):(\d{2})-(\d{2}):(\d{2}) (\S+)""").matchEntire(exam.address)
+                                                datePattern?:run {
+                                                    timeDatePeriod.value = "解析失败"
+                                                    color.value = Color.Red
+                                                    return@LaunchedEffect
+                                                }
+                                                datePattern.groupValues.let {
+                                                    val dateTime = LocalDateTime(year = parseInt(it[1]), month = Month(parseInt(it[2])), dayOfMonth = parseInt(it[3]), hour = 12, minute = 12, second = 12).dayOfYear
+                                                    val currentDate = Clock.System.now().toLocalDateTime(CurrentZone).dayOfYear
+                                                    if ( dateTime - currentDate < 0 ){
+                                                        timeDatePeriod.value = "已经结束"
+                                                        color.value = Color.Cyan
+                                                    } else if (dateTime - currentDate == 0){
+                                                        timeDatePeriod.value = "就在今天"
+                                                        color.value = Color.Red
+                                                    } else {
+                                                        timeDatePeriod.value = "还有 ${dateTime - currentDate} 天"
+                                                        when{
+                                                            dateTime - currentDate > 14 -> {
+                                                                color.value = Color.Green
+                                                            }
+                                                            dateTime - currentDate > 7 && dateTime - currentDate > 3 -> {
+                                                                color.value = Color.Yellow
+                                                            }
+                                                            dateTime - currentDate < 3 -> {
+                                                                color.value = Color.Red
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }catch (e:Exception){
+                                                timeDatePeriod.value = "解析失败"
+                                                return@LaunchedEffect
+                                            }
+
+                                        }
                                         Text(
-                                            name,
+                                            exam.name,
                                             fontSize = 20.sp
                                         )
-                                        Text("学分: $xuefen")
-                                        Text("老师: $teacher")
-                                        Text("地址: $address")
+                                        Text("学分: ${exam.xuefen}")
+                                        Text("老师: ${exam.teacher}")
+                                        Text("地址: ${exam.address}")
+                                        Text("时间期限: ${timeDatePeriod.value}", color = color.value)
                                     }
                                 }
                             }
@@ -545,7 +595,6 @@ fun ClassSchedule(
         }
         EasyToast(toastState)
     }
-
 }
 
 
