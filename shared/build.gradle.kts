@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 val appyx_version = "2.0.0-alpha09"
 val koin_version = "3.5.0"
 val koin_compose_version = "1.1.0"
@@ -12,7 +14,7 @@ plugins {
     val sqlDelightVersion = "2.0.1"
     kotlin("multiplatform")
     id("com.android.library")
-    id("org.jetbrains.compose")
+    id("org.jetbrains.compose") version "1.6.10"
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
     id("dev.icerock.mobile.multiplatform-resources")
     kotlin("plugin.serialization") version "1.9.20"
@@ -193,6 +195,9 @@ kotlin {
         }
     }
     task("testClasses")
+    compilerOptions {
+        languageVersion.set(KotlinVersion.KOTLIN_2_0)
+    }
 }
 
 
@@ -213,6 +218,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlin {
         jvmToolchain(17)
     }
