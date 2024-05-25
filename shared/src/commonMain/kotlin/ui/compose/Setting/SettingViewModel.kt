@@ -5,6 +5,7 @@ import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import di.ClassSchedule
 import kotlinx.coroutines.flow.MutableStateFlow
 import util.flow.launchInDefault
+import util.flow.launchInIO
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
 import util.network.networkError
@@ -55,6 +56,13 @@ class SettingViewModel(
                     }
                 )
             }
+        }
+    }
+
+    fun clearAccount() {
+        viewModelScope.launchInIO {
+            kValueAction.schoolUserName.setValue(null)
+            kValueAction.schoolPassword.setValue(null)
         }
     }
 }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -66,6 +67,7 @@ fun AccountSettings(
     navigator: Navigator
 ){
     val setting = koinInject<UndergraduateKValueAction>()
+    val settingViewModel = koinInject<SettingViewModel>()
     Column(
         modifier = Modifier
             .wrapContentSize()
@@ -83,9 +85,18 @@ fun AccountSettings(
                     modifier = Modifier.clickable {
                         navigator.push(FontSettingVoyagerScreen())
                     }.padding(vertical = 10.dp).fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     Text( it , modifier = Modifier.weight(1f).padding(horizontal = 4.dp), overflow = TextOverflow.Ellipsis )
+                    Button(
+                        onClick ={
+                            settingViewModel.clearAccount()
+                        },
+                        content = {
+                            Text("退出登录")
+                        }
+                    )
                     Text( if (undergraduate) "本科生" else "研究生" , modifier = Modifier, fontSize = 10.sp)
                 }
             }else{
