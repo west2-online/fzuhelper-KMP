@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.plus
+import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import repository.ClassScheduleRepository
@@ -309,7 +310,15 @@ class SchoolClient(
 class ShareClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
-            json()
+            json(Json {
+                ignoreUnknownKeys = true
+                encodeDefaults = true
+                isLenient = true
+                allowSpecialFloatingPointValues = true
+                allowStructuredMapKeys = true
+                prettyPrint = false
+                useArrayPolymorphism = false
+            })
         }
         install(Logging)
         install(HttpRedirect) {
@@ -496,7 +505,7 @@ fun Module.repositoryList(){
         PostRepository(get())
     }
     single {
-        FeedbackRepository(get())
+        FeedbackRepository(get(),get())
     }
     single {
         ModifierInformationRepository(get())

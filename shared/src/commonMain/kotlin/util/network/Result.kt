@@ -304,6 +304,8 @@ fun <T> State<NetworkResult<T>>.CollectWithContentInBox(
 
 
 
+
+
 suspend fun <T> NetworkResult<T>.getNetwork(
     success : Boolean = true,
     error  : Boolean = true,

@@ -42,7 +42,7 @@ import kotlin.jvm.Transient
 @Composable
 fun FeedbackPost(
     modifier: Modifier = Modifier,
-    submit: (content: String, type: FeedbackType) -> Unit,
+    submit: (content: String, title: String,label:List<String>) -> Unit,
     toastState: Toast,
     submitResult: State<NetworkResult<String>>
 ){
@@ -56,14 +56,16 @@ fun FeedbackPost(
             }
         )
     }
-
     Column (
         modifier = modifier
     ){
         val content = remember {
             mutableStateOf("")
         }
-        val feedbackType = remember { mutableStateOf(FeedbackType.Bug) }
+        val title = remember {
+            mutableStateOf("")
+        }
+        val feedbackType = remember { mutableStateOf(FeedbackType.ANDROID) }
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -72,17 +74,34 @@ fun FeedbackPost(
         ) {
             item{
                 TextField(
+                    value = title.value,
+                    onValueChange = {
+                        title.value = it
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    placeholder = {
+                        Text("标题")
+                    }
+                )
+            }
+            item{
+                TextField(
                     value = content.value,
                     onValueChange = {
                         content.value = it
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
+                        .wrapContentHeight(),
+                    placeholder = {
+                        Text("正文")
+                    }
                 )
             }
             item {
-                FeedbackType.values().forEach { feedback->
+                FeedbackType.entries.forEach { feedback->
                     Row (
                         modifier = Modifier
                             .wrapContentHeight()
@@ -107,7 +126,7 @@ fun FeedbackPost(
         }
         Button(
             onClick = {
-                submit.invoke(content.value,feedbackType.value)
+                submit.invoke(content.value,title.value, listOf(feedbackType.value.label))
             },
             modifier = Modifier
                 .padding(10.dp)
@@ -125,9 +144,9 @@ fun FeedbackPost(
  * @property code Int 用于发送到后端的值
  * @constructor
  */
-enum class FeedbackType(val describe:String,val code:Int){
-    Bug("Bug 反馈", code = 0),
-    Suggest("软件建议", code = 1)
+enum class FeedbackType(val describe:String,val code:Int,val label:String){
+    IOS("IOS(苹果)", code = 0, label = "IOS"),
+    ANDROID("ANDROID(安卓)", code = 1,label = "Android")
 }
 
 /**
@@ -147,8 +166,8 @@ class FeedbackPostVoyagerScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .parentSystemControl(parentPaddingControl),
-            submit = { content, type ->
-                viewModel.submitNewFeedback(content, type)
+            submit = { content, title, labelList ->
+                viewModel.submitNewFeedback(content, title,labelList)
             },
             submitResult = viewModel.submitResult.collectAsState(),
             toastState = toastState,

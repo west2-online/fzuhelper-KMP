@@ -13,6 +13,7 @@ object BaseUrlConfig {
     const val PostImage = "${BaseUrl}/static/post"
     const val RibbonImage = "${BaseUrl}/static/ribbon"
     const val OpenImage = "${BaseUrl}/openImage"
+    const val FuTalkFeedbackQuestionUrl = "https://api.github.com/repos/Futalker/FuTalk_Question"
 }
 
 //BASE_URL配置

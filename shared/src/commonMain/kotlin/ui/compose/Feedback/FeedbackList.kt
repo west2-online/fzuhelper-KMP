@@ -7,6 +7,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,22 +37,23 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
 import app.cash.paging.compose.LazyPagingItems
 import app.cash.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import config.BaseUrlConfig.UserAvatar
-import data.feedback.FeedbackList.Data
-import data.share.User
+import data.feedback.github.githubIssueListByPage.GithubIssueByPageItem
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
+import org.example.library.MR
 import org.koin.compose.koinInject
 import util.compose.EasyToast
 import util.compose.Label
@@ -60,7 +63,6 @@ import util.compose.Toast
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import util.compose.rememberToastState
-import util.network.toEasyTime
 import kotlin.jvm.Transient
 
 /**
@@ -76,7 +78,7 @@ fun FeedbackList(
     modifier: Modifier,
     navigateToDetail: (id: Int) -> Unit,
     navigateToPost: () -> Unit,
-    feedbackListFlow: LazyPagingItems<Data>,
+    feedbackListFlow: LazyPagingItems<GithubIssueByPageItem>,
     toastState: Toast
 ) {
     val isRefresh = remember{
@@ -90,7 +92,6 @@ fun FeedbackList(
             }
             .collect {
                 isRefresh.value = true
-                delay(1000)
                 feedbackListFlow.refresh()
                 isRefresh.value = false
             }
@@ -107,6 +108,62 @@ fun FeedbackList(
                         navigateToDetail = navigateToDetail,
                         feedback = it
                     )
+                }
+            }
+            feedbackListFlow.loadState.apply {
+                when{
+                    refresh is LoadState.Loading || append is LoadState.Loading ->{
+                        item {
+                            Box(modifier = Modifier.fillMaxWidth()){
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .padding(5.dp)
+                                        .align(Alignment.Center)
+                                        .size(30.dp)
+                                )
+                            }
+                        }
+                    }
+                    refresh is LoadState.Error || append is LoadState.Error ->{
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color.Red)
+                                    .padding(10.dp)
+                            ){
+                                Text(
+                                    modifier = Modifier
+                                        .padding(vertical = 3.dp)
+                                        .fillMaxWidth(),
+                                    text = "加载失败",
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                    append is LoadState.NotLoading -> {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color.Gray)
+                                    .padding(10.dp)
+                            ){
+                                Text(
+                                    modifier = Modifier
+                                        .padding(vertical = 3.dp)
+                                        .fillMaxWidth(),
+                                    text = "已经到底了",
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -153,17 +210,18 @@ fun FeedbackList(
  * @param navigateToDetail Function1<[@kotlin.ParameterName] Int, Unit>
  * @param feedback Data
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FeedbackListItem(
     navigateToDetail: (id: Int) -> Unit,
-    feedback: Data
+    feedback: GithubIssueByPageItem
 ) {
     ThemeCard(
         cardModifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .clickable {
-                navigateToDetail(feedback.Id)
+                navigateToDetail(feedback.number)
             }
             .padding(10.dp),
         columnModifier = Modifier
@@ -172,38 +230,52 @@ fun FeedbackListItem(
             .padding(10.dp),
         shape = RoundedCornerShape(10.dp)
     ){
-        Row {
-            Text(
-                "#${feedback.Id} ${if(feedback.Type == 0) "反馈" else "Bug"}",
-                modifier = Modifier,
-            )
-        }
         DiscussInList(
-            user = feedback.User,
-            content = feedback.Tab,
-            time = feedback.Time.toEasyTime(),
-            identity = "开发者",
-            type = feedback.Status.toLabelType()
+            feedback = feedback
         )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
+            FlowRow {
+                feedback.labels.forEach{ label ->
+                    Label(
+                        label.name?:"label",
+                        color = (label.color?:"#808080").hexToRgb()
+                    )
+                }
+            }
+        }
     }
 }
+
+fun String.hexToRgb(): Color {
+    // 确保输入的十六进制字符串是6个字符长
+    require(this.length == 6) { "Invalid hex color string length. Must be 6 characters long." }
+
+    // 分解成 RGB 分量
+    val red = this.substring(0, 2).toInt(16)
+    val green = this.substring(2, 4).toInt(16)
+    val blue = this.substring(4, 6).toInt(16)
+
+
+    return Color(red, green, blue)
+}
+
 
 
 
 @Composable
 fun DiscussInList(
-    user: User,
-    content:String,
-    time:String,
-    identity :String,
-    type: LabelType = LabelType.ActiveStatus
+    feedback: GithubIssueByPageItem
 ){
     Column{
         Row(
             Modifier.fillMaxWidth().wrapContentHeight().padding(top = 10.dp)
         ) {
             KamelImage(
-                resource = asyncPainterResource("${UserAvatar}/${user.avatar}"),
+                resource = asyncPainterResource(feedback.toAvatar()),
                 null,
                 modifier = Modifier
                     .padding(end = 10.dp)
@@ -218,37 +290,40 @@ fun DiscussInList(
                     .wrapContentHeight()
             ) {
                 Text(
-                    time,
+                    feedback.created_at,
                     fontSize = 10.sp,
                     modifier = Modifier
-                        .padding(bottom = 10.dp)
+                        .padding(bottom = 3.dp)
                 )
-                Label("开发者")
                 Text(
-                    content,
+                    feedback.title,
                     modifier = Modifier
                 )
             }
         }
         Row (
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(vertical = 10.dp)
         ){
             Icon(
-                painter = painterResource(type.icon),
+                painter = painterResource(if(feedback.state == "open") MR.images.activeStatus else MR.images.not_solved),
                 "",
                 modifier = Modifier
                     .size(50.dp)
                     .wrapContentSize(Alignment.Center)
                     .fillMaxSize(0.7f)
                     .clip(CircleShape)
-                    .background(type.background)
+                    .background(if(feedback.state == "open") Color.Green else Color.Red)
                     .wrapContentSize(Alignment.Center)
-                    .fillMaxSize(0.7f)
+                    .fillMaxSize(0.7f )
             )
-            Text(type.description)
+            Text(if(feedback.state == "open") "活跃中" else "已关闭")
         }
     }
 }
+
+
 
 /**
  * 反馈列表 二级 屏幕
@@ -268,14 +343,14 @@ class FeedbackListVoyagerScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .parentSystemControl(parentPaddingControl),
-            navigateToDetail = { postId ->
-                navigator.push(FeedbackDetailVoyagerScreen(postId))
+            navigateToDetail = { feedbackId ->
+                navigator.push(FeedbackDetailVoyagerScreen(feedbackId))
             },
             navigateToPost = {
                 navigator.push(FeedbackPostVoyagerScreen())
             },
             toastState = toastState,
-            feedbackListFlow = viewModel.postListFlow.collectAsLazyPagingItems()
+            feedbackListFlow = viewModel.feedbackListFlow.collectAsLazyPagingItems()
         )
         EasyToast(toastState)
     }
