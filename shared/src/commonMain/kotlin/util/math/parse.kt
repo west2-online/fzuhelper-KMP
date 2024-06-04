@@ -12,3 +12,11 @@ fun parseInt(string: String): Int {
     }
     return data
 }
+
+fun parseIntWithNull(string: String): Int? {
+    val data = string.toIntOrNull()
+    data?:run{
+        return null
+    }
+    return data
+}
