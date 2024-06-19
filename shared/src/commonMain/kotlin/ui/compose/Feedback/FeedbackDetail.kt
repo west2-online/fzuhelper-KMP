@@ -45,7 +45,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import config.BaseUrlConfig
 import data.feedback.github.githubComment.GithubCommentsItem
 import data.feedback.github.githubIssue.GithubIssue
 import dev.icerock.moko.resources.ImageResource
@@ -65,6 +64,8 @@ import util.compose.rememberToastState
 import util.network.CollectWithContentInBox
 import util.network.NetworkResult
 import util.network.toast
+import util.regex.toGithubAvatar
+import util.regex.toGithubComment
 import kotlin.jvm.Transient
 
 const val SpaceWeight = 0.2f
@@ -361,11 +362,7 @@ fun Discuss(
         Row(Modifier.fillMaxWidth().wrapContentHeight().padding(10.dp)){
             KamelImage(
                 resource = asyncPainterResource(
-                    if(identity.split("__FuTalk__").size > 1){
-                        "${BaseUrlConfig.UserAvatar}/${identity.split("__FuTalk__").lastOrNull()}"
-                    } else {
-                        user?.avatarUrl.toString()
-                    }
+                    toGithubAvatar(user?.login?:"",user?.avatarUrl?:"", content = content)
                 ),
                 null,
                 modifier = Modifier
@@ -386,9 +383,8 @@ fun Discuss(
                     modifier = Modifier
                         .padding(bottom = 10.dp)
                 )
-//                Label("开发者")
                 Text(
-                    content,
+                    content.toGithubComment(),
                     modifier = Modifier
                 )
             }
@@ -414,11 +410,7 @@ fun Discuss(
         Row(Modifier.fillMaxWidth().wrapContentHeight().padding(10.dp)){
             KamelImage(
                 resource = asyncPainterResource(
-                    if(identity.split("__FuTalk__").size > 1){
-                        "${BaseUrlConfig.UserAvatar}/${identity.split("__FuTalk__").lastOrNull()}"
-                    } else {
-                        user?.avatarUrl.toString()
-                    }
+                    toGithubAvatar(user?.login?:"",user?.avatarUrl?:"", content = content)
                 ),
                 null,
                 modifier = Modifier
@@ -439,9 +431,8 @@ fun Discuss(
                     modifier = Modifier
                         .padding(bottom = 10.dp)
                 )
-//                Label("开发者")
                 Text(
-                    content,
+                    content.toGithubComment(),
                     modifier = Modifier
                 )
             }

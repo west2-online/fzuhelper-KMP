@@ -1,6 +1,7 @@
 package data.feedback.github.githubIssue
 
 
+import config.BaseUrlConfig
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -60,4 +61,13 @@ data class GithubIssue(
     val url: String?,
     @SerialName("user")
     val user: User?
-)
+){
+    fun toAvatar(): String {
+        return if(this.user?.login == "FuTalkDev"){
+            val id = (this.body?:"").split(" From:FuTalk ").lastOrNull()
+            "${BaseUrlConfig.UserAvatar}/${id}"
+        }else{
+            this.user?.avatarUrl.toString()
+        }
+    }
+}

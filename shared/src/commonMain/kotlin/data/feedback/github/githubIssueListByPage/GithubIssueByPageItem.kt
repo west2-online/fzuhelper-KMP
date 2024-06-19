@@ -1,7 +1,7 @@
 package data.feedback.github.githubIssueListByPage
 
-import config.BaseUrlConfig
 import kotlinx.serialization.Serializable
+import util.regex.toGithubAvatar
 
 @Serializable()
 data class GithubIssueByPageItem(
@@ -35,12 +35,8 @@ data class GithubIssueByPageItem(
     val user: User
 ) {
     fun toAvatar(): String {
-        if(this.user.login == "FuTalkDev"){
-            val id = (this.body?:"").split("__FuTalk__").lastOrNull()
-            return "${BaseUrlConfig.UserAvatar}/${id}"
-        }else{
-            return this.user.avatar_url.toString()
-        }
-
+        return toGithubAvatar(this.user.login?:"",user.avatar_url?:"", content = body?:"")
     }
+
+
 }
