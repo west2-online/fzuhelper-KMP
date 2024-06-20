@@ -113,6 +113,7 @@ class FeedbackRepository(
                 url {
                     parameters.append("page",pageInt.toString())
                     parameters.append("per_page",10.toString())
+                    parameters.append("state","all")
                 }
             }.body<List<GithubIssueByPageItem>>()
             emit(response)
