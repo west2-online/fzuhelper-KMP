@@ -106,6 +106,12 @@ class FeedBackViewModel(
     fun submitNewFeedback(content : String,title:String,label:List<String>){
         viewModelScope.launch {
             _submitResult.logicIfNotLoading {
+                if(title == ""){
+                    _submitResult.resetWithLog("submitNewFeedBack/submitNewFeedBack",NetworkResult.Error(Throwable("标题不得为空"),Throwable("标题不得为空")))
+                }
+                if(content == ""){
+                    _submitResult.resetWithLog("submitNewFeedBack/submitNewFeedBack",NetworkResult.Error(Throwable("内容不得为空"),Throwable("内容不得为空")))
+                }
                 feedbackRepository.submitNewFeedBack(content,title,label)
                     .actionWithLabel(
                         "submitNewFeedBack/submitNewFeedBack",
