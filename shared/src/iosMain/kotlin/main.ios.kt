@@ -85,8 +85,8 @@ actual fun ByteArray.asImageBitmap(): ImageBitmap{
 actual fun HttpClientConfig<*>.configureForPlatform() {
     engine {
         this as DarwinClientEngineConfig
-        // TODO: Add iOS config
-        TODO()
+//        // TODO: Add iOS config
+//        TODO()
     }
 }
 

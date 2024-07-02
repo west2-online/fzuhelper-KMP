@@ -1,4 +1,6 @@
+import com.android.aaptcompiler.proto.serializeTableToPb
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.psi.stubs.impl.serialize
 
 val appyx_version = "2.0.0-alpha09"
 val koin_version = "3.5.0"
@@ -24,6 +26,7 @@ plugins {
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 kotlin {
+
     androidTarget()
     listOf(
         iosX64(),
@@ -239,3 +242,6 @@ sqldelight {
         }
     }
 }
+
+
+

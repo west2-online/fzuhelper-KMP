@@ -99,7 +99,9 @@ fun Login(
                 is NetworkResult.Error -> {
                     toast.addToast( it.errorForShow.message.toString() , Color.Red )
                 }
-
+                is NetworkResult.LoadingWithAction -> null
+                is NetworkResult.LoadingWithOutAction -> null
+                is NetworkResult.UnSend -> null
             }
         }
     }

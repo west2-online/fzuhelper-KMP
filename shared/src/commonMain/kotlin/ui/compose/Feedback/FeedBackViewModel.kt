@@ -5,14 +5,18 @@ import app.cash.paging.Pager
 import app.cash.paging.PagingConfig
 import app.cash.paging.PagingState
 import app.cash.paging.cachedIn
-import data.feedback.FeedbackList.FeedbackList
-import data.feedback.FeelbackDetail.Data
+import data.feedback.github.githubComment.GithubCommentsItem
+import data.feedback.github.githubIssue.GithubIssue
+import data.feedback.github.githubIssueListByPage.GithubIssueByPageItem
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
-import io.ktor.client.call.body
-import io.ktor.client.request.get
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import repository.FeedbackRepository
 import util.flow.actionWithLabel
@@ -30,7 +34,7 @@ import util.network.resetWithLog
  * @property detailResult StateFlow<NetworkResult<Data>> 获取详情的结果
  * @property _commentResult CMutableStateFlow<NetworkResult<String>>
  * @property commentResult StateFlow<NetworkResult<String>> 评论的结果
- * @property postListFlow Flow<PagingData<Data>> 反馈list
+ * @property feedbackListFlow Flow<PagingData<Data>> 反馈list
  * @constructor
  */
 class FeedBackViewModel(
@@ -40,9 +44,55 @@ class FeedBackViewModel(
         NetworkResult.UnSend()))
     val submitResult = _submitResult.asStateFlow()
 
-    private val _detailResult = CMutableStateFlow(MutableStateFlow<NetworkResult<Data>>(
+    private val _detailResult = CMutableStateFlow(MutableStateFlow<NetworkResult<GithubIssue>>(
         NetworkResult.UnSend()))
     val detailResult = _detailResult.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            detailResult.collect{
+                viewModelScope.launch {
+                    detailComment.value = when(it){
+                        is NetworkResult.Error -> {
+                            NetworkResult.Error<List<GithubCommentsItem>>(it.errorForShow,it.rawError)
+                        }
+                        is NetworkResult.LoadingWithAction -> {
+                            NetworkResult.LoadingWithAction()
+                        }
+                        is NetworkResult.LoadingWithOutAction -> {
+                            NetworkResult.LoadingWithOutAction<List<GithubCommentsItem>>()
+                        }
+                        is NetworkResult.Success -> {
+                            if(it.dataForShow.number != null){
+                                var data:NetworkResult<List<GithubCommentsItem>> = NetworkResult.UnSend<List<GithubCommentsItem>>()
+                                feedbackRepository.getFeedbackDetailCommentsByGithub(it.dataForShow.number)
+                                    .flowOn(Dispatchers.IO)
+                                    .catch {
+                                        data =  NetworkResult.Error(Throwable("获取失败"),Throwable("获取失败"))
+                                        println("_______________${it.message}")
+                                    }.collect{
+                                        data =  NetworkResult.Success<List<GithubCommentsItem>>(it)
+                                        println(data)
+                                    }
+                                data
+                            }else{
+                                NetworkResult.Error(Throwable("获取失败"),Throwable("获取失败"))
+                            }
+
+                        }
+                        is NetworkResult.UnSend -> NetworkResult.UnSend<List<GithubCommentsItem>>()
+                        else -> {
+                            NetworkResult.Error<List<GithubCommentsItem>>(Throwable(""),Throwable(""))
+                        }
+                    }
+                }
+
+            }
+
+        }
+    }
+    val detailComment = MutableStateFlow<NetworkResult<List<GithubCommentsItem>>>(NetworkResult.UnSend())
+
 
     private val _commentResult = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
         NetworkResult.UnSend()))
@@ -53,10 +103,16 @@ class FeedBackViewModel(
      * @param content String
      * @param type FeedbackType
      */
-    fun submitNewFeedback(content : String,type: FeedbackType){
+    fun submitNewFeedback(content : String,title:String,label:List<String>){
         viewModelScope.launch {
             _submitResult.logicIfNotLoading {
-                feedbackRepository.submitNewFeedBack(content,type.code)
+                if(title == ""){
+                    _submitResult.resetWithLog("submitNewFeedBack/submitNewFeedBack",NetworkResult.Error(Throwable("标题不得为空"),Throwable("标题不得为空")))
+                }
+                if(content == ""){
+                    _submitResult.resetWithLog("submitNewFeedBack/submitNewFeedBack",NetworkResult.Error(Throwable("内容不得为空"),Throwable("内容不得为空")))
+                }
+                feedbackRepository.submitNewFeedBack(content,title,label)
                     .actionWithLabel(
                         "submitNewFeedBack/submitNewFeedBack",
                         collectAction = { label, data ->
@@ -74,17 +130,17 @@ class FeedBackViewModel(
      * 获取特定的反馈详情
      * @param id Int
      */
-    fun getFeedbackDetail(id:Int){
+    fun getFeedbackDetail(id:Long){
         viewModelScope.launch {
             _detailResult.logicIfNotLoading {
-                feedbackRepository.getFeedbackDetail(id)
+                feedbackRepository.getFeedbackDetailByGithub(id)
                     .actionWithLabel(
-                        "getFeedbackDetail/getFeedbackDetail",
+                        "getFeedbackDetailFromGithub/getFeedbackDetail",
                         catchAction = { label, error ->
                             _detailResult.resetWithLog(label, networkErrorWithLog(error,"获取详情失败"))
                         },
                         collectAction = { label, data ->
-                            _detailResult.resetWithLog(label, data.toNetworkResult())
+                            _detailResult.resetWithLog(label, NetworkResult.Success(data))
                         }
                     )
 
@@ -118,7 +174,7 @@ class FeedBackViewModel(
      * Post list flow
      * 反馈列表分页
      */
-    val postListFlow = Pager(
+    val feedbackListFlow = Pager(
         PagingConfig(
             pageSize = 10,
             prefetchDistance = 2
@@ -126,7 +182,8 @@ class FeedBackViewModel(
     ){
         EasyFeedbackPageSource(
             backend = LoadFeedBackPageData {
-                return@LoadFeedBackPageData feedbackRepository.client.get("/feedback/page/${it}").body<FeedbackList>().data
+                val data = feedbackRepository.getGithubIssues(it).first()
+                return@LoadFeedBackPageData data
             }
         )
     }.flow
@@ -156,14 +213,15 @@ enum class CommentStatus(val value: Int, val description: String) {
 
 
 class LoadFeedBackPageData(
-    val getResult : suspend (page:Int) -> List<data.feedback.FeedbackList.Data>?
+    val getFeedbackPageData : suspend (page:Int) -> List<GithubIssueByPageItem>?
 ) {
     suspend fun searchFeedbacks(page: Int): FeedbackPageData {
-        val response = getResult(page)
+        val response = getFeedbackPageData(page)
         return FeedbackPageData(
             response,
             when{
-                response!!.isEmpty() -> null
+                response == null -> null
+                response.isEmpty() -> null
                 response.size < 10 -> null
                 else -> ( page + 1 )
             }
@@ -173,17 +231,17 @@ class LoadFeedBackPageData(
 
 
 data class FeedbackPageData(
-    val result : List<data.feedback.FeedbackList.Data>?,
+    val result : List<GithubIssueByPageItem>?,
     val nextPageNumber: Int?
 )
 
 
 class EasyFeedbackPageSource(
     private val backend: LoadFeedBackPageData,
-) : PagingSource<Int, data.feedback.FeedbackList.Data>() {
+) : PagingSource<Int,GithubIssueByPageItem>() {
     override suspend fun load(
         params: LoadParams<Int>
-    ): LoadResult<Int, data.feedback.FeedbackList.Data> {
+    ): LoadResult<Int, GithubIssueByPageItem> {
         return try {
             val page = params.key ?: 1
             val response = backend.searchFeedbacks(page)
@@ -197,7 +255,7 @@ class EasyFeedbackPageSource(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, data.feedback.FeedbackList.Data>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, GithubIssueByPageItem>): Int? {
         // Try to find the page key of the closest page to anchorPosition from
         // either the prevKey or the nextKey; you need to handle nullability
         // here.

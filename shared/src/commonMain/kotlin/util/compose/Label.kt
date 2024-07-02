@@ -39,12 +39,14 @@ import kotlin.math.sqrt
 @Composable
 fun Label(
     string: String,
+    color: Color = MaterialTheme.colors.surface
 ){
     Card(
         modifier = Modifier
             .wrapContentSize()
             .padding(end = 5.dp, bottom = 5.dp),
-        shape = RoundedCornerShape(20)
+        shape = RoundedCornerShape(20),
+        backgroundColor = color
     ) {
 //        val string: String = stringResource(MR.strings.my_string)
         Text(

@@ -45,11 +45,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import config.BaseUrlConfig
-import data.feedback.FeelbackDetail.Data
-import data.feedback.FeelbackDetail.FeedbackComment
-import data.feedback.FeelbackDetail.FeedbackStatu
-import data.share.User
+import data.feedback.github.githubComment.GithubCommentsItem
+import data.feedback.github.githubIssue.GithubIssue
 import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
@@ -66,8 +63,9 @@ import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.network.CollectWithContentInBox
 import util.network.NetworkResult
-import util.network.toEasyTime
 import util.network.toast
+import util.regex.toGithubAvatar
+import util.regex.toGithubComment
 import kotlin.jvm.Transient
 
 const val SpaceWeight = 0.2f
@@ -84,7 +82,8 @@ const val SpaceWeight = 0.2f
 @Composable
 fun FeedbackDetail(
     modifier: Modifier,
-    detailState: State<NetworkResult<Data>>,
+    detailState: State<NetworkResult<GithubIssue>>,
+    commentsState : State<NetworkResult<List<GithubCommentsItem>>>,
     getDetailData: () -> Unit,
     toastState: Toast,
     postNewComment: (content: String) -> Unit,
@@ -167,42 +166,45 @@ fun FeedbackDetail(
                             state = state
                         ) {
                             item {
-                                Numbering(it.Feedback.Id)
+                                Numbering(it.number?:0)
                             }
                             item {
                                 Discuss(
-                                    content = it.Feedback.Tab,
-                                    time = it.Feedback.Time,
-                                    identity = "",
-                                    user = it.Feedback.User
+                                    content = it.body?.split("__FuTalk__")?.getOrNull(0) ?:"",
+                                    time = it.createdAt?:"",
+                                    identity = it.body?:"",
+                                    user = it.user
                                 )
                             }
-                            it.FeedbackComment.plus(it.FeedbackStatus).sortedBy { it.Order }
-                                .forEach {
-                                    when (it) {
-                                        is FeedbackComment -> {
-                                            item {
-                                                Discuss(
-                                                    content = it.Comment,
-                                                    time = it.Time,
-                                                    identity = "",
-                                                    user = it.User
-                                                )
+                            item {
+                                commentsState.CollectWithContentInBox(
+                                    success = {
+                                        Column {
+                                            it.forEach {
+                                                Column {
+                                                    Discuss(
+                                                        content = it.body?.split("__FuTalk__")?.getOrNull(0) ?:"",
+                                                        time = it.createdAt.toString(),
+                                                        identity = it.body?:"",
+                                                        user = it.user
+                                                    )
+                                                }
                                             }
                                         }
-
-                                        is FeedbackStatu -> {
-                                            item {
-                                                StateLabel(
-                                                    type = LabelType.Closed,
-                                                    commit = it.Message,
-                                                    time = it.Time.toEasyTime()
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
+                                    },
+                                    error = {
+                                        Text("评论加载失败")
+                                    },
+                                    loading = {
+                                         CircularProgressIndicator()
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                )
+                            }
                         }
+
                         androidx.compose.animation.AnimatedVisibility(
                             isRefresh.value,
                             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
@@ -347,8 +349,8 @@ fun Int.toLabelType():LabelType{
 fun Discuss(
     content:String,
     time:String,
-    identity :String,
-    user: User
+    identity:String,
+    user: data.feedback.github.githubComment.User?
 ){
     Card (
         modifier = Modifier
@@ -359,7 +361,9 @@ fun Discuss(
     ){
         Row(Modifier.fillMaxWidth().wrapContentHeight().padding(10.dp)){
             KamelImage(
-                resource = asyncPainterResource("${BaseUrlConfig.UserAvatar}/${user.avatar}"),
+                resource = asyncPainterResource(
+                    toGithubAvatar(user?.login?:"",user?.avatarUrl?:"", content = content)
+                ),
                 null,
                 modifier = Modifier
                     .padding(end = 10.dp)
@@ -379,9 +383,8 @@ fun Discuss(
                     modifier = Modifier
                         .padding(bottom = 10.dp)
                 )
-//                Label("开发者")
                 Text(
-                    content,
+                    content.toGithubComment(),
                     modifier = Modifier
                 )
             }
@@ -389,13 +392,60 @@ fun Discuss(
     }
 }
 
+
+@Composable
+fun Discuss(
+    content:String,
+    time:String,
+    identity:String,
+    user: data.feedback.github.githubIssue.User?
+){
+    Card (
+        modifier = Modifier
+            .padding(10.dp)
+            .fillMaxWidth()
+            .wrapContentSize(),
+        shape = RoundedCornerShape(10.dp)
+    ){
+        Row(Modifier.fillMaxWidth().wrapContentHeight().padding(10.dp)){
+            KamelImage(
+                resource = asyncPainterResource(
+                    toGithubAvatar(user?.login?:"",user?.avatarUrl?:"", content = content)
+                ),
+                null,
+                modifier = Modifier
+                    .padding(end = 10.dp)
+                    .width(50.dp)
+                    .aspectRatio(1f)
+                    .clip(CircleShape),
+                contentScale = ContentScale.FillBounds
+            )
+            Column (
+                modifier = Modifier
+                    .weight(1f)
+                    .wrapContentHeight()
+            ){
+                Text(
+                    time,
+                    fontSize = 10.sp,
+                    modifier = Modifier
+                        .padding(bottom = 10.dp)
+                )
+                Text(
+                    content.toGithubComment(),
+                    modifier = Modifier
+                )
+            }
+        }
+    }
+}
 /**
  * 编号
  * @param id Int
  */
 @Composable
 fun Numbering(
-    id:Int
+    id: Long
 ){
     Card (
         modifier = Modifier
@@ -432,7 +482,7 @@ class FeedbackDetailVoyagerScreen(
                 .fillMaxSize()
                 .parentSystemControl(parentPaddingControl),
             getDetailData = {
-                feedBackViewModel.getFeedbackDetail(feedbackId)
+                feedBackViewModel.getFeedbackDetail(feedbackId.toLong())
             },
             toastState = toastState,
             postNewComment = { content ->
@@ -440,6 +490,7 @@ class FeedbackDetailVoyagerScreen(
             },
             commentState = feedBackViewModel.commentResult.collectAsState(),
             detailState = feedBackViewModel.detailResult.collectAsState(),
+            commentsState = feedBackViewModel.detailComment.collectAsState()
         )
         EasyToast(toastState)
     }

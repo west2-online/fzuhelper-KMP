@@ -1,14 +1,19 @@
 package ui.compose.Feedback
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.Checkbox
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -19,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import org.koin.compose.koinInject
@@ -28,6 +34,7 @@ import util.compose.Toast
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import util.compose.rememberToastState
+import util.network.CollectWithContent
 import util.network.NetworkResult
 import util.network.toast
 import kotlin.jvm.Transient
@@ -42,34 +49,54 @@ import kotlin.jvm.Transient
 @Composable
 fun FeedbackPost(
     modifier: Modifier = Modifier,
-    submit: (content: String, type: FeedbackType) -> Unit,
+    submit: (content: String, title: String,label:List<String>) -> Unit,
     toastState: Toast,
     submitResult: State<NetworkResult<String>>
 ){
+    val content = remember {
+        mutableStateOf("")
+    }
+    val title = remember {
+        mutableStateOf("")
+    }
     LaunchedEffect(submitResult.value.key.value){
         submitResult.value.toast(
             success = {
+                content.value = ""
+                title.value = ""
                 toastState.addToast("发布成功")
             },
             error = {
-                toastState.addWarnToast("发布失败")
+                toastState.addWarnToast(it.message.toString())
             }
         )
     }
-
     Column (
         modifier = modifier
     ){
-        val content = remember {
-            mutableStateOf("")
-        }
-        val feedbackType = remember { mutableStateOf(FeedbackType.Bug) }
+
+        val feedbackType = remember { mutableStateOf(FeedbackType.ANDROID) }
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(10.dp)
+                .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
+            item{
+                TextField(
+                    value = title.value,
+                    onValueChange = {
+                        title.value = it
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    placeholder = {
+                        Text("标题")
+                    }
+                )
+            }
             item{
                 TextField(
                     value = content.value,
@@ -78,11 +105,14 @@ fun FeedbackPost(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
+                        .wrapContentHeight(),
+                    placeholder = {
+                        Text("正文")
+                    }
                 )
             }
             item {
-                FeedbackType.values().forEach { feedback->
+                FeedbackType.entries.forEach { feedback->
                     Row (
                         modifier = Modifier
                             .wrapContentHeight()
@@ -107,13 +137,26 @@ fun FeedbackPost(
         }
         Button(
             onClick = {
-                submit.invoke(content.value,feedbackType.value)
+                submit.invoke(content.value,title.value, listOf(feedbackType.value.label))
             },
             modifier = Modifier
                 .padding(10.dp)
                 .fillMaxWidth()
-                .wrapContentHeight()
+                .wrapContentHeight(),
+            contentPadding = PaddingValues(10.dp)
         ){
+            submitResult.CollectWithContent(
+                loading = {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(40.dp),
+                        color = Color.Red
+                    )
+                },
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(5.dp)
+            )
             Text("提交")
         }
     }
@@ -125,9 +168,9 @@ fun FeedbackPost(
  * @property code Int 用于发送到后端的值
  * @constructor
  */
-enum class FeedbackType(val describe:String,val code:Int){
-    Bug("Bug 反馈", code = 0),
-    Suggest("软件建议", code = 1)
+enum class FeedbackType(val describe:String,val code:Int,val label:String){
+    IOS("IOS(苹果)", code = 0, label = "IOS"),
+    ANDROID("ANDROID(安卓)", code = 1,label = "Android")
 }
 
 /**
@@ -147,8 +190,8 @@ class FeedbackPostVoyagerScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .parentSystemControl(parentPaddingControl),
-            submit = { content, type ->
-                viewModel.submitNewFeedback(content, type)
+            submit = { content, title, labelList ->
+                viewModel.submitNewFeedback(content, title,labelList)
             },
             submitResult = viewModel.submitResult.collectAsState(),
             toastState = toastState,
