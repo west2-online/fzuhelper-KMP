@@ -241,7 +241,7 @@ enum class Functions(
     Setting(functionName = "设置", painter = MR.images.setting, { rootAction -> rootAction.navigateFormAnywhereToSetting() }),
     Log(functionName = "日志", painter = MR.images.log, { rootAction -> rootAction.navigateFormAnywhereToLog() }),
     EmptyHouse(functionName = "空教室", painter =MR.images.emptyHouse, navigator = { rootAction -> rootAction.navigateToScreen(EmptyHouseVoyagerScreen()) }),
-    ChangeMajors(functionName = "转专业", painter =MR.images.school, navigator = { rootAction -> rootAction.navigateToScreen(WebViewVoyagerScreen("https://run.w2fzu.com/")) }),
+    ChangeMajors(functionName = "转专业", painter =MR.images.school, navigator = { rootAction -> rootAction.navigateToScreen(WebViewVoyagerScreen("https://run.w2fzu.com/",false)) }),
 //    OfficialWebsite(functionName = "转专业", painter =MR.images.school, navigator = { rootAction -> rootAction.navigateToScreen(WebViewVoyagerScreen("https://futalker.github.io/")) })
 }
 

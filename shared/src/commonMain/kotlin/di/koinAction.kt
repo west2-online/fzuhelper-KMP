@@ -66,6 +66,7 @@ import ui.compose.Report.ReportViewModel
 import ui.compose.Setting.SettingViewModel
 import ui.compose.SplashPage.SplashPageViewModel
 import ui.compose.Weather.WeatherViewModel
+import ui.compose.Webview.WebviewViewModel
 import ui.root.RootAction
 import util.compose.Toast
 import util.encode.encode
@@ -598,6 +599,9 @@ fun Module.viewModel(){
     }
     viewModelDefinition {
         EmptyHouseVoyagerViewModel(get())
+    }
+    single {
+        WebviewViewModel(get())
     }
 }
 
