@@ -83,7 +83,7 @@ fun AccountSettings(
                 val undergraduate = true
                 Row(
                     modifier = Modifier.clickable {
-                        navigator.push(FontSettingVoyagerScreen())
+                        navigator.push(AccountSettingsVoyagerScreen())
                     }.padding(vertical = 10.dp).fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
