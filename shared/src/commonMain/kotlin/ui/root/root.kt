@@ -24,7 +24,6 @@ import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import ui.compose.AboutUs.AboutUsVoyagerScreen
 import ui.compose.Authentication.LoginAndRegisterVoyagerScreen
-import ui.compose.EmptyHouse.EmptyHouseVoyagerScreen
 import ui.compose.Feedback.FeedbackVoyagerScreen
 import ui.compose.Log.LogVoyagerScreen
 import ui.compose.Main.MainVoyagerScreen
@@ -36,6 +35,7 @@ import ui.compose.Report.ReportType
 import ui.compose.Report.ReportVoyagerScreen
 import ui.compose.Setting.SettingVoyagerScreen
 import ui.compose.SplashPage.SplashPageVoyagerScreen
+import ui.compose.Test.TestVoyagerScreen
 import ui.compose.Weather.WeatherVoyagerScreen
 import ui.compose.Webview.WebViewVoyagerScreen
 import util.compose.EasyToast
@@ -244,7 +244,7 @@ fun RootUi(
                 if(BaseUrlConfig.isDebug){
                     IconButton(
                         onClick = {
-                            navigate.push(EmptyHouseVoyagerScreen())
+                            navigate.push(TestVoyagerScreen())
                         },
                         modifier = Modifier
                             .navigationBarsPadding()

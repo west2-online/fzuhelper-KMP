@@ -1,19 +1,11 @@
 package ui.compose.Test
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import asImageBitmap
 import cafe.adriel.voyager.core.screen.Screen
 import configureForPlatform
 import dev.whyoleg.cryptography.serialization.pem.PEM
@@ -71,24 +63,39 @@ class TestVoyagerScreen :Screen{
                 println(e.message)
             }
         }
-
-        Column {
-            data.value?.let{
-                Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .statusBarsPadding()
-                        .size(width = 50.dp, height = 20.dp)
-                )
-            }
-            cookie.value?.let {
-                Text(it.toString())
-            }
-        }
+//
+//        Column {
+//            data.value?.let{
+//                Image(
+//                    bitmap = it.asImageBitmap(),
+//                    contentDescription = null,
+//                    modifier = Modifier
+//                        .statusBarsPadding()
+//                        .size(width = 50.dp, height = 20.dp)
+//                )
+//            }
+//            cookie.value?.let {
+//                Text(it.toString())
+//            }
+//        }
+//        XYChart(
+//            false,"This is a test", xAxisTitle = "x", data = LineChartData(
+//                listOf("1","2","3","4","5","6","7","8","9","10","11","12"),
+//                mapOf(
+//                    "test1" to expandedList,
+//                    "test2" to expandedList,
+//                    "test3" to expandedList
+//                )
+//            )
+//        )
     }
 }
-
+val expandedList = listOf(
+    3.0.toFloat(), 4.0.toFloat(), 5.0.toFloat(),
+    3.0.toFloat(), 4.0.toFloat(), 5.0.toFloat(),
+    3.0.toFloat(), 4.0.toFloat(), 5.0.toFloat(),
+    3.0.toFloat(), 4.0.toFloat(), 5.0.toFloat()
+)
 public class CustomCookiesStorage(
     val cookieForSave: MutableState<Cookie?>
 ) : CookiesStorage {
