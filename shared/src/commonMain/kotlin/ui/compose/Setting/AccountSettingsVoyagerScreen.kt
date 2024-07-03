@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
+import dao.TYPE_POSTGRADUATE
+import dao.TYPE_UNDERGRADUATE
 import org.koin.compose.koinInject
 import util.compose.EasyToast
 import util.compose.ParentPaddingControl
@@ -42,26 +44,27 @@ import kotlin.jvm.Transient
 class AccountSettingsVoyagerScreen(
     @Transient
     val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
-) :Screen{
+) : Screen {
     @Composable
     override fun Content() {
         val settingViewModel = koinInject<SettingViewModel>()
         val signInStatus = settingViewModel.signInStatus.collectAsState()
-        val username = remember{
-            mutableStateOf("")
+        val username = remember {
+            mutableStateOf(settingViewModel.kValueAction.schoolUserName.currentValue.value ?: "")
         }
-        val account = remember{
-            mutableStateOf("")
+        val account = remember {
+            mutableStateOf(settingViewModel.kValueAction.schoolPassword.currentValue.value ?: "")
         }
-        val issUndergraduate = remember{
-            mutableStateOf(true)
+        val isUndergraduate = remember {
+            val loginType = settingViewModel.kValueAction.loginType.currentValue.value
+            mutableStateOf(if (loginType == null) true else loginType == TYPE_UNDERGRADUATE)
         }
         val toastState = rememberToastState()
         toastState.toastBindNetworkResult(signInStatus)
         Box(
             modifier = Modifier
                 .fillMaxSize()
-        ){
+        ) {
             signInStatus.CollectWithContentInBox(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -73,10 +76,10 @@ class AccountSettingsVoyagerScreen(
                     )
                 },
                 loading = {
-                     CircularProgressIndicator(
-                         modifier = Modifier
-                             .align(Alignment.Center)
-                     )
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                    )
                 },
                 content = {
                     Column(
@@ -92,33 +95,33 @@ class AccountSettingsVoyagerScreen(
                                 .selectableGroup(),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Row (
+                            Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .clickable {
-                                        issUndergraduate.value = true
+                                        isUndergraduate.value = true
                                     }
-                            ){
+                            ) {
                                 RadioButton(
-                                    selected = issUndergraduate.value,
+                                    selected = isUndergraduate.value,
                                     onClick = {
-                                        issUndergraduate.value = true
+                                        isUndergraduate.value = true
                                     }
                                 )
                                 Text("本科生")
                             }
                             Spacer(modifier = Modifier.width(20.dp))
-                            Row (
+                            Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .clickable {
-                                        issUndergraduate.value = false
+                                        isUndergraduate.value = false
                                     }
-                            ){
+                            ) {
                                 RadioButton(
-                                    selected = !issUndergraduate.value,
+                                    selected = !isUndergraduate.value,
                                     onClick = {
-                                        issUndergraduate.value = false
+                                        isUndergraduate.value = false
                                     }
                                 )
                                 Text("研究生")
@@ -151,10 +154,11 @@ class AccountSettingsVoyagerScreen(
                             onClick = {
                                 settingViewModel.verifyTheAccount(
                                     username.value,
-                                    account.value
+                                    account.value,
+                                    if (isUndergraduate.value) TYPE_UNDERGRADUATE else TYPE_POSTGRADUATE
                                 )
                             }
-                        ){
+                        ) {
                             Text("登录")
                         }
                     }

@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.stateIn
 import util.kValue.KValueIntData
 import util.kValue.KValueStringData
 
+const val StudentTypeKey = "LoginType"
 const val SchoolUserNameKey = "SchoolUserName"
 const val SchoolPasswordKey = "SchoolPassword"
 const val CurrentXnKey = "CurrentXn"
@@ -18,6 +19,10 @@ const val UserSchoolIdKey = "UserSchoolId"
 const val DataStartDayKey = "DataStartDay"
 const val DataStartMonthKey = "DataStartMonth"
 const val DataStartYearKey = "DataStartYear"
+
+const val TYPE_UNDERGRADUATE = 0 // 本科生
+const val TYPE_POSTGRADUATE = 1 // 研究生
+const val TYPE_VISITOR = 2 // 游客
 
 /**
  *
@@ -31,12 +36,12 @@ const val DataStartYearKey = "DataStartYear"
  * @property dataStartMonth KValueIntData 对开始月的操作
  * @property dataStartYear KValueIntData 对开始年的操作
  * @property currentYear StateFlow<String?> 根据对currentXq和currentXn的计算获取当前学年 如202301
- * @constructor
  */
 class UndergraduateKValueAction(
     private val kValue: KVault
 ) {
 
+    val loginType = KValueIntData(StudentTypeKey, MutableStateFlow(null), kValue)
     val schoolUserName = KValueStringData(SchoolUserNameKey, MutableStateFlow(null), kValue)
     val schoolPassword = KValueStringData(SchoolPasswordKey, MutableStateFlow(null), kValue)
     val currentXn = KValueIntData(CurrentXnKey, MutableStateFlow(null), kValue)
