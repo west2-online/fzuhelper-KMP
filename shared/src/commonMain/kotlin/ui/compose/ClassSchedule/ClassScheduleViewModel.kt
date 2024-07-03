@@ -338,6 +338,12 @@ class ClassScheduleViewModel (
                                     id
                                 )
                             }
+                            .catchWithMassage { label, throwable ->
+                                refreshState.resetWithLog(
+                                    label,
+                                    networkError(throwable, "更新失败")
+                                )
+                            }
                             .collect { initCourseBean ->
                                 dao.classScheduleDao.insertClassScheduleByXueNian(initCourseBean,weekData.curXueqi,weekData.curXuenian)
                                 refreshState.resetWithoutLog(NetworkResult.Success("刷新成功"))
