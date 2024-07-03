@@ -15,25 +15,27 @@ import util.flow.launchInIO
  * @property currentValue StateFlow<String?> 用于监听值
  * @constructor
  */
-class KValueStringDate (
+class KValueStringData(
     val key: String,
     private val data: MutableStateFlow<String?>,
-    private val kValue:KVault
-){
+    private val kValue: KVault
+) {
     val currentValue = data.asStateFlow()
-    private suspend fun  store(state: StateFlow<String?>, key:String){
-        state.collect{
+    private suspend fun store(state: StateFlow<String?>, key: String) {
+        state.collect {
             println(it)
             state.value?.let { it1 -> kValue.set(key, it1) }
         }
     }
-    suspend fun setValue(newValue:String?){
+
+    suspend fun setValue(newValue: String?) {
         data.emit(newValue)
     }
+
     init {
         globalScope.launchInIO {
             data.value = kValue.string(key)
-            store(currentValue,key)
+            store(currentValue, key)
         }
     }
 }
@@ -46,24 +48,26 @@ class KValueStringDate (
  * @property currentValue StateFlow<String?> 用于监听值
  * @constructor
  */
-class KValueIntDate (
+class KValueIntData(
     val key: String,
     private val data: MutableStateFlow<Int?>,
-    private val kValue:KVault
-){
+    private val kValue: KVault
+) {
     val currentValue = data.asStateFlow()
-    private suspend fun  store(state: StateFlow<Int?>, key:String){
-        state.collect{
+    private suspend fun store(state: StateFlow<Int?>, key: String) {
+        state.collect {
             state.value?.let { it1 -> kValue.set(key, it1) }
         }
     }
-    suspend fun setValue(newValue:Int?){
+
+    suspend fun setValue(newValue: Int?) {
         data.emit(newValue)
     }
+
     init {
         globalScope.launchInIO {
             data.value = kValue.int(key)
-            store(currentValue,key)
+            store(currentValue, key)
         }
     }
 }
