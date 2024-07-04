@@ -109,6 +109,12 @@ sealed interface ReleasePageItem{
             )
         }
         fun isNotEmpty():Boolean{
+            if(yMap.isEmpty()){
+                return false;
+            }
+            if(xList.isEmpty()){
+                return false;
+            }
             return xList.size == yMap.map {
                 it.value.size
             }.min() && xList.size == yMap.map {

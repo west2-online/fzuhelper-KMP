@@ -55,10 +55,22 @@ fun XYChart(
             modifier = Modifier
                 .height(500.dp)
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
+                .then(
+                    if(data.xData.size < 8){
+                        Modifier.fillMaxWidth()
+                    }else{
+                        Modifier .horizontalScroll(rememberScrollState())
+                    }
+                )
         ) {
             ChartLayout(
-                modifier = Modifier.width(50.dp * data.xData.size),
+                modifier = Modifier.then(
+                    if(data.xData.size < 8){
+                        Modifier.fillMaxWidth()
+                    }else{
+                        Modifier.width(50.dp * data.xData.size)
+                    }
+                ),
                 title = {
                     Text(
                         data.title,
@@ -186,7 +198,11 @@ class LineChartData(
     val xAxisTitle :String,
     val yAxisTitle :String,
 ){
-    fun isAvailable():Boolean = xData.size == yMap.keys.size && xData.isNotEmpty() && yMap.isNotEmpty()
+    fun isAvailable():Boolean = xData.size == yMap.map {
+        it.value.size
+    }.max() && xData.size == yMap.map {
+        it.value.size
+    }.min() && xData.isNotEmpty() && yMap.isNotEmpty()
     val max = yMap.maxOf { it.value.maxOf { it } }
     val min = yMap.minOf { it.value.minOf { it } }
 
