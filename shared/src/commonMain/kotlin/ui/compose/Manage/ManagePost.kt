@@ -45,6 +45,7 @@ import config.BaseUrlConfig
 import data.post.PostById.FileData
 import data.post.PostById.PostContent
 import data.post.PostById.ValueData
+import io.ktor.util.decodeBase64String
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import ui.compose.Post.ImageContent
@@ -117,7 +118,7 @@ object ManagePostVoyagerScreen:Screen{
                                                 ImageContent(it.fileName)
                                             }
                                             is ValueData -> {
-                                                TextContent(it.value)
+                                                TextContent(it.value.decodeBase64String())
                                             }
                                         }
                                     }

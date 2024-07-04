@@ -55,6 +55,9 @@ class ReleasePageViewModel(private val releaseRepository: PostRepository):ViewMo
                         is ReleasePageItem.ImageItem -> {
                             return@filter it.image.value != null
                         }
+                        is ReleasePageItem.LineChartItem -> {
+                            return@filter it.isNotEmpty()
+                        }
                         else -> {
                             return@filter false
                         }

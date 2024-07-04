@@ -36,6 +36,7 @@ import io.github.koalaplot.core.xygraph.DefaultPoint
 import io.github.koalaplot.core.xygraph.FloatLinearAxisModel
 import io.github.koalaplot.core.xygraph.XYGraph
 import io.github.koalaplot.core.xygraph.XYGraphScope
+import kotlinx.serialization.Serializable
 import kotlin.math.ceil
 
 
@@ -191,6 +192,7 @@ private fun Legend(
     }
 }
 
+@Serializable
 class LineChartData(
     val xData  : List<String>,
     val yMap: Map<String,List<Float>>,

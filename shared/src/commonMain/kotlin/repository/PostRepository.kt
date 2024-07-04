@@ -20,8 +20,11 @@ import io.ktor.client.request.setBody
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.parameters
+import io.ktor.util.encodeBase64
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import ui.compose.Release.ReleasePageItem
 
 /**
@@ -59,13 +62,22 @@ class PostRepository(private val client: HttpClient) {
                                         )
                                     }
                                     is ReleasePageItem.TextItem -> {
-                                        append( "text","{\"order\":${index},\"value\":\"${item.text.value}\"}",
+                                        append(
+                                            "text",
+                                            "{\"order\":${index},\"value\":\"${item.text.value.encodeBase64()}\"}",
                                             Headers.build {
                                                 append("Content-Type", "text/plain")
-                                            })
+                                            }
+                                        )
                                     }
                                     is ReleasePageItem.LineChartItem -> {
-
+                                        append(
+                                            "lineChart",
+                                            "{\"order\":${index},\"value\":\"${Json.encodeToString(item.toXyLineChartData()).encodeBase64()}\"}",
+                                            Headers.build {
+                                                append("Content-Type", "text/plain")
+                                            }
+                                        )
                                     }
                                 }
                             }

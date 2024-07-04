@@ -187,13 +187,10 @@ kotlin {
             }
         }
         val commonTest by getting{
+//            dependsOn(commonMain)
             dependencies {
                 implementation(kotlin("test"))
             }
-        }
-
-        val test by creating {
-            dependsOn(commonMain)
         }
     }
     task("testClasses")
