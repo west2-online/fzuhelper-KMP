@@ -5,9 +5,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,18 +17,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -37,14 +37,19 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.TextField
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -53,10 +58,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import asImageBitmap
-import com.aay.compose.lineChart.model.LineType
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import org.example.library.MR
+import ui.compose.Post.PostDisplayShare.LineChartDataForShow
 
 /**
  * Release page item
@@ -81,13 +86,56 @@ sealed interface ReleasePageItem{
         var image = mutableStateOf<ByteArray?>(null)
     }
     class LineChartItem:ReleasePageItem{
-        val animateChart = mutableStateOf(true)
-        val lineShadow = mutableStateOf(true)
-        val lineType = mutableStateOf(LineType.CURVED_LINE)
-        val isGrid = mutableStateOf<Boolean>(true)
-        val gridColor = mutableStateOf<Color>(Color.Gray)
-        val label = mutableStateOf<String>("")
-        val lineParameters = mutableStateListOf<LineParametersDataItem>()
+        val xList:MutableList<MutableState<String>> = mutableStateListOf()
+        val yMap: SnapshotStateMap<MutableState<String>, SnapshotStateList<MutableState<String>>> = mutableStateMapOf()
+        val title = mutableStateOf("")
+        val xAxisTitle = mutableStateOf("")
+        val yAxisTitle = mutableStateOf("")
+        fun toXyLineChartData():LineChartDataForShow{
+            return LineChartDataForShow(
+                xData = xList.map {
+                     it.value
+                },
+                yMap = buildMap {
+                    yMap.forEach {
+                        put(it.key.value,it.value.map{
+                            it.value.toFloatOrNull() ?: 1f
+                        })
+                    }
+                },
+                xAxisTitle = xAxisTitle.value,
+                title = title.value,
+                yAxisTitle = yAxisTitle.value
+            )
+        }
+        fun isNotEmpty():Boolean{
+            if(yMap.isEmpty()){
+                return false;
+            }
+            if(xList.isEmpty()){
+                return false;
+            }
+            return xList.size == yMap.map {
+                it.value.size
+            }.min() && xList.size == yMap.map {
+                it.value.size
+            }.max()
+        }
+        fun addX(){
+            xList.add(mutableStateOf(""))
+            yMap.forEach {
+                it.value.add(mutableStateOf(""))
+            }
+        }
+        fun addY(){
+            yMap.put(
+                mutableStateOf("") , buildList {
+                    repeat(xList.size){
+                        add(mutableStateOf<String>(""))
+                    }
+                }.toMutableStateList()
+            )
+        }
     }
     class VotingItem(
         val votingItemData : List<VotingItemData>,
@@ -98,10 +146,6 @@ data class VotingItemData(
     val name : String,
     val number: Int
 )
-class LineParametersDataItem {
-    val x = mutableStateOf<String>("")
-    val y = mutableStateOf<String>("")
-}
 
 /**
  * 文本发布item
@@ -378,11 +422,12 @@ fun ReleasePageItemImage(
 @Composable
 fun ReleasePageItemLineChart(
     modifier: Modifier,
-    lineChartItem: ReleasePageItem.LineChartItem,
     delete:()->Unit = {},
     moveUp:()->Unit = {},
     moveDown: () -> Unit = {},
+    dataForRelease : ReleasePageItem.LineChartItem
 ){
+    val state = rememberLazyListState()
     Column (
         modifier = modifier
             .padding(10.dp)
@@ -455,255 +500,124 @@ fun ReleasePageItemLineChart(
             }
         }
         TextField(
-            value = lineChartItem.label.value,
+            value = dataForRelease.title.value,
             onValueChange = {
-                lineChartItem.label.value = it
+                dataForRelease.title.value = it
             },
             label = {
                 Text("标题(请尽量缩短长度)")
             }
         )
-        LazyRow {
-            item {
-                Column (
+        TextField(
+            value = dataForRelease.xAxisTitle.value,
+            onValueChange = {
+                dataForRelease.xAxisTitle.value = it
+            },
+            label = {
+                Text("X轴标签")
+            }
+        )
+        TextField(
+            value = dataForRelease.yAxisTitle.value,
+            onValueChange = {
+                dataForRelease.yAxisTitle.value = it
+            },
+            label = {
+                Text("Y轴标签")
+            }
+        )
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = null,
+            modifier.clickable {
+                dataForRelease.addX()
+            }
+        )
+        Column (
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+        ){
+            Row (
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ){
+                Text(
+                    "X列数据",
+                    modifier.gridCellWidth()
+                )
+                VerticalDivider(
                     modifier = Modifier
-                        .padding(top = 50.dp)
-                ){
-                    Box(
-                        modifier = Modifier
-                            .padding(5.dp)
-                            .wrapContentWidth()
-                            .height(56.dp),
-                    ){
-                        Text(
-                            text = "X",
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .padding(5.dp)
-                            .wrapContentWidth()
-                            .height(56.dp),
-                    ){
-                        Text(
-                            text = "Y",
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                        )
-                    }
+                        .height(50.dp),
+                    thickness = 2.dp,
+                    color = Color.Black
+                )
+                dataForRelease.xList.forEach {
+                    TextField(
+                        value = it.value,
+                        modifier = Modifier.gridCellWidth(),
+                        onValueChange = { text ->
+                            it.value = text
+                        }
+                    )
                 }
             }
-            lineChartItem.lineParameters.forEach { lineParameter ->
-                item {
-                    Column {
-                        Row (
-                            modifier = Modifier
-                                .height(50.dp)
-                        ){
-                            IconButton(
-                                onClick = {
-                                    lineChartItem.lineParameters.remove(lineParameter)
-                                },
-                                content = {
-                                    Icon(
-                                        imageVector = Icons.Filled.Delete,
-                                        contentDescription = null
-                                    )
-                                },
-
-                                )
+            Divider(
+                color = Color.Black,
+                modifier = Modifier.width((dataForRelease.xList.size*200 + 200 ).dp),
+                thickness = 2.dp
+            )
+            dataForRelease.yMap.forEach {
+                Row (
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ){
+                    TextField(
+                        value = it.key.value,
+                        modifier = Modifier.gridCellWidth(),
+                        onValueChange = { text ->
+                            it.key.value = text
                         }
+                    )
+                    VerticalDivider(
+                        modifier = Modifier
+                            .height(56.dp),
+                        thickness = 2.dp,
+                        color = Color.Black
+                    )
+                    it.value.forEach {
                         TextField(
-                            value = lineParameter.x.value,
-                            onValueChange = {
-                                lineParameter.x.value = it
-                            },
-                            modifier = Modifier
-                                .padding(5.dp)
-                                .wrapContentWidth()
-                                .height(56.dp)
-                        )
-                        TextField(
-                            value = lineParameter.y.value.toString(),
-                            onValueChange = {
-                                lineParameter.y.value = it
-                            },
-                            modifier = Modifier
-                                .padding(5.dp)
-                                .wrapContentWidth()
-                                .height(56.dp),
-                            isError = try {
-                                lineParameter.y.value.toFloat()
-                                false
-                            }catch (e:Exception){
-                                true
+                            value = it.value,
+                            modifier = Modifier.gridCellWidth(),
+                            onValueChange = { text ->
+                                it.value = text
                             }
                         )
                     }
                 }
             }
-            item {
-                Row (
-                    modifier = Modifier
-                        .height(50.dp)
-                ){
-                    IconButton(
-                        onClick = {
-                            lineChartItem.lineParameters.add(LineParametersDataItem())
-                        },
-                        content = {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = null
-                            )
-                        },
-                    )
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = null,
+                modifier.clickable {
+                    dataForRelease.addY()
                 }
-            }
+            )
         }
         AnimatedVisibility(setting.value){
-            Column {
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ){
-                    Text(
-                        "折线颜色:",
-                    )
-                    LazyRow {
-                        listOf(
-                            Color.Green,
-                            Color.Red,
-                            Color.Gray,
-                            Color.Blue,
-                            Color.Cyan,
-                            Color.Magenta,
-                            Color.Black
-                        ).forEach {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .size(50.dp)
-                                        .composed {
-                                            if (lineChartItem.gridColor.value == it){
-                                                return@composed this.border(1.dp,shape = RoundedCornerShape(0),color = Color.Black)
-                                            }
-                                            else return@composed this
-                                        }
-                                        .clickable {
-                                            lineChartItem.gridColor.value = it
-                                        }
-                                        .padding(5.dp)
-                                        .background(it)
-                                )
-                            }
-                        }
-                    }
 
-                }
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ){
-                    Text(
-                        "显示阴影: 当前 “${if (lineChartItem.lineShadow.value) "是" else "否"}”",
-                    )
-                    Button(
-                        onClick = {
-                            lineChartItem.lineShadow.value = !lineChartItem.lineShadow.value
-                        }
-                    ){
-                        Text("修改")
-                    }
-                }
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ){
-                    Text(
-                        "显示表格: 当前 “${if (lineChartItem.isGrid.value) "是" else "否"}”",
-                    )
-                    Button(
-                        onClick = {
-                            lineChartItem.isGrid.value = !lineChartItem.isGrid.value
-                        }
-                    ){
-                        Text("修改")
-                    }
-                }
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ){
-                    Text(
-                        "显示动画: 当前 “${if (lineChartItem.animateChart.value) "是" else "否"}”",
-                    )
-                    Button(
-                        onClick = {
-                            lineChartItem.animateChart.value = !lineChartItem.animateChart.value
-                        }
-                    ){
-                        Text("修改")
-                    }
-                }
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ){
-                    Text(
-                        "折线颜色:",
-                    )
-                    LazyRow {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .composed {
-                                        if (lineChartItem.lineType.value == LineType.CURVED_LINE){
-                                            return@composed this.border(1.dp,shape = RoundedCornerShape(0),color = Color.Black)
-                                        }
-                                        else return@composed this
-                                    }
-                                    .clickable {
-                                        lineChartItem.lineType.value = LineType.CURVED_LINE
-                                    }
-                                    .padding(5.dp)
-                            ){
-                                Text("曲线",
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                )
-                            }
-                        }
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .composed {
-                                        if (lineChartItem.lineType.value == LineType.DEFAULT_LINE){
-                                            return@composed this.border(1.dp,shape = RoundedCornerShape(0),color = Color.Black)
-                                        }
-                                        else return@composed this
-                                    }
-                                    .clickable {
-                                        lineChartItem.lineType.value = LineType.DEFAULT_LINE
-                                    }
-                                    .padding(5.dp)
-                            ){
-                                Text(
-                                    "折线",
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                )
-                            }
-                        }
-                    }
-
-                }
-            }
         }
     }
 }
 
+val GridCellWidth = 200.dp
 
+fun Modifier.gridCellWidth() = this.width(GridCellWidth)
 

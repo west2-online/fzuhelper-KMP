@@ -77,14 +77,17 @@ import asImageBitmap
 import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
 import data.post.PostById.FileData
+import data.post.PostById.LineChartData
 import data.post.PostById.PostContent
 import data.post.PostById.ValueData
+import data.post.PostById.toLineChartDataForShowOrNull
 import data.post.PostCommentPreview.Data
 import data.share.Comment
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import io.ktor.util.decodeBase64String
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filter
@@ -98,6 +101,7 @@ import kotlinx.serialization.json.Json
 import org.example.library.MR
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
+import ui.compose.Post.PostDisplayShare.XYChart
 import ui.compose.Report.ReportType
 import util.compose.EasyToast
 import util.compose.Label
@@ -256,6 +260,7 @@ fun PostDetail(
                                         }
                                     }
                                     listOf<PostContent>().plus(postById.valueData ?: listOf())
+                                        .plus(postById.lineChartData ?: listOf())
                                         .plus(postById.fileData ?: listOf()).sortedBy {
                                             it.order
                                         }.forEach {
@@ -264,7 +269,17 @@ fun PostDetail(
                                                     ImageContent(it.fileName)
                                                 }
                                                 is ValueData -> {
-                                                    TextContent(it.value)
+                                                    TextContent(it.value.decodeBase64String())
+                                                }
+                                                is LineChartData -> {
+                                                    val data = remember {
+                                                        it.toLineChartDataForShowOrNull()
+                                                    }
+                                                    if(data == null){
+                                                        Text("数据解析失败")
+                                                    } else {
+                                                        XYChart(false, Modifier,data)
+                                                    }
                                                 }
                                             }
                                         }

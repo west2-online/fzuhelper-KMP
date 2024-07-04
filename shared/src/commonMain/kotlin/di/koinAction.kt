@@ -336,7 +336,15 @@ class ShareClient(
 class WebClient(
     val client : HttpClient = HttpClient{
         install(ContentNegotiation) {
-            json()
+            json(Json {
+                ignoreUnknownKeys = true
+                encodeDefaults = true
+                isLenient = true
+                allowSpecialFloatingPointValues = true
+                allowStructuredMapKeys = true
+                prettyPrint = false
+                useArrayPolymorphism = false
+            })
         }
         install(Logging)
         install(HttpRedirect) {
@@ -385,7 +393,15 @@ fun appModule(
     single {
         val client = HttpClient{
             install(ContentNegotiation) {
-                json()
+                json(Json {
+                    ignoreUnknownKeys = true
+                    encodeDefaults = true
+                    isLenient = true
+                    allowSpecialFloatingPointValues = true
+                    allowStructuredMapKeys = true
+                    prettyPrint = false
+                    useArrayPolymorphism = false
+                })
             }
             install(
                 DefaultRequest

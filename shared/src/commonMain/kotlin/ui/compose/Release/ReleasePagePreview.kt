@@ -19,9 +19,9 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ui.compose.PostDisplayShare.ReleasePageItemImageForShow
-import ui.compose.PostDisplayShare.ReleasePageItemLineChartForShow
-import ui.compose.PostDisplayShare.ReleasePageItemTextForShow
+import ui.compose.Post.PostDisplayShare.ReleasePageItemImageForShow
+import ui.compose.Post.PostDisplayShare.ReleasePageItemLineChartForShow
+import ui.compose.Post.PostDisplayShare.ReleasePageItemTextForShow
 import util.compose.Label
 
 /**
@@ -86,7 +86,7 @@ fun PreviewContent(
             return@filter when (it) {
                 is ReleasePageItem.TextItem -> it.text.value != ""
                 is ReleasePageItem.ImageItem -> it.image.value != null
-                is ReleasePageItem.LineChartItem -> it.lineParameters.isNotEmpty()
+                is ReleasePageItem.LineChartItem -> it.isNotEmpty()
                 else -> false
             }
         }.forEachIndexed { _, releasePageItem ->

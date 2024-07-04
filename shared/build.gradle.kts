@@ -1,6 +1,5 @@
-import com.android.aaptcompiler.proto.serializeTableToPb
+
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.psi.stubs.impl.serialize
 
 val appyx_version = "2.0.0-alpha09"
 val koin_version = "3.5.0"
@@ -149,7 +148,7 @@ kotlin {
 //                implementation("androidx.room:room-compiler:$androidxRoom")
 //                implementation("androidx:room:room-runtime:$androidxRoom")
 //                implementation("androidx:sqlite:sqlite-bundled:$sqlite")
-
+                implementation("io.github.koalaplot:koalaplot-core:0.6.0")
             }
         }
         val androidMain by getting {
@@ -188,13 +187,10 @@ kotlin {
             }
         }
         val commonTest by getting{
+//            dependsOn(commonMain)
             dependencies {
                 implementation(kotlin("test"))
             }
-        }
-
-        val test by creating {
-            dependsOn(commonMain)
         }
     }
     task("testClasses")

@@ -1,9 +1,6 @@
 
 
 import androidVersion.AndroidVersion
-import dev.whyoleg.cryptography.serialization.pem.PEM
-import dev.whyoleg.cryptography.serialization.pem.PemContent
-import dev.whyoleg.cryptography.serialization.pem.PemLabel
 import di.configure
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.DefaultRequest
@@ -16,7 +13,9 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.headers
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import ui.compose.Post.PostDisplayShare.LineChartDataForShow
 import kotlin.test.Test
 
 class GrepTest {
@@ -30,14 +29,24 @@ class GrepTest {
     }
 
     @Test
-    fun grep(lines: List<String>, pattern: String, action: (String) -> Unit) {
-        val encodedPemContent: String = PEM.encode(
-            PemContent(
-                label = PemLabel("KEY"),
-                bytes = "Hello World".encodeToByteArray()
+    fun grep() {
+//        val encodedPemContent: String = PEM.encode(
+//            PemContent(
+//                label = PemLabel("KEY"),
+//                bytes = "Hello World".encodeToByteArray()
+//            )
+//        )
+//        println(encodedPemContent)
+        val data = LineChartDataForShow(
+            xData = listOf("1","2","3"),
+            xAxisTitle = "x",
+            yAxisTitle = "sss",
+            title = "ss",
+            yMap = mapOf(
+                "sss" to listOf(1f,2f,3f),"sss2" to listOf(1f,2f,3f),"sss3" to listOf(1f,2f,3f)
             )
         )
-        println(encodedPemContent)
+        print(Json.encodeToString(data))
     }
     @Test
     fun shouldFindMatches() {

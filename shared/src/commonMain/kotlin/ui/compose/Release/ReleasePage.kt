@@ -118,7 +118,6 @@ fun ReleasePageScreen(
     LaunchedEffect(Unit){
         viewModel.getUserLabel()
     }
-
     Column (
         modifier = modifier
     ){
@@ -548,7 +547,7 @@ fun ReleaseContent(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .wrapContentHeight(),
-                                    releasePageItem,
+                                    dataForRelease = releasePageItem,
                                     delete = {
                                         releasePageItems.removeAt(index)
                                     },

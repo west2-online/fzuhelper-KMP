@@ -70,6 +70,7 @@ import config.BaseUrlConfig.PostImage
 import data.post.PostList.PostListItemData
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import io.ktor.util.decodeBase64String
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import org.koin.compose.koinInject
@@ -380,7 +381,6 @@ fun PostItem(
                                 .align(Alignment.Center)
                         )
                     }
-
                 )
             }
             Text(
@@ -392,7 +392,7 @@ fun PostItem(
                 maxLines = lines,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 10.sp,
-                text = post.LittleDescribe?:""
+                text = post.LittleDescribe?.decodeBase64String()?:""
             )
             Row (
                 verticalAlignment = Alignment.CenterVertically
