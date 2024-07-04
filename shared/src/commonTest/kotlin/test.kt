@@ -15,7 +15,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import ui.compose.Post.PostDisplayShare.LineChartData
+import ui.compose.Post.PostDisplayShare.LineChartDataForShow
 import kotlin.test.Test
 
 class GrepTest {
@@ -37,7 +37,7 @@ class GrepTest {
 //            )
 //        )
 //        println(encodedPemContent)
-        val data = LineChartData(
+        val data = LineChartDataForShow(
             xData = listOf("1","2","3"),
             xAxisTitle = "x",
             yAxisTitle = "sss",

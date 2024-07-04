@@ -358,7 +358,7 @@ fun PostItem(
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                text = post.Title.decodeBase64String()
+                text = post.Title
             )
             post.FirstImage?.let{
                 if(it.isEmpty()){

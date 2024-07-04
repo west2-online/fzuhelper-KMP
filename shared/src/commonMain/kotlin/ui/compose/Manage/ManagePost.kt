@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,13 +44,16 @@ import app.cash.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
 import data.post.PostById.FileData
+import data.post.PostById.LineChartData
 import data.post.PostById.PostContent
 import data.post.PostById.ValueData
+import data.post.PostById.toLineChartDataForShowOrNull
 import io.ktor.util.decodeBase64String
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import ui.compose.Post.ImageContent
 import ui.compose.Post.PersonalInformationAreaInDetail
+import ui.compose.Post.PostDisplayShare.XYChart
 import ui.compose.Post.TextContent
 import ui.compose.Post.Time
 import util.compose.EasyToast
@@ -119,6 +123,16 @@ object ManagePostVoyagerScreen:Screen{
                                             }
                                             is ValueData -> {
                                                 TextContent(it.value.decodeBase64String())
+                                            }
+                                            is LineChartData -> {
+                                                val data = remember {
+                                                    it.toLineChartDataForShowOrNull()
+                                                }
+                                                if(data == null){
+                                                    Text("数据解析失败")
+                                                } else {
+                                                    XYChart(false, Modifier,data)
+                                                }
                                             }
                                         }
                                     }

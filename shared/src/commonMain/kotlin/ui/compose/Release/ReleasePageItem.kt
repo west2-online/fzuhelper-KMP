@@ -61,7 +61,7 @@ import asImageBitmap
 import dev.icerock.moko.resources.compose.painterResource
 import getPlatformContext
 import org.example.library.MR
-import ui.compose.Post.PostDisplayShare.LineChartData
+import ui.compose.Post.PostDisplayShare.LineChartDataForShow
 
 /**
  * Release page item
@@ -91,8 +91,8 @@ sealed interface ReleasePageItem{
         val title = mutableStateOf("")
         val xAxisTitle = mutableStateOf("")
         val yAxisTitle = mutableStateOf("")
-        fun toXyLineChartData():LineChartData{
-            return LineChartData(
+        fun toXyLineChartData():LineChartDataForShow{
+            return LineChartDataForShow(
                 xData = xList.map {
                      it.value
                 },

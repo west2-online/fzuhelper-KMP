@@ -46,7 +46,7 @@ import kotlin.math.ceil
 fun XYChart(
     thumbnail: Boolean,
     modifier: Modifier = Modifier,
-    data: LineChartData
+    data: LineChartDataForShow
 ) {
     val colorMap = remember {
         data.createColorMap()
@@ -170,7 +170,7 @@ private fun XYGraphScope<String, Float>.chart(
 @Composable
 private fun Legend(
     thumbnail: Boolean = false,
-    data: LineChartData,
+    data: LineChartDataForShow,
     colorMap :Map<String,Color>
 ) {
     val cities = data.yMap.keys.sorted()
@@ -193,7 +193,7 @@ private fun Legend(
 }
 
 @Serializable
-class LineChartData(
+class LineChartDataForShow(
     val xData  : List<String>,
     val yMap: Map<String,List<Float>>,
     val title :String,
