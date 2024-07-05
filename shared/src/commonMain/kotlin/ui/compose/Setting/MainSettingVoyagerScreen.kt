@@ -27,6 +27,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import dao.TYPE_UNDERGRADUATE
 import dao.UndergraduateKValueAction
 import org.koin.compose.koinInject
 import util.compose.ParentPaddingControl
@@ -80,10 +81,10 @@ fun AccountSettings(
         Divider()
         setting.schoolUserName.currentValue.collectAsState().value.let {
             if( it != null ){
-                val undergraduate = true
+                val undergraduate = setting.loginType.currentValue.collectAsState().value == TYPE_UNDERGRADUATE
                 Row(
                     modifier = Modifier.clickable {
-                        navigator.push(FontSettingVoyagerScreen())
+                        navigator.push(AccountSettingsVoyagerScreen())
                     }.padding(vertical = 10.dp).fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp)

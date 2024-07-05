@@ -22,7 +22,7 @@ import util.network.resetWithoutLog
 class SettingViewModel(
     val kValueAction: UndergraduateKValueAction,
     val classSchedule: ClassSchedule
-):ViewModel() {
+) : ViewModel() {
     val signInStatus = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
 
     /**
@@ -31,21 +31,33 @@ class SettingViewModel(
      * @param password String
      */
     fun verifyTheAccount(
-        userName:String,
-        password:String,
-    ){
+        userName: String,
+        password: String,
+        loginType: Int,
+    ) {
         viewModelScope.launchInDefault {
             signInStatus.logicIfNotLoading {
                 classSchedule.verifyYourAccount(
                     userName,
                     password,
                     failAction = {
-                        when(it){
+                        when (it) {
                             ClassSchedule.VerifyYourAccountError.ValidationFailed -> {
-                                signInStatus.resetWithoutLog(networkError("验证失败,请稍后重试","验证失败"))
+                                signInStatus.resetWithoutLog(
+                                    networkError(
+                                        "验证失败,请稍后重试",
+                                        "验证失败"
+                                    )
+                                )
                             }
+
                             ClassSchedule.VerifyYourAccountError.LoginFailed -> {
-                                signInStatus.resetWithoutLog(networkError("登录失败,请稍后重试",""))
+                                signInStatus.resetWithoutLog(
+                                    networkError(
+                                        "登录失败,请稍后重试",
+                                        ""
+                                    )
+                                )
                             }
                         }
                     },
@@ -53,6 +65,7 @@ class SettingViewModel(
                         signInStatus.resetWithoutLog(networkSuccess("登录成功"))
                         kValueAction.schoolUserName.setValue(userName)
                         kValueAction.schoolPassword.setValue(password)
+                        kValueAction.loginType.setValue(loginType)
                     }
                 )
             }

@@ -41,7 +41,7 @@ class ClassScheduleRepository {
         pass: String,
         verifyCode: String,
     ): Flow<HttpResponse> {
-        return flow{
+        return flow {
             val response = this@loginStudent.submitForm(
                 url = "https://jwcjwxt1.fzu.edu.cn/logincheck.asp",
                 formParameters = Parameters.build {
@@ -66,12 +66,12 @@ class ClassScheduleRepository {
      * @return Flow<String>
      */
     suspend fun HttpClient.parseVerifyCodeFormWest2(
-        verifyCodeForParse:String
+        verifyCodeForParse: String
     ): Flow<String> {
         return flow {
-            val verifyCode = this@parseVerifyCodeFormWest2.submitForm (
+            val verifyCode = this@parseVerifyCodeFormWest2.submitForm(
                 formParameters = Parameters.build {
-                    append("validateCode",verifyCodeForParse)
+                    append("validateCode", verifyCodeForParse)
                 },
                 url = "https://statistics.fzuhelper.w2fzu.com/api/login/validateCode"
             ).body<GetVerifyCodeFormWest2>().message
@@ -84,9 +84,11 @@ class ClassScheduleRepository {
      * @receiver HttpClient
      * @return Flow<ByteArray>
      */
-    suspend fun HttpClient.getVerifyCode():Flow<ByteArray>{
+    suspend fun HttpClient.getVerifyCode(): Flow<ByteArray> {
         return flow {
-            val verifyCodeForParse = this@getVerifyCode.get("https://jwcjwxt1.fzu.edu.cn/plus/verifycode.asp").readBytes()
+            val verifyCodeForParse =
+                this@getVerifyCode.get("https://jwcjwxt1.fzu.edu.cn/plus/verifycode.asp")
+                    .readBytes()
             emit(verifyCodeForParse)
         }
     }
@@ -99,11 +101,12 @@ class ClassScheduleRepository {
      */
     suspend fun HttpClient.getExamStateHTML(id: String): Flow<String> {
         return flow {
-            val data = this@getExamStateHTML.get("https://jwcjwxt2.fzu.edu.cn:81/student/xkjg/examination/exam_list.aspx"){
-                url {
-                    parameters.append("id",id)
-                }
-            }.bodyAsText()
+            val data =
+                this@getExamStateHTML.get("https://jwcjwxt2.fzu.edu.cn:81/student/xkjg/examination/exam_list.aspx") {
+                    url {
+                        parameters.append("id", id)
+                    }
+                }.bodyAsText()
             emit(data)
         }
     }
@@ -137,20 +140,21 @@ class ClassScheduleRepository {
      * @param num String
      * @return Flow<HttpResponse>
      */
-    suspend fun HttpClient.loginCheckXs(id: String,num:String): Flow<HttpResponse> {
+    suspend fun HttpClient.loginCheckXs(id: String, num: String): Flow<HttpResponse> {
         return flow {
-            val response = this@loginCheckXs.get("https://jwcjwxt2.fzu.edu.cn:81/loginchk_xs.aspx") {
-                url { url ->
-                    mapOf(
-                        "id" to id,
-                        "num" to num,
-                        "ssourl" to "https://jwcjwxt2.fzu.edu.cn",
-                        "hosturl" to "https://jwcjwxt2.fzu.edu.cn:81"
-                    ).forEach {
-                        parameters.append(it.key,it.value)
+            val response =
+                this@loginCheckXs.get("https://jwcjwxt2.fzu.edu.cn:81/loginchk_xs.aspx") {
+                    url { url ->
+                        mapOf(
+                            "id" to id,
+                            "num" to num,
+                            "ssourl" to "https://jwcjwxt2.fzu.edu.cn",
+                            "hosturl" to "https://jwcjwxt2.fzu.edu.cn:81"
+                        ).forEach {
+                            parameters.append(it.key, it.value)
+                        }
                     }
                 }
-            }
             emit(response)
         }
     }
@@ -169,8 +173,8 @@ class ClassScheduleRepository {
         xuenian: String,
         event: String,
         state: String
-    ):Flow<HttpResponse>{
-        return flow{
+    ): Flow<HttpResponse> {
+        return flow {
             val response = this@getCourses.submitForm(
                 "${JWCH_BASE_URL}/student/xkjg/wdxk/xkjg_list.aspx",
                 formParameters = Parameters.build {
@@ -179,9 +183,9 @@ class ClassScheduleRepository {
                     append("__VIEWSTATE", state)
                     append("ctl00\$ContentPlaceHolder1\$BT_submit", "确定")
                 }
-            ){
+            ) {
                 url {
-                    parameters.append("id",id)
+                    parameters.append("id", id)
                 }
             }
             emit(response)
@@ -194,7 +198,7 @@ class ClassScheduleRepository {
      * @param stateHTML String 需要解析的html
      * @return Flow<Map<String,String>>
      */
-    suspend fun getCourses(xq: String, stateHTML: String):Flow<Map<String,String>>{
+    suspend fun getCourses(xq: String, stateHTML: String): Flow<Map<String, String>> {
         return flow {
             val viewStateMap = parseCourseStateHTML(stateHTML)
             emit(viewStateMap)
@@ -211,10 +215,10 @@ class ClassScheduleRepository {
      * @return Flow<List<CourseBeanForTemp>>
      */
     suspend fun HttpClient.getCoursesHTML(
-        viewStateMap:Map<String,String>,
-        xq: String,onGetOptions : (List<String>)->Unit = {},
+        viewStateMap: Map<String, String>,
+        xq: String, onGetOptions: (List<String>) -> Unit = {},
         id: String
-    ):Flow<List<CourseBeanForTemp>>{
+    ): Flow<List<CourseBeanForTemp>> {
         return this@getCoursesHTML.getCourses(
             id,
             xq,
@@ -222,7 +226,7 @@ class ClassScheduleRepository {
             viewStateMap["VIEWSTATE"] ?: ""
         ).map {
             val result = it.bodyAsText(charSet)
-            parseCoursesHTML(xq, result,onGetOptions=onGetOptions)
+            parseCoursesHTML(xq, result, onGetOptions = onGetOptions)
         }
     }
 
@@ -233,14 +237,15 @@ class ClassScheduleRepository {
      * @return Flow<String>
      */
     suspend fun HttpClient.getCourseStateHTML(
-        id : String
+        id: String
     ): Flow<String> {
         return flow {
-            val response = this@getCourseStateHTML.get("${JWCH_BASE_URL}/student/xkjg/wdxk/xkjg_list.aspx"){
-                url{
-                    parameters.append("id",id)
-                }
-            }.bodyAsText(Charset.forName("GB2312"))
+            val response =
+                this@getCourseStateHTML.get("${JWCH_BASE_URL}/student/xkjg/wdxk/xkjg_list.aspx") {
+                    url {
+                        parameters.append("id", id)
+                    }
+                }.bodyAsText(Charset.forName("GB2312"))
             emit(response)
         }
     }
@@ -250,9 +255,10 @@ class ClassScheduleRepository {
      * @receiver HttpClient
      * @return Flow<WeekData>
      */
-    suspend fun HttpClient.getWeek():Flow<WeekData>{
+    suspend fun HttpClient.getWeek(): Flow<WeekData> {
         return flow {
-            val response = this@getWeek.get("https://jwcjwxt2.fzu.edu.cn:82/week.asp").bodyAsText(Charset.forName("GB2312"))
+            val response = this@getWeek.get("https://jwcjwxt2.fzu.edu.cn:82/week.asp")
+                .bodyAsText(Charset.forName("GB2312"))
             emit(response)
         }.map {
             parseWeekHTML(it)
@@ -267,9 +273,9 @@ class ClassScheduleRepository {
      */
     fun HttpClient.getSchoolCalendar(xq: String): Flow<String> {
         return flow {
-            val response = this@getSchoolCalendar.get("$SCHOOL_CALENDAR_URL/xl.asp"){
+            val response = this@getSchoolCalendar.get("$SCHOOL_CALENDAR_URL/xl.asp") {
                 url {
-                    parameters.append("xq",xq)
+                    parameters.append("xq", xq)
                 }
             }.bodyAsText(Charset.forName("GB2312"))
             emit(response)
@@ -303,7 +309,7 @@ class ClassScheduleRepository {
     private fun parseCoursesHTML(
         xueNian: String,
         result: String,
-        onGetOptions : (List<String>)->Unit = {}
+        onGetOptions: (List<String>) -> Unit = {}
     ): List<CourseBeanForTemp> {
         val tempCourses = ArrayList<CourseBeanForTemp>()
         //解析学年
@@ -364,10 +370,14 @@ class ClassScheduleRepository {
                 kc.kcYear = year
                 kc.kcXuenian = xuenian
                 kc.kcName = title
-                try {
-                    val contents = string.split("&nbsp;")
-                    val week = contents[0].split("-")
-                    val startWeek = parseInt(week[0].replace("\n","").replace(" ",""))
+                val contents = string.split("&nbsp;")
+                val week = contents[0].split("-").map { it.trim() }
+                if (!week[0].contains("周")) {
+                    /*
+                    * 02-17 星期1:7-8节 旗山西3-203
+                    * 02-17 星期4:1-2节 旗山西3-203
+                    * */
+                    val startWeek = parseInt(week[0].replace("\n", "").replace(" ", ""))
                     val endWeek = parseInt(week[1])
                     kc.kcStartWeek = startWeek
                     kc.kcEndWeek = endWeek
@@ -385,6 +395,7 @@ class ClassScheduleRepository {
                             kc.kcIsDouble = false
 
                         }
+
                         contents[1].contains("双") -> {
                             val timeStr = contents[1].substring(4, contents[1].length - 4)
                             val time = timeStr.split("-")
@@ -394,6 +405,7 @@ class ClassScheduleRepository {
                             kc.kcEndTime = endTime
                             kc.kcIsSingle = false
                         }
+
                         else -> {
                             val timeStr = contents[1].substring(4, contents[1].length - 1)
                             val time = timeStr.split("-")
@@ -407,8 +419,22 @@ class ClassScheduleRepository {
                     val location = contents[2]
                     kc.kcLocation = removeLocationPrefix(location)
                     tempCourses.add(kc)
-                } catch (e: Exception) {
-                    error("解析出错:$title")
+                } else {
+                    /* 16周 星期1 - 16周 星期6 */
+                    val startWeek =
+                        parseInt(week[0].substring(0, week[0].indexOf("周")))
+                    val endWeek = parseInt(week[1].substring(0, week[1].indexOf("周")))
+                    val startDay = parseInt(week[0].substring(week[0].length - 1))
+                    val endDay = parseInt(week[1].substring(week[1].length - 1))
+                    kc.kcStartWeek = startWeek
+                    kc.kcEndWeek = endWeek
+                    kc.kcStartTime = 1
+                    kc.kcEndTime = 8
+                    if (kc.kcNote.isNotEmpty()) kc.kcNote += "\n"
+                    kc.kcNote += contents[0]  //可能不能正确展示，先在备注加上上课时间地点信息
+                    for (j in startDay..endDay) {
+                        tempCourses.add(kc.copy().apply { kcWeekend = j })
+                    }
                 }
             }
             if (note.isNotEmpty()) {
@@ -416,7 +442,7 @@ class ClassScheduleRepository {
                 var matcher =
                     Regex("(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*调至\\s*(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*(\\S*)")
                         .matchEntire(note)
-                while (matcher!=null) {
+                while (matcher != null) {
                     matcher.groupValues.get(5)
                     val toWeek = matcher.groupValues[5].toIntOrNull() ?: 0
                     val toWeekend = matcher.groupValues[6].toIntOrNull() ?: 0
@@ -473,20 +499,20 @@ class ClassScheduleRepository {
  * @constructor
  */
 data class WeekData(
-    val nowWeek : Int,
+    val nowWeek: Int,
     val curXuenian: Int,
     val curXueqi: Int
-){
+) {
     /**
      * 获取根据计算得到的学期信息 202301
      * @return String
      */
-    fun getXueQi():String{
+    fun getXueQi(): String {
         return "${this.curXueqi}0${this.curXuenian}"
     }
 
     override fun equals(other: Any?): Boolean {
-        return "${this.curXuenian}${this.curXuenian}${this.curXuenian}" ==  "${(other as WeekData).curXuenian}${(other as WeekData).curXuenian}${(other as WeekData).curXuenian}"
+        return "${this.curXuenian}${this.curXuenian}${this.curXuenian}" == "${(other as WeekData).curXuenian}${(other as WeekData).curXuenian}${(other as WeekData).curXuenian}"
     }
 
     override fun hashCode(): Int {
@@ -553,7 +579,7 @@ data class CourseBeanForTemp(
 data class JwchTokenLoginResponseDto(
     var code: Int, // 200
     var info: String, // 登录成功
-    var data : Data
+    var data: Data
 )
 
 

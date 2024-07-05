@@ -47,7 +47,7 @@ import util.compose.SettingTransitions
  * 用于第一层级的界面切换
  * @constructor Create empty Root action
  */
-interface RootAction{
+interface RootAction {
     fun reLogin()
     fun finishLogin()
     fun navigateFormSplashToMainPage()
@@ -60,7 +60,7 @@ interface RootAction{
     fun navigateFormLoginToMain()
     fun navigateFormAnywhereToRelease(initLabelList: List<String>)
     fun navigateFormPostToReport(type: ReportType)
-    fun navigateFromAnywhereToWebView(url:String)
+    fun navigateFromAnywhereToWebView(url: String, jwchEnv: Boolean = false)
     fun navigateFormAnywhereToSetting()
     fun navigateFormAnywhereToMain()
     fun navigateFormAnywhereToLog()
@@ -83,10 +83,10 @@ fun getRootAction(): RootAction {
  * @constructor
  */
 enum class TokeJump(
-    val target:String,
-    val verifyFunction:(String)->Boolean,
-    val toActionString:(String)->String
-){
+    val target: String,
+    val verifyFunction: (String) -> Boolean,
+    val toActionString: (String) -> String
+) {
     /**
      * Post
      * 转到特定的post
@@ -122,20 +122,21 @@ enum class TokeJump(
         "NULL"
     })
 }
+
 fun tokenJump(
-    tokenForParse:String,
-    fail:CoroutineScope.()->Unit,
-    rootAction:RootAction,
+    tokenForParse: String,
+    fail: CoroutineScope.() -> Unit,
+    rootAction: RootAction,
     scope: CoroutineScope
-){
+) {
     val result = tokenForParse.split("_FuTalk.Action_")
-    if( result.size != 2 ){
+    if (result.size != 2) {
         fail.invoke(scope)
         return
     }
     result.let {
         val action = it[1]
-        when(it[0]){
+        when (it[0]) {
             "WEBVIEW" -> {}
         }
     }
@@ -148,12 +149,12 @@ fun tokenJump(
 @Composable
 fun RootUi(
     systemAction: SystemAction
-){
-    Navigator(SplashPageVoyagerScreen()){ navigate ->
+) {
+    Navigator(SplashPageVoyagerScreen()) { navigate ->
         KoinApplication(application = {
             modules(
                 appModule(
-                    object : RootAction{
+                    object : RootAction {
                         override fun finishLogin() {
                             navigate.replaceAll(ManageVoyagerScreen())
                         }
@@ -194,7 +195,8 @@ fun RootUi(
                         override fun navigateFormLoginToMain() {
                             navigate.replaceAll(MainVoyagerScreen())
                         }
-                        override fun navigateFormAnywhereToRelease(initLabelList: List<String>){
+
+                        override fun navigateFormAnywhereToRelease(initLabelList: List<String>) {
                             navigate.push(ReleaseRouteVoyagerScreen(listOf()))
                         }
 
@@ -202,8 +204,8 @@ fun RootUi(
                             navigate.push(ReportVoyagerScreen(type))
                         }
 
-                        override fun navigateFromAnywhereToWebView(url: String) {
-                            navigate.push(WebViewVoyagerScreen(url))
+                        override fun navigateFromAnywhereToWebView(url: String, jwchEnv: Boolean) {
+                            navigate.push(WebViewVoyagerScreen(url, jwchEnv))
                         }
 
                         override fun navigateFormAnywhereToSetting() {
@@ -219,7 +221,7 @@ fun RootUi(
                         }
 
                         override fun popManage() {
-                            if (navigate.lastItem is ManageVoyagerScreen && navigate.canPop){
+                            if (navigate.lastItem is ManageVoyagerScreen && navigate.canPop) {
                                 navigate.pop()
                             }
                         }
@@ -237,11 +239,11 @@ fun RootUi(
                 )
             )
         }) {
-            Box(modifier = Modifier.fillMaxSize()){
+            Box(modifier = Modifier.fillMaxSize()) {
                 FuTalkTheme {
                     SettingTransitions(navigate)
                 }
-                if(BaseUrlConfig.isDebug){
+                if (BaseUrlConfig.isDebug) {
                     IconButton(
                         onClick = {
                             navigate.push(TestVoyagerScreen())
@@ -249,9 +251,9 @@ fun RootUi(
                         modifier = Modifier
                             .navigationBarsPadding()
                             .systemBarsPadding()
-                            .offset(x = 10.dp,y = (-10).dp)
-                    ){
-                        Icon(Icons.Default.Add,null)
+                            .offset(x = 10.dp, y = (-10).dp)
+                    ) {
+                        Icon(Icons.Default.Add, null)
                     }
                 }
                 EasyToast(toast = koinInject())
