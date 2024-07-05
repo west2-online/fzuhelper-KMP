@@ -95,6 +95,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.example.library.MR
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.koin.compose.koinInject
+import ui.root.getRootAction
 import util.compose.EasyToast
 import util.compose.ParentPaddingControl
 import util.compose.ScrollSelection
@@ -732,16 +733,19 @@ fun ClassDialog(
     courseBean: CourseBean,
     onDismissRequest: () -> Unit,
 ) {
+    val toastState = rememberToastState()
+    val rootAction = getRootAction()
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(
             Modifier
                 .clip(RoundedCornerShape(10.dp))
                 .fillMaxWidth()
-                .fillMaxHeight(0.7f)
+                .wrapContentHeight()
         ){
             Column(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -773,8 +777,8 @@ fun ClassDialog(
                 LazyColumn(
                     modifier = Modifier
                         .padding(vertical = 20.dp)
-                        .weight(1f)
                         .fillMaxWidth(0.7f)
+                        .wrapContentHeight()
                 ) {
                     ClassScheduleNotificationDisplayProperties.forEachIndexed { index, item ->
                         item {
@@ -782,7 +786,7 @@ fun ClassDialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(top = if (index != 0) 10.dp else 0.dp),
-                                verticalAlignment = Alignment.CenterVertically,
+                                verticalAlignment = Alignment.Top,
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
@@ -800,15 +804,56 @@ fun ClassDialog(
                                     text = when (index) {
                                         0 -> courseBean.kcLocation
                                         1 -> courseBean.teacher
-                                        2 -> "${courseBean.kcStartTime}~${courseBean.kcEndTime}"
-                                        3 -> "${courseBean.kcStartWeek}周~${courseBean.kcEndWeek}周"
-                                        4 -> if (courseBean.kcNote == "") "无" else courseBean.kcNote
+                                        2 -> "${courseBean.kcStartTime}-${courseBean.kcEndTime}节"
+                                        3 -> "${courseBean.kcStartWeek}-${courseBean.kcEndWeek}周"
+                                        4 -> courseBean.kcNote.ifEmpty { "无" }
                                         else -> ""
                                     }
                                 )
                             }
                         }
                     }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = 20.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "教学大纲",
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .padding(20.dp, 10.dp)
+                            .clickable {
+                                if (courseBean.jiaoxueDagang.isNotEmpty()) {
+                                    rootAction.navigateFromAnywhereToWebView(
+                                        courseBean.jiaoxueDagang,
+                                        true
+                                    )
+                                } else {
+                                    toastState.addToast("该课程未录入教学大纲")
+                                }
+                            }
+                    )
+                    Text(
+                        text = "授课计划",
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .align(Alignment.CenterVertically)
+                            .padding(20.dp, 10.dp)
+                            .clickable {
+                                if (courseBean.shoukeJihua.isNotEmpty()) {
+                                    rootAction.navigateFromAnywhereToWebView(
+                                        courseBean.shoukeJihua,
+                                        true
+                                    )
+                                } else {
+                                    toastState.addToast("该课程未录入授课计划")
+                                }
+                            }
+                    )
                 }
                 Row(
                     modifier = Modifier
@@ -823,7 +868,7 @@ fun ClassDialog(
                             .weight(1f)
                             .height(40.dp),
                     ) {
-
+                        Text("显示课程")
                     }
                     Spacer(modifier = Modifier.width(20.dp))
                     FloatingActionButton(
@@ -832,7 +877,7 @@ fun ClassDialog(
                             .weight(1f)
                             .height(40.dp),
                     ) {
-
+                        Text("删除")
                     }
                 }
             }
