@@ -26,9 +26,9 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import com.mikepenz.markdown.compose.Markdown
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ui.compose.Main.MainItems
+import util.compose.OwnMarkdown
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
@@ -149,7 +149,7 @@ fun AboutUsScreen(
 
             }
         }
-        Markdown(
+        OwnMarkdown(
             content = markdown,
             modifier = Modifier
                 .padding(bottom = 10.dp)
@@ -163,32 +163,39 @@ fun AboutUsScreen(
  * Markdown 显示的markdown
  */
 val markdown = """
-### 欢迎使用FuTalk🤗
+    
+# 欢迎使用FuTalk🤗
 
-**👏初创成员**
- 
+## **👏初创成员**
+
 - 沈轻腾
 
-**👻FuTalk与学校关系**
+## **👏开发成员**
+
+- 沈轻腾
+- 徐煜晖
+
+## **👻FuTalk与学校关系**
 
  **FuTalk** 属于私人开发，未得到 **福州大学** 的任何支持，并没有关系，您在 **FuTalk** 上的信息并不会共享给学校，大家可以大胆发言哦 😉😉
 
-**🤠关于软件**
+## **🤠关于软件**
 
 该软件仍在开发阶段，我们仍在积极和各个社团展开合作，并完善软件，敬请期待
 
-**👀反馈**
+## **👀反馈**
 
 您的反馈对我们非常重要，任何关于软件的反馈都可以在软件的 **反馈模块** 添加反馈 或 在 **GitHub** 上向我们提出issue 🧐🧐
 
-**🤝关于西二在线**
+## **🤝关于西二在线**
+
 本软件复用了极少部分的fuu代码，同时表达对于所有fuu的开发者和维护者们的尊敬，他们在没有回报的情况下开发了fuu,并且数年的的持续坚持，Respect！👍👍👍
 
-**🌏Github地址**
+## **🌏Github地址**
 
 https://github.com/Futalker
 
-**✔FuTalk官方网站**
+## **✔FuTalk官方网站**
 
 https://futalker.github.io
 
