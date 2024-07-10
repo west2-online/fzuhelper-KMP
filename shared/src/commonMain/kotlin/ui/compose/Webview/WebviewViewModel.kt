@@ -1,6 +1,5 @@
 package ui.compose.Webview
 
-import com.multiplatform.webview.cookie.WebViewCookieManager
 import config.JWCH_BASE_URL
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
@@ -18,7 +17,7 @@ class WebviewViewModel(
     val classSchedule: ClassSchedule
 ) : ViewModel() {
     private val _clientState = CMutableStateFlow(
-        MutableStateFlow<NetworkResult<String?>>(
+        MutableStateFlow<NetworkResult<IdWithCookie>>(
             NetworkResult.UnSend()
         )
     )
@@ -28,21 +27,32 @@ class WebviewViewModel(
         viewModelScope.launch {
             _clientState.logicIfNotLoading {
                 val client = classSchedule.getClassScheduleClient()
-                if (client.first == null) {
+                if (client.first == null || client.second == null) {
                     _clientState.resetWithLog(
                         "getClassScheduleClient",
                         NetworkResult.Error(Throwable("获取教务处信息失败"), Throwable())
                     )
                 } else {
-                    val cookie = client.first!!.cookies(JWCH_BASE_URL).single {
-                        it.name == "ASP.NET_SessionId"
-                    }
+                    val cookie = client.first!!.cookies(JWCH_BASE_URL)
                     val id = client.second!!
                     println("Cookie:" + cookie.toString())
-                    WebViewCookieManager().setCookie(JWCH_BASE_URL, CookieUtil.transform(cookie))
-                    _clientState.resetWithLog("getClassScheduleClient", NetworkResult.Success(id))
+//                    cookie.forEach { cookieItem ->
+//                        WebViewCookieManager().setCookie(JWCH_BASE_URL, CookieUtil.transform(cookieItem))
+//                    }
+                    _clientState.resetWithLog("getClassScheduleClient", NetworkResult.Success(
+                        IdWithCookie(
+                            id,cookie.map { cookieItem ->
+                                CookieUtil.transform(cookieItem)
+                            }
+                        )
+                    ))
                 }
             }
         }
     }
 }
+
+class IdWithCookie (
+    val id:String,
+    val cookie:List<com.multiplatform.webview.cookie.Cookie>
+)
