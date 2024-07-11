@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
+import com.multiplatform.webview.web.WebViewState
 import config.BaseUrlConfig
 import data.person.UserData.Data
 import di.SystemAction
@@ -36,8 +37,9 @@ import ui.compose.Report.ReportVoyagerScreen
 import ui.compose.Setting.SettingVoyagerScreen
 import ui.compose.SplashPage.SplashPageVoyagerScreen
 import ui.compose.Test.TestVoyagerScreen
+import ui.compose.UndergraduateWebView.UndergraduateWebViewVoyagerScreen
 import ui.compose.Weather.WeatherVoyagerScreen
-import ui.compose.Webview.WebViewVoyagerScreen
+import ui.compose.Webview.GeneralWebViewVoyagerScreen
 import util.compose.EasyToast
 import util.compose.FuTalkTheme
 import util.compose.SettingTransitions
@@ -60,7 +62,8 @@ interface RootAction {
     fun navigateFormLoginToMain()
     fun navigateFormAnywhereToRelease(initLabelList: List<String>)
     fun navigateFormPostToReport(type: ReportType)
-    fun navigateFromAnywhereToWebView(url: String, jwchEnv: Boolean = false)
+    fun navigateFromAnywhereToWebView(url: String,header :  Map<String,String>)
+    fun navigateFormAnywhereToUndergraduateWebView(url: String)
     fun navigateFormAnywhereToSetting()
     fun navigateFormAnywhereToMain()
     fun navigateFormAnywhereToLog()
@@ -204,8 +207,14 @@ fun RootUi(
                             navigate.push(ReportVoyagerScreen(type))
                         }
 
-                        override fun navigateFromAnywhereToWebView(url: String, jwchEnv: Boolean) {
-                            navigate.push(WebViewVoyagerScreen(url, jwchEnv))
+                        override fun navigateFromAnywhereToWebView(url: String,header :  Map<String,String>) {
+                            navigate.push(GeneralWebViewVoyagerScreen(url, header = header))
+                        }
+
+                        override fun navigateFormAnywhereToUndergraduateWebView(
+                            url: String,
+                        ) {
+                            navigate.push(UndergraduateWebViewVoyagerScreen(url))
                         }
 
                         override fun navigateFormAnywhereToSetting() {
