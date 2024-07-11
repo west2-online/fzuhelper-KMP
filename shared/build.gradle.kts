@@ -97,6 +97,7 @@ kotlin {
                 // QRcode 生成周期
                 implementation("io.github.alexzhirkevich:qrose:1.0.0-beta02")
 
+                //日期
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0-RC")
 
                 //分页
@@ -111,7 +112,7 @@ kotlin {
                 implementation("dev.whyoleg.cryptography:cryptography-core:0.2.0")
 
 //              //webview
-                implementation("io.github.kevinnzou:compose-webview-multiplatform:1.8.8")
+                implementation("io.github.kevinnzou:compose-webview-multiplatform:1.9.20")
 
                 implementation("com.mikepenz:multiplatform-markdown-renderer:${markdown_version}")
 

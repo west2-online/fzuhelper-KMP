@@ -65,6 +65,7 @@ import ui.compose.Release.ReleasePageViewModel
 import ui.compose.Report.ReportViewModel
 import ui.compose.Setting.SettingViewModel
 import ui.compose.SplashPage.SplashPageViewModel
+import ui.compose.UndergraduateWebView.UndergraduateWebViewViewModel
 import ui.compose.Weather.WeatherViewModel
 import ui.compose.Webview.WebviewViewModel
 import ui.root.RootAction
@@ -601,7 +602,10 @@ fun Module.viewModel(){
         EmptyHouseVoyagerViewModel(get())
     }
     single {
-        WebviewViewModel(get())
+        WebviewViewModel()
+    }
+    single {
+        UndergraduateWebViewViewModel(get())
     }
 }
 

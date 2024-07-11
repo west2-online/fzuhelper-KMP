@@ -47,7 +47,7 @@ fun Modifier.parentNavigationControl(
 inline fun Modifier.parentSystemControl(
     parentPaddingControl: ParentPaddingControl
 ) = this.composed {
-    var modifier = this
+     var modifier = this
      this.run {
         if(!parentPaddingControl.parentStatusControl){
             modifier = modifier.statusBarsPadding()

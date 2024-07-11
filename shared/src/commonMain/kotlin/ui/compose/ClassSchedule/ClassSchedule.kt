@@ -828,9 +828,8 @@ fun ClassDialog(
                             .padding(20.dp, 10.dp)
                             .clickable {
                                 if (courseBean.jiaoxueDagang.isNotEmpty()) {
-                                    rootAction.navigateFromAnywhereToWebView(
+                                    rootAction.navigateFormAnywhereToUndergraduateWebView(
                                         courseBean.jiaoxueDagang,
-                                        true
                                     )
                                 } else {
                                     toastState.addToast("该课程未录入教学大纲")
@@ -845,9 +844,8 @@ fun ClassDialog(
                             .padding(20.dp, 10.dp)
                             .clickable {
                                 if (courseBean.shoukeJihua.isNotEmpty()) {
-                                    rootAction.navigateFromAnywhereToWebView(
+                                    rootAction.navigateFormAnywhereToUndergraduateWebView(
                                         courseBean.shoukeJihua,
-                                        true
                                     )
                                 } else {
                                     toastState.addToast("该课程未录入授课计划")
@@ -876,7 +874,7 @@ fun ClassDialog(
                         modifier = Modifier
                             .weight(1f)
                             .height(40.dp),
-                    ) {
+                    ){
                         Text("删除")
                     }
                 }
@@ -1144,7 +1142,6 @@ class ClassScheduleVoyagerScreen(
             parentPaddingControl = parentPaddingControl
         )
     }
-
     override val options: TabOptions
         @Composable
         get(){
