@@ -29,11 +29,11 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dao.TYPE_UNDERGRADUATE
 import dao.UndergraduateKValueAction
-import kotlin.jvm.Transient
 import org.koin.compose.koinInject
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
+import kotlin.jvm.Transient
 
 /**
  * 设置主界面 一级界面
@@ -115,14 +115,6 @@ fun ThemeSettingAssembly(navigator: Navigator) {
         .padding(10.dp)
   ) {
     Text("主题设置", fontSize = 10.sp)
-    Divider()
-    Text(
-      "字体设置",
-      modifier =
-        Modifier.clickable { navigator.push(FontSettingVoyagerScreen()) }
-          .padding(vertical = 10.dp)
-          .fillMaxWidth(),
-    )
     Divider()
     Text(
       "界面切换动画",

@@ -26,9 +26,6 @@ import cafe.adriel.voyager.transitions.FadeTransition
 import cafe.adriel.voyager.transitions.ScaleTransition
 import cafe.adriel.voyager.transitions.SlideTransition
 import dao.ThemeKValueAction
-import dev.icerock.moko.resources.FontResource
-import dev.icerock.moko.resources.compose.fontFamilyResource
-import org.example.library.MR
 import org.koin.compose.koinInject
 
 /**
@@ -60,22 +57,6 @@ enum class ThemeStyle(val serializable: String) {
 }
 
 /**
- * 可用字体枚举类
- *
- * @property serializable String 用于储存与恢复的序列化值
- * @property fontResource FontResource
- * @constructor
- */
-enum class FontStyle(val serializable: String, val fontResource: FontResource) {
-  MulishLight("MulishLight", MR.fonts.Mulish.light),
-  MadimiOne("MadimiOne", MR.fonts.MadimiOne.regular),
-  EBG("EBG", MR.fonts.EBGaramond_wght.eBGaramond_wght),
-  LiuJian("LiuJian", MR.fonts.LiuJianMaoCao.regular),
-  LongCang("LongCang", MR.fonts.LongCang.regular),
-  ZhiMangXing("ZhiMangXing", MR.fonts.ZhiMangXing.regular),
-}
-
-/**
  * futalk的主题处理
  *
  * @param content [@androidx.compose.runtime.Composable] Function0<Unit>
@@ -89,9 +70,6 @@ fun FuTalkTheme(content: @Composable () -> Unit) {
 
   val themeState =
     remember(themeStyle.value) { derivedStateOf { themeStyle.value.toTheme().toComposeTheme() } }
-  val fontStyle = setting.fontToken.currentValue.collectAsState()
-  val fontState =
-    remember(fontStyle.value) { derivedStateOf { fontStyle.value.toFont().fontResource } }
   val primary by
     animateColorAsState(
       if (!isSystemInDarkTheme()) themeState.value.primaryInLightTheme
@@ -171,41 +149,7 @@ fun FuTalkTheme(content: @Composable () -> Unit) {
         isLight = isSystemInDarkTheme(),
       ),
     content = content,
-    typography =
-      MaterialTheme.typography.copy(
-        h1 = MaterialTheme.typography.h1.copy(fontFamily = fontFamilyResource(fontState.value)),
-        h2 = MaterialTheme.typography.h2.copy(fontFamily = fontFamilyResource(fontState.value)),
-        h3 = MaterialTheme.typography.h3.copy(fontFamily = fontFamilyResource(fontState.value)),
-        h4 = MaterialTheme.typography.h4.copy(fontFamily = fontFamilyResource(fontState.value)),
-        h5 = MaterialTheme.typography.h5.copy(fontFamily = fontFamilyResource(fontState.value)),
-        h6 = MaterialTheme.typography.h6.copy(fontFamily = fontFamilyResource(fontState.value)),
-        subtitle1 =
-          MaterialTheme.typography.subtitle1.copy(fontFamily = fontFamilyResource(fontState.value)),
-        subtitle2 =
-          MaterialTheme.typography.subtitle2.copy(fontFamily = fontFamilyResource(fontState.value)),
-        body1 =
-          MaterialTheme.typography.body1.copy(fontFamily = fontFamilyResource(fontState.value)),
-        body2 =
-          MaterialTheme.typography.body2.copy(fontFamily = fontFamilyResource(fontState.value)),
-        button =
-          MaterialTheme.typography.button.copy(fontFamily = fontFamilyResource(fontState.value)),
-        caption =
-          MaterialTheme.typography.caption.copy(fontFamily = fontFamilyResource(fontState.value)),
-        overline =
-          MaterialTheme.typography.overline.copy(fontFamily = fontFamilyResource(fontState.value)),
-      ),
   )
-}
-
-/**
- * 用序列化的值来恢复字体，为空或未找到返回枚举类的第一个
- *
- * @return FontStyle
- * @receiver String?
- */
-fun String?.toFont(): FontStyle {
-  this ?: return FontStyle.entries.first()
-  return FontStyle.entries.find { it.serializable == this } ?: FontStyle.entries.first()
 }
 
 /**

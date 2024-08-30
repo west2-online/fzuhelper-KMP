@@ -20,20 +20,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import kotlin.jvm.Transient
-import kotlin.math.sqrt
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import ui.compose.Main.MainItems
 import util.compose.OwnMarkdown
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
+import kotlin.jvm.Transient
+import kotlin.math.sqrt
 
 /**
  * 关于我们的ui
@@ -205,8 +203,9 @@ class AboutUsVoyagerScreen(
   override val options: TabOptions
     @Composable
     get() {
-      val title = MainItems.POST.tag
-      val icon = rememberVectorPainter(MainItems.POST.selectImageVector)
-      return remember { TabOptions(index = 0u, title = title, icon = icon) }
+//      val title = MainItems.POST.tag
+//      val icon = rememberVectorPainter(MainItems.POST.selectImageVector)
+//      return remember { TabOptions(index = 0u, title = title, icon = icon) }
+      return remember { TabOptions(index = 0u, title = "") }
     }
 }

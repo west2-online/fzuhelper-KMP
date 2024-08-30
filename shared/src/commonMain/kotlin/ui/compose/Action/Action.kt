@@ -41,7 +41,6 @@ import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import kotlin.jvm.Transient
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.example.library.MR
@@ -56,6 +55,7 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import util.math.takeover
 import util.network.CollectWithContent
+import kotlin.jvm.Transient
 
 /**
  * 功能页的界面
@@ -72,28 +72,28 @@ fun Action(modifier: Modifier) {
         Modifier.padding(top = 10.dp).weight(1f).fillMaxWidth().clip(RoundedCornerShape(10.dp)),
       columns = GridCells.Fixed(5),
     ) {
-      items(Functions.values().size) {
+      items(Functions.entries.size) {
         Column(
           modifier =
-            Modifier.fillMaxWidth()
-              .aspectRatio(0.7f)
-              .clip(RoundedCornerShape(10.dp))
-              .clickable { Functions.values()[it].navigator.invoke(rootAction) }
-              .padding(10.dp)
+          Modifier.fillMaxWidth()
+            .aspectRatio(0.7f)
+            .clip(RoundedCornerShape(10.dp))
+            .clickable { Functions.entries[it].navigator.invoke(rootAction) }
+            .padding(10.dp),
         ) {
           Image(
-            painter = painterResource(Functions.values()[it].painter),
+            painter = painterResource(Functions.entries[it].painter),
             null,
             modifier =
               Modifier.fillMaxWidth()
                 .aspectRatio(1f)
                 .wrapContentSize(Alignment.Center)
-                .fillMaxSize(0.5f)
+                .fillMaxSize(0.7f)
                 .clip(RoundedCornerShape(10)),
             contentScale = ContentScale.FillBounds,
           )
           Text(
-            Functions.values()[it].functionName,
+            Functions.entries[it].functionName,
             modifier = Modifier.fillMaxWidth().weight(1f),
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
@@ -201,33 +201,34 @@ enum class Functions(
   val painter: ImageResource,
   val navigator: (RootAction) -> Unit,
 ) {
-  QRCODE(
-    functionName = "二维码生成",
-    painter = MR.images.qrcode,
-    { rootAction -> rootAction.navigateFromActionToQRCodeScreen() },
-  ),
+  //  QRCODE(
+//    functionName = "二维码生成",
+//    painter = MR.images.qrcode,
+//    { rootAction -> rootAction.navigateFromActionToQRCodeScreen() },
+//  ),
   //    WebView( functionName = "新生宝典", painter = MR.images.login, { rootAction -> }),
-  Weather(
-    functionName = "天气",
-    painter = MR.images.cloud,
-    { rootAction -> rootAction.navigateFromAnywhereToWeather() },
-  ),
+//  Weather(
+//    functionName = "天气",
+//    painter = MR.images.cloud,
+//    { rootAction -> rootAction.navigateFromAnywhereToWeather() },
+//  ),
   //    Map(  functionName = "地图", painter = MR.images.close, { rootAction -> }),
   Test(
     functionName = "测试",
     painter = MR.images.close,
     { rootAction -> rootAction.navigateToScreen(TestVoyagerScreen()) },
   ),
-  AboutUs(
-    functionName = "关于我们",
-    painter = MR.images.FuTalk,
-    { rootAction -> rootAction.navigateFromActionToAboutUs() },
-  ),
-  Manage(
-    functionName = "管理",
-    painter = MR.images.not_solved,
-    { rootAction -> rootAction.navigateFromAnywhereToManage() },
-  ),
+
+  //  AboutUs(
+//    functionName = "关于我们",
+//    painter = MR.images.FuTalk,
+//    { rootAction -> rootAction.navigateFromActionToAboutUs() },
+//  ),
+//  Manage(
+//    functionName = "管理",
+//    painter = MR.images.not_solved,
+//    { rootAction -> rootAction.navigateFromAnywhereToManage() },
+//  ),
   Feedback(
     functionName = "反馈",
     painter = MR.images.feedback2,
@@ -245,14 +246,14 @@ enum class Functions(
   ),
   EmptyHouse(
     functionName = "空教室",
-    painter = MR.images.emptyHouse,
+    painter = MR.images.ic_empty_room,
     navigator = { rootAction -> rootAction.navigateToScreen(EmptyHouseVoyagerScreen()) },
   ),
   ChangeMajors(
-    functionName = "转专业",
-    painter = MR.images.school,
+    functionName = "飞跃手册",
+    painter = MR.images.ic_run,
     navigator = { rootAction ->
-      rootAction.navigateToScreen(GeneralWebViewVoyagerScreen("https://run.w2fzu.com/"))
+      rootAction.navigateToScreen(GeneralWebViewVoyagerScreen("https://run.west2.online/"))
     },
   ),
   //    OfficialWebsite(functionName = "转专业", painter =MR.images.school, navigator = { rootAction ->

@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import cafe.adriel.voyager.core.screen.Screen
 import config.BaseUrlConfig
-import dao.TokenKValueAction
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
@@ -59,14 +58,12 @@ class SplashPageVoyagerScreen() : Screen {
         show = false
       }
     }
-    val token = koinInject<TokenKValueAction>().token.currentValue.collectAsState()
 
     Box(
       modifier =
-        Modifier.fillMaxSize().clickable {
-          token.value?.let { rootAction.navigateFormSplashToMainPage() }
-          token.value ?: let { rootAction.navigateFormSplashToLoginAndRegister() }
-        }
+      Modifier.fillMaxSize().clickable {
+        rootAction.navigateFormSplashToMainPage()
+      },
     ) {
       imageState.CollectWithContent(
         success = {

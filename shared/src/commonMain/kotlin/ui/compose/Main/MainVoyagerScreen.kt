@@ -42,16 +42,15 @@ import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import dev.icerock.moko.resources.compose.painterResource
-import kotlin.jvm.Transient
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import ui.compose.Action.ActionVoyagerScreen
 import ui.compose.ClassSchedule.ClassScheduleVoyagerScreen
 import ui.compose.Person.PersonVoyagerScreen
-import ui.compose.Post.PostVoyagerScreen
 import util.compose.BottomNavigationWithBottomPadding
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
+import kotlin.jvm.Transient
 
 /**
  * 底部栏的四个导航
@@ -124,7 +123,7 @@ class MainVoyagerScreen(
                 )
               }
               BottomClassTab()
-              BottomPostTab()
+//              BottomPostTab()
               BottomActionTab()
               BottomPersonTab()
             }
@@ -142,46 +141,46 @@ class MainVoyagerScreen(
  *
  * @receiver RowScope
  */
-@Composable
-fun RowScope.BottomPostTab() {
-  val currentTabNavigator = LocalTabNavigator.current
-  val item = MainItems.POST
-  val textDecoration =
-    remember(currentTabNavigator.current) {
-      mutableStateOf(
-        if (currentTabNavigator.current is PostVoyagerScreen) {
-          TextDecoration.Underline
-        } else {
-          TextDecoration.None
-        }
-      )
-    }
-  this.BottomNavigationItem(
-    icon = {
-      val imageVector =
-        remember(currentTabNavigator.current) {
-          mutableStateOf(
-            if (currentTabNavigator.current is PostVoyagerScreen) {
-              item.selectImageVector
-            } else {
-              item.unSelectImageVector
-            }
-          )
-        }
-      Crossfade(imageVector.value) { Icon(it, contentDescription = null, modifier = Modifier) }
-    },
-    label = { Text(item.tag, textDecoration = textDecoration.value) },
-    selected = currentTabNavigator.current is PostVoyagerScreen,
-    onClick = {
-      currentTabNavigator.current =
-        PostVoyagerScreen(
-          parentPaddingControl = ParentPaddingControl(parentNavigatorControl = true)
-        )
-    },
-    selectedContentColor = MaterialTheme.colors.primaryVariant,
-    modifier = Modifier,
-  )
-}
+//@Composable
+//fun RowScope.BottomPostTab() {
+//  val currentTabNavigator = LocalTabNavigator.current
+//  val item = MainItems.POST
+//  val textDecoration =
+//    remember(currentTabNavigator.current) {
+//      mutableStateOf(
+//        if (currentTabNavigator.current is PostVoyagerScreen) {
+//          TextDecoration.Underline
+//        } else {
+//          TextDecoration.None
+//        }
+//      )
+//    }
+//  this.BottomNavigationItem(
+//    icon = {
+//      val imageVector =
+//        remember(currentTabNavigator.current) {
+//          mutableStateOf(
+//            if (currentTabNavigator.current is PostVoyagerScreen) {
+//              item.selectImageVector
+//            } else {
+//              item.unSelectImageVector
+//            }
+//          )
+//        }
+//      Crossfade(imageVector.value) { Icon(it, contentDescription = null, modifier = Modifier) }
+//    },
+//    label = { Text(item.tag, textDecoration = textDecoration.value) },
+//    selected = currentTabNavigator.current is PostVoyagerScreen,
+//    onClick = {
+//      currentTabNavigator.current =
+//        PostVoyagerScreen(
+//          parentPaddingControl = ParentPaddingControl(parentNavigatorControl = true)
+//        )
+//    },
+//    selectedContentColor = MaterialTheme.colors.primaryVariant,
+//    modifier = Modifier,
+//  )
+//}
 
 /**
  * 功能页跳转

@@ -50,8 +50,6 @@ import config.BaseUrlConfig
 import data.person.UserData.UserData
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import kotlin.jvm.Transient
-import kotlin.random.Random
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import ui.compose.Main.MainItems
@@ -64,6 +62,8 @@ import util.compose.shimmerLoadingAnimation
 import util.network.CollectWithContent
 import util.network.NetworkResult
 import util.network.logicWithTypeWithoutLimit
+import kotlin.jvm.Transient
+import kotlin.random.Random
 
 /**
  * 个人界面显示ui
@@ -361,8 +361,8 @@ class PersonVoyagerScreen(
   override val options: TabOptions
     @Composable
     get() {
-      val title = MainItems.POST.tag
-      val icon = rememberVectorPainter(MainItems.POST.selectImageVector)
+      val title = MainItems.PERSON.tag
+      val icon = rememberVectorPainter(MainItems.PERSON.selectImageVector)
       return remember { TabOptions(index = 0u, title = title, icon = icon) }
     }
 }
