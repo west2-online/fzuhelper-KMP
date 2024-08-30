@@ -241,5 +241,9 @@ sqldelight {
     }
 }
 
+ktfmt {
+    googleStyle()
+}
+
 
 

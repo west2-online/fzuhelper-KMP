@@ -72,3 +72,8 @@ android {
 
 }
 
+ktfmt {
+    googleStyle()
+}
+
+
