@@ -3,6 +3,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.compose") version "1.6.10"
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
+    id("com.ncorti.ktfmt.gradle") version "0.20.1"
 }
 
 kotlin {
