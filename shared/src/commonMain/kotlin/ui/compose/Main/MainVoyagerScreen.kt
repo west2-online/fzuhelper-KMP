@@ -42,6 +42,7 @@ import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import dev.icerock.moko.resources.compose.painterResource
+import kotlin.jvm.Transient
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import ui.compose.Action.ActionVoyagerScreen
@@ -51,229 +52,182 @@ import ui.compose.Post.PostVoyagerScreen
 import util.compose.BottomNavigationWithBottomPadding
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
-import kotlin.jvm.Transient
 
 /**
  * 底部栏的四个导航
+ *
  * @property tag String
  * @property unSelectImageVector ImageVector
  * @property selectImageVector ImageVector
  * @constructor
  */
 enum class MainItems(
-    val tag : String,
-    val unSelectImageVector: ImageVector,
-    val selectImageVector: ImageVector,
-){
-    CLASS(
-        "课表",
-        unSelectImageVector = Icons.Outlined.DateRange,
-        selectImageVector = Icons.Filled.DateRange,
-    ),
-    POST(
-        "讨论",
-        unSelectImageVector = Icons.Outlined.Home,
-        selectImageVector = Icons.Filled.Home,
-    ),
-    ACTION(
-        "功能",
-        unSelectImageVector = Icons.Outlined.Share,
-        selectImageVector = Icons.Filled.Share,
-    ),
-//    MASSAGE(
-//        "消息",
-//        unSelectImageVector = Icons.Outlined.Email,
-//        selectImageVector = Icons.Filled.Email,
-//    ),
+  val tag: String,
+  val unSelectImageVector: ImageVector,
+  val selectImageVector: ImageVector,
+) {
+  CLASS(
+    "课表",
+    unSelectImageVector = Icons.Outlined.DateRange,
+    selectImageVector = Icons.Filled.DateRange,
+  ),
+  POST("讨论", unSelectImageVector = Icons.Outlined.Home, selectImageVector = Icons.Filled.Home),
+  ACTION("功能", unSelectImageVector = Icons.Outlined.Share, selectImageVector = Icons.Filled.Share),
+  //    MASSAGE(
+  //        "消息",
+  //        unSelectImageVector = Icons.Outlined.Email,
+  //        selectImageVector = Icons.Filled.Email,
+  //    ),
 
-    PERSON(
-        "个人",
-        unSelectImageVector = Icons.Outlined.Person,
-        selectImageVector = Icons.Filled.Person,
-    ),
+  PERSON("个人", unSelectImageVector = Icons.Outlined.Person, selectImageVector = Icons.Filled.Person),
 }
 
 /**
  * 主要界面
+ *
  * @property parentPaddingControl ParentPaddingControl
  * @constructor
  */
 class MainVoyagerScreen(
-    @Transient
-    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+  @Transient val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ) : Screen {
-    @Composable
-    override fun Content() {
-        TabNavigator(ClassScheduleVoyagerScreen(
-            parentPaddingControl = ParentPaddingControl(
-                parentNavigatorControl = true
-            )
-        )) {
-            val scope = rememberCoroutineScope()
-            val scaffoldState = rememberScaffoldState()
-            Scaffold(
-                drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
-                content = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                        ) {
-                            CurrentTab()
-                        }
-                        BottomNavigationWithBottomPadding(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            isNavigationBarsPadding = !parentPaddingControl.parentNavigatorControl
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .weight(1f)
-                                    .padding(10.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .clickable {
-                                        scope.launch {
-                                            scaffoldState.drawerState.open()
-                                        }
-                                    }
-                            ) {
-                                Image(
-                                    painter = painterResource(MR.images.FuTalk),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .align(Alignment.Center)
-                                )
-                            }
-                            BottomClassTab()
-                            BottomPostTab()
-                            BottomActionTab()
-                            BottomPersonTab()
-                        }
-                    }
-                },
-                drawerContent = {
-                    MainDrawer(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(all = 10.dp),
-                    )
-                },
-                scaffoldState = scaffoldState
-            )
-        }
+  @Composable
+  override fun Content() {
+    TabNavigator(
+      ClassScheduleVoyagerScreen(
+        parentPaddingControl = ParentPaddingControl(parentNavigatorControl = true)
+      )
+    ) {
+      val scope = rememberCoroutineScope()
+      val scaffoldState = rememberScaffoldState()
+      Scaffold(
+        drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
+        content = {
+          Column(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxWidth().weight(1f)) { CurrentTab() }
+            BottomNavigationWithBottomPadding(
+              modifier = Modifier.fillMaxWidth(),
+              isNavigationBarsPadding = !parentPaddingControl.parentNavigatorControl,
+            ) {
+              Box(
+                modifier =
+                  Modifier.fillMaxHeight()
+                    .weight(1f)
+                    .padding(10.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable { scope.launch { scaffoldState.drawerState.open() } }
+              ) {
+                Image(
+                  painter = painterResource(MR.images.FuTalk),
+                  contentDescription = null,
+                  modifier = Modifier.size(40.dp).align(Alignment.Center),
+                )
+              }
+              BottomClassTab()
+              BottomPostTab()
+              BottomActionTab()
+              BottomPersonTab()
+            }
+          }
+        },
+        drawerContent = { MainDrawer(modifier = Modifier.fillMaxSize().padding(all = 10.dp)) },
+        scaffoldState = scaffoldState,
+      )
     }
+  }
 }
 
 /**
  * 帖子的跳转
+ *
  * @receiver RowScope
  */
 @Composable
-fun RowScope.BottomPostTab(){
-    val currentTabNavigator = LocalTabNavigator.current
-    val item = MainItems.POST
-    val textDecoration = remember(currentTabNavigator.current) {
-        mutableStateOf(
-            if( currentTabNavigator.current is PostVoyagerScreen){
-                TextDecoration.Underline
-            } else{
-                TextDecoration.None
-            }
-        )
+fun RowScope.BottomPostTab() {
+  val currentTabNavigator = LocalTabNavigator.current
+  val item = MainItems.POST
+  val textDecoration =
+    remember(currentTabNavigator.current) {
+      mutableStateOf(
+        if (currentTabNavigator.current is PostVoyagerScreen) {
+          TextDecoration.Underline
+        } else {
+          TextDecoration.None
+        }
+      )
     }
-    this.BottomNavigationItem(
-        icon = {
-            val imageVector = remember(currentTabNavigator.current) {
-                mutableStateOf(
-                    if( currentTabNavigator.current is PostVoyagerScreen ){
-                        item.selectImageVector
-                    } else{
-                        item.unSelectImageVector
-                    }
-                )
+  this.BottomNavigationItem(
+    icon = {
+      val imageVector =
+        remember(currentTabNavigator.current) {
+          mutableStateOf(
+            if (currentTabNavigator.current is PostVoyagerScreen) {
+              item.selectImageVector
+            } else {
+              item.unSelectImageVector
             }
-            Crossfade (
-                imageVector.value
-            ){
-                Icon(
-                    it,
-                    contentDescription = null,
-                    modifier = Modifier
-                )
-            }
-        },
-        label = { Text(item.tag,textDecoration = textDecoration.value) },
-        selected = currentTabNavigator.current is PostVoyagerScreen,
-        onClick = {
-            currentTabNavigator.current = PostVoyagerScreen(
-                parentPaddingControl = ParentPaddingControl(
-                    parentNavigatorControl = true
-                )
-            )
-        },
-        selectedContentColor = MaterialTheme.colors.primaryVariant,
-        modifier = Modifier
-    )
+          )
+        }
+      Crossfade(imageVector.value) { Icon(it, contentDescription = null, modifier = Modifier) }
+    },
+    label = { Text(item.tag, textDecoration = textDecoration.value) },
+    selected = currentTabNavigator.current is PostVoyagerScreen,
+    onClick = {
+      currentTabNavigator.current =
+        PostVoyagerScreen(
+          parentPaddingControl = ParentPaddingControl(parentNavigatorControl = true)
+        )
+    },
+    selectedContentColor = MaterialTheme.colors.primaryVariant,
+    modifier = Modifier,
+  )
 }
 
 /**
  * 功能页跳转
+ *
  * @receiver RowScope
  */
 @Composable
-fun RowScope.BottomActionTab(){
-    val currentTabNavigator = LocalTabNavigator.current
-    val item = MainItems.ACTION
-    val textDecoration = remember(currentTabNavigator.current) {
-        mutableStateOf(
-            if( currentTabNavigator.current is ActionVoyagerScreen){
-                TextDecoration.Underline
-            } else{
-                TextDecoration.None
-            }
-        )
+fun RowScope.BottomActionTab() {
+  val currentTabNavigator = LocalTabNavigator.current
+  val item = MainItems.ACTION
+  val textDecoration =
+    remember(currentTabNavigator.current) {
+      mutableStateOf(
+        if (currentTabNavigator.current is ActionVoyagerScreen) {
+          TextDecoration.Underline
+        } else {
+          TextDecoration.None
+        }
+      )
     }
-    this.BottomNavigationItem(
-        icon = {
-            val imageVector = remember(currentTabNavigator.current) {
-                mutableStateOf(
-                    if( currentTabNavigator.current is ActionVoyagerScreen ){
-                        item.selectImageVector
-                    } else{
-                        item.unSelectImageVector
-                    }
-                )
+  this.BottomNavigationItem(
+    icon = {
+      val imageVector =
+        remember(currentTabNavigator.current) {
+          mutableStateOf(
+            if (currentTabNavigator.current is ActionVoyagerScreen) {
+              item.selectImageVector
+            } else {
+              item.unSelectImageVector
             }
-            Crossfade (
-                imageVector.value
-            ){
-                Icon(
-                    it,
-                    contentDescription = null,
-                    modifier = Modifier
-                )
-            }
-        },
-        label = { Text(item.tag,textDecoration = textDecoration.value) },
-        selected = currentTabNavigator.current is ActionVoyagerScreen,
-        onClick = {
-            currentTabNavigator.current = ActionVoyagerScreen(
-                ParentPaddingControl(false,true)
-            )
-        },
-        selectedContentColor = MaterialTheme.colors.primaryVariant,
-        modifier = Modifier
-    )
+          )
+        }
+      Crossfade(imageVector.value) { Icon(it, contentDescription = null, modifier = Modifier) }
+    },
+    label = { Text(item.tag, textDecoration = textDecoration.value) },
+    selected = currentTabNavigator.current is ActionVoyagerScreen,
+    onClick = {
+      currentTabNavigator.current = ActionVoyagerScreen(ParentPaddingControl(false, true))
+    },
+    selectedContentColor = MaterialTheme.colors.primaryVariant,
+    modifier = Modifier,
+  )
 }
 
-//@Composable
-//fun RowScope.BottomMassageTab(){
+// @Composable
+// fun RowScope.BottomMassageTab(){
 //    val currentTabNavigator = LocalTabNavigator.current
 //    val item = MainItems.Class
 //    this.BottomNavigationItem(
@@ -307,116 +261,98 @@ fun RowScope.BottomActionTab(){
 //        selectedContentColor = MaterialTheme.colors.primaryVariant,
 //        modifier = Modifier
 //    )
-//}
+// }
 //
 
 /**
  * 课程跳转
+ *
  * @receiver RowScope
  */
 @Composable
-fun RowScope.BottomClassTab(){
-    val currentTabNavigator = LocalTabNavigator.current
-    val item = MainItems.CLASS
-    val textDecoration = remember(currentTabNavigator.current) {
-        mutableStateOf(
-            if( currentTabNavigator.current is ClassScheduleVoyagerScreen){
-                TextDecoration.Underline
-            } else{
-                TextDecoration.None
-            }
-        )
+fun RowScope.BottomClassTab() {
+  val currentTabNavigator = LocalTabNavigator.current
+  val item = MainItems.CLASS
+  val textDecoration =
+    remember(currentTabNavigator.current) {
+      mutableStateOf(
+        if (currentTabNavigator.current is ClassScheduleVoyagerScreen) {
+          TextDecoration.Underline
+        } else {
+          TextDecoration.None
+        }
+      )
     }
-    this.BottomNavigationItem(
-        icon = {
-            val imageVector = remember(currentTabNavigator.current) {
-                mutableStateOf(
-                    if( currentTabNavigator.current is ClassScheduleVoyagerScreen){
-                        item.selectImageVector
-                    } else{
-                        item.unSelectImageVector
-                    }
-                )
+  this.BottomNavigationItem(
+    icon = {
+      val imageVector =
+        remember(currentTabNavigator.current) {
+          mutableStateOf(
+            if (currentTabNavigator.current is ClassScheduleVoyagerScreen) {
+              item.selectImageVector
+            } else {
+              item.unSelectImageVector
             }
+          )
+        }
 
-            Crossfade (
-                imageVector.value
-            ){
-                Icon(
-                    it,
-                    contentDescription = null,
-                    modifier = Modifier
-                )
-            }
-        },
-        label = {
-            Text(
-                item.tag,
-                textDecoration = textDecoration.value
-            )
-        },
-        selected = currentTabNavigator.current is ClassScheduleVoyagerScreen,
-        onClick = {
-            currentTabNavigator.current = ClassScheduleVoyagerScreen(
-                parentPaddingControl = ParentPaddingControl(false,true)
-            )
-        },
-        selectedContentColor = MaterialTheme.colors.primaryVariant,
-        modifier = Modifier
-    )
+      Crossfade(imageVector.value) { Icon(it, contentDescription = null, modifier = Modifier) }
+    },
+    label = { Text(item.tag, textDecoration = textDecoration.value) },
+    selected = currentTabNavigator.current is ClassScheduleVoyagerScreen,
+    onClick = {
+      currentTabNavigator.current =
+        ClassScheduleVoyagerScreen(parentPaddingControl = ParentPaddingControl(false, true))
+    },
+    selectedContentColor = MaterialTheme.colors.primaryVariant,
+    modifier = Modifier,
+  )
 }
 
 /**
  * 个人界面跳转
+ *
  * @receiver RowScope
  */
 @Composable
-fun RowScope.BottomPersonTab(){
-    val currentTabNavigator = LocalTabNavigator.current
-    val item = MainItems.PERSON
-    val textDecoration = remember(currentTabNavigator.current) {
-        mutableStateOf(
-            if( currentTabNavigator.current is PersonVoyagerScreen){
-                TextDecoration.Underline
-            } else{
-                TextDecoration.None
-            }
-        )
+fun RowScope.BottomPersonTab() {
+  val currentTabNavigator = LocalTabNavigator.current
+  val item = MainItems.PERSON
+  val textDecoration =
+    remember(currentTabNavigator.current) {
+      mutableStateOf(
+        if (currentTabNavigator.current is PersonVoyagerScreen) {
+          TextDecoration.Underline
+        } else {
+          TextDecoration.None
+        }
+      )
     }
-    this.BottomNavigationItem(
-        icon = {
-            val imageVector = remember(currentTabNavigator.current) {
-                mutableStateOf(
-                    if( currentTabNavigator.current is PersonVoyagerScreen){
-                        item.selectImageVector
-                    } else{
-                        item.unSelectImageVector
-                    }
-                )
+  this.BottomNavigationItem(
+    icon = {
+      val imageVector =
+        remember(currentTabNavigator.current) {
+          mutableStateOf(
+            if (currentTabNavigator.current is PersonVoyagerScreen) {
+              item.selectImageVector
+            } else {
+              item.unSelectImageVector
             }
-            Crossfade (
-                imageVector.value
-            ){
-                Icon(
-                    it,
-                    contentDescription = null,
-                    modifier = Modifier
-                )
-            }
-        },
-        label = { Text(item.tag,textDecoration = textDecoration.value) },
-        selected = currentTabNavigator.current is PersonVoyagerScreen,
-        onClick = {
-            currentTabNavigator.current = PersonVoyagerScreen(
-                modifier = Modifier.fillMaxSize(),null,
-                parentPaddingControl = ParentPaddingControl(false,true)
-            )
-        },
-        selectedContentColor = MaterialTheme.colors.primaryVariant,
-        modifier = Modifier
-    )
+          )
+        }
+      Crossfade(imageVector.value) { Icon(it, contentDescription = null, modifier = Modifier) }
+    },
+    label = { Text(item.tag, textDecoration = textDecoration.value) },
+    selected = currentTabNavigator.current is PersonVoyagerScreen,
+    onClick = {
+      currentTabNavigator.current =
+        PersonVoyagerScreen(
+          modifier = Modifier.fillMaxSize(),
+          null,
+          parentPaddingControl = ParentPaddingControl(false, true),
+        )
+    },
+    selectedContentColor = MaterialTheme.colors.primaryVariant,
+    modifier = Modifier,
+  )
 }
-
-
-
-

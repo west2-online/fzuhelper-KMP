@@ -9,19 +9,20 @@ import kotlinx.coroutines.flow.flow
 
 /**
  * 开屏页的仓库层
+ *
  * @property client HttpClient
  * @constructor
  */
-class SplashRepository(private val client:HttpClient) {
-    /**
-     * 获取已有开屏页
-     * @return Flow<Splash>
-     */
-    fun getOpenImage(): Flow<Splash> {
-         return flow {
-             val response :Splash = client.get("/Images/Openpage").body()
-             emit(response)
-         }
+class SplashRepository(private val client: HttpClient) {
+  /**
+   * 获取已有开屏页
+   *
+   * @return Flow<Splash>
+   */
+  fun getOpenImage(): Flow<Splash> {
+    return flow {
+      val response: Splash = client.get("/Images/Openpage").body()
+      emit(response)
     }
-
+  }
 }

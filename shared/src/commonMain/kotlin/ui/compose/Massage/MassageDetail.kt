@@ -38,180 +38,128 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlin.jvm.Transient
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.zip
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
-import kotlin.jvm.Transient
 
 @Composable
-fun MassageDetail(
-    modifier: Modifier = Modifier,
-
-){
-    val listState = rememberLazyListState()
-    val isShowTopBar = remember {
-        mutableStateOf(true)
-    }
-    val first  = remember {
-        mutableStateOf(Pair(1,0))
-    }
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex  }
-            .zip(snapshotFlow { listState.firstVisibleItemScrollOffset }){ index,offset->
-                Pair(index,offset)
-            }
-            .map {
-                it
-            }.collect {
-                val used = first.value
-                if(used!=it){
-                    first.value = it
-                }
-                isShowTopBar.value = used.first > it.first || (used.first == it.first && used.second > it.second)
-            }
-    }
-    Box(modifier){
-        Column {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                state = listState,
-            ) {
-                item {
-                    Box(modifier = Modifier.padding(10.dp).wrapContentHeight().width(0.dp).padding(10.dp)){
-                        Text("")
-                    }
-                }
-                items(30) {
-                    MassageDetailItem(
-                        modifier = Modifier
-                            .padding(bottom = 30.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .animateContentSize()
-                    ) {
-                        TextWithLink()
-                    }
-                }
-            }
-            TextField(
-                value = "",
-                onValueChange = {},
-                label = {
-                    Text("回复")
-                },
-                modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxWidth()
-                    .height(56.dp)
-            )
+fun MassageDetail(modifier: Modifier = Modifier) {
+  val listState = rememberLazyListState()
+  val isShowTopBar = remember { mutableStateOf(true) }
+  val first = remember { mutableStateOf(Pair(1, 0)) }
+  LaunchedEffect(listState) {
+    snapshotFlow { listState.firstVisibleItemIndex }
+      .zip(snapshotFlow { listState.firstVisibleItemScrollOffset }) { index, offset ->
+        Pair(index, offset)
+      }
+      .map { it }
+      .collect {
+        val used = first.value
+        if (used != it) {
+          first.value = it
         }
-        AnimatedVisibility(
-            visible = isShowTopBar.value,
-            modifier = Modifier
+        isShowTopBar.value =
+          used.first > it.first || (used.first == it.first && used.second > it.second)
+      }
+  }
+  Box(modifier) {
+    Column {
+      LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), state = listState) {
+        item {
+          Box(modifier = Modifier.padding(10.dp).wrapContentHeight().width(0.dp).padding(10.dp)) {
+            Text("")
+          }
+        }
+        items(30) {
+          MassageDetailItem(
+            modifier =
+              Modifier.padding(bottom = 30.dp)
                 .fillMaxWidth()
-                .wrapContentHeight(),
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colors.primarySurface)
-                    .padding(10.dp)
-            ) {
-                Text(
-                    "FuTALK",
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                )
-            }
+                .wrapContentHeight()
+                .animateContentSize()
+          ) {
+            TextWithLink()
+          }
         }
+      }
+      TextField(
+        value = "",
+        onValueChange = {},
+        label = { Text("回复") },
+        modifier = Modifier.padding(10.dp).fillMaxWidth().height(56.dp),
+      )
     }
+    AnimatedVisibility(
+      visible = isShowTopBar.value,
+      modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+    ) {
+      Box(
+        modifier =
+          Modifier.fillMaxWidth()
+            .wrapContentHeight()
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colors.primarySurface)
+            .padding(10.dp)
+      ) {
+        Text("FuTALK", modifier = Modifier.align(Alignment.Center))
+      }
+    }
+  }
 }
 
 @Composable
 fun MassageDetailItem(
-    modifier: Modifier = Modifier,
-    itemContent : @Composable BoxScope.() -> Unit = {}
-){
-    Row (
-        modifier = modifier
+  modifier: Modifier = Modifier,
+  itemContent: @Composable BoxScope.() -> Unit = {},
+) {
+  Row(modifier = modifier) {
+    KamelImage(
+      resource =
+        asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+      null,
+      modifier = Modifier.height(50.dp).aspectRatio(1f).clip(CircleShape),
+      contentScale = ContentScale.FillBounds,
+    )
+    Box(
+      modifier =
+        Modifier.weight(1f)
+          .padding(horizontal = 10.dp)
+          .wrapContentHeight()
+          .clip(RoundedCornerShape(0.dp, 10.dp, 0.dp, 10.dp))
+          .background(Color(83, 198, 236))
+          .padding(10.dp)
     ) {
-        KamelImage(
-            resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-            null,
-            modifier = Modifier
-                .height(50.dp)
-                .aspectRatio(1f)
-                .clip(CircleShape),
-            contentScale = ContentScale.FillBounds
-        )
-        Box (
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 10.dp)
-                .wrapContentHeight()
-                .clip(RoundedCornerShape(0.dp,10.dp,0.dp,10.dp))
-                .background(Color(83, 198, 236))
-                .padding(10.dp)
-        ){
-            itemContent()
-        }
+      itemContent()
     }
+  }
 }
 
 @Composable
-fun TextWithLink(
-    modifier: Modifier = Modifier
-){
-    Column (
-        modifier = modifier,
-        horizontalAlignment = Alignment.End
+fun TextWithLink(modifier: Modifier = Modifier) {
+  Column(modifier = modifier, horizontalAlignment = Alignment.End) {
+    Text("sssssssssssssssssssssssssssssssssssssssssssssssss")
+    FloatingActionButton(
+      onClick = {},
+      modifier = Modifier.padding(top = 10.dp).fillMaxWidth().wrapContentHeight(),
+      shape = RoundedCornerShape(10.dp),
     ) {
-        Text("sssssssssssssssssssssssssssssssssssssssssssssssss")
-        FloatingActionButton(
-            onClick = {},
-            modifier = Modifier
-                .padding(top = 10.dp)
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(10.dp)
-        ) {
-            Text(
-                "https://github.com/",
-                modifier = Modifier
-                    .padding(10.dp)
-            )
-        }
-        Text(
-            "2023.10.1",
-            modifier = Modifier.padding( top = 10.dp ),
-            fontSize = 10.sp
-        )
-        Text(
-            "In FuZhou",
-            modifier = Modifier.padding( ),
-            fontSize = 10.sp
-        )
+      Text("https://github.com/", modifier = Modifier.padding(10.dp))
     }
+    Text("2023.10.1", modifier = Modifier.padding(top = 10.dp), fontSize = 10.sp)
+    Text("In FuZhou", modifier = Modifier.padding(), fontSize = 10.sp)
+  }
 }
 
-
 class MassageDetailVoyagerScreen(
-    @Transient
-    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
-): Screen {
-    @Composable
-    override fun Content() {
-        MassageDetail(
-            modifier = Modifier
-                .fillMaxSize()
-                .parentSystemControl(parentPaddingControl)
-                .padding(10.dp),
-        )
-    }
+  @Transient val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Screen {
+  @Composable
+  override fun Content() {
+    MassageDetail(
+      modifier = Modifier.fillMaxSize().parentSystemControl(parentPaddingControl).padding(10.dp)
+    )
+  }
 }

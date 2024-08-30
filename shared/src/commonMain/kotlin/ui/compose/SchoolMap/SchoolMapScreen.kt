@@ -30,67 +30,59 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-fun SchoolMapScreen(
-    modifier: Modifier = Modifier,
-    url: String,
-    onClick: () -> Unit = {}
-) {
+fun SchoolMapScreen(modifier: Modifier = Modifier, url: String, onClick: () -> Unit = {}) {
 
-    var scale by remember { mutableStateOf(1f) }
-    var offset by remember { mutableStateOf(Offset.Zero) }
-    val state = rememberTransformableState { zoomChange, _, _ ->
-        scale = (zoomChange * scale) .coerceAtLeast(1f)
-    }
-    Surface(
-        color = Color.DarkGray,
-        modifier = modifier
-            .fillMaxSize()
-//            .aspectRatio(0.01f)
-            .pointerInput(Unit) {
-                detectTapGestures(
-//                    onDoubleTap = {
-//                        scale = 1f
-//                        offset = Offset.Zero
-//                    },
-                )
+  var scale by remember { mutableStateOf(1f) }
+  var offset by remember { mutableStateOf(Offset.Zero) }
+  val state = rememberTransformableState { zoomChange, _, _ ->
+    scale = (zoomChange * scale).coerceAtLeast(1f)
+  }
+  Surface(
+    color = Color.DarkGray,
+    modifier =
+      modifier
+        .fillMaxSize()
+        //            .aspectRatio(0.01f)
+        .pointerInput(Unit) {
+          detectTapGestures(
+            //                    onDoubleTap = {
+            //                        scale = 1f
+            //                        offset = Offset.Zero
+            //                    },
+          )
+        },
+  ) {
+    LazyHorizontalGrid(
+      rows = GridCells.Fixed(8),
+      userScrollEnabled = true,
+      modifier =
+        Modifier.fillMaxHeight()
+          .wrapContentWidth()
+          .transformable(state = state)
+          .graphicsLayer(
+            scaleX = scale,
+            scaleY = scale,
+            translationX = offset.x * scale,
+            translationY = offset.y * scale,
+          )
+          .pointerInput(Unit) {
+            // 旋转/缩放/平移手势监听
+            detectTransformGestures { centroid, pan, zoom, rotation ->
+              scale *= zoom
+              offset += pan
             }
+          },
     ) {
-        LazyHorizontalGrid(
-            rows = GridCells.Fixed(8),
-            userScrollEnabled = true,
-            modifier = Modifier
-                .fillMaxHeight()
-                .wrapContentWidth()
-                .transformable(state = state)
-                .graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale,
-                    translationX = offset.x*scale,
-                    translationY = offset.y*scale
-                )
-                .pointerInput(Unit) {
-                    //旋转/缩放/平移手势监听
-                    detectTransformGestures { centroid, pan, zoom, rotation ->
-                        scale *= zoom
-                        offset += pan
-                    }
-                },
-        ){
-            items(96) {
-                KamelImage(
-                    asyncPainterResource("https://map.fzu.edu.cn/map?lyrs=last&x=${18750+it/8}&y=${9376+it%8}&z=15"),
-                    contentDescription = "",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        ,
-                    onFailure = {
-                        Box(modifier = Modifier.fillMaxSize().background(Color.Red))
-                    }
-                )
-            }
-        }
-
+      items(96) {
+        KamelImage(
+          asyncPainterResource(
+            "https://map.fzu.edu.cn/map?lyrs=last&x=${18750+it/8}&y=${9376+it%8}&z=15"
+          ),
+          contentDescription = "",
+          modifier = Modifier.fillMaxWidth().aspectRatio(1f),
+          onFailure = { Box(modifier = Modifier.fillMaxSize().background(Color.Red)) },
+        )
+      }
     }
-
+  }
 }

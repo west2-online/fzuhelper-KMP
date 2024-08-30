@@ -67,213 +67,182 @@ import util.network.NetworkResult
  *
  * @constructor Create empty Manage post voyager screen
  */
-object ManagePostVoyagerScreen:Screen{
-    @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
-    @Composable
-    override fun Content() {
-        val viewModel = koinInject<ManageViewModel>()
-        val postReportPageList = viewModel.postReportPageList.collectAsLazyPagingItems()
-        val horizontalPage = rememberPagerState { postReportPageList.itemCount }
-        HorizontalPager(
-            state = horizontalPage,
-            modifier = Modifier.fillMaxSize()
-        ) { pageIndex ->
-            postReportPageList[pageIndex]?.let { postReportData ->
-                val postReportDealState = postReportData.state.collectAsState()
-                LaunchedEffect(postReportPageList.loadState,postReportDealState.value){
-                    if(postReportPageList.loadState.refresh != LoadState.Loading && postReportDealState.value is NetworkResult.Success){
-                        horizontalPage.animateScrollToPage(horizontalPage.currentPage+1)
-                    }
-                }
-                val toastState = rememberToastState()
-                toastState.toastBindNetworkResult(viewModel.openImageDelete.collectAsState())
-                postReportData.postData.let { postById ->
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(10.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                        ){
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(10.dp)
-                            ) {
-                                PersonalInformationAreaInDetail(
-                                    userName = postById.Post.User.username,
-                                    url = "${BaseUrlConfig.UserAvatar}/${postById.Post.User.avatar}"
-                                )
-                                Time(postById.Post.Time)
-                                Text(
-                                    text = postById.Post.Title,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                listOf<PostContent>().plus(postById.valueData ?: listOf())
-                                    .plus(postById.fileData ?: listOf()).sortedBy {
-                                        it.order
-                                    }.forEach {
-                                        when (it) {
-                                            is FileData -> {
-                                                ImageContent(it.fileName)
-                                            }
-                                            is ValueData -> {
-                                                TextContent(it.value.decodeBase64String())
-                                            }
-                                            is LineChartData -> {
-                                                val data = remember {
-                                                    it.toLineChartDataForShowOrNull()
-                                                }
-                                                if(data == null){
-                                                    Text("数据解析失败")
-                                                } else {
-                                                    XYChart(false, Modifier,data)
-                                                }
-                                            }
-                                        }
-                                    }
-                            }
-                            FlowRow(
-                                modifier = Modifier
-                                    .padding(10.dp)
-                            ) {
-                                Label(
-                                    "#版权问题:${postReportData.postReportContextData.CopyrightIssue}"
-                                )
-                                Label(
-                                    "#不当内容:${postReportData.postReportContextData.InappropriateContent}"
-                                )
-                                Label(
-                                    "#政治敏感:${postReportData.postReportContextData.PoliticallySensitive}"
-                                )
-                                Label(
-                                    "#信息滥用:${postReportData.postReportContextData.SpamAndAbuse}"
-                                )
-                                Label(
-                                    "#未经授权的广告:${postReportData.postReportContextData.UnauthorizedAdvertisement}"
-                                )
-                                Label(
-                                    "#隐私问题:${postReportData.postReportContextData.PrivacyIssue}"
-                                )
-                                Label(
-                                    "#违反社区准则:${postReportData.postReportContextData.ViolateCommunityGuidelines}"
-                                )
-                                Label(
-                                    "#恶意行为:${postReportData.postReportContextData.MaliciousBehavior}"
-                                )
-                            }
-                            Crossfade(postReportData.state.collectAsState().value){state ->
-                                when(state){
-                                    is NetworkResult.UnSend -> {
-                                        Row(
-                                            modifier = Modifier
-                                                .wrapContentHeight()
-                                                .fillMaxWidth(1f)
-                                                .padding(vertical = 10.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Button(
-                                                modifier = Modifier,
-                                                onClick = {
-                                                    viewModel.dealPost(postReportData.state,postById.Post.Id,PostProcessResult.PassPost)
-                                                },
-                                                colors = ButtonDefaults.buttonColors(
-                                                    contentColor = MaterialTheme.colors.surface,
-                                                    backgroundColor = MaterialTheme.colors.error
-                                                )
-                                            ) {
-                                                Text("封禁")
-                                            }
-                                            Spacer(modifier = Modifier.width(100.dp))
-                                            Button(
-                                                modifier = Modifier,
-                                                onClick = {
-                                                    viewModel.dealPost(postReportData.state,postById.Post.Id,PostProcessResult.BanPost)
-                                                }
-                                            ) {
-                                                Text("举报无效")
-                                            }
-                                        }
-                                    }
-                                    is NetworkResult.Error -> {
-                                        Row(
-                                            modifier = Modifier
-                                                .wrapContentHeight()
-                                                .fillMaxWidth(1f)
-                                                .padding(vertical = 10.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Button(
-                                                modifier = Modifier,
-                                                onClick = {
-                                                    viewModel.dealPost(postReportData.state,postById.Post.Id,PostProcessResult.PassPost)
-                                                },
-                                                colors = ButtonDefaults.buttonColors(
-                                                    contentColor = MaterialTheme.colors.surface,
-                                                    backgroundColor = MaterialTheme.colors.error
-                                                )
-                                            ) {
-                                                Text("封禁")
-                                            }
-                                            Spacer(modifier = Modifier.width(100.dp))
-                                            Button(
-                                                modifier = Modifier,
-                                                onClick = {
-                                                    viewModel.dealPost(postReportData.state,postById.Post.Id,PostProcessResult.BanPost)
-                                                }
-                                            ) {
-                                                Text("举报无效")
-                                            }
-                                        }
-                                    }
-                                    else -> {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center,
-                                            modifier = Modifier
-                                                .padding(bottom = 30.dp)
-                                                .fillMaxWidth()
-                                                .height(75.dp)
-                                        ){
-                                            val scope = rememberCoroutineScope()
-                                            Button(
-                                                onClick = {
-                                                    scope.launch {
-                                                        horizontalPage.animateScrollToPage(
-                                                            horizontalPage.currentPage+1
-                                                        )
-                                                    }
-
-                                                }
-                                            ){
-                                                Icon(
-                                                    modifier = Modifier
-                                                        .fillMaxHeight(0.5f)
-                                                        .aspectRatio(1f),
-                                                    imageVector = Icons.Filled.Done,
-                                                    contentDescription = "",
-                                                    tint = Color.Green
-                                                )
-                                                Text(
-                                                    modifier = Modifier,
-                                                    text = "下一项"
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                EasyToast()
-            }
+object ManagePostVoyagerScreen : Screen {
+  @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+  @Composable
+  override fun Content() {
+    val viewModel = koinInject<ManageViewModel>()
+    val postReportPageList = viewModel.postReportPageList.collectAsLazyPagingItems()
+    val horizontalPage = rememberPagerState { postReportPageList.itemCount }
+    HorizontalPager(state = horizontalPage, modifier = Modifier.fillMaxSize()) { pageIndex ->
+      postReportPageList[pageIndex]?.let { postReportData ->
+        val postReportDealState = postReportData.state.collectAsState()
+        LaunchedEffect(postReportPageList.loadState, postReportDealState.value) {
+          if (
+            postReportPageList.loadState.refresh != LoadState.Loading &&
+              postReportDealState.value is NetworkResult.Success
+          ) {
+            horizontalPage.animateScrollToPage(horizontalPage.currentPage + 1)
+          }
         }
+        val toastState = rememberToastState()
+        toastState.toastBindNetworkResult(viewModel.openImageDelete.collectAsState())
+        postReportData.postData.let { postById ->
+          Surface(modifier = Modifier.fillMaxSize().padding(10.dp)) {
+            Column(modifier = Modifier.fillMaxSize()) {
+              Column(
+                modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(10.dp)
+              ) {
+                PersonalInformationAreaInDetail(
+                  userName = postById.Post.User.username,
+                  url = "${BaseUrlConfig.UserAvatar}/${postById.Post.User.avatar}",
+                )
+                Time(postById.Post.Time)
+                Text(text = postById.Post.Title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                listOf<PostContent>()
+                  .plus(postById.valueData ?: listOf())
+                  .plus(postById.fileData ?: listOf())
+                  .sortedBy { it.order }
+                  .forEach {
+                    when (it) {
+                      is FileData -> {
+                        ImageContent(it.fileName)
+                      }
+                      is ValueData -> {
+                        TextContent(it.value.decodeBase64String())
+                      }
+                      is LineChartData -> {
+                        val data = remember { it.toLineChartDataForShowOrNull() }
+                        if (data == null) {
+                          Text("数据解析失败")
+                        } else {
+                          XYChart(false, Modifier, data)
+                        }
+                      }
+                    }
+                  }
+              }
+              FlowRow(modifier = Modifier.padding(10.dp)) {
+                Label("#版权问题:${postReportData.postReportContextData.CopyrightIssue}")
+                Label("#不当内容:${postReportData.postReportContextData.InappropriateContent}")
+                Label("#政治敏感:${postReportData.postReportContextData.PoliticallySensitive}")
+                Label("#信息滥用:${postReportData.postReportContextData.SpamAndAbuse}")
+                Label("#未经授权的广告:${postReportData.postReportContextData.UnauthorizedAdvertisement}")
+                Label("#隐私问题:${postReportData.postReportContextData.PrivacyIssue}")
+                Label("#违反社区准则:${postReportData.postReportContextData.ViolateCommunityGuidelines}")
+                Label("#恶意行为:${postReportData.postReportContextData.MaliciousBehavior}")
+              }
+              Crossfade(postReportData.state.collectAsState().value) { state ->
+                when (state) {
+                  is NetworkResult.UnSend -> {
+                    Row(
+                      modifier =
+                        Modifier.wrapContentHeight().fillMaxWidth(1f).padding(vertical = 10.dp),
+                      verticalAlignment = Alignment.CenterVertically,
+                      horizontalArrangement = Arrangement.Center,
+                    ) {
+                      Button(
+                        modifier = Modifier,
+                        onClick = {
+                          viewModel.dealPost(
+                            postReportData.state,
+                            postById.Post.Id,
+                            PostProcessResult.PassPost,
+                          )
+                        },
+                        colors =
+                          ButtonDefaults.buttonColors(
+                            contentColor = MaterialTheme.colors.surface,
+                            backgroundColor = MaterialTheme.colors.error,
+                          ),
+                      ) {
+                        Text("封禁")
+                      }
+                      Spacer(modifier = Modifier.width(100.dp))
+                      Button(
+                        modifier = Modifier,
+                        onClick = {
+                          viewModel.dealPost(
+                            postReportData.state,
+                            postById.Post.Id,
+                            PostProcessResult.BanPost,
+                          )
+                        },
+                      ) {
+                        Text("举报无效")
+                      }
+                    }
+                  }
+                  is NetworkResult.Error -> {
+                    Row(
+                      modifier =
+                        Modifier.wrapContentHeight().fillMaxWidth(1f).padding(vertical = 10.dp),
+                      verticalAlignment = Alignment.CenterVertically,
+                      horizontalArrangement = Arrangement.Center,
+                    ) {
+                      Button(
+                        modifier = Modifier,
+                        onClick = {
+                          viewModel.dealPost(
+                            postReportData.state,
+                            postById.Post.Id,
+                            PostProcessResult.PassPost,
+                          )
+                        },
+                        colors =
+                          ButtonDefaults.buttonColors(
+                            contentColor = MaterialTheme.colors.surface,
+                            backgroundColor = MaterialTheme.colors.error,
+                          ),
+                      ) {
+                        Text("封禁")
+                      }
+                      Spacer(modifier = Modifier.width(100.dp))
+                      Button(
+                        modifier = Modifier,
+                        onClick = {
+                          viewModel.dealPost(
+                            postReportData.state,
+                            postById.Post.Id,
+                            PostProcessResult.BanPost,
+                          )
+                        },
+                      ) {
+                        Text("举报无效")
+                      }
+                    }
+                  }
+                  else -> {
+                    Row(
+                      verticalAlignment = Alignment.CenterVertically,
+                      horizontalArrangement = Arrangement.Center,
+                      modifier = Modifier.padding(bottom = 30.dp).fillMaxWidth().height(75.dp),
+                    ) {
+                      val scope = rememberCoroutineScope()
+                      Button(
+                        onClick = {
+                          scope.launch {
+                            horizontalPage.animateScrollToPage(horizontalPage.currentPage + 1)
+                          }
+                        }
+                      ) {
+                        Icon(
+                          modifier = Modifier.fillMaxHeight(0.5f).aspectRatio(1f),
+                          imageVector = Icons.Filled.Done,
+                          contentDescription = "",
+                          tint = Color.Green,
+                        )
+                        Text(modifier = Modifier, text = "下一项")
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        EasyToast()
+      }
     }
+  }
 }

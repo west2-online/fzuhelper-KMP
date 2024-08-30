@@ -4,12 +4,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Data(
-    val Feedback: Feedback,
-    val FeedbackComment: List<FeedbackComment>,
-    val FeedbackStatus: List<FeedbackStatu>
+  val Feedback: Feedback,
+  val FeedbackComment: List<FeedbackComment>,
+  val FeedbackStatus: List<FeedbackStatu>,
 )
 
-interface FeedbackItem{
-    val Order :Int
+interface FeedbackItem {
+  val Order: Int
 }
-

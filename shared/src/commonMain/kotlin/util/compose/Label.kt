@@ -34,145 +34,133 @@ import kotlin.math.sqrt
 
 /**
  * 显示标签的ui
+ *
  * @param string String
  */
 @Composable
-fun Label(
-    string: String,
-    color: Color = MaterialTheme.colors.surface
-){
-    Card(
-        modifier = Modifier
-            .wrapContentSize()
-            .padding(end = 5.dp, bottom = 5.dp),
-        shape = RoundedCornerShape(20),
-        backgroundColor = color
-    ) {
-//        val string: String = stringResource(MR.strings.my_string)
-        Text(
-            "#$string",
-            fontSize = 10.sp,
-            modifier = Modifier
-                .padding(vertical = 5.dp, horizontal = 10.dp),
-        )
-    }
+fun Label(string: String, color: Color = MaterialTheme.colors.surface) {
+  Card(
+    modifier = Modifier.wrapContentSize().padding(end = 5.dp, bottom = 5.dp),
+    shape = RoundedCornerShape(20),
+    backgroundColor = color,
+  ) {
+    //        val string: String = stringResource(MR.strings.my_string)
+    Text(
+      "#$string",
+      fontSize = 10.sp,
+      modifier = Modifier.padding(vertical = 5.dp, horizontal = 10.dp),
+    )
+  }
 }
 
-fun Modifier.loadAction():Modifier{
-    return this.composed {
-        val s = androidx.compose.animation.core.Animatable(0f)
-        LaunchedEffect(Unit){
-            s.animateTo(
-                1f,
-                tween(1000)
-            )
+fun Modifier.loadAction(): Modifier {
+  return this.composed {
+    val s = androidx.compose.animation.core.Animatable(0f)
+    LaunchedEffect(Unit) { s.animateTo(1f, tween(1000)) }
+    val text = rememberTextMeasurer()
+    this.drawWithContent {
+      val path = Path()
+
+      //            val otherPadding = padding.toFloat()/2*(sqrt(3.0)).toFloat()
+      val otherPadding = (size.width / 2) * 0.8f
+      val padding = size.width / (sqrt(3.0)).toFloat() * 2
+      val list =
+        listOf(
+          Offset(center.x + otherPadding, center.y - padding / 2),
+          Offset(center.x, center.y - padding),
+          Offset(center.x - otherPadding, center.y - padding / 2),
+          Offset(center.x - otherPadding, center.y + padding / 2),
+          Offset(center.x, center.y + padding),
+          Offset(center.x + otherPadding, center.y + padding / 2),
+          Offset(center.x + otherPadding, center.y - padding / 2),
+          Offset(center.x, center.y),
+          Offset(center.x, center.y + padding),
+        )
+
+      //            list.forEachIndexed range@ { index, offset ->
+      //                if(index == list.size-1){
+      //                   return@range
+      //                }
+      //                drawLine(Color.Black,offset,
+      //                    Offset(offset.x + (list[index+1].x - offset.x)*s.value,offset.y +
+      // (list[index+1].y - offset.y)*s.value)
+      //                            ,strokeWidth = 10f,)
+      //            }
+      val path1 = Path()
+      val path2 = Path()
+      val path1List =
+        listOf(
+          Offset(center.x + otherPadding, center.y - padding / 2),
+          Offset(center.x, center.y - padding),
+          Offset(center.x - otherPadding, center.y - padding / 2),
+          Offset(center.x - otherPadding, center.y + padding / 2),
+          Offset(center.x, center.y + padding),
+          Offset(center.x, center.y),
+          Offset(center.x + otherPadding, center.y - padding / 2),
+        )
+      val path2List =
+        listOf(
+          Offset(center.x + otherPadding, center.y - padding / 2),
+          Offset(center.x, center.y),
+          Offset(center.x, center.y + padding),
+          Offset(center.x + otherPadding, center.y + padding / 2),
+          Offset(center.x + otherPadding, center.y - padding / 2),
+        )
+
+      path1List.forEachIndexed { index, offset ->
+        if (index == 0) {
+          path1.moveTo(offset.x, offset.y)
+        } else if (index == path1List.size - 1) {
+          path1.lineTo(offset.x, offset.y)
+          path1.close()
+        } else {
+          path1.lineTo(offset.x, offset.y)
         }
-        val text = rememberTextMeasurer()
-        this.drawWithContent {
-            val path = Path()
-
-//            val otherPadding = padding.toFloat()/2*(sqrt(3.0)).toFloat()
-            val otherPadding = (size.width/2)*0.8f
-            val padding = size.width/(sqrt(3.0)).toFloat()*2
-            val list = listOf(
-                Offset(center.x+otherPadding,center.y - padding/2),
-                Offset(center.x,center.y - padding),
-                Offset(center.x-otherPadding,center.y-padding/2),
-                Offset(center.x-otherPadding,center.y+padding/2),
-                Offset(center.x,center.y + padding),
-                Offset(center.x+otherPadding,center.y + padding/2),
-                Offset(center.x+otherPadding,center.y - padding/2),
-                Offset(center.x,center.y),
-                Offset(center.x,center.y + padding),
-            );
-
-//            list.forEachIndexed range@ { index, offset ->
-//                if(index == list.size-1){
-//                   return@range
-//                }
-//                drawLine(Color.Black,offset,
-//                    Offset(offset.x + (list[index+1].x - offset.x)*s.value,offset.y + (list[index+1].y - offset.y)*s.value)
-//                            ,strokeWidth = 10f,)
-//            }
-            val path1 = Path()
-            val path2 = Path()
-            val path1List = listOf(
-                Offset(center.x+otherPadding,center.y - padding/2),
-                Offset(center.x,center.y - padding),
-                Offset(center.x-otherPadding,center.y-padding/2),
-                Offset(center.x-otherPadding,center.y+padding/2),
-                Offset(center.x,center.y + padding),
-                Offset(center.x,center.y ),
-                Offset(center.x+otherPadding,center.y - padding/2),
-            )
-            val path2List = listOf(
-                Offset(center.x+otherPadding,center.y - padding/2),
-                Offset(center.x,center.y),
-                Offset(center.x,center.y + padding),
-                Offset(center.x+otherPadding,center.y + padding/2),
-                Offset(center.x+otherPadding,center.y - padding/2),
-            )
-
-            path1List.forEachIndexed { index, offset ->
-                if(index == 0){
-                    path1.moveTo(offset.x,offset.y)
-                }else if(index == path1List.size - 1){
-                    path1.lineTo(offset.x,offset.y)
-                    path1.close()
-                }else{
-                    path1.lineTo(offset.x,offset.y)
-                }
-            }
-            path2List.forEachIndexed { index, offset ->
-                if(index == 0){
-                    path2.moveTo(offset.x,offset.y)
-                }else if(index == path1List.size - 1){
-                    path2.lineTo(offset.x,offset.y)
-                    path2.close()
-                }else{
-                    path2.lineTo(offset.x,offset.y)
-                }
-            }
-
-            clipRect (bottom = s.value * padding * 4 + size.height/2 - 2*padding){
-                drawPath(path1, brush = Brush.linearGradient(
-                    listOf(
-                        Color(23,65,217),
-                        Color(21,77,222),
-                        Color(140,157,202),
-                    ),
-                    start = Offset(center.x,center.y - padding),
-                    end = Offset(center.x,center.y + padding)
-                ))
-
-
-            }
-            clipRect(top = center.y + padding - s.value * padding/2*3 , bottom = size.height) {
-                drawPath(path2,
-                    brush = Brush.linearGradient(
-                        listOf(
-                            Color(38,185,176),
-                            Color(202,234,232),
-                        ),
-                        start = Offset(center.x,center.y + padding),
-                        end = Offset(center.x+otherPadding,center.y - padding/2)
-                    )
-                )
-            }
-            rotate(330f,Offset(center.x,center.y )){
-                val data = text.measure("FuTalk")
-                drawText(
-                    data,
-                    topLeft = Offset(center.x,center.y),
-                )
-            }
-
+      }
+      path2List.forEachIndexed { index, offset ->
+        if (index == 0) {
+          path2.moveTo(offset.x, offset.y)
+        } else if (index == path1List.size - 1) {
+          path2.lineTo(offset.x, offset.y)
+          path2.close()
+        } else {
+          path2.lineTo(offset.x, offset.y)
         }
+      }
+
+      clipRect(bottom = s.value * padding * 4 + size.height / 2 - 2 * padding) {
+        drawPath(
+          path1,
+          brush =
+            Brush.linearGradient(
+              listOf(Color(23, 65, 217), Color(21, 77, 222), Color(140, 157, 202)),
+              start = Offset(center.x, center.y - padding),
+              end = Offset(center.x, center.y + padding),
+            ),
+        )
+      }
+      clipRect(top = center.y + padding - s.value * padding / 2 * 3, bottom = size.height) {
+        drawPath(
+          path2,
+          brush =
+            Brush.linearGradient(
+              listOf(Color(38, 185, 176), Color(202, 234, 232)),
+              start = Offset(center.x, center.y + padding),
+              end = Offset(center.x + otherPadding, center.y - padding / 2),
+            ),
+        )
+      }
+      rotate(330f, Offset(center.x, center.y)) {
+        val data = text.measure("FuTalk")
+        drawText(data, topLeft = Offset(center.x, center.y))
+      }
     }
+  }
 }
 
 /**
  * 对传统Card的进一步封装，可以控制内部Column的modifier
+ *
  * @param cardModifier Modifier
  * @param shape Shape
  * @param backgroundColor Color
@@ -182,35 +170,29 @@ fun Modifier.loadAction():Modifier{
  * @param columnModifier Modifier
  * @param verticalArrangement Vertical
  * @param horizontalAlignment Horizontal
- * @param content [@androidx.compose.runtime.Composable] [@kotlin.ExtensionFunctionType] Function1<ColumnScope, Unit>
+ * @param content [@androidx.compose.runtime.Composable] [@kotlin.ExtensionFunctionType]
+ *   Function1<ColumnScope, Unit>
  */
 @Composable
 fun ThemeCard(
-    cardModifier: Modifier = Modifier,
-    shape: Shape = MaterialTheme.shapes.medium,
-    backgroundColor: Color = MaterialTheme.colors.surface,
-    contentColor: Color = contentColorFor(backgroundColor),
-    border: BorderStroke? = null,
-    elevation: Dp = 1.dp,
-    columnModifier: Modifier = Modifier,
-    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
-    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    content: @Composable ColumnScope.() -> Unit,
+  cardModifier: Modifier = Modifier,
+  shape: Shape = MaterialTheme.shapes.medium,
+  backgroundColor: Color = MaterialTheme.colors.surface,
+  contentColor: Color = contentColorFor(backgroundColor),
+  border: BorderStroke? = null,
+  elevation: Dp = 1.dp,
+  columnModifier: Modifier = Modifier,
+  verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+  horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+  content: @Composable ColumnScope.() -> Unit,
 ) {
-    Card (
-        cardModifier,
-        shape,
-        backgroundColor,
-        contentColor,
-        border,
-        elevation,
+  Card(cardModifier, shape, backgroundColor, contentColor, border, elevation) {
+    Column(
+      modifier = columnModifier,
+      verticalArrangement = verticalArrangement,
+      horizontalAlignment = horizontalAlignment,
     ) {
-        Column (
-            modifier = columnModifier,
-            verticalArrangement = verticalArrangement,
-            horizontalAlignment = horizontalAlignment
-        ){
-            content()
-        }
+      content()
     }
+  }
 }

@@ -34,6 +34,7 @@ import config.BaseUrlConfig
 import data.share.Post
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlin.jvm.Transient
 import org.koin.compose.koinInject
 import ui.compose.Post.PersonalInformationAreaInList
 import util.compose.EasyToast
@@ -42,155 +43,125 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
-import kotlin.jvm.Transient
 
 /**
  * 帖子举报界面
+ *
  * @param modifier Modifier
  * @param data Post
  */
 @Composable
-fun PostReport(
-    modifier: Modifier = Modifier,
-    data : Post
-){
-    val viewModel = koinInject<ReportViewModel>()
-    val selectItem = remember {
-        mutableStateOf(0)
-    }
-    val reportResponseState = viewModel.reportPostResponse.collectAsState()
-    val toastState = rememberToastState()
-    toastState.toastBindNetworkResult(reportResponseState)
-    LazyColumn(
-        modifier = modifier,
-        horizontalAlignment = Alignment.End
-    ){
-        item{
-            Column(
-                modifier = Modifier
-                    .padding(bottom = 10.dp)
-            ) {
-                Text("举报@", color = Color.Red,modifier = Modifier.padding(bottom = 10.dp))
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .border(1.dp, Color.Gray, RoundedCornerShape(5.dp))
-                        .clip(RoundedCornerShape(5.dp))
-                        .padding(10.dp)
-                ){
-                    PersonalInformationAreaInList(
-                        userAvatar = data.User.avatar ,
-                        userName = data.User.username ,
-                    )
-                    data.FirstImage?.let {
-                        if(it.isEmpty()){
-                            return@let
-                        }
-                        KamelImage(
-                            resource = asyncPainterResource("${BaseUrlConfig.PostImage}/${it}"),
-                            null,
-                            modifier = Modifier
-                                .padding(top = 10.dp)
-                                .fillMaxWidth(),
-                            contentScale = ContentScale.Fit,
-                            onFailure = {
-                                Text("加载失败")
-                            },
-                            onLoading = {
-                                CircularProgressIndicator(
-                                    modifier = Modifier
-                                        .padding(vertical = 20.dp)
-                                        .align(Alignment.Center)
-                                )
-                            }
-                        )
-                    }
+fun PostReport(modifier: Modifier = Modifier, data: Post) {
+  val viewModel = koinInject<ReportViewModel>()
+  val selectItem = remember { mutableStateOf(0) }
+  val reportResponseState = viewModel.reportPostResponse.collectAsState()
+  val toastState = rememberToastState()
+  toastState.toastBindNetworkResult(reportResponseState)
+  LazyColumn(modifier = modifier, horizontalAlignment = Alignment.End) {
+    item {
+      Column(modifier = Modifier.padding(bottom = 10.dp)) {
+        Text("举报@", color = Color.Red, modifier = Modifier.padding(bottom = 10.dp))
+        Column(
+          modifier =
+            Modifier.fillMaxWidth()
+              .wrapContentHeight()
+              .border(1.dp, Color.Gray, RoundedCornerShape(5.dp))
+              .clip(RoundedCornerShape(5.dp))
+              .padding(10.dp)
+        ) {
+          PersonalInformationAreaInList(
+            userAvatar = data.User.avatar,
+            userName = data.User.username,
+          )
+          data.FirstImage?.let {
+            if (it.isEmpty()) {
+              return@let
+            }
+            KamelImage(
+              resource = asyncPainterResource("${BaseUrlConfig.PostImage}/${it}"),
+              null,
+              modifier = Modifier.padding(top = 10.dp).fillMaxWidth(),
+              contentScale = ContentScale.Fit,
+              onFailure = { Text("加载失败") },
+              onLoading = {
+                CircularProgressIndicator(
+                  modifier = Modifier.padding(vertical = 20.dp).align(Alignment.Center)
+                )
+              },
+            )
+          }
 
-                    Text(
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .padding(end = 10.dp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        text = data.Title
-                    )
-                    Text(
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .animateContentSize(),
-                        maxLines = 10,
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 10.sp,
-                        text = data.LittleDescribe?:""
-                    )
-                }
-            }
+          Text(
+            modifier =
+              Modifier.padding(top = 10.dp).fillMaxWidth().wrapContentHeight().padding(end = 10.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            text = data.Title,
+          )
+          Text(
+            modifier =
+              Modifier.padding(top = 10.dp).fillMaxWidth().wrapContentHeight().animateContentSize(),
+            maxLines = 10,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 10.sp,
+            text = data.LittleDescribe ?: "",
+          )
         }
-        ReportLabel.values().forEachIndexed { index, reportLabel ->
-            item {
-                Box(
-                    modifier = Modifier
-                        .padding(bottom = 10.dp)
-                        .wrapContentHeight()
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(5.dp))
-                        .border(1.dp, Color.Gray, RoundedCornerShape(5.dp))
-                        .background(
-                            animateColorAsState(if (index == selectItem.value) MaterialTheme.colors.error else MaterialTheme.colors.surface).value
-                        )
-                        .clickable {
-                            selectItem.value = index
-                        }
-                        .padding(5.dp)
-                ) {
-                    Column {
-                        Text(reportLabel.reason)
-                        Text(reportLabel.description, fontSize = 10.sp)
-                    }
-                }
-            }
-        }
-        item {
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth(0.4f),
-                onClick = {
-                    viewModel.reportPost(selectItem.value, data.Id.toString())
-                }
-            ) {
-                Text("举报")
-            }
-        }
+      }
     }
-    EasyToast(toastState)
+    ReportLabel.values().forEachIndexed { index, reportLabel ->
+      item {
+        Box(
+          modifier =
+            Modifier.padding(bottom = 10.dp)
+              .wrapContentHeight()
+              .fillMaxWidth()
+              .clip(RoundedCornerShape(5.dp))
+              .border(1.dp, Color.Gray, RoundedCornerShape(5.dp))
+              .background(
+                animateColorAsState(
+                    if (index == selectItem.value) MaterialTheme.colors.error
+                    else MaterialTheme.colors.surface
+                  )
+                  .value
+              )
+              .clickable { selectItem.value = index }
+              .padding(5.dp)
+        ) {
+          Column {
+            Text(reportLabel.reason)
+            Text(reportLabel.description, fontSize = 10.sp)
+          }
+        }
+      }
+    }
+    item {
+      Button(
+        modifier = Modifier.fillMaxWidth(0.4f),
+        onClick = { viewModel.reportPost(selectItem.value, data.Id.toString()) },
+      ) {
+        Text("举报")
+      }
+    }
+  }
+  EasyToast(toastState)
 }
 
 /**
  * 帖子举报界面 二级界面
+ *
  * @property type PostReportType
  * @property parentPaddingControl ParentPaddingControl
  * @constructor
  */
 class PostRepostVoyagerScreen(
-    @Transient
-    val type : ReportType.PostReportType,
-    @Transient
-    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
-): Screen {
-    @Composable
-    override fun Content() {
-        PostReport(
-            data = type.data,
-            modifier = Modifier
-                .parentSystemControl(parentPaddingControl)
-        )
-    }
+  @Transient val type: ReportType.PostReportType,
+  @Transient val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl(),
+) : Screen {
+  @Composable
+  override fun Content() {
+    PostReport(data = type.data, modifier = Modifier.parentSystemControl(parentPaddingControl))
+  }
 }
-

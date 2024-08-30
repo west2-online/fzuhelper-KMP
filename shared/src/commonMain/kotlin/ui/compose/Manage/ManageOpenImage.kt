@@ -56,44 +56,28 @@ import util.network.NetworkResult
 
 /**
  * 已有开屏页显示
+ *
  * @param string String
  * @param refresh Function0<Unit>
  * @param delete Function0<Unit>
  */
 @Composable
-fun OpenImageShow(
-    string: String,
-    refresh:()->Unit,
-    delete:()->Unit
-){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(1f)
-            .aspectRatio(1f),
+fun OpenImageShow(string: String, refresh: () -> Unit, delete: () -> Unit) {
+  Row(modifier = Modifier.fillMaxWidth(1f).aspectRatio(1f)) {
+    KamelImage(
+      resource = asyncPainterResource("${BaseUrlConfig.OpenImage}/${string}"),
+      modifier = Modifier.aspectRatio(0.56f).fillMaxHeight(),
+      contentDescription = "",
+      contentScale = ContentScale.FillBounds,
+    )
+    Column(
+      verticalArrangement = Arrangement.SpaceEvenly,
+      horizontalAlignment = Alignment.CenterHorizontally,
+      modifier = Modifier.weight(1f),
     ) {
-        KamelImage(
-            resource = asyncPainterResource("${BaseUrlConfig.OpenImage}/${string}"),
-            modifier = Modifier
-                .aspectRatio(0.56f)
-                .fillMaxHeight(),
-            contentDescription = "",
-            contentScale = ContentScale.FillBounds
-        )
-        Column(
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .weight(1f)
-        ) {
-            Button(
-                onClick = {
-                    delete.invoke()
-                }
-            ){
-                Text("删除该开屏页")
-            }
-        }
+      Button(onClick = { delete.invoke() }) { Text("删除该开屏页") }
     }
+  }
 }
 
 /**
@@ -102,224 +86,151 @@ fun OpenImageShow(
  * @constructor Create empty Manage open image voyager screen
  */
 object ManageOpenImageVoyagerScreen : Screen {
-    @OptIn(ExperimentalFoundationApi::class)
-    @Composable
-    override fun Content() {
-        val manageViewModel = koinInject<ManageViewModel>()
-        LaunchedEffect(Unit){
-            manageViewModel.getOpenImage()
-        }
-        val pageState = rememberPagerState {
-            2
-        }
-        val imageByteArray = remember {
-            mutableStateOf<ByteArray?>(null)
-        }
-        val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
-        imagePicker.registerPicker(
-            onImagePicked = {
-                imageByteArray.value = it
-            }
-        )
-        val scope = rememberCoroutineScope()
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ){
-            HorizontalPager(
-                state = pageState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                Box(modifier = Modifier.fillMaxSize()){
-                    when (it) {
-                        0 -> {
-                            val toastState = rememberToastState()
-                            toastState.toastBindNetworkResult(manageViewModel.openImageDelete.collectAsState())
-                            manageViewModel.openImageList.collectAsState().CollectWithContent(
-                                success = {
-                                    LazyColumn(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(10.dp),
-                                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                                    ) {
-                                        it.forEach {
-                                            item {
-                                                OpenImageShow(
-                                                    it,
-                                                    refresh = {
-                                                        manageViewModel.refresh()
-                                                    },
-                                                    delete = {
-                                                        manageViewModel.deleteOpenImage(it)
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
-                                },
-                                error = {
-
-                                },
-                                loading = {
-                                    Column(
-                                        verticalArrangement = Arrangement.Center,
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                    ) {
-                                        CircularProgressIndicator()
-                                        Text("加载中")
-                                    }
-                                }
-                            )
-                            EasyToast(toastState)
+  @OptIn(ExperimentalFoundationApi::class)
+  @Composable
+  override fun Content() {
+    val manageViewModel = koinInject<ManageViewModel>()
+    LaunchedEffect(Unit) { manageViewModel.getOpenImage() }
+    val pageState = rememberPagerState { 2 }
+    val imageByteArray = remember { mutableStateOf<ByteArray?>(null) }
+    val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
+    imagePicker.registerPicker(onImagePicked = { imageByteArray.value = it })
+    val scope = rememberCoroutineScope()
+    Column(modifier = Modifier.fillMaxSize()) {
+      HorizontalPager(state = pageState, modifier = Modifier.fillMaxWidth().weight(1f)) {
+        Box(modifier = Modifier.fillMaxSize()) {
+          when (it) {
+            0 -> {
+              val toastState = rememberToastState()
+              toastState.toastBindNetworkResult(manageViewModel.openImageDelete.collectAsState())
+              manageViewModel.openImageList
+                .collectAsState()
+                .CollectWithContent(
+                  success = {
+                    LazyColumn(
+                      modifier = Modifier.fillMaxSize().padding(10.dp),
+                      verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                      it.forEach {
+                        item {
+                          OpenImageShow(
+                            it,
+                            refresh = { manageViewModel.refresh() },
+                            delete = { manageViewModel.deleteOpenImage(it) },
+                          )
                         }
-                        1 -> {
-                            Box(modifier = Modifier.fillMaxSize().padding(10.dp)){
-                                LaunchedEffect(Unit){
-                                    manageViewModel.openImageAdd
-                                        .filter {
-                                            it is NetworkResult.Success<String>
-                                        }.collect{
-                                            imageByteArray.value = null
-                                        }
-                                }
-                                val toastState = rememberToastState()
-                                toastState.toastBindNetworkResult(manageViewModel.openImageDelete.collectAsState())
-                                manageViewModel.openImageAdd.collectAsState().CollectWithContent(
-                                    content = {
-                                        imageByteArray.value?: Icon(
-                                            painter = painterResource(MR.images.image),
-                                            "",
-                                            modifier = Modifier
-                                                .size(50.dp)
-                                                .clickable {
-                                                    imagePicker.pickImage()
-                                                }
-                                        )
-                                        imageByteArray.value?.let {
-                                            Column (
-                                                modifier = Modifier
-                                                    .fillMaxSize(),
-                                                verticalArrangement = Arrangement.spacedBy(10.dp),
-                                                horizontalAlignment = Alignment.CenterHorizontally
-                                            ){
-                                                Image(
-                                                    bitmap = it.asImageBitmap(),
-                                                    "",
-                                                    modifier = Modifier
-                                                        .fillMaxWidth(0.8f)
-                                                        .aspectRatio(0.56f),
-                                                    contentScale = ContentScale.FillBounds
-                                                )
-                                                Row (
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .wrapContentHeight()
-                                                        .padding(10.dp),
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(20.dp,Alignment.CenterHorizontally)
-                                                ){
-                                                    Button(
-                                                        onClick = {
-                                                            imagePicker.pickImage()
-                                                        }
-                                                    ){
-                                                        Text("重选")
-                                                    }
-                                                    Button(
-                                                        onClick = {
-                                                            imageByteArray.value?.let {
-                                                                manageViewModel.addOpenImage(it)
-                                                            }
-                                                        },
-                                                        modifier = Modifier,
-                                                        contentPadding = PaddingValues(horizontal = 40.dp)
-                                                    ){
-                                                        Text("添加")
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    },
-                                    loading = {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                        ) {
-                                            CircularProgressIndicator(
-                                                modifier = Modifier
-                                                    .align(Alignment.Center)
-                                            )
-                                        }
-                                    }
-                                )
-                                EasyToast(toastState)
+                      }
+                    }
+                  },
+                  error = {},
+                  loading = {
+                    Column(
+                      verticalArrangement = Arrangement.Center,
+                      horizontalAlignment = Alignment.CenterHorizontally,
+                      modifier = Modifier.fillMaxSize(),
+                    ) {
+                      CircularProgressIndicator()
+                      Text("加载中")
+                    }
+                  },
+                )
+              EasyToast(toastState)
+            }
+            1 -> {
+              Box(modifier = Modifier.fillMaxSize().padding(10.dp)) {
+                LaunchedEffect(Unit) {
+                  manageViewModel.openImageAdd
+                    .filter { it is NetworkResult.Success<String> }
+                    .collect { imageByteArray.value = null }
+                }
+                val toastState = rememberToastState()
+                toastState.toastBindNetworkResult(manageViewModel.openImageDelete.collectAsState())
+                manageViewModel.openImageAdd
+                  .collectAsState()
+                  .CollectWithContent(
+                    content = {
+                      imageByteArray.value
+                        ?: Icon(
+                          painter = painterResource(MR.images.image),
+                          "",
+                          modifier = Modifier.size(50.dp).clickable { imagePicker.pickImage() },
+                        )
+                      imageByteArray.value?.let {
+                        Column(
+                          modifier = Modifier.fillMaxSize(),
+                          verticalArrangement = Arrangement.spacedBy(10.dp),
+                          horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                          Image(
+                            bitmap = it.asImageBitmap(),
+                            "",
+                            modifier = Modifier.fillMaxWidth(0.8f).aspectRatio(0.56f),
+                            contentScale = ContentScale.FillBounds,
+                          )
+                          Row(
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement =
+                              Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
+                          ) {
+                            Button(onClick = { imagePicker.pickImage() }) { Text("重选") }
+                            Button(
+                              onClick = {
+                                imageByteArray.value?.let { manageViewModel.addOpenImage(it) }
+                              },
+                              modifier = Modifier,
+                              contentPadding = PaddingValues(horizontal = 40.dp),
+                            ) {
+                              Text("添加")
                             }
+                          }
                         }
-                    }
-                }
+                      }
+                    },
+                    loading = {
+                      Box(modifier = Modifier.fillMaxSize()) {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                      }
+                    },
+                  )
+                EasyToast(toastState)
+              }
             }
-            Row (
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                horizontalArrangement = Arrangement.Center
-            ){
-                FloatingActionButton(
-                    onClick = {
-                        scope.launch {
-                            pageState.animateScrollToPage(0)
-                        }
-                    }
-                ){
-                    Row (
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .wrapContentSize()
-                            .padding(vertical = 10.dp, horizontal = 20.dp)
-                    ){
-                        Icon(
-                            painter = painterResource(MR.images.image_now),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(30.dp)
-                        )
-                        Text(
-                            "管理已有"
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(20.dp))
-                FloatingActionButton(
-                    onClick = {
-                        scope.launch {
-                            pageState.animateScrollToPage(1)
-                        }
-                    }
-                ){
-                    Row (
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .wrapContentSize()
-                            .padding(vertical = 10.dp, horizontal = 20.dp)
-                    ){
-                        Icon(
-                            painter = painterResource(MR.images.image),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(30.dp)
-                        )
-                        Text(
-                            "添加新开屏"
-                        )
-                    }
-                }
-            }
+          }
         }
+      }
+      Row(
+        modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(10.dp),
+        horizontalArrangement = Arrangement.Center,
+      ) {
+        FloatingActionButton(onClick = { scope.launch { pageState.animateScrollToPage(0) } }) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.wrapContentSize().padding(vertical = 10.dp, horizontal = 20.dp),
+          ) {
+            Icon(
+              painter = painterResource(MR.images.image_now),
+              contentDescription = null,
+              modifier = Modifier.size(30.dp),
+            )
+            Text("管理已有")
+          }
+        }
+        Spacer(modifier = Modifier.width(20.dp))
+        FloatingActionButton(onClick = { scope.launch { pageState.animateScrollToPage(1) } }) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.wrapContentSize().padding(vertical = 10.dp, horizontal = 20.dp),
+          ) {
+            Icon(
+              painter = painterResource(MR.images.image),
+              contentDescription = null,
+              modifier = Modifier.size(30.dp),
+            )
+            Text("添加新开屏")
+          }
+        }
+      }
     }
+  }
 }

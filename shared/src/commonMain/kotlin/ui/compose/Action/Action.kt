@@ -41,6 +41,7 @@ import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlin.jvm.Transient
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.example.library.MR
@@ -55,226 +56,229 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import util.math.takeover
 import util.network.CollectWithContent
-import kotlin.jvm.Transient
 
 /**
  * 功能页的界面
+ *
  * @param modifier Modifier
  */
 @Composable
-fun Action(
-    modifier: Modifier,
-){
-    Column(
-        modifier = modifier,
+fun Action(modifier: Modifier) {
+  Column(modifier = modifier) {
+    val rootAction = koinInject<RootAction>()
+    Carousel(modifier = Modifier.fillMaxWidth().aspectRatio(2f).clip(RoundedCornerShape(10.dp)))
+    LazyVerticalGrid(
+      modifier =
+        Modifier.padding(top = 10.dp).weight(1f).fillMaxWidth().clip(RoundedCornerShape(10.dp)),
+      columns = GridCells.Fixed(5),
     ) {
-        val rootAction = koinInject<RootAction>()
-        Carousel(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(2f)
-                .clip(RoundedCornerShape(10.dp))
-        )
-        LazyVerticalGrid(
-            modifier = Modifier.padding(top = 10.dp).weight(1f).fillMaxWidth().clip(RoundedCornerShape(10.dp)),
-            columns = GridCells.Fixed(5)
-        ){
-            items(Functions.values().size){
-                Column (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(0.7f)
-                        .clip(RoundedCornerShape(10.dp))
-                        .clickable {
-                            Functions.values()[it].navigator.invoke(rootAction)
-                        }
-                        .padding(10.dp)
-                ){
-                    Image(
-                      painter = painterResource(Functions.values()[it].painter),
-                        null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .wrapContentSize(Alignment.Center)
-                            .fillMaxSize(0.5f)
-                            .clip(RoundedCornerShape(10)),
-                        contentScale = ContentScale.FillBounds
-                    )
-                    Text(
-                        Functions.values()[it].functionName,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        textAlign = TextAlign.Center,
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 10.sp
-                    )
-                }
-            }
+      items(Functions.values().size) {
+        Column(
+          modifier =
+            Modifier.fillMaxWidth()
+              .aspectRatio(0.7f)
+              .clip(RoundedCornerShape(10.dp))
+              .clickable { Functions.values()[it].navigator.invoke(rootAction) }
+              .padding(10.dp)
+        ) {
+          Image(
+            painter = painterResource(Functions.values()[it].painter),
+            null,
+            modifier =
+              Modifier.fillMaxWidth()
+                .aspectRatio(1f)
+                .wrapContentSize(Alignment.Center)
+                .fillMaxSize(0.5f)
+                .clip(RoundedCornerShape(10)),
+            contentScale = ContentScale.FillBounds,
+          )
+          Text(
+            Functions.values()[it].functionName,
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 10.sp,
+          )
         }
+      }
     }
+  }
 }
 
 /**
  * 轮播图界面
+ *
  * @param modifier Modifier
  * @param refreshCarousel Function0<Unit> 刷新轮播图的逻辑
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Carousel(
-    modifier: Modifier = Modifier,
-    refreshCarousel:()->Unit = {},
-) {
-    val viewModel = koinInject<ActionViewModel>()
-    LaunchedEffect(Unit){
-        viewModel.initRibbonList()
-    }
-    Box(
-        modifier = modifier
-    ){
-        viewModel.ribbonList.collectAsState().CollectWithContent(
-            loading = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-            },
-            success = { ribbonDataList ->
-                val pageState = rememberPagerState(
-                    initialPage = 0,
-                ) {
-                    if(ribbonDataList!=null){
-                        return@rememberPagerState ribbonDataList.size
-                    }
-                    0
-                }
-                val coroutineScope = rememberCoroutineScope()
-
-                LaunchedEffect(pageState.currentPage) {
-                    while (true) {
-                        delay(4000)
-                        coroutineScope.launch {
-                            if (ribbonDataList != null) {
-                                pageState.animateScrollToPage((pageState.currentPage + 1).takeover(ribbonDataList.size)?:0 )
-                            }
-                        }
-                    }
-                }
-                HorizontalPager(
-                    state = pageState,
-                ) { index ->
-                    val scope = rememberCoroutineScope()
-                    val rootAction = koinInject<RootAction>()
-                    ribbonDataList?.let {
-                        KamelImage(
-                            resource = asyncPainterResource("${BaseUrlConfig.RibbonImage}/${it[index].Image}"),
-                            null,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable {
-                                    tokenJump(
-                                        tokenForParse = ribbonDataList[index].Action,
-                                        scope = scope,
-                                        fail = {},
-                                        rootAction = rootAction
-                                    )
-                                },
-                            contentScale = ContentScale.FillBounds
-                        )
-                    }
-                }
-            },
-            error = {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable {
-                               viewModel.getRibbonList()
-                        },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        painter = painterResource(MR.images.close),
-                        contentDescription = null,
-                        tint = Color.Red,
-                        modifier = Modifier
-                            .size(50.dp)
-                    )
-                    Text("加载失败", modifier = Modifier.padding(start = 10.dp))
-                }
-            },
-            unSend = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                )
+private fun Carousel(modifier: Modifier = Modifier, refreshCarousel: () -> Unit = {}) {
+  val viewModel = koinInject<ActionViewModel>()
+  LaunchedEffect(Unit) { viewModel.initRibbonList() }
+  Box(modifier = modifier) {
+    viewModel.ribbonList
+      .collectAsState()
+      .CollectWithContent(
+        loading = {
+          Box(modifier = Modifier.fillMaxSize()) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+          }
+        },
+        success = { ribbonDataList ->
+          val pageState =
+            rememberPagerState(initialPage = 0) {
+              if (ribbonDataList != null) {
+                return@rememberPagerState ribbonDataList.size
+              }
+              0
             }
-        )
-    }
+          val coroutineScope = rememberCoroutineScope()
+
+          LaunchedEffect(pageState.currentPage) {
+            while (true) {
+              delay(4000)
+              coroutineScope.launch {
+                if (ribbonDataList != null) {
+                  pageState.animateScrollToPage(
+                    (pageState.currentPage + 1).takeover(ribbonDataList.size) ?: 0
+                  )
+                }
+              }
+            }
+          }
+          HorizontalPager(state = pageState) { index ->
+            val scope = rememberCoroutineScope()
+            val rootAction = koinInject<RootAction>()
+            ribbonDataList?.let {
+              KamelImage(
+                resource = asyncPainterResource("${BaseUrlConfig.RibbonImage}/${it[index].Image}"),
+                null,
+                modifier =
+                  Modifier.fillMaxSize().clickable {
+                    tokenJump(
+                      tokenForParse = ribbonDataList[index].Action,
+                      scope = scope,
+                      fail = {},
+                      rootAction = rootAction,
+                    )
+                  },
+                contentScale = ContentScale.FillBounds,
+              )
+            }
+          }
+        },
+        error = {
+          Row(
+            modifier = Modifier.fillMaxSize().clickable { viewModel.getRibbonList() },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+          ) {
+            Icon(
+              painter = painterResource(MR.images.close),
+              contentDescription = null,
+              tint = Color.Red,
+              modifier = Modifier.size(50.dp),
+            )
+            Text("加载失败", modifier = Modifier.padding(start = 10.dp))
+          }
+        },
+        unSend = { Box(modifier = Modifier.fillMaxSize()) },
+      )
+  }
 }
 
 /**
  * 可用功能的枚举类
+ *
  * @property functionName String 功能名
  * @property painter ImageResource 功能的图标
  * @property navigator Function1<RootAction, Unit> 点击功能的逻辑
  * @constructor
  */
 enum class Functions(
-    val functionName: String,
-    val painter: ImageResource,
-    val navigator : (RootAction)->Unit
-){
-    QRCODE(  functionName = "二维码生成", painter = MR.images.qrcode, { rootAction -> rootAction.navigateFromActionToQRCodeScreen() }),
-//    WebView( functionName = "新生宝典", painter = MR.images.login, { rootAction -> }),
-    Weather(  functionName = "天气", painter = MR.images.cloud, { rootAction -> rootAction.navigateFromAnywhereToWeather()}),
-//    Map(  functionName = "地图", painter = MR.images.close, { rootAction -> }),
-    Test(functionName = "测试", painter = MR.images.close, { rootAction -> rootAction.navigateToScreen(TestVoyagerScreen())}),
-    AboutUs(functionName = "关于我们", painter = MR.images.FuTalk ,  { rootAction -> rootAction.navigateFromActionToAboutUs()}),
-    Manage(functionName = "管理", painter = MR.images.not_solved, { rootAction -> rootAction.navigateFromAnywhereToManage()}),
-    Feedback(functionName = "反馈", painter = MR.images.feedback2, { rootAction -> rootAction.navigateFromActionToFeedback() }),
-    Setting(functionName = "设置", painter = MR.images.setting, { rootAction -> rootAction.navigateFormAnywhereToSetting() }),
-    Log(functionName = "日志", painter = MR.images.log, { rootAction -> rootAction.navigateFormAnywhereToLog() }),
-    EmptyHouse(functionName = "空教室", painter =MR.images.emptyHouse, navigator = { rootAction -> rootAction.navigateToScreen(EmptyHouseVoyagerScreen()) }),
-    ChangeMajors(functionName = "转专业", painter =MR.images.school, navigator = { rootAction -> rootAction.navigateToScreen(
-        GeneralWebViewVoyagerScreen("https://run.w2fzu.com/")
-    ) }),
-//    OfficialWebsite(functionName = "转专业", painter =MR.images.school, navigator = { rootAction -> rootAction.navigateToScreen(WebViewVoyagerScreen("https://futalker.github.io/")) })
+  val functionName: String,
+  val painter: ImageResource,
+  val navigator: (RootAction) -> Unit,
+) {
+  QRCODE(
+    functionName = "二维码生成",
+    painter = MR.images.qrcode,
+    { rootAction -> rootAction.navigateFromActionToQRCodeScreen() },
+  ),
+  //    WebView( functionName = "新生宝典", painter = MR.images.login, { rootAction -> }),
+  Weather(
+    functionName = "天气",
+    painter = MR.images.cloud,
+    { rootAction -> rootAction.navigateFromAnywhereToWeather() },
+  ),
+  //    Map(  functionName = "地图", painter = MR.images.close, { rootAction -> }),
+  Test(
+    functionName = "测试",
+    painter = MR.images.close,
+    { rootAction -> rootAction.navigateToScreen(TestVoyagerScreen()) },
+  ),
+  AboutUs(
+    functionName = "关于我们",
+    painter = MR.images.FuTalk,
+    { rootAction -> rootAction.navigateFromActionToAboutUs() },
+  ),
+  Manage(
+    functionName = "管理",
+    painter = MR.images.not_solved,
+    { rootAction -> rootAction.navigateFromAnywhereToManage() },
+  ),
+  Feedback(
+    functionName = "反馈",
+    painter = MR.images.feedback2,
+    { rootAction -> rootAction.navigateFromActionToFeedback() },
+  ),
+  Setting(
+    functionName = "设置",
+    painter = MR.images.setting,
+    { rootAction -> rootAction.navigateFormAnywhereToSetting() },
+  ),
+  Log(
+    functionName = "日志",
+    painter = MR.images.log,
+    { rootAction -> rootAction.navigateFormAnywhereToLog() },
+  ),
+  EmptyHouse(
+    functionName = "空教室",
+    painter = MR.images.emptyHouse,
+    navigator = { rootAction -> rootAction.navigateToScreen(EmptyHouseVoyagerScreen()) },
+  ),
+  ChangeMajors(
+    functionName = "转专业",
+    painter = MR.images.school,
+    navigator = { rootAction ->
+      rootAction.navigateToScreen(GeneralWebViewVoyagerScreen("https://run.w2fzu.com/"))
+    },
+  ),
+  //    OfficialWebsite(functionName = "转专业", painter =MR.images.school, navigator = { rootAction ->
+  // rootAction.navigateToScreen(WebViewVoyagerScreen("https://futalker.github.io/")) })
 }
-
 
 /**
  * 功能页的一级界面
+ *
  * @property parentPaddingControl ParentPaddingControl
  * @property options TabOptions
  * @constructor
  */
 class ActionVoyagerScreen(
-    @Transient
-    private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+  @Transient private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ) : Tab {
-    override val options: TabOptions
-        @Composable
-        get(){
-            return TabOptions(
-                index = 0u,
-                title = ""
-            )
-        }
-
-
+  override val options: TabOptions
     @Composable
-    override fun Content() {
-        Action(
-            modifier = Modifier
-                .fillMaxSize()
-                .parentSystemControl(parentPaddingControl)
-                .padding(10.dp)
-        )
+    get() {
+      return TabOptions(index = 0u, title = "")
     }
+
+  @Composable
+  override fun Content() {
+    Action(
+      modifier = Modifier.fillMaxSize().parentSystemControl(parentPaddingControl).padding(10.dp)
+    )
+  }
 }

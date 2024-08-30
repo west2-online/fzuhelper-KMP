@@ -15,6 +15,7 @@ import util.network.resetWithLog
 
 /**
  * 开屏页的逻辑
+ *
  * @property splashRepository SplashRepository
  * @property kVault KVault
  * @property _imageState CMutableStateFlow<NetworkResult<String>>
@@ -22,34 +23,29 @@ import util.network.resetWithLog
  * @constructor
  */
 class SplashPageViewModel(
-    private val splashRepository: SplashRepository,
-    private val kVault: KVault,
-):ViewModel() {
-    private val _imageState = CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(
-        NetworkResult.UnSend()))
-    val imageState = _imageState.asStateFlow()
+  private val splashRepository: SplashRepository,
+  private val kVault: KVault,
+) : ViewModel() {
+  private val _imageState =
+    CMutableStateFlow(MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend()))
+  val imageState = _imageState.asStateFlow()
 
-    /**
-     * Get splash page image
-     * 获取开屏页界面结果
-     */
-    fun getSplashPageImage(){
-        viewModelScope.launch {
-            _imageState.logicIfNotLoading {
-                splashRepository.getOpenImage()
-                    .actionWithLabel(
-                        "getSplashPageImage/getOpenImage",
-                        catchAction = { label, error ->
-                            _imageState.resetWithLog(label, networkErrorWithLog(error,"获取错误"))
-                        },
-                        collectAction = { label, data ->
-                            _imageState.resetWithLog(label, data.toNetworkResult())
-                        }
-                    )
-            }
-
-        }
-
+  /** Get splash page image 获取开屏页界面结果 */
+  fun getSplashPageImage() {
+    viewModelScope.launch {
+      _imageState.logicIfNotLoading {
+        splashRepository
+          .getOpenImage()
+          .actionWithLabel(
+            "getSplashPageImage/getOpenImage",
+            catchAction = { label, error ->
+              _imageState.resetWithLog(label, networkErrorWithLog(error, "获取错误"))
+            },
+            collectAction = { label, data ->
+              _imageState.resetWithLog(label, data.toNetworkResult())
+            },
+          )
+      }
     }
+  }
 }
-

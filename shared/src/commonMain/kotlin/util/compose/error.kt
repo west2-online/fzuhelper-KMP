@@ -10,22 +10,16 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun ErrorText(
-    text:String,
-    onClick:()->Unit,
-    modifier: Modifier = Modifier,
-    boxModifier : Modifier = Modifier
-){
-    Box(
-        boxModifier
-            .clickable{
-                onClick.invoke()
-            }
-    ){
-        Text(
-            modifier = modifier
-                .align(Alignment.Center),
-            text = text,
-            color = MaterialTheme.colors.error
-        )
-    }
+  text: String,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier,
+  boxModifier: Modifier = Modifier,
+) {
+  Box(boxModifier.clickable { onClick.invoke() }) {
+    Text(
+      modifier = modifier.align(Alignment.Center),
+      text = text,
+      color = MaterialTheme.colors.error,
+    )
+  }
 }

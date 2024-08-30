@@ -26,6 +26,7 @@ import util.compose.Label
 
 /**
  * 发布帖子预览界面
+ *
  * @param lazyListState LazyListState
  * @param title MutableState<String>
  * @param releasePageItems SnapshotStateList<ReleasePageItem>
@@ -34,100 +35,73 @@ import util.compose.Label
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun PreviewContent(
-    lazyListState: LazyListState,
-    title: MutableState<String>,
-    releasePageItems: SnapshotStateList<ReleasePageItem>,
-    labelList: List<LabelForSelect>
-){
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(),
-        state = lazyListState
-    ) {
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight(),
-                    content = {
-                        Text(
-                            text = title.value,
-                            modifier = Modifier
-                                .padding(bottom = 5.dp)
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .padding(10.dp),
-                            fontSize = 20.sp
-                        )
-                    }
-                )
-            }
-        }
-        item {
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .animateContentSize(),
-            ) {
-                labelList.filter {
-                    it.isSelect.value
-                }.forEach { label ->
-                    Label(label.label)
-                }
-            }
-        }
-        releasePageItems.toList().filter {
-            return@filter when (it) {
-                is ReleasePageItem.TextItem -> it.text.value != ""
-                is ReleasePageItem.ImageItem -> it.image.value != null
-                is ReleasePageItem.LineChartItem -> it.isNotEmpty()
-                else -> false
-            }
-        }.forEachIndexed { _, releasePageItem ->
-            item {
-                Box(
-                    modifier = Modifier
-                        .padding(bottom = 5.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(10.dp)
-                ) {
-                    when (releasePageItem) {
-                        is ReleasePageItem.TextItem -> {
-                            ReleasePageItemTextForShow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight()
-                                    .animateItemPlacement(),
-                                text = releasePageItem.text,
-                            )
-                        }
-
-                        is ReleasePageItem.ImageItem -> {
-                            ReleasePageItemImageForShow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight()
-                                    .animateContentSize()
-                                    .animateItemPlacement(),
-                                image = releasePageItem.image
-                            )
-                        }
-
-                        is ReleasePageItem.LineChartItem -> {
-                            ReleasePageItemLineChartForShow(
-                                releasePageItem
-                            )
-                        }
-                    }
-                }
-            }
-        }
+  lazyListState: LazyListState,
+  title: MutableState<String>,
+  releasePageItems: SnapshotStateList<ReleasePageItem>,
+  labelList: List<LabelForSelect>,
+) {
+  LazyColumn(modifier = Modifier.fillMaxSize(), state = lazyListState) {
+    item {
+      Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+        Box(
+          modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+          content = {
+            Text(
+              text = title.value,
+              modifier =
+                Modifier.padding(bottom = 5.dp).fillMaxWidth().wrapContentHeight().padding(10.dp),
+              fontSize = 20.sp,
+            )
+          },
+        )
+      }
     }
+    item {
+      FlowRow(modifier = Modifier.fillMaxWidth().wrapContentHeight().animateContentSize()) {
+        labelList.filter { it.isSelect.value }.forEach { label -> Label(label.label) }
+      }
+    }
+    releasePageItems
+      .toList()
+      .filter {
+        return@filter when (it) {
+          is ReleasePageItem.TextItem -> it.text.value != ""
+          is ReleasePageItem.ImageItem -> it.image.value != null
+          is ReleasePageItem.LineChartItem -> it.isNotEmpty()
+          else -> false
+        }
+      }
+      .forEachIndexed { _, releasePageItem ->
+        item {
+          Box(
+            modifier =
+              Modifier.padding(bottom = 5.dp).fillMaxWidth().wrapContentHeight().padding(10.dp)
+          ) {
+            when (releasePageItem) {
+              is ReleasePageItem.TextItem -> {
+                ReleasePageItemTextForShow(
+                  modifier = Modifier.fillMaxWidth().wrapContentHeight().animateItemPlacement(),
+                  text = releasePageItem.text,
+                )
+              }
+
+              is ReleasePageItem.ImageItem -> {
+                ReleasePageItemImageForShow(
+                  modifier =
+                    Modifier.fillMaxWidth()
+                      .wrapContentHeight()
+                      .animateContentSize()
+                      .animateItemPlacement(),
+                  image = releasePageItem.image,
+                )
+              }
+
+              is ReleasePageItem.LineChartItem -> {
+                ReleasePageItemLineChartForShow(releasePageItem)
+              }
+            }
+          }
+        }
+      }
+  }
 }
