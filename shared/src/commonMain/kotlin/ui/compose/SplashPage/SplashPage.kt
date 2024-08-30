@@ -32,97 +32,92 @@ import util.network.CollectWithContent
 import util.network.logicWithTypeWithoutLimit
 
 /**
- * Splash page voyager screen
- * 开屏页界面 一级界面
+ * Splash page voyager screen 开屏页界面 一级界面
+ *
  * @constructor Create empty Splash page voyager screen
  */
-class SplashPageVoyagerScreen():Screen{
-    @Composable
-    override fun Content() {
-        val viewModel:SplashPageViewModel = koinInject()
-        val imageState = viewModel.imageState.collectAsState()
-        val toast = rememberToastState()
-        val rootAction = koinInject<RootAction>()
-        LaunchedEffect(imageState,imageState.value.key){
-            imageState.value.logicWithTypeWithoutLimit(
-                error = {
-                    toast.addToast(it.message.toString(), Color.Red)
-                }
-            )
-        }
-        LaunchedEffect(Unit){
-            toast.addToast("点击屏幕直接进入")
-            viewModel.getSplashPageImage()
-        }
-        var show by remember { mutableStateOf(true) }
-        LaunchedEffect(Unit){
-            launch {
-                delay(1500)
-                show = false
-            }
-        }
-        val token = koinInject<TokenKValueAction>().token.currentValue.collectAsState()
-
-        Box(
-            modifier = Modifier.fillMaxSize()
-                .clickable {
-                    token.value?.let {
-                        rootAction.navigateFormSplashToMainPage()
-                    }
-                    token.value?:let {
-                        rootAction.navigateFormSplashToLoginAndRegister()
-                    }
-                }
-        ){
-            imageState.CollectWithContent(
-                success = {
-                    KamelImage(
-                        resource = asyncPainterResource("${BaseUrlConfig.OpenImage}/$it"),
-                        null,
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        contentScale = ContentScale.FillBounds,
-                        onLoading = {
-                            Box(modifier = Modifier
-                                .fillMaxSize()
-                                .shimmerLoadingAnimation(
-                                    colorList = listOf(
-                                        Color.Black.copy(alpha = 0.1f),
-                                        Color.Black.copy(alpha = 0.2f),
-                                        Color.Black.copy(alpha = 0.3f),
-                                        Color.Black.copy(alpha = 0.2f),
-                                        Color.Black.copy(alpha = 0.1f),
-                                    )
-                                )
-                            )
-                        }
-                    )
-                },
-                error = {
-                    Box( modifier = Modifier.fillMaxSize() ){
-                        Text("获取失败",modifier = Modifier.align(Alignment.Center))
-                    }
-                },
-                content = {
-                    Box(modifier = Modifier
-                        .fillMaxSize()
-                        .shimmerLoadingAnimation(
-                            colorList = listOf(
-                                Color.Black.copy(alpha = 0.1f),
-                                Color.Black.copy(alpha = 0.2f),
-                                Color.Black.copy(alpha = 0.3f),
-                                Color.Black.copy(alpha = 0.2f),
-                                Color.Black.copy(alpha = 0.1f),
-                            )
-                        )
-                        .animateContentSize()
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-            )
-
-        }
-        EasyToast(toast)
+class SplashPageVoyagerScreen() : Screen {
+  @Composable
+  override fun Content() {
+    val viewModel: SplashPageViewModel = koinInject()
+    val imageState = viewModel.imageState.collectAsState()
+    val toast = rememberToastState()
+    val rootAction = koinInject<RootAction>()
+    LaunchedEffect(imageState, imageState.value.key) {
+      imageState.value.logicWithTypeWithoutLimit(
+        error = { toast.addToast(it.message.toString(), Color.Red) }
+      )
     }
+    LaunchedEffect(Unit) {
+      toast.addToast("点击屏幕直接进入")
+      viewModel.getSplashPageImage()
+    }
+    var show by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+      launch {
+        delay(1500)
+        show = false
+      }
+    }
+    val token = koinInject<TokenKValueAction>().token.currentValue.collectAsState()
+
+    Box(
+      modifier =
+        Modifier.fillMaxSize().clickable {
+          token.value?.let { rootAction.navigateFormSplashToMainPage() }
+          token.value ?: let { rootAction.navigateFormSplashToLoginAndRegister() }
+        }
+    ) {
+      imageState.CollectWithContent(
+        success = {
+          KamelImage(
+            resource = asyncPainterResource("${BaseUrlConfig.OpenImage}/$it"),
+            null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds,
+            onLoading = {
+              Box(
+                modifier =
+                  Modifier.fillMaxSize()
+                    .shimmerLoadingAnimation(
+                      colorList =
+                        listOf(
+                          Color.Black.copy(alpha = 0.1f),
+                          Color.Black.copy(alpha = 0.2f),
+                          Color.Black.copy(alpha = 0.3f),
+                          Color.Black.copy(alpha = 0.2f),
+                          Color.Black.copy(alpha = 0.1f),
+                        )
+                    )
+              )
+            },
+          )
+        },
+        error = {
+          Box(modifier = Modifier.fillMaxSize()) {
+            Text("获取失败", modifier = Modifier.align(Alignment.Center))
+          }
+        },
+        content = {
+          Box(
+            modifier =
+              Modifier.fillMaxSize()
+                .shimmerLoadingAnimation(
+                  colorList =
+                    listOf(
+                      Color.Black.copy(alpha = 0.1f),
+                      Color.Black.copy(alpha = 0.2f),
+                      Color.Black.copy(alpha = 0.3f),
+                      Color.Black.copy(alpha = 0.2f),
+                      Color.Black.copy(alpha = 0.1f),
+                    )
+                )
+                .animateContentSize()
+          )
+        },
+        modifier = Modifier.fillMaxSize(),
+      )
+    }
+    EasyToast(toast)
+  }
 }

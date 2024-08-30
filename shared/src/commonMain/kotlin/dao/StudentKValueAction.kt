@@ -25,7 +25,6 @@ const val TYPE_POSTGRADUATE = 1 // 研究生
 const val TYPE_VISITOR = 2 // 游客
 
 /**
- *
  * @property kValue KVault 对底层操作对象的获取
  * @property schoolUserName KValueStringData 对教务处用户名的操作
  * @property schoolPassword KValueStringData 对教务处密码的操作
@@ -37,29 +36,24 @@ const val TYPE_VISITOR = 2 // 游客
  * @property dataStartYear KValueIntData 对开始年的操作
  * @property currentYear StateFlow<String?> 根据对currentXq和currentXn的计算获取当前学年 如202301
  */
-class UndergraduateKValueAction(
-    private val kValue: KVault
-) {
+class UndergraduateKValueAction(private val kValue: KVault) {
 
-    val loginType = KValueIntData(StudentTypeKey, MutableStateFlow(null), kValue)
-    val schoolUserName = KValueStringData(SchoolUserNameKey, MutableStateFlow(null), kValue)
-    val schoolPassword = KValueStringData(SchoolPasswordKey, MutableStateFlow(null), kValue)
-    val currentXn = KValueIntData(CurrentXnKey, MutableStateFlow(null), kValue)
-    val currentXq = KValueIntData(CurrentXqKey, MutableStateFlow(null), kValue)
-    val currentWeek = KValueIntData(CurrentWeekKey, MutableStateFlow(null), kValue)
-    val dataStartDay = KValueIntData(DataStartDayKey, MutableStateFlow(null), kValue)
-    val dataStartMonth = KValueIntData(DataStartMonthKey, MutableStateFlow(null), kValue)
-    val dataStartYear = KValueIntData(DataStartYearKey, MutableStateFlow(null), kValue)
+  val loginType = KValueIntData(StudentTypeKey, MutableStateFlow(null), kValue)
+  val schoolUserName = KValueStringData(SchoolUserNameKey, MutableStateFlow(null), kValue)
+  val schoolPassword = KValueStringData(SchoolPasswordKey, MutableStateFlow(null), kValue)
+  val currentXn = KValueIntData(CurrentXnKey, MutableStateFlow(null), kValue)
+  val currentXq = KValueIntData(CurrentXqKey, MutableStateFlow(null), kValue)
+  val currentWeek = KValueIntData(CurrentWeekKey, MutableStateFlow(null), kValue)
+  val dataStartDay = KValueIntData(DataStartDayKey, MutableStateFlow(null), kValue)
+  val dataStartMonth = KValueIntData(DataStartMonthKey, MutableStateFlow(null), kValue)
+  val dataStartYear = KValueIntData(DataStartYearKey, MutableStateFlow(null), kValue)
 
-    val currentYear = currentXq.currentValue
-        .combine(currentXn.currentValue) { curXueqi, curXuenian ->
-            if (curXueqi == null || curXuenian == null) {
-                null
-            } else "${curXueqi}0$curXuenian"
-        }
-        .stateIn(
-            globalScope,
-            SharingStarted.Eagerly,
-            "202302"
-        )
+  val currentYear =
+    currentXq.currentValue
+      .combine(currentXn.currentValue) { curXueqi, curXuenian ->
+        if (curXueqi == null || curXuenian == null) {
+          null
+        } else "${curXueqi}0$curXuenian"
+      }
+      .stateIn(globalScope, SharingStarted.Eagerly, "202302")
 }

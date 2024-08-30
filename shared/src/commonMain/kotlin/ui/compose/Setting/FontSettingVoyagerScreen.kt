@@ -24,6 +24,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import dao.ThemeKValueAction
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import di.globalScope
+import kotlin.jvm.Transient
 import org.koin.compose.koinInject
 import util.compose.FontStyle
 import util.compose.ParentPaddingControl
@@ -31,61 +32,47 @@ import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import util.compose.toFont
 import util.flow.launchInDefault
-import kotlin.jvm.Transient
 
 /**
  * 字体设置界面 二级界面
+ *
  * @property parentPaddingControl ParentPaddingControl
  * @constructor
  */
 class FontSettingVoyagerScreen(
-    @Transient
-    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
-):Screen {
-    @Composable
-    override fun Content() {
-        val setting = koinInject<ThemeKValueAction>()
-        val font = setting.fontToken.currentValue.collectAsState()
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .parentSystemControl(parentPaddingControl)
-        ){
-            TopAppBar {
-                Text("字体设置")
-            }
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(10.dp)
-            ) {
-                items(FontStyle.entries.toTypedArray()) {
-                    Box(
-                        modifier = Modifier
-                            .padding(start = 10.dp)
-                            .wrapContentHeight()
-                            .wrapContentSize()
-                            .border(
-                                width = 2.dp,
-                                color = animateColorAsState(if (font.value.toFont() == it) Color.Blue else Color.Transparent).value,
-                                shape = RoundedCornerShape(10)
-                            )
-                            .padding(10.dp)
-                            .clickable {
-                                globalScope.launchInDefault {
-                                    setting.fontToken.setValue(it.serializable)
-                                }
-                            }
-
-                    ) {
-                        Text(
-                            "This is a test",
-                            fontFamily = fontFamilyResource(it.fontResource)
-                        )
-                    }
+  @Transient val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Screen {
+  @Composable
+  override fun Content() {
+    val setting = koinInject<ThemeKValueAction>()
+    val font = setting.fontToken.currentValue.collectAsState()
+    Column(modifier = Modifier.fillMaxSize().parentSystemControl(parentPaddingControl)) {
+      TopAppBar { Text("字体设置") }
+      LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f).padding(10.dp)) {
+        items(FontStyle.entries.toTypedArray()) {
+          Box(
+            modifier =
+              Modifier.padding(start = 10.dp)
+                .wrapContentHeight()
+                .wrapContentSize()
+                .border(
+                  width = 2.dp,
+                  color =
+                    animateColorAsState(
+                        if (font.value.toFont() == it) Color.Blue else Color.Transparent
+                      )
+                      .value,
+                  shape = RoundedCornerShape(10),
+                )
+                .padding(10.dp)
+                .clickable {
+                  globalScope.launchInDefault { setting.fontToken.setValue(it.serializable) }
                 }
-            }
+          ) {
+            Text("This is a test", fontFamily = fontFamilyResource(it.fontResource))
+          }
         }
+      }
     }
+  }
 }

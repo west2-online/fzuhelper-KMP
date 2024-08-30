@@ -1,6 +1,31 @@
 # 开发者指南
 
-
+## 代码格式化
+本项目通过 [ktfmt](https://github.com/facebook/ktfmt) 对 kotlin 文件格式化。
+由于使用 compose 会导致源码中包含大量缩进，因此对 .kt 文件使用 2 空格缩进。
+对于 .kts 文件，使用默认的 4 空格缩进，考虑到一些因素，不对其强制要求执行格式化规则。
+### IDE 插件
+ktfmt 提供了 [IDE 插件](https://plugins.jetbrains.com/plugin/14912-ktfmt) 用于复写 IDE 的代码格式化功能。
+由于无法分别配置 kt 和 kts 文件的格式化策略，所以不建议使用。
+### editorconfig
+本项目提供了 `.editorconfig`，它在 IDEA 和 Android Studio 上应该开箱即用。
+### pre-commit
+本项目提供了 pre-commit hooks 配置。
+```shell
+# 直接使用 pip 安装 pre-commit 框架
+pip install pre-commit
+# 设置 git hooks 脚本
+pre-commit install
+# 立即进行全文件检查
+pre-commit run --all-files
+```
+### gradle task
+```shell
+# 检查代码格式化
+gradlew ktfmtCheck
+# 修复代码格式化
+gradlew ktfmtFormat
+```
 
 ## Kotlin Multiplatform
 

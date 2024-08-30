@@ -21,6 +21,7 @@ plugins {
     kotlin("plugin.serialization") version "1.9.20"
     id("kotlin-parcelize")
     id("app.cash.sqldelight") version sqlDelightVersion
+    id("com.ncorti.ktfmt.gradle") version "0.20.1"
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
@@ -238,6 +239,10 @@ sqldelight {
             packageName.set("com.futalk.kmm")
         }
     }
+}
+
+ktfmt {
+    googleStyle()
 }
 
 

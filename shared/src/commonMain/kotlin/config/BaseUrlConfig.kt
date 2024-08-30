@@ -1,22 +1,22 @@
 package config
 
 object BaseUrlConfig {
-    //设置是否为debug状态，这会影响日志输出
-    const val isDebug = true
-//    val BaseUrl = "http://47.116.24.13:9077"
-//    if( isDebug )"http://10.0.2.2:9077" else
-//    const val BaseUrl = "http://47.116.24.13:9077"
-    const val BaseUrl = "http://10.0.2.2:9077"
-//    const val BaseUrl =  "http://192.168.1.233:9077"
-    const val UserAvatar = "${BaseUrl}/static/userAvatar"
-    const val CommentImage = "${BaseUrl}/static/comment"
-    const val PostImage = "${BaseUrl}/static/post"
-    const val RibbonImage = "${BaseUrl}/static/ribbon"
-    const val OpenImage = "${BaseUrl}/openImage"
-    const val FuTalkFeedbackQuestionUrl = "https://api.github.com/repos/Futalker/FuTalk_Question"
+  // 设置是否为debug状态，这会影响日志输出
+  const val isDebug = true
+  //    val BaseUrl = "http://47.116.24.13:9077"
+  //    if( isDebug )"http://10.0.2.2:9077" else
+  //    const val BaseUrl = "http://47.116.24.13:9077"
+  const val BaseUrl = "http://10.0.2.2:9077"
+  //    const val BaseUrl =  "http://192.168.1.233:9077"
+  const val UserAvatar = "${BaseUrl}/static/userAvatar"
+  const val CommentImage = "${BaseUrl}/static/comment"
+  const val PostImage = "${BaseUrl}/static/post"
+  const val RibbonImage = "${BaseUrl}/static/ribbon"
+  const val OpenImage = "${BaseUrl}/openImage"
+  const val FuTalkFeedbackQuestionUrl = "https://api.github.com/repos/Futalker/FuTalk_Question"
 }
 
-//BASE_URL配置
+// BASE_URL配置
 const val PAPER_URL = "https://paper.w2fzu.com/api/v1/"
 const val JWT_BASE_URL = "http://59.77.134.232/fzuapp/"
 const val LIB_URL = "http://218.193.121.100"
@@ -40,12 +40,12 @@ const val SECONDCLASS_BASE_URL = "http://47.112.10.160:3389"
 const val STATISTICS_BASE_URL = "https://statistics.fzuhelper.w2fzu.com"
 const val SUMMARY_BASE_URL = "https://weekly.w2fzu.com"
 const val ANNUAL_REPORT_URL = "https://fzuhelper.w2fzu.com/2020"
-const val ANNUAL_REPORT_TEST_URL="http://fzuhelper-report.test.upcdn.net/index.html"
+const val ANNUAL_REPORT_TEST_URL = "http://fzuhelper-report.test.upcdn.net/index.html"
 const val USERINFO_URL = "https://avatar.fzuhelper.w2fzu.com/"
 const val SCHOOL_MAP_URL = "https://map.fzu.edu.cn/#/home"
 const val SCREEN_BASE_URL = "https://launch.w2fzu.com/"
 const val WELCOME_URL = "https://welcome.fzuhelper.w2fzu.com"
-//推送设置
+// 推送设置
 const val PUSH_PLATFORM = "android_umeng"
 
 const val BUGLY_APP_ID = "27422503a8"

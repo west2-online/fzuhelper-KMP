@@ -45,9 +45,9 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-
 /**
  * 滑动选择ui
+ *
  * @param modifier Modifier
  * @param textList List<String> 可选的text列表
  * @param textStyle TextStyle text的渲染style
@@ -55,172 +55,139 @@ import kotlinx.coroutines.launch
  * @param state LazyListState 可监听的lazyState
  * @param unselectedScale Float 未被选中时的缩放大小
  * @param selectedScale Float 选中时的缩放大小
- * @param onItemSelected Function2<[@kotlin.ParameterName] Int, [@kotlin.ParameterName] String, Unit> 选中后的回调
- * @param backgroundContent [@androidx.compose.runtime.Composable] [@kotlin.ExtensionFunctionType] Function1<BoxScope, Unit>? 背景颜色
+ * @param onItemSelected Function2<[@kotlin.ParameterName] Int, [@kotlin.ParameterName] String,
+ *   Unit> 选中后的回调
+ * @param backgroundContent [@androidx.compose.runtime.Composable] [@kotlin.ExtensionFunctionType]
+ *   Function1<BoxScope, Unit>? 背景颜色
  */
 @Composable
 fun ScrollSelection(
-    modifier: Modifier = Modifier,
-    textList : List<String>,
-    textStyle : TextStyle = MaterialTheme.typography.titleLarge,
-    padding : PaddingValues = PaddingValues(top = 14.dp, bottom = 14.dp),
-    state: LazyListState = rememberLazyListState(),
-    unselectedScale: Float = 0.70F,
-    selectedScale: Float = 1.0F,
-    onItemSelected: (index: Int, content: String) -> Unit = { _, _ -> },
-    backgroundContent:@Composable (BoxScope.()->Unit)?= {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(Color(217, 217, 238))
-        )
+  modifier: Modifier = Modifier,
+  textList: List<String>,
+  textStyle: TextStyle = MaterialTheme.typography.titleLarge,
+  padding: PaddingValues = PaddingValues(top = 14.dp, bottom = 14.dp),
+  state: LazyListState = rememberLazyListState(),
+  unselectedScale: Float = 0.70F,
+  selectedScale: Float = 1.0F,
+  onItemSelected: (index: Int, content: String) -> Unit = { _, _ -> },
+  backgroundContent: @Composable (BoxScope.() -> Unit)? = {
+    Box(modifier = Modifier.fillMaxSize().background(Color(217, 217, 238)))
+  },
+) {
+  val currentUnselectedScale by rememberUpdatedState(newValue = unselectedScale)
+  val currentSelectedScale by rememberUpdatedState(newValue = selectedScale)
+  val density = LocalDensity.current
+  val textMeasurer = rememberTextMeasurer()
+  val contentHeight =
+    remember(textStyle, padding) {
+      val textContentHeight = textMeasurer.measure(AnnotatedString(""), textStyle).size.height
+      val topPadding = padding.calculateTopPadding()
+      val bottomPadding = padding.calculateBottomPadding()
+      with(density) { (topPadding + bottomPadding).toPx() } + textContentHeight
     }
-){
-    val currentUnselectedScale by rememberUpdatedState(newValue = unselectedScale)
-    val currentSelectedScale by rememberUpdatedState(newValue = selectedScale)
-    val density = LocalDensity.current
-    val textMeasurer = rememberTextMeasurer()
-    val contentHeight = remember(textStyle, padding) {
-        val textContentHeight = textMeasurer.measure(AnnotatedString(""), textStyle).size.height
-        val topPadding = padding.calculateTopPadding()
-        val bottomPadding = padding.calculateBottomPadding()
-        with(density) { (topPadding + bottomPadding).toPx() } + textContentHeight
-    }
-    val scrollingOutScale = remember { mutableStateOf(selectedScale) }
-    val scrollingInScale = remember { mutableStateOf(unselectedScale) }
-    var firstVisibleItemIndex by remember { mutableStateOf(state.firstVisibleItemIndex) }
-//    val firstVisibleItemIndex by remember {
-//        derivedStateOf {
-//            state.firstVisibleItemIndex
-//        }
-//    }
+  val scrollingOutScale = remember { mutableStateOf(selectedScale) }
+  val scrollingInScale = remember { mutableStateOf(unselectedScale) }
+  var firstVisibleItemIndex by remember { mutableStateOf(state.firstVisibleItemIndex) }
+  //    val firstVisibleItemIndex by remember {
+  //        derivedStateOf {
+  //            state.firstVisibleItemIndex
+  //        }
+  //    }
 
-    LaunchedEffect(state){
-        snapshotFlow{state.firstVisibleItemScrollOffset}
-            .onEach { firstVisibleItemScrollOffset ->
-                val progress = firstVisibleItemScrollOffset.toFloat() / contentHeight
-                val disparity = (currentSelectedScale - currentUnselectedScale) * progress
-                scrollingOutScale.value = currentSelectedScale - disparity
-                scrollingInScale.value = currentUnselectedScale + disparity
-            }
-            .launchIn(this)
-        snapshotFlow { state.firstVisibleItemIndex }
-            .filter { it != firstVisibleItemIndex }
-            .onEach { firstVisibleItemIndex = it }
-            .launchIn(this)
+  LaunchedEffect(state) {
+    snapshotFlow { state.firstVisibleItemScrollOffset }
+      .onEach { firstVisibleItemScrollOffset ->
+        val progress = firstVisibleItemScrollOffset.toFloat() / contentHeight
+        val disparity = (currentSelectedScale - currentUnselectedScale) * progress
+        scrollingOutScale.value = currentSelectedScale - disparity
+        scrollingInScale.value = currentUnselectedScale + disparity
+      }
+      .launchIn(this)
+    snapshotFlow { state.firstVisibleItemIndex }
+      .filter { it != firstVisibleItemIndex }
+      .onEach { firstVisibleItemIndex = it }
+      .launchIn(this)
 
-        launch {
-            var lastInteraction: Interaction? = null
-            state.interactionSource.interactions.mapNotNull {
-                it as? DragInteraction
-            }.map { interaction ->
-                // 滑动结束或取消时，判断是否需要复位
-                val currentStart = (interaction as? DragInteraction.Stop)?.start
-                    ?: (interaction as? DragInteraction.Cancel)?.start
-                val needReset = currentStart == lastInteraction
-                lastInteraction = interaction
-                needReset
-            }.combine( snapshotFlow { state.isScrollInProgress } ) { needReset, isScrollInProgress ->
-                needReset && !isScrollInProgress
-            }.filter {
-                it
-            }.collectLatest {
-                val halfHeight = contentHeight / 2
-                val selectedIndex = if (state.firstVisibleItemScrollOffset < halfHeight) {
-                    // 若滑动距离小于一半，则回滚到上一个item
-                    firstVisibleItemIndex
-                } else {
-                    // 若滑动距离大于一半，则滚动到下一个item
-                    firstVisibleItemIndex + 1
-                }
-                if (selectedIndex < textList.size) {
-                    onItemSelected(selectedIndex, textList[selectedIndex])
-                }
-                state.animateScrollToItem(selectedIndex)
+    launch {
+      var lastInteraction: Interaction? = null
+      state.interactionSource.interactions
+        .mapNotNull { it as? DragInteraction }
+        .map { interaction ->
+          // 滑动结束或取消时，判断是否需要复位
+          val currentStart =
+            (interaction as? DragInteraction.Stop)?.start
+              ?: (interaction as? DragInteraction.Cancel)?.start
+          val needReset = currentStart == lastInteraction
+          lastInteraction = interaction
+          needReset
+        }
+        .combine(snapshotFlow { state.isScrollInProgress }) { needReset, isScrollInProgress ->
+          needReset && !isScrollInProgress
+        }
+        .filter { it }
+        .collectLatest {
+          val halfHeight = contentHeight / 2
+          val selectedIndex =
+            if (state.firstVisibleItemScrollOffset < halfHeight) {
+              // 若滑动距离小于一半，则回滚到上一个item
+              firstVisibleItemIndex
+            } else {
+              // 若滑动距离大于一半，则滚动到下一个item
+              firstVisibleItemIndex + 1
             }
+          if (selectedIndex < textList.size) {
+            onItemSelected(selectedIndex, textList[selectedIndex])
+          }
+          state.animateScrollToItem(selectedIndex)
         }
     }
+  }
 
-    Box(modifier = modifier){
-        Box(
-            modifier = Modifier
-                .wrapContentHeight()
-                .fillMaxWidth()
-        ){
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .padding(
-                        vertical = with(density) {
-                            (contentHeight * 1).toDp()
-                        }
-                    )
-                    .align(Alignment.Center)
-
-            ){
-                if (backgroundContent != null) {
-                    backgroundContent()
-                }
-            }
-            LazyColumn(
-                modifier = Modifier
-                    .height(
-                        with(density) {
-                            (contentHeight * 3).toDp()
-                        }
-                    )
-                    .fillMaxWidth(),
-                state = state,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                item {
-                    Spacer(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(
-                                with(density) {
-                                    contentHeight.toDp()
-                                }
-                            )
-                    )
-                }
-                items(
-                    textList.size,
-                    key = { textList[it] }
-                ) { index ->
-                    Box(
-                        modifier = Modifier.defaultMinSize(minWidth = 42.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = textList[index],
-                            style = textStyle,
-                            modifier = Modifier
-                                .scale(
-                                    when (index) {
-                                        firstVisibleItemIndex -> scrollingOutScale.value
-                                        firstVisibleItemIndex + 1 -> scrollingInScale.value
-                                        else -> currentUnselectedScale
-                                    }
-                                )
-                                .padding(padding),
-                            textAlign = TextAlign.Center
-                        )
+  Box(modifier = modifier) {
+    Box(modifier = Modifier.wrapContentHeight().fillMaxWidth()) {
+      Box(
+        modifier =
+          Modifier.matchParentSize()
+            .padding(vertical = with(density) { (contentHeight * 1).toDp() })
+            .align(Alignment.Center)
+      ) {
+        if (backgroundContent != null) {
+          backgroundContent()
+        }
+      }
+      LazyColumn(
+        modifier = Modifier.height(with(density) { (contentHeight * 3).toDp() }).fillMaxWidth(),
+        state = state,
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        item {
+          Spacer(modifier = Modifier.fillMaxWidth().height(with(density) { contentHeight.toDp() }))
+        }
+        items(textList.size, key = { textList[it] }) { index ->
+          Box(
+            modifier = Modifier.defaultMinSize(minWidth = 42.dp),
+            contentAlignment = Alignment.Center,
+          ) {
+            Text(
+              text = textList[index],
+              style = textStyle,
+              modifier =
+                Modifier.scale(
+                    when (index) {
+                      firstVisibleItemIndex -> scrollingOutScale.value
+                      firstVisibleItemIndex + 1 -> scrollingInScale.value
+                      else -> currentUnselectedScale
                     }
-                }
-                item {
-                    Spacer(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(
-                                with(density) {
-                                    contentHeight.toDp()
-                                }
-                            )
-                    )
-                }
-            }
-
+                  )
+                  .padding(padding),
+              textAlign = TextAlign.Center,
+            )
+          }
         }
+        item {
+          Spacer(modifier = Modifier.fillMaxWidth().height(with(density) { contentHeight.toDp() }))
+        }
+      }
     }
-
+  }
 }

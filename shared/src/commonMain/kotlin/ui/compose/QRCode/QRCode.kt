@@ -55,246 +55,196 @@ import io.github.alexzhirkevich.qrose.options.circle
 import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.options.solid
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
+import kotlin.jvm.Transient
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
-import kotlin.jvm.Transient
 
 /**
  * 二维码生成界面
+ *
  * @param modifier Modifier
  */
 @Composable
-fun QRCodeScreen(
-    modifier: Modifier
-){
-    val icon = remember {
-        mutableStateOf(Icons.Filled.Done)
+fun QRCodeScreen(modifier: Modifier) {
+  val icon = remember { mutableStateOf(Icons.Filled.Done) }
+  val logoPainter = rememberVectorPainter(icon.value)
+  val data = remember { mutableStateOf("https://example.com") }
+  val angleColor = remember { mutableStateOf(Color.Black) }
+  val contentColor = remember { mutableStateOf(Color.Black) }
+  val qrcodePainter =
+    rememberQrCodePainter(data.value) {
+      logo {
+        painter = logoPainter
+        padding = QrLogoPadding.Natural(.1f)
+        shape = QrLogoShape.circle()
+        size = 0.2f
+      }
+      shapes {
+        ball = QrBallShape.circle()
+        darkPixel = QrPixelShape.roundCorners()
+        frame = QrFrameShape.roundCorners(.25f)
+      }
+      colors {
+        dark =
+          QrBrush.brush {
+            Brush.linearGradient(
+              listOf(contentColor.value, contentColor.value),
+              end = Offset(it, it),
+            )
+          }
+        frame = QrBrush.solid(angleColor.value)
+      }
     }
-    val logoPainter = rememberVectorPainter(
-        icon.value,
+
+  Column(modifier = modifier) {
+    Image(
+      painter = qrcodePainter,
+      null,
+      modifier =
+        Modifier.padding(10.dp)
+          .fillMaxWidth()
+          .aspectRatio(1f)
+          .wrapContentSize(Alignment.Center)
+          .fillMaxSize(0.7f),
     )
-    val data = remember {
-        mutableStateOf("https://example.com")
-    }
-    val angleColor = remember {
-        mutableStateOf(Color.Black)
-    }
-    val contentColor = remember {
-        mutableStateOf(Color.Black)
-    }
-    val qrcodePainter = rememberQrCodePainter(data.value) {
-        logo {
-            painter = logoPainter
-            padding = QrLogoPadding.Natural(.1f)
-            shape = QrLogoShape.circle()
-            size = 0.2f
-        }
-        shapes {
-            ball = QrBallShape.circle()
-            darkPixel = QrPixelShape.roundCorners()
-            frame = QrFrameShape.roundCorners(.25f)
-        }
-        colors  {
-            dark = QrBrush.brush {
-                Brush.linearGradient(
-                    listOf(contentColor.value,contentColor.value),
-                    end = Offset(it, it)
-                )
-            }
-            frame = QrBrush.solid(angleColor.value)
-        }
-    }
+    val color =
+      listOf(
+        Color.Black,
+        Color.Red,
+        Color.Green,
+        Color.Gray,
+        Color.White,
+        Color.Yellow,
+        Color.Blue,
+        Color.Magenta,
+      )
+    val iconList =
+      listOf(
+        Icons.Filled.Done,
+        Icons.Filled.AccountBox,
+        Icons.Filled.AccountCircle,
+        Icons.Filled.AddCircle,
+        Icons.Filled.Add,
+        Icons.Filled.Call,
+        Icons.Filled.DateRange,
+        Icons.Filled.Delete,
+        Icons.Filled.Email,
+        Icons.Filled.Face,
+        Icons.Filled.Info,
+      )
 
-    Column( modifier = modifier ) {
-        Image(
-            painter = qrcodePainter,
-            null,
-            modifier = Modifier
-                .padding(10.dp)
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .wrapContentSize(Alignment.Center)
-                .fillMaxSize(0.7f)
+    LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f).padding(10.dp)) {
+      item {
+        TextField(
+          value = data.value,
+          onValueChange = { data.value = it },
+          label = { Text("二维码信息") },
+          modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth(),
         )
-        val color = listOf(
-            Color.Black,
-            Color.Red,
-            Color.Green,
-            Color.Gray,
-            Color.White,
-            Color.Yellow,
-            Color.Blue,
-            Color.Magenta
-        )
-        val iconList = listOf(
-            Icons.Filled.Done,
-            Icons.Filled.AccountBox,
-            Icons.Filled.AccountCircle,
-            Icons.Filled.AddCircle,
-            Icons.Filled.Add,
-            Icons.Filled.Call,
-            Icons.Filled.DateRange,
-            Icons.Filled.Delete,
-            Icons.Filled.Email,
-            Icons.Filled.Face,
-            Icons.Filled.Info
-
-        )
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(10.dp)
+      }
+      item {
+        Column(
+          modifier =
+            Modifier.padding(bottom = 10.dp)
+              .fillMaxWidth()
+              .wrapContentHeight()
+              .background(MaterialTheme.colors.surface)
+              .padding(10.dp)
         ) {
-            item {
-                TextField(
-                    value = data.value,
-                    onValueChange = {
-                        data.value = it
+          Text("中心图标选择", modifier = Modifier.padding(vertical = 3.dp))
+          LazyRow(
+            modifier = Modifier.padding(bottom = 10.dp).height(50.dp).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+          ) {
+            iconList.forEach {
+              item {
+                Icon(
+                  modifier =
+                    Modifier.padding(5.dp).size(40.dp).clip(RoundedCornerShape(3.dp)).clickable {
+                      icon.value = it
                     },
-                    label = {
-                        Text("二维码信息")
-                    },
-                    modifier = Modifier
-                        .padding( bottom = 10.dp )
-                        .fillMaxWidth()
+                  imageVector = it,
+                  contentDescription = null,
                 )
+              }
             }
-            item {
-                Column(
-                    modifier = Modifier
-                        .padding( bottom = 10.dp )
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .background(MaterialTheme.colors.surface)
-                        .padding(10.dp)
-                ) {
-                    Text(
-                        "中心图标选择",
-                        modifier = Modifier
-                            .padding(vertical = 3.dp)
-                    )
-                    LazyRow(
-                        modifier = Modifier
-                            .padding(bottom = 10.dp)
-                            .height( 50.dp )
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        iconList.forEach {
-                            item {
-                                Icon(
-                                    modifier = Modifier
-                                        .padding(5.dp)
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(3.dp))
-                                        .clickable {
-                                            icon.value = it
-                                        },
-                                    imageVector = it,
-                                    contentDescription = null
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            item {
-                Column(
-                    modifier = Modifier
-                        .padding( bottom = 10.dp )
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .background(MaterialTheme.colors.surface)
-                        .padding(10.dp)
-                ) {
-                    Text(
-                        "主体颜色",
-                        modifier = Modifier
-                            .padding(vertical = 3.dp)
-                    )
-                    LazyRow(
-                        modifier = Modifier
-                            .padding(bottom = 10.dp)
-                            .height( 50.dp )
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        color.forEach {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .padding(5.dp)
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(3.dp))
-                                        .background(it)
-                                        .clickable {
-                                            contentColor.value = it
-                                        }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            item {
-                Column(
-                    modifier = Modifier
-                        .padding( bottom = 10.dp )
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .background(MaterialTheme.colors.surface)
-                        .padding(10.dp)
-                ) {
-                    Text(
-                        "四角颜色选择",
-                        modifier = Modifier
-                            .padding(vertical = 3.dp)
-                    )
-                    LazyRow(
-                        modifier = Modifier
-                            .padding(bottom = 10.dp)
-                            .height( 50.dp )
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        color.forEach {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .padding(5.dp)
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(3.dp))
-                                        .background(it)
-                                        .clickable {
-                                            angleColor.value = it
-                                        }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+          }
         }
+      }
+      item {
+        Column(
+          modifier =
+            Modifier.padding(bottom = 10.dp)
+              .fillMaxWidth()
+              .wrapContentHeight()
+              .background(MaterialTheme.colors.surface)
+              .padding(10.dp)
+        ) {
+          Text("主体颜色", modifier = Modifier.padding(vertical = 3.dp))
+          LazyRow(
+            modifier = Modifier.padding(bottom = 10.dp).height(50.dp).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+          ) {
+            color.forEach {
+              item {
+                Box(
+                  modifier =
+                    Modifier.padding(5.dp)
+                      .size(40.dp)
+                      .clip(RoundedCornerShape(3.dp))
+                      .background(it)
+                      .clickable { contentColor.value = it }
+                )
+              }
+            }
+          }
+        }
+      }
+      item {
+        Column(
+          modifier =
+            Modifier.padding(bottom = 10.dp)
+              .fillMaxWidth()
+              .wrapContentHeight()
+              .background(MaterialTheme.colors.surface)
+              .padding(10.dp)
+        ) {
+          Text("四角颜色选择", modifier = Modifier.padding(vertical = 3.dp))
+          LazyRow(
+            modifier = Modifier.padding(bottom = 10.dp).height(50.dp).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+          ) {
+            color.forEach {
+              item {
+                Box(
+                  modifier =
+                    Modifier.padding(5.dp)
+                      .size(40.dp)
+                      .clip(RoundedCornerShape(3.dp))
+                      .background(it)
+                      .clickable { angleColor.value = it }
+                )
+              }
+            }
+          }
+        }
+      }
     }
+  }
 }
 
 /**
  * 二维码界面 一级界面
+ *
  * @property parentPaddingControl ParentPaddingControl
  * @constructor
  */
 class QRCodeVoyagerScreen(
-    @Transient
-    val parentPaddingControl :ParentPaddingControl = defaultSelfPaddingControl()
-):Screen{
-    @Composable
-    override fun Content() {
-        QRCodeScreen(
-            modifier = Modifier
-                .parentSystemControl(parentPaddingControl)
-                .fillMaxSize()
-        )
-    }
+  @Transient val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Screen {
+  @Composable
+  override fun Content() {
+    QRCodeScreen(modifier = Modifier.parentSystemControl(parentPaddingControl).fillMaxSize())
+  }
 }

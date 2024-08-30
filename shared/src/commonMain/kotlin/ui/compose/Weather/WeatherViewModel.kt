@@ -15,37 +15,33 @@ import util.network.resetWithLog
 
 /**
  * 天气的逻辑
+ *
  * @property repository WeatherRepository
  * @property _weatherDataOfFuZhou CMutableStateFlow<NetworkResult<WeatherData>>
  * @property weatherDataOfFuZhou StateFlow<NetworkResult<WeatherData>>
  * @constructor
  */
-class WeatherViewModel(
-    val repository: WeatherRepository
-):ViewModel(){
-    private val _weatherDataOfFuZhou = CMutableStateFlow(MutableStateFlow<NetworkResult<WeatherData>>(
-        NetworkResult.UnSend()))
-    val weatherDataOfFuZhou = _weatherDataOfFuZhou.asStateFlow()
+class WeatherViewModel(val repository: WeatherRepository) : ViewModel() {
+  private val _weatherDataOfFuZhou =
+    CMutableStateFlow(MutableStateFlow<NetworkResult<WeatherData>>(NetworkResult.UnSend()))
+  val weatherDataOfFuZhou = _weatherDataOfFuZhou.asStateFlow()
 
-    /**
-     * Get fu zhou weather
-     * 获取福州的天气
-     */
-    fun getFuZhouWeather(){
-        viewModelScope.launch {
-            _weatherDataOfFuZhou.logicIfNotLoading {
-                repository.getWeatherOfFuZhou()
-                    .actionWithLabel(
-                        "getFuZhouWeather/getFuZhouWeather",
-                        collectAction = { label, data ->
-                            _weatherDataOfFuZhou.resetWithLog(label,NetworkResult.Success(data))
-                        },
-                        catchAction = { label, error ->
-                            _weatherDataOfFuZhou.resetWithLog(label, networkErrorWithLog(error,"获取失败"))
-                        }
-                    )
-            }
-        }
+  /** Get fu zhou weather 获取福州的天气 */
+  fun getFuZhouWeather() {
+    viewModelScope.launch {
+      _weatherDataOfFuZhou.logicIfNotLoading {
+        repository
+          .getWeatherOfFuZhou()
+          .actionWithLabel(
+            "getFuZhouWeather/getFuZhouWeather",
+            collectAction = { label, data ->
+              _weatherDataOfFuZhou.resetWithLog(label, NetworkResult.Success(data))
+            },
+            catchAction = { label, error ->
+              _weatherDataOfFuZhou.resetWithLog(label, networkErrorWithLog(error, "获取失败"))
+            },
+          )
+      }
     }
-
+  }
 }

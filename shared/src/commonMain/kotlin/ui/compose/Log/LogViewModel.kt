@@ -11,11 +11,10 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * 日志逻辑
+ *
  * @property logs Flow<List<NetworkErrorLog>>
  */
-class LogViewModel: ViewModel() {
-    val logs : Flow<List<NetworkErrorLog>> =
-        database.networkLogQueries.getAllNetworkErrorLog()
-            .asFlow()
-            .mapToList(Dispatchers.IO)
+class LogViewModel : ViewModel() {
+  val logs: Flow<List<NetworkErrorLog>> =
+    database.networkLogQueries.getAllNetworkErrorLog().asFlow().mapToList(Dispatchers.IO)
 }

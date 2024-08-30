@@ -14,68 +14,56 @@ import util.network.resetWithoutLog
 
 /**
  * 设置的逻辑
+ *
  * @property kValueAction UndergraduateKValueAction
  * @property classSchedule ClassSchedule
  * @property signInStatus MutableStateFlow<NetworkResult<String>>
  * @constructor
  */
 class SettingViewModel(
-    val kValueAction: UndergraduateKValueAction,
-    val classSchedule: ClassSchedule
+  val kValueAction: UndergraduateKValueAction,
+  val classSchedule: ClassSchedule,
 ) : ViewModel() {
-    val signInStatus = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
+  val signInStatus = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
 
-    /**
-     * 验证账号
-     * @param userName String
-     * @param password String
-     */
-    fun verifyTheAccount(
-        userName: String,
-        password: String,
-        loginType: Int,
-    ) {
-        viewModelScope.launchInDefault {
-            signInStatus.logicIfNotLoading {
-                classSchedule.verifyYourAccount(
-                    userName,
-                    password,
-                    failAction = {
-                        when (it) {
-                            ClassSchedule.VerifyYourAccountError.ValidationFailed -> {
-                                signInStatus.resetWithoutLog(
-                                    networkError(
-                                        "验证失败,请稍后重试",
-                                        "验证失败"
-                                    )
-                                )
-                            }
+  /**
+   * 验证账号
+   *
+   * @param userName String
+   * @param password String
+   */
+  fun verifyTheAccount(userName: String, password: String, loginType: Int) {
+    viewModelScope.launchInDefault {
+      signInStatus.logicIfNotLoading {
+        classSchedule.verifyYourAccount(
+          userName,
+          password,
+          failAction = {
+            when (it) {
+              ClassSchedule.VerifyYourAccountError.ValidationFailed -> {
+                signInStatus.resetWithoutLog(networkError("验证失败,请稍后重试", "验证失败"))
+              }
 
-                            ClassSchedule.VerifyYourAccountError.LoginFailed -> {
-                                signInStatus.resetWithoutLog(
-                                    networkError(
-                                        "登录失败,请稍后重试",
-                                        ""
-                                    )
-                                )
-                            }
-                        }
-                    },
-                    success = {
-                        signInStatus.resetWithoutLog(networkSuccess("登录成功"))
-                        kValueAction.schoolUserName.setValue(userName)
-                        kValueAction.schoolPassword.setValue(password)
-                        kValueAction.loginType.setValue(loginType)
-                    }
-                )
+              ClassSchedule.VerifyYourAccountError.LoginFailed -> {
+                signInStatus.resetWithoutLog(networkError("登录失败,请稍后重试", ""))
+              }
             }
-        }
+          },
+          success = {
+            signInStatus.resetWithoutLog(networkSuccess("登录成功"))
+            kValueAction.schoolUserName.setValue(userName)
+            kValueAction.schoolPassword.setValue(password)
+            kValueAction.loginType.setValue(loginType)
+          },
+        )
+      }
     }
+  }
 
-    fun clearAccount() {
-        viewModelScope.launchInIO {
-            kValueAction.schoolUserName.setValue(null)
-            kValueAction.schoolPassword.setValue(null)
-        }
+  fun clearAccount() {
+    viewModelScope.launchInIO {
+      kValueAction.schoolUserName.setValue(null)
+      kValueAction.schoolPassword.setValue(null)
     }
+  }
 }

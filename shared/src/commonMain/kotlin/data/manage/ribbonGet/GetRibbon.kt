@@ -5,16 +5,11 @@ import util.network.NetworkResult
 import util.network.networkErrorWithLog
 
 @Serializable
-data class GetRibbon(
-    val code: Int,
-    val `data`: List<RibbonData>,
-    val msg: String
-) {
-    fun toNetworkResult(): NetworkResult<List<RibbonData>> {
-        return when(code){
-            0 -> NetworkResult.Success(this.data)
-            else -> networkErrorWithLog(code,"获取失败")
-        }
+data class GetRibbon(val code: Int, val `data`: List<RibbonData>, val msg: String) {
+  fun toNetworkResult(): NetworkResult<List<RibbonData>> {
+    return when (code) {
+      0 -> NetworkResult.Success(this.data)
+      else -> networkErrorWithLog(code, "获取失败")
     }
+  }
 }
-

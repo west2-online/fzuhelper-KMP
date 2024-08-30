@@ -59,226 +59,162 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlin.jvm.Transient
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
-import kotlin.jvm.Transient
 
 @Composable
-fun MassageList(
-    modifier: Modifier,
-    navigateToMassageDetail:((String)->Unit) = {},
-) {
-    var isExpanded by remember {
-        mutableStateOf(false)
-    }
-    Box(modifier = modifier){
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-        ){
-            items(310){
-                MassageItem(
-                    modifier = Modifier
-                        .padding(vertical = 3.dp)
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .clickable {
-                            navigateToMassageDetail.invoke("")
-                        },
-                    navigateToMassageDetail = navigateToMassageDetail
-                )
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .wrapContentSize()
-//                .padding(
-//                    if (isExpanded) 10.dp else 0.dp
-//                )
-                .offset (
-                    (-10).dp,
-                    (-10).dp
-                )
-        ){
-            val remote = animateFloatAsState(
-                if (isExpanded) 90f else 0f,
-                animationSpec = tween(300)
-            )
-            val width = animateDpAsState(
-                if (isExpanded) 300.dp else 0.dp,
-                animationSpec = tween(300)
-            )
-            LazyRow(
-                modifier = Modifier
-                    .width(width.value)
-                    .height(40.dp)
-                    .padding(end = 20.dp)
-                    .clip(RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
-                    .background(Color.Red)
-                    .padding(
-                        start = 10.dp,end = 30.dp,top = 10.dp, bottom = 10.dp
-                    )
-                    .align(Alignment.CenterEnd)
-            ) {
-                items(30) {
-                    Box(modifier = Modifier.padding(end = 10.dp).fillMaxHeight().width(30.dp).background(Color.Blue))
-                }
-            }
-            FloatingActionButton(
-                onClick = {
-                    isExpanded = !isExpanded
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(40.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    modifier = Modifier
-                        .rotate(remote.value)
-                        .size(35.dp),
-                    contentDescription = null
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun MassageItem(
-    modifier: Modifier,
-    navigateToMassageDetail: (String) -> Unit,
-){
-    Row (
-        modifier = modifier
-    ){
-        val text = buildAnnotatedString {
-            withStyle(
-                style = SpanStyle(
-                    brush = Brush.horizontalGradient(colors = listOf(Color.Green,Color.Red)),
-                    fontWeight = FontWeight.Bold
-                )
-            ) {
-                append("Text on Canvas️")
-            }
-        }
-        val testText = "1"
-        val textMeasure = rememberTextMeasurer()
-        val size = textMeasure.measure(
-            testText,
-            style = TextStyle(fontSize = 10.sp)
-        ).size
-        val padding = 20f
-        KamelImage(
-            resource = asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
-            null,
-            modifier = Modifier
-                .padding(end = 10.dp)
-                .fillMaxHeight()
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(10))
-                .drawWithContent {
-                    drawContent()
-                    drawRoundRect(
-                        color = Color.Red,
-                        size = size.toSize().copy(size.width+ padding ),
-                        cornerRadius = CornerRadius(5f),
-                        topLeft = Offset(
-                            this.size.width - 10f - size.width - padding,
-                            10f
-                        )
-                    )
-                    drawText(
-                        textMeasurer = textMeasure,
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 3,
-                        style = TextStyle(fontSize = 10.sp),
-                        size = size.toSize(),
-                        text = testText,
-                        topLeft = Offset(padding/2+ this.size.width - 10f - size.width - padding,10f)
-                    )
-                },
-            contentScale = ContentScale.FillBounds
+fun MassageList(modifier: Modifier, navigateToMassageDetail: ((String) -> Unit) = {}) {
+  var isExpanded by remember { mutableStateOf(false) }
+  Box(modifier = modifier) {
+    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+      items(310) {
+        MassageItem(
+          modifier =
+            Modifier.padding(vertical = 3.dp).fillMaxWidth().height(50.dp).clickable {
+              navigateToMassageDetail.invoke("")
+            },
+          navigateToMassageDetail = navigateToMassageDetail,
         )
-        Column (
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ){
-            val data = getRandoms()
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .drawBehind {
-                            drawRoundRect(
-                                brush = Brush.horizontalGradient(data.colorList),
-                                cornerRadius = CornerRadius(16.dp.toPx(), 16.dp.toPx()),
-                                size = this.size
-                            )
-                        }
-                        .padding(horizontal = 5.dp, vertical = 2.dp)
-
-                ){
-                    Text(
-                        data.tag,
-                        maxLines = 1,
-                        modifier = Modifier
-                            .wrapContentSize(),
-                        fontSize = 10.sp
-                    )
-                }
-                Text(
-                    text,
-                    maxLines = 1,
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .align(Alignment.CenterVertically)
-                )
-            }
-            Text(
-                text,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                maxLines = 1
-            )
-        }
+      }
     }
+
+    Box(
+      modifier =
+        Modifier.align(Alignment.BottomEnd)
+          .wrapContentSize()
+          //                .padding(
+          //                    if (isExpanded) 10.dp else 0.dp
+          //                )
+          .offset((-10).dp, (-10).dp)
+    ) {
+      val remote = animateFloatAsState(if (isExpanded) 90f else 0f, animationSpec = tween(300))
+      val width = animateDpAsState(if (isExpanded) 300.dp else 0.dp, animationSpec = tween(300))
+      LazyRow(
+        modifier =
+          Modifier.width(width.value)
+            .height(40.dp)
+            .padding(end = 20.dp)
+            .clip(RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
+            .background(Color.Red)
+            .padding(start = 10.dp, end = 30.dp, top = 10.dp, bottom = 10.dp)
+            .align(Alignment.CenterEnd)
+      ) {
+        items(30) {
+          Box(
+            modifier =
+              Modifier.padding(end = 10.dp).fillMaxHeight().width(30.dp).background(Color.Blue)
+          )
+        }
+      }
+      FloatingActionButton(
+        onClick = { isExpanded = !isExpanded },
+        modifier = Modifier.align(Alignment.BottomEnd).size(40.dp),
+      ) {
+        Icon(
+          imageVector = Icons.Filled.KeyboardArrowDown,
+          modifier = Modifier.rotate(remote.value).size(35.dp),
+          contentDescription = null,
+        )
+      }
+    }
+  }
 }
 
-
-enum class MassageLabel(val tag : String,val colorList : List<Color>){
-    League("社团", listOf(Color.Green,Color(216, 216, 238))),
-    Game("比赛", listOf(Color(254, 117, 9),Color(216, 216, 238)))
-
+@Composable
+fun MassageItem(modifier: Modifier, navigateToMassageDetail: (String) -> Unit) {
+  Row(modifier = modifier) {
+    val text = buildAnnotatedString {
+      withStyle(
+        style =
+          SpanStyle(
+            brush = Brush.horizontalGradient(colors = listOf(Color.Green, Color.Red)),
+            fontWeight = FontWeight.Bold,
+          )
+      ) {
+        append("Text on Canvas️")
+      }
+    }
+    val testText = "1"
+    val textMeasure = rememberTextMeasurer()
+    val size = textMeasure.measure(testText, style = TextStyle(fontSize = 10.sp)).size
+    val padding = 20f
+    KamelImage(
+      resource =
+        asyncPainterResource("https://pic1.zhimg.com/v2-fddbd21f1206bcf7817ddec207ad2340_b.jpg"),
+      null,
+      modifier =
+        Modifier.padding(end = 10.dp)
+          .fillMaxHeight()
+          .aspectRatio(1f)
+          .clip(RoundedCornerShape(10))
+          .drawWithContent {
+            drawContent()
+            drawRoundRect(
+              color = Color.Red,
+              size = size.toSize().copy(size.width + padding),
+              cornerRadius = CornerRadius(5f),
+              topLeft = Offset(this.size.width - 10f - size.width - padding, 10f),
+            )
+            drawText(
+              textMeasurer = textMeasure,
+              overflow = TextOverflow.Ellipsis,
+              maxLines = 3,
+              style = TextStyle(fontSize = 10.sp),
+              size = size.toSize(),
+              text = testText,
+              topLeft = Offset(padding / 2 + this.size.width - 10f - size.width - padding, 10f),
+            )
+          },
+      contentScale = ContentScale.FillBounds,
+    )
+    Column(modifier = Modifier.weight(1f).fillMaxWidth()) {
+      val data = getRandoms()
+      Row(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+        Box(
+          modifier =
+            Modifier.wrapContentSize()
+              .drawBehind {
+                drawRoundRect(
+                  brush = Brush.horizontalGradient(data.colorList),
+                  cornerRadius = CornerRadius(16.dp.toPx(), 16.dp.toPx()),
+                  size = this.size,
+                )
+              }
+              .padding(horizontal = 5.dp, vertical = 2.dp)
+        ) {
+          Text(data.tag, maxLines = 1, modifier = Modifier.wrapContentSize(), fontSize = 10.sp)
+        }
+        Text(
+          text,
+          maxLines = 1,
+          modifier = Modifier.wrapContentSize().align(Alignment.CenterVertically),
+        )
+      }
+      Text(text, modifier = Modifier.fillMaxWidth().wrapContentHeight(), maxLines = 1)
+    }
+  }
 }
+
+enum class MassageLabel(val tag: String, val colorList: List<Color>) {
+  League("社团", listOf(Color.Green, Color(216, 216, 238))),
+  Game("比赛", listOf(Color(254, 117, 9), Color(216, 216, 238))),
+}
+
 fun getRandoms(): MassageLabel {
-    return MassageLabel.values().random()
+  return MassageLabel.values().random()
 }
 
 class MassageVoyagerList(
-    @Transient
-    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
-): Screen {
-    @Composable
-    override fun Content() {
-        val navigator = LocalNavigator.currentOrThrow
-        MassageList(
-            modifier = Modifier
-                .fillMaxSize()
-                .parentSystemControl(parentPaddingControl)
-                .padding(10.dp),
-            navigateToMassageDetail = {
-                navigator.push(MassageDetailVoyagerScreen())
-            }
-        )
-    }
+  @Transient val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Screen {
+  @Composable
+  override fun Content() {
+    val navigator = LocalNavigator.currentOrThrow
+    MassageList(
+      modifier = Modifier.fillMaxSize().parentSystemControl(parentPaddingControl).padding(10.dp),
+      navigateToMassageDetail = { navigator.push(MassageDetailVoyagerScreen()) },
+    )
+  }
 }

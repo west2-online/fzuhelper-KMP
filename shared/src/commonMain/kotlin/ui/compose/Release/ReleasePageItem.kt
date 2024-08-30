@@ -64,91 +64,83 @@ import org.example.library.MR
 import ui.compose.Post.PostDisplayShare.LineChartDataForShow
 
 /**
- * Release page item
- * 发布页的item接口
+ * Release page item 发布页的item接口
+ *
  * @constructor Create empty Release page item
  */
-sealed interface ReleasePageItem{
+sealed interface ReleasePageItem {
 
-    /**
-     * 文本类
-     * @property text MutableState<String>
-     */
-    class TextItem() : ReleasePageItem{
-        var text = mutableStateOf<String>("")
+  /**
+   * 文本类
+   *
+   * @property text MutableState<String>
+   */
+  class TextItem() : ReleasePageItem {
+    var text = mutableStateOf<String>("")
+  }
+
+  /**
+   * 图片类
+   *
+   * @property image MutableState<ByteArray?>
+   */
+  class ImageItem() : ReleasePageItem {
+    var image = mutableStateOf<ByteArray?>(null)
+  }
+
+  class LineChartItem : ReleasePageItem {
+    val xList: MutableList<MutableState<String>> = mutableStateListOf()
+    val yMap: SnapshotStateMap<MutableState<String>, SnapshotStateList<MutableState<String>>> =
+      mutableStateMapOf()
+    val title = mutableStateOf("")
+    val xAxisTitle = mutableStateOf("")
+    val yAxisTitle = mutableStateOf("")
+
+    fun toXyLineChartData(): LineChartDataForShow {
+      return LineChartDataForShow(
+        xData = xList.map { it.value },
+        yMap =
+          buildMap {
+            yMap.forEach { put(it.key.value, it.value.map { it.value.toFloatOrNull() ?: 1f }) }
+          },
+        xAxisTitle = xAxisTitle.value,
+        title = title.value,
+        yAxisTitle = yAxisTitle.value,
+      )
     }
 
-    /**
-     * 图片类
-     * @property image MutableState<ByteArray?>
-     */
-    class ImageItem() : ReleasePageItem{
-        var image = mutableStateOf<ByteArray?>(null)
+    fun isNotEmpty(): Boolean {
+      if (yMap.isEmpty()) {
+        return false
+      }
+      if (xList.isEmpty()) {
+        return false
+      }
+      return xList.size == yMap.map { it.value.size }.min() &&
+        xList.size == yMap.map { it.value.size }.max()
     }
-    class LineChartItem:ReleasePageItem{
-        val xList:MutableList<MutableState<String>> = mutableStateListOf()
-        val yMap: SnapshotStateMap<MutableState<String>, SnapshotStateList<MutableState<String>>> = mutableStateMapOf()
-        val title = mutableStateOf("")
-        val xAxisTitle = mutableStateOf("")
-        val yAxisTitle = mutableStateOf("")
-        fun toXyLineChartData():LineChartDataForShow{
-            return LineChartDataForShow(
-                xData = xList.map {
-                     it.value
-                },
-                yMap = buildMap {
-                    yMap.forEach {
-                        put(it.key.value,it.value.map{
-                            it.value.toFloatOrNull() ?: 1f
-                        })
-                    }
-                },
-                xAxisTitle = xAxisTitle.value,
-                title = title.value,
-                yAxisTitle = yAxisTitle.value
-            )
-        }
-        fun isNotEmpty():Boolean{
-            if(yMap.isEmpty()){
-                return false;
-            }
-            if(xList.isEmpty()){
-                return false;
-            }
-            return xList.size == yMap.map {
-                it.value.size
-            }.min() && xList.size == yMap.map {
-                it.value.size
-            }.max()
-        }
-        fun addX(){
-            xList.add(mutableStateOf(""))
-            yMap.forEach {
-                it.value.add(mutableStateOf(""))
-            }
-        }
-        fun addY(){
-            yMap.put(
-                mutableStateOf("") , buildList {
-                    repeat(xList.size){
-                        add(mutableStateOf<String>(""))
-                    }
-                }.toMutableStateList()
-            )
-        }
+
+    fun addX() {
+      xList.add(mutableStateOf(""))
+      yMap.forEach { it.value.add(mutableStateOf("")) }
     }
-    class VotingItem(
-        val votingItemData : List<VotingItemData>,
-        val title : String
-    )
+
+    fun addY() {
+      yMap.put(
+        mutableStateOf(""),
+        buildList { repeat(xList.size) { add(mutableStateOf<String>("")) } }.toMutableStateList(),
+      )
+    }
+  }
+
+  class VotingItem(val votingItemData: List<VotingItemData>, val title: String)
 }
-data class VotingItemData(
-    val name : String,
-    val number: Int
-)
+
+data class VotingItemData(val name: String, val number: Int)
 
 /**
  * 文本发布item
+ *
  * @param modifier Modifier
  * @param onValueChange Function1<String, Unit>
  * @param onEmojiChange Function1<String, Unit>
@@ -160,151 +152,119 @@ data class VotingItemData(
  */
 @Composable
 fun ReleasePageItemText(
-    modifier: Modifier,
-    onValueChange:(String)->Unit = {},
-    onEmojiChange:(String)->Unit = {},
-    overflow:(Int)->Unit = {},
-    delete:()->Unit = {},
-    moveUp:()->Unit = {},
-    moveDown: () -> Unit = {},
-    text: State<String>,
-){
-    val openEmoji = remember{
-        mutableStateOf(false)
+  modifier: Modifier,
+  onValueChange: (String) -> Unit = {},
+  onEmojiChange: (String) -> Unit = {},
+  overflow: (Int) -> Unit = {},
+  delete: () -> Unit = {},
+  moveUp: () -> Unit = {},
+  moveDown: () -> Unit = {},
+  text: State<String>,
+) {
+  val openEmoji = remember { mutableStateOf(false) }
+  Column(modifier = modifier) {
+    Column(modifier) {
+      LazyRow(modifier = Modifier.height(60.dp).padding(vertical = 5.dp)) {
+        item {
+          Icon(
+            modifier =
+              Modifier.fillMaxHeight()
+                .aspectRatio(1f)
+                .wrapContentSize(Alignment.Center)
+                .clip(RoundedCornerShape(10))
+                .clickable { delete.invoke() }
+                .padding(3.dp)
+                .fillMaxSize(0.7f),
+            imageVector = Icons.Filled.Delete,
+            contentDescription = null,
+          )
+        }
+        item {
+          Icon(
+            modifier =
+              Modifier.fillMaxHeight()
+                .aspectRatio(1f)
+                .wrapContentSize(Alignment.Center)
+                .clip(RoundedCornerShape(10))
+                .clickable { moveDown.invoke() }
+                .fillMaxSize(0.7f),
+            imageVector = Icons.Filled.KeyboardArrowDown,
+            contentDescription = null,
+          )
+        }
+        item {
+          Icon(
+            modifier =
+              Modifier.fillMaxHeight()
+                .aspectRatio(1f)
+                .wrapContentSize(Alignment.Center)
+                .clip(RoundedCornerShape(10))
+                .clickable { moveUp.invoke() }
+                .fillMaxSize(0.7f),
+            imageVector = Icons.Filled.KeyboardArrowUp,
+            contentDescription = null,
+          )
+        }
+        item {
+          Icon(
+            modifier =
+              Modifier.fillMaxHeight()
+                .aspectRatio(1f)
+                .wrapContentSize(Alignment.Center)
+                .clip(RoundedCornerShape(10))
+                .clickable { openEmoji.value = !openEmoji.value }
+                .fillMaxSize(0.6f),
+            painter = painterResource(MR.images.emoji),
+            contentDescription = null,
+          )
+        }
+      }
+      Box(
+        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+        content = {
+          TextField(
+            value = TextFieldValue(text.value, TextRange(text.value.length)),
+            onValueChange = { textFieldValue -> onValueChange.invoke(textFieldValue.text) },
+            modifier =
+              Modifier.fillMaxWidth()
+                .wrapContentHeight()
+                .animateContentSize(
+                  finishedListener = { init, target ->
+                    println(target.height - init.height)
+                    overflow.invoke(target.height - init.height)
+                  }
+                ),
+          )
+        },
+      )
     }
-    Column(
-        modifier = modifier
-    ){
-        Column( modifier ) {
-            LazyRow(
-                modifier = Modifier
-                    .height(60.dp)
-                    .padding(vertical = 5.dp)
-            ) {
-                item{
-                    Icon(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(1f)
-                            .wrapContentSize(Alignment.Center)
-                            .clip(RoundedCornerShape(10))
-                            .clickable {
-                                delete.invoke()
-                            }
-                            .padding(3.dp)
-                            .fillMaxSize(0.7f)
-                        ,
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = null
-                    )
-                }
-                item{
-                    Icon(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(1f)
-                            .wrapContentSize(Alignment.Center)
-                            .clip(RoundedCornerShape(10))
-                            .clickable {
-                                moveDown.invoke()
-                            }
-                            .fillMaxSize(0.7f)
-                        ,
-                        imageVector = Icons.Filled.KeyboardArrowDown,
-                        contentDescription = null
-                    )
-                }
-                item{
-                    Icon(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(1f)
-                            .wrapContentSize(Alignment.Center)
-                            .clip(RoundedCornerShape(10))
-                            .clickable {
-                                moveUp.invoke()
-                            }
-                            .fillMaxSize(0.7f)
-                        ,
-                        imageVector = Icons.Filled.KeyboardArrowUp,
-                        contentDescription = null
-                    )
-                }
-                item{
-                    Icon(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(1f)
-                            .wrapContentSize(Alignment.Center)
-                            .clip(RoundedCornerShape(10))
-                            .clickable {
-                                openEmoji.value = !openEmoji.value
-                            }
-                            .fillMaxSize(0.6f)
-                        ,
-                        painter = painterResource(MR.images.emoji),
-                        contentDescription = null
-                    )
-                }
-            }
+    val textMeasureScope = rememberTextMeasurer()
+    val result = textMeasureScope.measure("\uD83D\uDE03")
+    Crossfade(openEmoji.value) {
+      if (it) {
+        LazyHorizontalGrid(
+          rows = GridCells.Fixed(5),
+          modifier = Modifier.height((result.size.height * 5).dp).fillMaxWidth(),
+        ) {
+          items(emojiList) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                content = {
-                    TextField(
-                        value = TextFieldValue(text.value, TextRange(text.value.length)),
-                        onValueChange = { textFieldValue ->
-                            onValueChange.invoke(textFieldValue.text)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .animateContentSize(
-                                finishedListener = { init,target ->
-                                    println(target.height - init.height)
-                                    overflow.invoke(target.height - init.height)
-                                }
-                            )
-                    )
+              modifier =
+                Modifier.fillMaxHeight().aspectRatio(1f).clip(RoundedCornerShape(10)).clickable {
+                  onEmojiChange.invoke(it)
                 }
-            )
-        }
-        val textMeasureScope = rememberTextMeasurer()
-        val result = textMeasureScope.measure("\uD83D\uDE03")
-        Crossfade(openEmoji.value){
-            if(it){
-                LazyHorizontalGrid(
-                    rows = GridCells.Fixed(5),
-                    modifier = Modifier.height((result.size.height*5).dp).fillMaxWidth()
-                ){
-                    items(emojiList){
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .aspectRatio(1f)
-                                .clip(RoundedCornerShape(10))
-                                .clickable {
-                                    onEmojiChange.invoke(it)
-                                }
-                        ){
-                            Text(
-                                text = it,
-                                modifier = Modifier
-                                    .wrapContentSize()
-                                    .align(Alignment.Center)
-                            )
-                        }
-
-                    }
-                }
+            ) {
+              Text(text = it, modifier = Modifier.wrapContentSize().align(Alignment.Center))
             }
+          }
         }
+      }
     }
+  }
 }
 
 /**
  * 图像发布item
+ *
  * @param modifier Modifier
  * @param delete Function0<Unit>
  * @param moveUp Function0<Unit>
@@ -314,310 +274,209 @@ fun ReleasePageItemText(
  */
 @Composable
 fun ReleasePageItemImage(
-    modifier: Modifier,
-    delete:()->Unit = {},
-    moveUp:()->Unit = {},
-    moveDown: () -> Unit = {},
-    onImagePicked : (ByteArray) -> Unit,
-    image: State<ByteArray?>
-){
-    Column( modifier ) {
-        val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
-        imagePicker.registerPicker(onImagePicked)
-        LazyRow(
-            modifier = Modifier
-                .height(60.dp)
-                .padding(vertical = 5.dp)
-        ) {
-            item{
-
-                Button(
-                    {
-                        imagePicker.pickImage()
-                    }
-                ){
-                    Text("选择图片")
-                }
-            }
-            item{
-                Icon(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .wrapContentSize(Alignment.Center)
-                        .clip(RoundedCornerShape(10))
-                        .clickable {
-                            delete.invoke()
-                        }
-                        .padding(3.dp)
-                        .fillMaxSize(0.7f)
-                    ,
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = null
-                )
-            }
-            item{
-                Icon(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .wrapContentSize(Alignment.Center)
-                        .clip(RoundedCornerShape(10))
-                        .clickable {
-                            moveUp.invoke()
-                        }
-                        .fillMaxSize(0.7f)
-                    ,
-                    imageVector = Icons.Filled.KeyboardArrowUp,
-                    contentDescription = null
-                )
-            }
-            item{
-                Icon(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .wrapContentSize(Alignment.Center)
-                        .clip(RoundedCornerShape(10))
-                        .clickable {
-                            moveDown.invoke()
-                        }
-                        .fillMaxSize(0.7f)
-                    ,
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = null
-                )
-            }
-        }
-        AnimatedVisibility(
-            (image.value?.size?:0)/ 1024 / 8 > 5 ,
-            modifier = Modifier
-                .wrapContentSize()
-                .padding(10.dp)
-        ){
-            Text("图片过大,无法发送", color = Color.Red)
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            content = {
-                Crossfade(image.value){
-                    if(it != null){
-                        Image(
-                            bitmap = it.asImageBitmap(),
-                            null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                }
-            }
+  modifier: Modifier,
+  delete: () -> Unit = {},
+  moveUp: () -> Unit = {},
+  moveDown: () -> Unit = {},
+  onImagePicked: (ByteArray) -> Unit,
+  image: State<ByteArray?>,
+) {
+  Column(modifier) {
+    val imagePicker = ImagePickerFactory(context = getPlatformContext()).createPicker()
+    imagePicker.registerPicker(onImagePicked)
+    LazyRow(modifier = Modifier.height(60.dp).padding(vertical = 5.dp)) {
+      item { Button({ imagePicker.pickImage() }) { Text("选择图片") } }
+      item {
+        Icon(
+          modifier =
+            Modifier.fillMaxHeight()
+              .aspectRatio(1f)
+              .wrapContentSize(Alignment.Center)
+              .clip(RoundedCornerShape(10))
+              .clickable { delete.invoke() }
+              .padding(3.dp)
+              .fillMaxSize(0.7f),
+          imageVector = Icons.Filled.Delete,
+          contentDescription = null,
         )
+      }
+      item {
+        Icon(
+          modifier =
+            Modifier.fillMaxHeight()
+              .aspectRatio(1f)
+              .wrapContentSize(Alignment.Center)
+              .clip(RoundedCornerShape(10))
+              .clickable { moveUp.invoke() }
+              .fillMaxSize(0.7f),
+          imageVector = Icons.Filled.KeyboardArrowUp,
+          contentDescription = null,
+        )
+      }
+      item {
+        Icon(
+          modifier =
+            Modifier.fillMaxHeight()
+              .aspectRatio(1f)
+              .wrapContentSize(Alignment.Center)
+              .clip(RoundedCornerShape(10))
+              .clickable { moveDown.invoke() }
+              .fillMaxSize(0.7f),
+          imageVector = Icons.Filled.KeyboardArrowDown,
+          contentDescription = null,
+        )
+      }
     }
+    AnimatedVisibility(
+      (image.value?.size ?: 0) / 1024 / 8 > 5,
+      modifier = Modifier.wrapContentSize().padding(10.dp),
+    ) {
+      Text("图片过大,无法发送", color = Color.Red)
+    }
+    Box(
+      modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+      content = {
+        Crossfade(image.value) {
+          if (it != null) {
+            Image(
+              bitmap = it.asImageBitmap(),
+              null,
+              modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+              contentScale = ContentScale.Crop,
+            )
+          }
+        }
+      },
+    )
+  }
 }
 
 @Composable
 fun ReleasePageItemLineChart(
-    modifier: Modifier,
-    delete:()->Unit = {},
-    moveUp:()->Unit = {},
-    moveDown: () -> Unit = {},
-    dataForRelease : ReleasePageItem.LineChartItem
-){
-    val state = rememberLazyListState()
-    Column (
-        modifier = modifier
-            .padding(10.dp)
-    ){
-        val setting = remember {
-            mutableStateOf(false)
-        }
-        LazyRow(
-            modifier = Modifier
-                .height(60.dp)
-                .padding(vertical = 5.dp)
-        ) {
-            item{
-                Icon(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .wrapContentSize(Alignment.Center)
-                        .clip(RoundedCornerShape(10))
-                        .clickable {
-                            delete.invoke()
-                        }
-                        .padding(3.dp)
-                        .fillMaxSize(0.7f)
-                    ,
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = null
-                )
-            }
-            item{
-                Icon(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .wrapContentSize(Alignment.Center)
-                        .clip(RoundedCornerShape(10))
-                        .clickable {
-                            moveUp.invoke()
-                        }
-                        .fillMaxSize(0.7f)
-                    ,
-                    imageVector = Icons.Filled.KeyboardArrowUp,
-                    contentDescription = null
-                )
-            }
-            item{
-                Icon(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .wrapContentSize(Alignment.Center)
-                        .clip(RoundedCornerShape(10))
-                        .clickable {
-                            moveDown.invoke()
-                        }
-                        .fillMaxSize(0.7f)
-                    ,
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = null
-                )
-            }
-            item {
-                Button(
-                    onClick = {
-                        setting.value = !setting.value
-                    }
-                ){
-                    Text("图表设置")
-                }
-            }
-        }
-        TextField(
-            value = dataForRelease.title.value,
-            onValueChange = {
-                dataForRelease.title.value = it
-            },
-            label = {
-                Text("标题(请尽量缩短长度)")
-            }
-        )
-        TextField(
-            value = dataForRelease.xAxisTitle.value,
-            onValueChange = {
-                dataForRelease.xAxisTitle.value = it
-            },
-            label = {
-                Text("X轴标签")
-            }
-        )
-        TextField(
-            value = dataForRelease.yAxisTitle.value,
-            onValueChange = {
-                dataForRelease.yAxisTitle.value = it
-            },
-            label = {
-                Text("Y轴标签")
-            }
-        )
+  modifier: Modifier,
+  delete: () -> Unit = {},
+  moveUp: () -> Unit = {},
+  moveDown: () -> Unit = {},
+  dataForRelease: ReleasePageItem.LineChartItem,
+) {
+  val state = rememberLazyListState()
+  Column(modifier = modifier.padding(10.dp)) {
+    val setting = remember { mutableStateOf(false) }
+    LazyRow(modifier = Modifier.height(60.dp).padding(vertical = 5.dp)) {
+      item {
         Icon(
-            imageVector = Icons.Filled.Add,
-            contentDescription = null,
-            modifier.clickable {
-                dataForRelease.addX()
-            }
+          modifier =
+            Modifier.fillMaxHeight()
+              .aspectRatio(1f)
+              .wrapContentSize(Alignment.Center)
+              .clip(RoundedCornerShape(10))
+              .clickable { delete.invoke() }
+              .padding(3.dp)
+              .fillMaxSize(0.7f),
+          imageVector = Icons.Filled.Delete,
+          contentDescription = null,
         )
-        Column (
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-        ){
-            Row (
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ){
-                Text(
-                    "X列数据",
-                    modifier.gridCellWidth()
-                )
-                VerticalDivider(
-                    modifier = Modifier
-                        .height(50.dp),
-                    thickness = 2.dp,
-                    color = Color.Black
-                )
-                dataForRelease.xList.forEach {
-                    TextField(
-                        value = it.value,
-                        modifier = Modifier.gridCellWidth(),
-                        onValueChange = { text ->
-                            it.value = text
-                        }
-                    )
-                }
-            }
-            Divider(
-                color = Color.Black,
-                modifier = Modifier.width((dataForRelease.xList.size*200 + 200 ).dp),
-                thickness = 2.dp
-            )
-            dataForRelease.yMap.forEach {
-                Row (
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ){
-                    TextField(
-                        value = it.key.value,
-                        modifier = Modifier.gridCellWidth(),
-                        onValueChange = { text ->
-                            it.key.value = text
-                        }
-                    )
-                    VerticalDivider(
-                        modifier = Modifier
-                            .height(56.dp),
-                        thickness = 2.dp,
-                        color = Color.Black
-                    )
-                    it.value.forEach {
-                        TextField(
-                            value = it.value,
-                            modifier = Modifier.gridCellWidth(),
-                            onValueChange = { text ->
-                                it.value = text
-                            }
-                        )
-                    }
-                }
-            }
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = null,
-                modifier.clickable {
-                    dataForRelease.addY()
-                }
-            )
-        }
-        AnimatedVisibility(setting.value){
-
-        }
+      }
+      item {
+        Icon(
+          modifier =
+            Modifier.fillMaxHeight()
+              .aspectRatio(1f)
+              .wrapContentSize(Alignment.Center)
+              .clip(RoundedCornerShape(10))
+              .clickable { moveUp.invoke() }
+              .fillMaxSize(0.7f),
+          imageVector = Icons.Filled.KeyboardArrowUp,
+          contentDescription = null,
+        )
+      }
+      item {
+        Icon(
+          modifier =
+            Modifier.fillMaxHeight()
+              .aspectRatio(1f)
+              .wrapContentSize(Alignment.Center)
+              .clip(RoundedCornerShape(10))
+              .clickable { moveDown.invoke() }
+              .fillMaxSize(0.7f),
+          imageVector = Icons.Filled.KeyboardArrowDown,
+          contentDescription = null,
+        )
+      }
+      item { Button(onClick = { setting.value = !setting.value }) { Text("图表设置") } }
     }
+    TextField(
+      value = dataForRelease.title.value,
+      onValueChange = { dataForRelease.title.value = it },
+      label = { Text("标题(请尽量缩短长度)") },
+    )
+    TextField(
+      value = dataForRelease.xAxisTitle.value,
+      onValueChange = { dataForRelease.xAxisTitle.value = it },
+      label = { Text("X轴标签") },
+    )
+    TextField(
+      value = dataForRelease.yAxisTitle.value,
+      onValueChange = { dataForRelease.yAxisTitle.value = it },
+      label = { Text("Y轴标签") },
+    )
+    Icon(
+      imageVector = Icons.Filled.Add,
+      contentDescription = null,
+      modifier.clickable { dataForRelease.addX() },
+    )
+    Column(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+      Row(
+        modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+      ) {
+        Text("X列数据", modifier.gridCellWidth())
+        VerticalDivider(modifier = Modifier.height(50.dp), thickness = 2.dp, color = Color.Black)
+        dataForRelease.xList.forEach {
+          TextField(
+            value = it.value,
+            modifier = Modifier.gridCellWidth(),
+            onValueChange = { text -> it.value = text },
+          )
+        }
+      }
+      Divider(
+        color = Color.Black,
+        modifier = Modifier.width((dataForRelease.xList.size * 200 + 200).dp),
+        thickness = 2.dp,
+      )
+      dataForRelease.yMap.forEach {
+        Row(
+          modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(10.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+          TextField(
+            value = it.key.value,
+            modifier = Modifier.gridCellWidth(),
+            onValueChange = { text -> it.key.value = text },
+          )
+          VerticalDivider(modifier = Modifier.height(56.dp), thickness = 2.dp, color = Color.Black)
+          it.value.forEach {
+            TextField(
+              value = it.value,
+              modifier = Modifier.gridCellWidth(),
+              onValueChange = { text -> it.value = text },
+            )
+          }
+        }
+      }
+      Icon(
+        imageVector = Icons.Filled.Add,
+        contentDescription = null,
+        modifier.clickable { dataForRelease.addY() },
+      )
+    }
+    AnimatedVisibility(setting.value) {}
+  }
 }
 
 val GridCellWidth = 200.dp
 
 fun Modifier.gridCellWidth() = this.width(GridCellWidth)
-

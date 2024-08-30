@@ -11,24 +11,17 @@ import di.SystemAction
 import ui.root.RootUi
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window,false)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT,Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT,Color.TRANSPARENT)
-        )
-        this.setContent {
-            RootUi(
-                systemAction = SystemAction(
-                    onFinish = {
-                        this.finish()
-                    },
-                    onBack = {
-                        this.onBackPressed()
-                    }
-                )
-            )
-        }
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+    enableEdgeToEdge(
+      statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+      navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+    )
+    this.setContent {
+      RootUi(
+        systemAction = SystemAction(onFinish = { this.finish() }, onBack = { this.onBackPressed() })
+      )
     }
+  }
 }

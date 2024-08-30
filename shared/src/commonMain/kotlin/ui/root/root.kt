@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
-import com.multiplatform.webview.web.WebViewState
 import config.BaseUrlConfig
 import data.person.UserData.Data
 import di.SystemAction
@@ -45,228 +44,238 @@ import util.compose.FuTalkTheme
 import util.compose.SettingTransitions
 
 /**
- * Root action
- * 用于第一层级的界面切换
+ * Root action 用于第一层级的界面切换
+ *
  * @constructor Create empty Root action
  */
 interface RootAction {
-    fun reLogin()
-    fun finishLogin()
-    fun navigateFormSplashToMainPage()
-    fun navigateFormSplashToLoginAndRegister()
-    fun navigateFromActionToFeedback()
-    fun navigateFromActionToQRCodeScreen()
-    fun navigateFromActionToAboutUs()
-    fun navigateFromAnywhereToManage()
-    fun navigateFromAnywhereToWeather()
-    fun navigateFormLoginToMain()
-    fun navigateFormAnywhereToRelease(initLabelList: List<String>)
-    fun navigateFormPostToReport(type: ReportType)
-    fun navigateFromAnywhereToWebView(url: String,header :  Map<String,String>)
-    fun navigateFormAnywhereToUndergraduateWebView(url: String)
-    fun navigateFormAnywhereToSetting()
-    fun navigateFormAnywhereToMain()
-    fun navigateFormAnywhereToLog()
-    fun navigateFormAnywhereToInformationModifier(userData: Data)
-    fun popManage()
-    fun navigateToScreen(screen: Screen)
-}
+  fun reLogin()
 
+  fun finishLogin()
+
+  fun navigateFormSplashToMainPage()
+
+  fun navigateFormSplashToLoginAndRegister()
+
+  fun navigateFromActionToFeedback()
+
+  fun navigateFromActionToQRCodeScreen()
+
+  fun navigateFromActionToAboutUs()
+
+  fun navigateFromAnywhereToManage()
+
+  fun navigateFromAnywhereToWeather()
+
+  fun navigateFormLoginToMain()
+
+  fun navigateFormAnywhereToRelease(initLabelList: List<String>)
+
+  fun navigateFormPostToReport(type: ReportType)
+
+  fun navigateFromAnywhereToWebView(url: String, header: Map<String, String>)
+
+  fun navigateFormAnywhereToUndergraduateWebView(url: String)
+
+  fun navigateFormAnywhereToSetting()
+
+  fun navigateFormAnywhereToMain()
+
+  fun navigateFormAnywhereToLog()
+
+  fun navigateFormAnywhereToInformationModifier(userData: Data)
+
+  fun popManage()
+
+  fun navigateToScreen(screen: Screen)
+}
 
 @Composable
 fun getRootAction(): RootAction {
-    return koinInject<RootAction>()
+  return koinInject<RootAction>()
 }
 
 /**
  * 解析token
+ *
  * @property target String
  * @property verifyFunction Function1<String, Boolean> 验证是否符合
  * @property toActionString Function1<String, String> 解析成功的行为
  * @constructor
  */
 enum class TokeJump(
-    val target: String,
-    val verifyFunction: (String) -> Boolean,
-    val toActionString: (String) -> String
+  val target: String,
+  val verifyFunction: (String) -> Boolean,
+  val toActionString: (String) -> String,
 ) {
-    /**
-     * Post
-     * 转到特定的post
-     * @constructor Create empty Post
-     */
-    Post(target = "POST", verifyFunction = {
-        it.toIntOrNull() == null
-    }, toActionString = {
-        "POST-${it}"
-    }),
+  /**
+   * Post 转到特定的post
+   *
+   * @constructor Create empty Post
+   */
+  Post(
+    target = "POST",
+    verifyFunction = { it.toIntOrNull() == null },
+    toActionString = { "POST-${it}" },
+  ),
 
-    /**
-     * Web
-     * 转到特定的web网页
-     * @constructor Create empty Web
-     */
-    WEB(target = "WEB", verifyFunction = {
-        val regexString = ""
-        val regex = Regex(regexString)
-        regex.matches(it)
-    }, toActionString = {
-        "WEB-${it}"
-    }),
+  /**
+   * Web 转到特定的web网页
+   *
+   * @constructor Create empty Web
+   */
+  WEB(
+    target = "WEB",
+    verifyFunction = {
+      val regexString = ""
+      val regex = Regex(regexString)
+      regex.matches(it)
+    },
+    toActionString = { "WEB-${it}" },
+  ),
 
-    /**
-     * Null
-     * 无
-     * @constructor Create empty Null
-     */
-    Null(target = "NULL", verifyFunction = {
-        it == "null"
-    }, toActionString = {
-        "NULL"
-    })
+  /**
+   * Null 无
+   *
+   * @constructor Create empty Null
+   */
+  Null(target = "NULL", verifyFunction = { it == "null" }, toActionString = { "NULL" }),
 }
 
 fun tokenJump(
-    tokenForParse: String,
-    fail: CoroutineScope.() -> Unit,
-    rootAction: RootAction,
-    scope: CoroutineScope
+  tokenForParse: String,
+  fail: CoroutineScope.() -> Unit,
+  rootAction: RootAction,
+  scope: CoroutineScope,
 ) {
-    val result = tokenForParse.split("_FuTalk.Action_")
-    if (result.size != 2) {
-        fail.invoke(scope)
-        return
+  val result = tokenForParse.split("_FuTalk.Action_")
+  if (result.size != 2) {
+    fail.invoke(scope)
+    return
+  }
+  result.let {
+    val action = it[1]
+    when (it[0]) {
+      "WEBVIEW" -> {}
     }
-    result.let {
-        val action = it[1]
-        when (it[0]) {
-            "WEBVIEW" -> {}
-        }
-    }
+  }
 }
 
 /**
  * 根ui
+ *
  * @param systemAction SystemAction
  */
 @Composable
-fun RootUi(
-    systemAction: SystemAction
-) {
-    Navigator(SplashPageVoyagerScreen()) { navigate ->
-        KoinApplication(application = {
-            modules(
-                appModule(
-                    object : RootAction {
-                        override fun finishLogin() {
-                            navigate.replaceAll(ManageVoyagerScreen())
-                        }
+fun RootUi(systemAction: SystemAction) {
+  Navigator(SplashPageVoyagerScreen()) { navigate ->
+    KoinApplication(
+      application = {
+        modules(
+          appModule(
+            object : RootAction {
+              override fun finishLogin() {
+                navigate.replaceAll(ManageVoyagerScreen())
+              }
 
-                        override fun reLogin() {
-                            initStore().clear()
-                            navigate.replaceAll(LoginAndRegisterVoyagerScreen)
-                        }
+              override fun reLogin() {
+                initStore().clear()
+                navigate.replaceAll(LoginAndRegisterVoyagerScreen)
+              }
 
-                        override fun navigateFormSplashToMainPage() {
-                            navigate.replaceAll(MainVoyagerScreen())
-                        }
+              override fun navigateFormSplashToMainPage() {
+                navigate.replaceAll(MainVoyagerScreen())
+              }
 
-                        override fun navigateFormSplashToLoginAndRegister() {
-                            navigate.replaceAll(LoginAndRegisterVoyagerScreen)
-                        }
+              override fun navigateFormSplashToLoginAndRegister() {
+                navigate.replaceAll(LoginAndRegisterVoyagerScreen)
+              }
 
-                        override fun navigateFromActionToFeedback() {
-                            navigate.push(FeedbackVoyagerScreen())
-                        }
+              override fun navigateFromActionToFeedback() {
+                navigate.push(FeedbackVoyagerScreen())
+              }
 
-                        override fun navigateFromActionToQRCodeScreen() {
-                            navigate.push(QRCodeVoyagerScreen())
-                        }
+              override fun navigateFromActionToQRCodeScreen() {
+                navigate.push(QRCodeVoyagerScreen())
+              }
 
-                        override fun navigateFromActionToAboutUs() {
-                            navigate.push(AboutUsVoyagerScreen())
-                        }
+              override fun navigateFromActionToAboutUs() {
+                navigate.push(AboutUsVoyagerScreen())
+              }
 
-                        override fun navigateFromAnywhereToManage() {
-                            navigate.push(ManageVoyagerScreen())
-                        }
+              override fun navigateFromAnywhereToManage() {
+                navigate.push(ManageVoyagerScreen())
+              }
 
-                        override fun navigateFromAnywhereToWeather() {
-                            navigate.push(WeatherVoyagerScreen())
-                        }
+              override fun navigateFromAnywhereToWeather() {
+                navigate.push(WeatherVoyagerScreen())
+              }
 
-                        override fun navigateFormLoginToMain() {
-                            navigate.replaceAll(MainVoyagerScreen())
-                        }
+              override fun navigateFormLoginToMain() {
+                navigate.replaceAll(MainVoyagerScreen())
+              }
 
-                        override fun navigateFormAnywhereToRelease(initLabelList: List<String>) {
-                            navigate.push(ReleaseRouteVoyagerScreen(listOf()))
-                        }
+              override fun navigateFormAnywhereToRelease(initLabelList: List<String>) {
+                navigate.push(ReleaseRouteVoyagerScreen(listOf()))
+              }
 
-                        override fun navigateFormPostToReport(type: ReportType) {
-                            navigate.push(ReportVoyagerScreen(type))
-                        }
+              override fun navigateFormPostToReport(type: ReportType) {
+                navigate.push(ReportVoyagerScreen(type))
+              }
 
-                        override fun navigateFromAnywhereToWebView(url: String,header :  Map<String,String>) {
-                            navigate.push(GeneralWebViewVoyagerScreen(url, header = header))
-                        }
+              override fun navigateFromAnywhereToWebView(url: String, header: Map<String, String>) {
+                navigate.push(GeneralWebViewVoyagerScreen(url, header = header))
+              }
 
-                        override fun navigateFormAnywhereToUndergraduateWebView(
-                            url: String,
-                        ) {
-                            navigate.push(UndergraduateWebViewVoyagerScreen(url))
-                        }
+              override fun navigateFormAnywhereToUndergraduateWebView(url: String) {
+                navigate.push(UndergraduateWebViewVoyagerScreen(url))
+              }
 
-                        override fun navigateFormAnywhereToSetting() {
-                            navigate.push(SettingVoyagerScreen())
-                        }
+              override fun navigateFormAnywhereToSetting() {
+                navigate.push(SettingVoyagerScreen())
+              }
 
-                        override fun navigateFormAnywhereToMain() {
-                            navigate.push(MainVoyagerScreen())
-                        }
+              override fun navigateFormAnywhereToMain() {
+                navigate.push(MainVoyagerScreen())
+              }
 
-                        override fun navigateFormAnywhereToInformationModifier(userData: Data) {
-                            navigate.push(ModifierInformationVoyagerScreen(userData = userData))
-                        }
+              override fun navigateFormAnywhereToInformationModifier(userData: Data) {
+                navigate.push(ModifierInformationVoyagerScreen(userData = userData))
+              }
 
-                        override fun popManage() {
-                            if (navigate.lastItem is ManageVoyagerScreen && navigate.canPop) {
-                                navigate.pop()
-                            }
-                        }
-
-                        override fun navigateFormAnywhereToLog() {
-                            navigate.push(LogVoyagerScreen())
-                        }
-
-                        override fun navigateToScreen(screen: Screen) {
-                            navigate.push(screen)
-                        }
-                    },
-                    systemAction = systemAction,
-                    navigator = navigate,
-                )
-            )
-        }) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                FuTalkTheme {
-                    SettingTransitions(navigate)
+              override fun popManage() {
+                if (navigate.lastItem is ManageVoyagerScreen && navigate.canPop) {
+                  navigate.pop()
                 }
-                if (BaseUrlConfig.isDebug) {
-                    IconButton(
-                        onClick = {
-                            navigate.push(TestVoyagerScreen())
-                        },
-                        modifier = Modifier
-                            .navigationBarsPadding()
-                            .systemBarsPadding()
-                            .offset(x = 10.dp, y = (-10).dp)
-                    ) {
-                        Icon(Icons.Default.Add, null)
-                    }
-                }
-                EasyToast(toast = koinInject())
-            }
+              }
+
+              override fun navigateFormAnywhereToLog() {
+                navigate.push(LogVoyagerScreen())
+              }
+
+              override fun navigateToScreen(screen: Screen) {
+                navigate.push(screen)
+              }
+            },
+            systemAction = systemAction,
+            navigator = navigate,
+          )
+        )
+      }
+    ) {
+      Box(modifier = Modifier.fillMaxSize()) {
+        FuTalkTheme { SettingTransitions(navigate) }
+        if (BaseUrlConfig.isDebug) {
+          IconButton(
+            onClick = { navigate.push(TestVoyagerScreen()) },
+            modifier =
+              Modifier.navigationBarsPadding().systemBarsPadding().offset(x = 10.dp, y = (-10).dp),
+          ) {
+            Icon(Icons.Default.Add, null)
+          }
         }
+        EasyToast(toast = koinInject())
+      }
     }
+  }
 }

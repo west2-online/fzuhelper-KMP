@@ -21,48 +21,44 @@ import androidx.compose.ui.unit.dp
 
 /**
  * 自实现底部栏，使用沉浸式
+ *
  * @param modifier Modifier
  * @param backgroundColor Color
  * @param contentColor Color
  * @param elevation Dp
  * @param isNavigationBarsPadding Boolean
- * @param content [@androidx.compose.runtime.Composable] [@kotlin.ExtensionFunctionType] Function1<RowScope, Unit>
+ * @param content [@androidx.compose.runtime.Composable] [@kotlin.ExtensionFunctionType]
+ *   Function1<RowScope, Unit>
  */
 @Composable
-fun BottomNavigationWithBottomPadding (
-    modifier: Modifier = Modifier,
-    backgroundColor: Color = MaterialTheme.colors.primarySurface,
-    contentColor: Color = contentColorFor(backgroundColor),
-    elevation: Dp = BottomNavigationDefaults.Elevation,
-    isNavigationBarsPadding:Boolean = false,
-    content: @Composable RowScope.() -> Unit,
-){
-    Surface(
-        color = backgroundColor,
-        contentColor = contentColor,
-        elevation = elevation,
-        modifier = modifier
-    ) {
-        Row(
-            Modifier
-                .composed {
-                    if(isNavigationBarsPadding){
-                        return@composed this.navigationBarsPadding()
-                    }
-                    return@composed this
-                }
-                .height(56.dp)
-                .fillMaxWidth()
-                .selectableGroup(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            content = content
-        )
-    }
-}
-
-@Composable
-fun BottomNavigation(
-
+fun BottomNavigationWithBottomPadding(
+  modifier: Modifier = Modifier,
+  backgroundColor: Color = MaterialTheme.colors.primarySurface,
+  contentColor: Color = contentColorFor(backgroundColor),
+  elevation: Dp = BottomNavigationDefaults.Elevation,
+  isNavigationBarsPadding: Boolean = false,
+  content: @Composable RowScope.() -> Unit,
 ) {
-
+  Surface(
+    color = backgroundColor,
+    contentColor = contentColor,
+    elevation = elevation,
+    modifier = modifier,
+  ) {
+    Row(
+      Modifier.composed {
+          if (isNavigationBarsPadding) {
+            return@composed this.navigationBarsPadding()
+          }
+          return@composed this
+        }
+        .height(56.dp)
+        .fillMaxWidth()
+        .selectableGroup(),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      content = content,
+    )
+  }
 }
+
+@Composable fun BottomNavigation() {}

@@ -45,6 +45,7 @@ import util.network.resetWithoutLog
 
 /**
  * 课程功能的相关功能
+ *
  * @property kValueAction UndergraduateKValueAction
  * @property classScheduleRepository ClassScheduleRepository
  * @property classSchedule ClassSchedule
@@ -65,491 +66,446 @@ import util.network.resetWithoutLog
  * @constructor
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class ClassScheduleViewModel (
-    private val kValueAction: UndergraduateKValueAction,
-    private val classScheduleRepository: ClassScheduleRepository,
-    private val classSchedule: ClassSchedule,
-    private val dao: Dao,
-    private val shareClient: ShareClient
-):ViewModel(){
-    class ClassScheduleUiState(
-        kValueAction: UndergraduateKValueAction,
+class ClassScheduleViewModel(
+  private val kValueAction: UndergraduateKValueAction,
+  private val classScheduleRepository: ClassScheduleRepository,
+  private val classSchedule: ClassSchedule,
+  private val dao: Dao,
+  private val shareClient: ShareClient,
+) : ViewModel() {
+  class ClassScheduleUiState(kValueAction: UndergraduateKValueAction) {
+    val startYear = MutableStateFlow(kValueAction.dataStartYear.currentValue.value ?: 2023)
+    val startMonth = MutableStateFlow(kValueAction.dataStartMonth.currentValue.value ?: 1)
+    val startDay = MutableStateFlow(kValueAction.dataStartDay.currentValue.value ?: 1)
+  }
+
+  val classScheduleUiState = ClassScheduleUiState(kValueAction)
+
+  val currentYear = kValueAction.currentYear
+  var selectYear = MutableStateFlow(kValueAction.currentYear.value)
+  var selectWeek = MutableStateFlow<Int>(kValueAction.currentWeek.currentValue.value ?: 1)
+
+  val scrollState = ScrollState(initial = 0)
+  val courseDialog = MutableStateFlow<CourseBean?>(null)
+  val refreshState = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
+  val refreshExamState = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
+
+  private var course: Flow<List<CourseBean>> =
+    database.classScheduleQueries.getAllCourse().asFlow().mapToList(Dispatchers.IO)
+
+  val courseForShow =
+    selectYear
+      .combine(course) { currentYear, course ->
+        course.filter { "${it.kcXuenian}0${it.kcYear}" == currentYear }
+      }
+      .stateIn(viewModelScope, SharingStarted.Lazily, listOf())
+
+  val yearOptions =
+    database.yearOptionsQueries.getAllYearOptions().asFlow().mapToList(Dispatchers.IO)
+
+  data class ExamAddressParse(
+    val year: Int?,
+    val month: Int?,
+    val startHour: Int?,
+    val startMinute: Int?,
+    val endHour: Int?,
+    val endMinute: Int?,
+    val address: String?,
+  )
+
+  private fun (ExamAddressParse?).verify(): ExamAddressParse? {
+    this ?: return null
+    return if (
+      year == null ||
+        month == null ||
+        startHour == null ||
+        startMinute == null ||
+        endHour == null ||
+        endMinute == null ||
+        address == null
     ) {
-        val startYear = MutableStateFlow(kValueAction.dataStartYear.currentValue.value ?: 2023)
-        val startMonth = MutableStateFlow(kValueAction.dataStartMonth.currentValue.value ?: 1)
-        val startDay = MutableStateFlow(kValueAction.dataStartDay.currentValue.value ?: 1)
+      null
+    } else {
+      this
+    }
+  }
+
+  data class ExamForShow(val exam: Exam, var examAddressParse: ExamAddressParse?)
+
+  val examList =
+    database.examQueries.selectAllExams().asFlow().mapToList(Dispatchers.IO).map { exams ->
+      exams
+        .filter { it.address.isNotEmpty() }
+        .map { exam ->
+          // 定义正则表达式
+          val datePattern =
+            Regex("""(\d{4})年(\d{2})月(\d{2})日 (\d{2}):(\d{2})-(\d{2}):(\d{2}) (\S+)""")
+              .matchEntire(exam.address)
+          datePattern ?: return@map ExamForShow(exam, null)
+          datePattern.groupValues.let {
+            return@map ExamForShow(
+              exam = exam,
+              examAddressParse =
+                ExamAddressParse(
+                  year = parseIntWithNull(it[1]),
+                  month = parseIntWithNull(it[2]),
+                  startHour = parseIntWithNull(it[3]),
+                  startMinute = parseIntWithNull(it[4]),
+                  endHour = parseIntWithNull(it[5]),
+                  endMinute = parseIntWithNull(it[6]),
+                  address = it[7],
+                ),
+            )
+          }
+        }
+        .map { it.apply { examAddressParse = examAddressParse.verify() } }
     }
 
-    val classScheduleUiState = ClassScheduleUiState(kValueAction)
-
-    val currentYear = kValueAction.currentYear
-    var selectYear = MutableStateFlow(kValueAction.currentYear.value)
-    var selectWeek = MutableStateFlow<Int>(kValueAction.currentWeek.currentValue.value ?: 1)
-
-    val scrollState = ScrollState(initial = 0)
-    val courseDialog = MutableStateFlow<CourseBean?>(null)
-    val refreshState = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
-    val refreshExamState = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
-
-    private var course : Flow<List<CourseBean>> = database.classScheduleQueries
-        .getAllCourse()
-        .asFlow()
-        .mapToList(Dispatchers.IO)
-
-
-    val courseForShow = selectYear
-        .combine(course){ currentYear,course ->
-            course.filter {
-                "${it.kcXuenian}0${it.kcYear}" == currentYear
+  /** 初始化会更新更新当前学期 */
+  init {
+    viewModelScope.launchInDefault {
+      classScheduleRepository.apply {
+        shareClient.client.apply {
+          getWeek()
+            .map {
+              it.apply {
+                kValueAction.currentWeek.setValue(nowWeek)
+                kValueAction.currentXn.setValue(curXuenian)
+                kValueAction.currentXq.setValue(curXueqi)
+                selectYear.value = getXueQi()
+                selectWeek.value = nowWeek
+              }
             }
+            .flatMapConcat {
+              getSchoolCalendar(it.getXueQi()).retry(10).map { result ->
+                parseBeginDateReset(it.getXueQi(), result, true)
+              }
+            }
+            .catchWithMassage(label = "更新当前学期", action = null)
+            .collect {}
         }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.Lazily,
-            listOf()
-        )
-
-
-    val yearOptions = database.yearOptionsQueries
-        .getAllYearOptions()
-        .asFlow()
-        .mapToList(Dispatchers.IO)
-
-    data class ExamAddressParse(
-        val year:Int?,
-        val month:Int?,
-        val startHour : Int?,
-        val startMinute : Int?,
-        val endHour : Int?,
-        val endMinute : Int?,
-        val address: String?
-    )
-
-    private fun (ExamAddressParse?).verify():ExamAddressParse?{
-        this?:return null
-        return if (
-            year == null ||
-            month == null ||
-            startHour == null ||
-            startMinute == null ||
-            endHour == null ||
-            endMinute == null ||
-            address == null
-        ){
-            null
-        }else {
-            this
-        }
+      }
     }
+  }
 
+  /**
+   * 是否是当前周
+   *
+   * @param week Int
+   * @return Boolean
+   */
+  fun isCurrentWeek(week: Int): Boolean {
+    return kValueAction.currentWeek.currentValue.value == week &&
+      kValueAction.currentYear.value == selectYear.value
+  }
 
-    data class ExamForShow(
-        val exam: Exam,
-        var examAddressParse:ExamAddressParse?
-    )
-    val examList = database.examQueries
-        .selectAllExams()
-        .asFlow()
-        .mapToList(Dispatchers.IO)
-        .map { exams ->
-            exams.filter {
-                it.address.isNotEmpty()
-            }.map{ exam ->
-                // 定义正则表达式
-                val datePattern = Regex("""(\d{4})年(\d{2})月(\d{2})日 (\d{2}):(\d{2})-(\d{2}):(\d{2}) (\S+)""").matchEntire(exam.address)
-                datePattern?:return@map ExamForShow(exam,null)
-                datePattern.groupValues.let {
-                    return@map ExamForShow(
-                        exam = exam,
-                        examAddressParse = ExamAddressParse(
-                            year = parseIntWithNull(it[1]),
-                            month = parseIntWithNull(it[2]),
-                            startHour = parseIntWithNull(it[3]),
-                            startMinute = parseIntWithNull(it[4]),
-                            endHour = parseIntWithNull(it[5]),
-                            endMinute = parseIntWithNull(it[6]),
-                            address = it[7]
-                        )
-                    )
-                }
-            }.map {
+  /**
+   * 是否是当前年
+   *
+   * @return Boolean
+   */
+  fun isCurrentYear(): Boolean {
+    return kValueAction.currentYear.value == selectYear.value
+  }
+
+  /** Refresh class data 刷新课程信息 */
+  @OptIn(ExperimentalCoroutinesApi::class)
+  fun refreshClassData() {
+    viewModelScope.launchInDefault {
+      refreshState.logicIfNotLoading {
+        classScheduleRepository.apply {
+          val studentData = classSchedule.getClassScheduleClient()
+          val client =
+            studentData.first
+              ?: run {
+                refreshState.resetWithLog(
+                  logLabel = "登录失败",
+                  NetworkResult.Error(Throwable("获取课程失败,请重试"), Throwable("登录失败")),
+                )
+                return@logicIfNotLoading
+              }
+          val id =
+            studentData.second
+              ?: run {
+                refreshState.resetWithLog(
+                  logLabel = "id有误",
+                  NetworkResult.Error(Throwable("获取课程失败"), Throwable("id有误")),
+                )
+                return@logicIfNotLoading
+              }
+          with(client) {
+            getWeek()
+              .map {
                 it.apply {
-                    examAddressParse = examAddressParse.verify()
+                  kValueAction.currentWeek.setValue(nowWeek)
+                  kValueAction.currentXn.setValue(curXuenian)
+                  kValueAction.currentXq.setValue(curXueqi)
+                  selectYear.value = getXueQi()
+                  selectWeek.value = nowWeek
+                }
+              }
+              .catchWithMassage(
+                label = "更新当前学期失败",
+                action = { label, error ->
+                  refreshState.resetWithLog(
+                    logLabel = "更新当前学期失败",
+                    NetworkResult.Error(Throwable("更新当前学期失败"), error),
+                  )
+                },
+              )
+              .flatMapConcat {
+                getSchoolCalendar(it.getXueQi()).retry(10).map { result ->
+                  parseBeginDateReset(it.getXueQi(), result)
+                }
+              }
+              .actionWithLabel(
+                label = "更新开学日期失败",
+                catchAction = { label, error ->
+                  refreshState.resetWithLog(label, networkError(error, "更新开学日期失败"))
+                },
+                collectAction = { label, data -> getCourseFromNetwork(id) },
+              )
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * 获取课程，只获取当前课程
+   *
+   * @param id String
+   * @receiver HttpClient
+   */
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private suspend fun HttpClient.getCourseFromNetwork(id: String) {
+    with(classScheduleRepository) {
+      with(this@getCourseFromNetwork) {
+        getCourseStateHTML(id)
+          .catchWithMassage { label, throwable ->
+            refreshState.resetWithLog(label, networkError(throwable, "更新失败"))
+          }
+          .flatMapConcat { stateHTML ->
+            getWeek().map { weekDataOnFlow ->
+              CourseData(stateHTML = stateHTML, weekData = weekDataOnFlow)
+            }
+          }
+          .catchWithMassage { label, throwable ->
+            refreshState.resetWithLog(label, networkError(throwable, "更新失败"))
+          }
+          .collect { courseData ->
+            val weekData = courseData.weekData
+            val currentXq = "${weekData.curXueqi}0${weekData.curXuenian}"
+            getCourses(currentXq, courseData.stateHTML)
+              .flatMapConcat {
+                getCoursesHTML(
+                  it,
+                  currentXq,
+                  onGetOptions = { yearOptionsFromNetwork ->
+                    dao.yearOpensDao.insertYearOpens(yearOptionsFromNetwork)
+                  },
+                  id,
+                )
+              }
+              .catchWithMassage { label, throwable ->
+                refreshState.resetWithLog(label, networkError(throwable, "更新失败"))
+              }
+              .collect { initCourseBean ->
+                dao.classScheduleDao.insertClassScheduleByXueNian(
+                  initCourseBean,
+                  weekData.curXueqi,
+                  weekData.curXuenian,
+                )
+                refreshState.resetWithoutLog(NetworkResult.Success("刷新成功"))
+                getOtherCourseFromNetwork(currentXq, id)
+              }
+          }
+      }
+    }
+  }
+
+  /**
+   * 获取非currentXq学期的课程
+   *
+   * @param currentXq String
+   * @param id String
+   * @receiver HttpClient
+   */
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private fun HttpClient.getOtherCourseFromNetwork(currentXq: String, id: String) {
+    viewModelScope.launchInDefault {
+      val yearOptions = dao.yearOpensDao.getAllYearOpens()
+      yearOptions
+        .filter { it.yearOptionsName != currentXq && it.yearOptionsName != "" }
+        .map { it.yearOptionsName }
+        .forEach { yearOptionsName ->
+          yearOptionsName.let { xq ->
+            with(classScheduleRepository) {
+              this@getOtherCourseFromNetwork.getCourseStateHTML(id)
+                .flatMapConcat { stateHtml -> getCourses(xq, stateHtml) }
+                .flatMapConcat {
+                  this@getOtherCourseFromNetwork.getCoursesHTML(it, xq, onGetOptions = {}, id)
+                }
+                .collect { initCourseBean ->
+                  dao.classScheduleDao.insertClassScheduleByXueNian(
+                    initCourseBean,
+                    xq.substring(0, 4).toInt(),
+                    xq.substring(5, 6).toInt(),
+                  )
                 }
             }
+          }
         }
+    }
+  }
 
-    /**
-     * 初始化会更新更新当前学期
-     */
-    init {
-        viewModelScope.launchInDefault {
-            classScheduleRepository.apply {
-                shareClient.client.apply {
-                    getWeek()
-                        .map {
-                            it.apply {
-                                kValueAction.currentWeek.setValue(nowWeek)
-                                kValueAction.currentXn.setValue(curXuenian)
-                                kValueAction.currentXq.setValue(curXueqi)
-                                selectYear.value = getXueQi()
-                                selectWeek.value = nowWeek
-                            }
-                        }
-                        .flatMapConcat {
-                            getSchoolCalendar(it.getXueQi())
-                                .retry(10)
-                                .map { result->
-                                    parseBeginDateReset(
-                                        it.getXueQi()
-                                        ,result,
-                                        true
-                                    )
-                                }
-                        }
-                        .catchWithMassage(
-                            label = "更新当前学期",
-                            action = null
-                        )
-                        .collect{}
-                }
+  /** 刷新考试数据 */
+  fun refreshExamData() {
+    viewModelScope.launchInDefault {
+      refreshExamState.logicIfNotLoading {
+        val xq = kValueAction.currentXq.currentValue.value
+        val studentData = classSchedule.getClassScheduleClient()
+        val client =
+          studentData.first
+            ?: run {
+              refreshState.resetWithLog(
+                logLabel = "登录失败",
+                NetworkResult.Error(Throwable("登录失败"), Throwable("登录失败")),
+              )
+              return@logicIfNotLoading
             }
-        }
-    }
-
-    /**
-     * 是否是当前周
-     * @param week Int
-     * @return Boolean
-     */
-    fun isCurrentWeek( week:Int ):Boolean{
-        return kValueAction.currentWeek.currentValue.value == week && kValueAction.currentYear.value == selectYear.value
-    }
-
-    /**
-     * 是否是当前年
-     * @return Boolean
-     */
-    fun isCurrentYear():Boolean{
-        return kValueAction.currentYear.value == selectYear.value
-    }
-
-    /**
-     * Refresh class data
-     * 刷新课程信息
-     */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun refreshClassData(){
-        viewModelScope.launchInDefault {
-            refreshState.logicIfNotLoading {
-                classScheduleRepository.apply {
-                    val studentData = classSchedule.getClassScheduleClient()
-                    val client = studentData.first ?: run {
-                        refreshState.resetWithLog(
-                            logLabel = "登录失败",
-                            NetworkResult.Error(Throwable("获取课程失败,请重试"),Throwable("登录失败"))
-                        )
-                        return@logicIfNotLoading
-                    }
-                    val id = studentData.second ?: run{
-                        refreshState.resetWithLog(
-                            logLabel = "id有误",
-                            NetworkResult.Error(Throwable("获取课程失败"),Throwable("id有误"))
-                        )
-                        return@logicIfNotLoading
-                    }
-                    with(client) {
-                        getWeek()
-                            .map {
-                                it.apply {
-                                    kValueAction.currentWeek.setValue(nowWeek)
-                                    kValueAction.currentXn.setValue(curXuenian)
-                                    kValueAction.currentXq.setValue(curXueqi)
-                                    selectYear.value = getXueQi()
-                                    selectWeek.value = nowWeek
-                                }
-                            }
-                            .catchWithMassage(
-                                label = "更新当前学期失败",
-                                action = { label , error ->
-                                    refreshState.resetWithLog(
-                                        logLabel = "更新当前学期失败",
-                                        NetworkResult.Error(Throwable("更新当前学期失败"),error)
-                                    )
-                                }
-                            )
-                            .flatMapConcat {
-                                getSchoolCalendar(it.getXueQi())
-                                    .retry(10)
-                                    .map { result->
-                                        parseBeginDateReset(it.getXueQi(),result)
-                                    }
-                            }
-                            .actionWithLabel(
-                                label = "更新开学日期失败",
-                                catchAction = { label , error ->
-                                    refreshState.resetWithLog(label,networkError(error,"更新开学日期失败"))
-                                },
-                                collectAction = { label , data ->
-                                    getCourseFromNetwork(id)
-                                }
-                            )
-                    }
-                }
+        val id =
+          studentData.second
+            ?: run {
+              refreshState.resetWithLog(
+                logLabel = "id有误",
+                NetworkResult.Error(Throwable("获取课程失败"), Throwable("id有误")),
+              )
+              return@logicIfNotLoading
             }
+        with(client) {
+          with(classScheduleRepository) {
+            getExamStateHTML(id)
+              .map {
+                return@map (parseExamsHTML(it))
+              }
+              .collect {
+                dao.examDao.insertExam(it)
+                refreshExamState.resetWithoutLog(networkSuccess("刷新考试记录成功"))
+              }
+          }
         }
+      }
     }
+  }
 
-    /**
-     * 获取课程，只获取当前课程
-     * @receiver HttpClient
-     * @param id String
-     */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private suspend fun HttpClient.getCourseFromNetwork(
-        id:String
-    ){
-        with(classScheduleRepository){
-            with(this@getCourseFromNetwork) {
-                getCourseStateHTML(id)
-                    .catchWithMassage { label, throwable ->
-                        refreshState.resetWithLog(label,networkError(throwable,"更新失败"))
-                    }
-                    .flatMapConcat { stateHTML ->
-                        getWeek()
-                            .map { weekDataOnFlow ->
-                                CourseData(stateHTML = stateHTML, weekData = weekDataOnFlow)
-                            }
-                    }
-                    .catchWithMassage { label, throwable ->
-                        refreshState.resetWithLog(label,networkError(throwable,"更新失败"))
-                    }
-                    .collect { courseData ->
-                        val weekData = courseData.weekData
-                        val currentXq = "${weekData.curXueqi}0${weekData.curXuenian}"
-                        getCourses(currentXq, courseData.stateHTML)
-                            .flatMapConcat {
-                                getCoursesHTML(
-                                    it,
-                                    currentXq,
-                                    onGetOptions = { yearOptionsFromNetwork ->
-                                        dao.yearOpensDao.insertYearOpens(yearOptionsFromNetwork)
-                                    },
-                                    id
-                                )
-                            }
-                            .catchWithMassage { label, throwable ->
-                                refreshState.resetWithLog(
-                                    label,
-                                    networkError(throwable, "更新失败")
-                                )
-                            }
-                            .collect { initCourseBean ->
-                                dao.classScheduleDao.insertClassScheduleByXueNian(initCourseBean,weekData.curXueqi,weekData.curXuenian)
-                                refreshState.resetWithoutLog(NetworkResult.Success("刷新成功"))
-                                getOtherCourseFromNetwork(currentXq,id)
-                            }
-                    }
-            }
+  /**
+   * 更改当前学年
+   *
+   * @param newValue String
+   */
+  fun changeCurrentYear(newValue: String) {
+    viewModelScope.launchInDefault {
+      selectYear.emit(newValue)
+      classScheduleRepository.apply {
+        val client =
+          HttpClient() {
+            install(ContentNegotiation) { json() }
+            install(HttpCookies) {}
+            install(HttpRedirect) { checkHttpMethod = false }
+            configureForPlatform()
+          }
+        client
+          .getSchoolCalendar(newValue)
+          .retry(10)
+          .map { result ->
+            return@map parseBeginDateReset(newValue, result)
+          }
+          .collectWithMassage { label, data -> }
+      }
+    }
+  }
+
+  /**
+   * 解析得到的考试html
+   *
+   * @param result String
+   * @return List<ExamBean>
+   */
+  private fun parseExamsHTML(result: String): List<ExamBean> {
+    val exams = ArrayList<ExamBean>()
+    val document = Ksoup.parse(result)
+    val examElements =
+      document
+        .select("table[id=ContentPlaceHolder1_DataList_xxk]")
+        .select(
+          "tr[style=height:30px; border-bottom:1px solid gray; border-left:1px solid gray; vertical-align:middle;]"
+        )
+    println("getExamInfo: examList:" + examElements.size)
+    for (i in examElements.indices) {
+      val element = examElements[i]
+      val tds = element.select("td")
+      val name = tds[0].text()
+      val xuefen = tds[1].text()
+      val teacher = tds[2].text()
+      val address = tds[3].text()
+      val zuohao = tds[4].text()
+      if (address.isNotEmpty()) {}
+
+      val exam = ExamBean(name, xuefen, teacher, address, zuohao)
+      exams.add(exam)
+    }
+    println(exams)
+    return exams
+  }
+
+  data class CourseData(val stateHTML: String, val weekData: WeekData)
+
+  /**
+   * 解析开学时间网页
+   *
+   * @param result 获取到的网页
+   */
+  private suspend fun parseBeginDateReset(xq: String, result: String, save: Boolean = false) {
+    val document = Ksoup.parse(result)
+    val select = document.getElementsByTag("select")[0]
+    val option = select.getElementsByAttributeValueStarting("value", xq)
+    if (option.size > 0) {
+      val value = option[0].attr("value")
+      val beginYear = value.substring(6, 10).toInt()
+      val beginMonth = value.substring(10, 12).toInt()
+      val beginDay = value.substring(12, 14).toInt()
+      if (save) {
+        kValueAction.apply {
+          dataStartDay.setValue(beginDay)
+          dataStartMonth.setValue(beginMonth)
+          dataStartYear.setValue(beginYear)
         }
+      }
+      classScheduleUiState.startDay.emit(beginDay)
+      classScheduleUiState.startYear.emit(beginYear)
+      classScheduleUiState.startMonth.emit(beginMonth)
+      //            println(beginMonth)
+      //                val calendar = Calendar.getInstance()
+      //                calendar.set(beginYear, beginMonth - 1, beginDay, 0, 0, 0)
+      // 存储当前设置的学期开学时间
+      //                DataManager.beginDate = calendar.timeInMillis
+      // 根据开学时间和当前时间计算出当前周数
+      //                val startMillis = calendar.timeInMillis
+      //                val endYear = value.substring(14, 18).toInt()
+      //                val endMonth = value.substring(18, 20).toInt()
+      //                val endDay = value.substring(20, 22).toInt()
+      //                calendar.set(endYear, endMonth - 1, endDay)
+      //                val endMillis = calendar.timeInMillis
+      //                val endWeek = getWeeks(startMillis, endMillis)
+      //                DataManager.endWeek = endWeek
     }
-
-    /**
-     * 获取非currentXq学期的课程
-     * @receiver HttpClient
-     * @param currentXq String
-     * @param id String
-     */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun HttpClient.getOtherCourseFromNetwork(
-        currentXq : String,
-        id :String
-    ){
-        viewModelScope.launchInDefault {
-            val yearOptions = dao.yearOpensDao.getAllYearOpens()
-            yearOptions.filter {
-                it.yearOptionsName != currentXq && it.yearOptionsName!=""
-            }.map{
-                it.yearOptionsName
-            }.forEach { yearOptionsName ->
-                yearOptionsName.let { xq ->
-                    with(classScheduleRepository){
-                        this@getOtherCourseFromNetwork.getCourseStateHTML(
-                            id
-                        )
-                            .flatMapConcat { stateHtml ->
-                                getCourses(xq, stateHtml)
-                            }
-                            .flatMapConcat {
-                                this@getOtherCourseFromNetwork.getCoursesHTML(
-                                    it,
-                                    xq,
-                                    onGetOptions = {},
-                                    id
-                                )
-                            }
-                            .collect { initCourseBean ->
-                                dao.classScheduleDao.insertClassScheduleByXueNian(initCourseBean,xq.substring(0,4).toInt(),xq.substring(5,6).toInt())
-                            }
-                    }
-                }
-            }
-        }
-    }
-
-
-    /**
-     * 刷新考试数据
-     *
-     */
-    fun refreshExamData(){
-        viewModelScope.launchInDefault {
-            refreshExamState.logicIfNotLoading {
-                val xq = kValueAction.currentXq.currentValue.value
-                val studentData = classSchedule.getClassScheduleClient()
-                val client = studentData.first ?: run {
-                    refreshState.resetWithLog(
-                        logLabel = "登录失败",
-                        NetworkResult.Error(Throwable("登录失败"),Throwable("登录失败"))
-                    )
-                    return@logicIfNotLoading
-                }
-                val id = studentData.second ?: run{
-                    refreshState.resetWithLog(
-                        logLabel = "id有误",
-                        NetworkResult.Error(Throwable("获取课程失败"),Throwable("id有误"))
-                    )
-                    return@logicIfNotLoading
-                }
-                with(client){
-                    with(classScheduleRepository) {
-                        getExamStateHTML(id)
-                            .map {
-                                return@map(parseExamsHTML(it))
-                            }
-                            .collect {
-                                dao.examDao.insertExam(it)
-                                refreshExamState.resetWithoutLog(networkSuccess("刷新考试记录成功"))
-                            }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * 更改当前学年
-     * @param newValue String
-     */
-    fun changeCurrentYear(newValue:String){
-        viewModelScope.launchInDefault {
-            selectYear.emit(newValue)
-            classScheduleRepository.apply {
-                 val client = HttpClient() {
-                     install(ContentNegotiation) {
-                         json()
-                     }
-                     install(HttpCookies){}
-                     install(HttpRedirect) {
-                         checkHttpMethod = false
-                     }
-                     configureForPlatform()
-                 }
-                client.getSchoolCalendar(newValue)
-                     .retry(10)
-                     .map { result->
-                         return@map parseBeginDateReset(newValue,result)
-                     }
-                     .collectWithMassage { label, data ->
-
-                     }
-            }
-        }
-    }
-
-    /**
-     * 解析得到的考试html
-     * @param result String
-     * @return List<ExamBean>
-     */
-    private fun parseExamsHTML(result: String): List<ExamBean> {
-        val exams = ArrayList<ExamBean>()
-        val document = Ksoup.parse(result)
-        val examElements = document.select("table[id=ContentPlaceHolder1_DataList_xxk]")
-            .select("tr[style=height:30px; border-bottom:1px solid gray; border-left:1px solid gray; vertical-align:middle;]")
-        println("getExamInfo: examList:" + examElements.size)
-        for (i in examElements.indices) {
-            val element = examElements[i]
-            val tds = element.select("td")
-            val name = tds[0].text()
-            val xuefen = tds[1].text()
-            val teacher = tds[2].text()
-            val address = tds[3].text()
-            val zuohao = tds[4].text()
-            if (address.isNotEmpty()) {
-
-            }
-            val exam = ExamBean(name, xuefen, teacher, address, zuohao)
-            exams.add(exam)
-        }
-        println(exams)
-        return exams
-    }
-
-
-    data class CourseData(
-        val stateHTML:String,
-        val weekData: WeekData
-    )
-    /**
-     * 解析开学时间网页
-     * @param result 获取到的网页
-     */
-    private suspend fun parseBeginDateReset(
-        xq: String,
-        result: String,
-        save : Boolean = false
-    ) {
-        val document = Ksoup.parse(result)
-        val select = document.getElementsByTag("select")[0]
-        val option = select.getElementsByAttributeValueStarting("value", xq)
-        if (option.size > 0) {
-            val value = option[0].attr("value")
-            val beginYear = value.substring(6, 10).toInt()
-            val beginMonth = value.substring(10, 12).toInt()
-            val beginDay = value.substring(12, 14).toInt()
-            if (save){
-                kValueAction.apply {
-                    dataStartDay.setValue(beginDay)
-                    dataStartMonth.setValue(beginMonth)
-                    dataStartYear.setValue(beginYear)
-                }
-            }
-            classScheduleUiState.startDay.emit(beginDay)
-            classScheduleUiState.startYear.emit(beginYear)
-            classScheduleUiState.startMonth.emit(beginMonth)
-//            println(beginMonth)
-//                val calendar = Calendar.getInstance()
-//                calendar.set(beginYear, beginMonth - 1, beginDay, 0, 0, 0)
-            //存储当前设置的学期开学时间
-//                DataManager.beginDate = calendar.timeInMillis
-            //根据开学时间和当前时间计算出当前周数
-//                val startMillis = calendar.timeInMillis
-//                val endYear = value.substring(14, 18).toInt()
-//                val endMonth = value.substring(18, 20).toInt()
-//                val endDay = value.substring(20, 22).toInt()
-//                calendar.set(endYear, endMonth - 1, endDay)
-//                val endMillis = calendar.timeInMillis
-//                val endWeek = getWeeks(startMillis, endMillis)
-//                DataManager.endWeek = endWeek
-        }
-
-
-    }
+  }
 }
 
 /**
  * 考试的信息
+ *
  * @property name String 考试名
  * @property xuefen String 学分
  * @property teacher String 老师
@@ -558,9 +514,9 @@ class ClassScheduleViewModel (
  * @constructor
  */
 data class ExamBean(
-    var name: String = "",
-    var xuefen: String = "",
-    var teacher: String = "",
-    var address: String = "",
-    var zuohao: String = ""
+  var name: String = "",
+  var xuefen: String = "",
+  var teacher: String = "",
+  var address: String = "",
+  var zuohao: String = "",
 )

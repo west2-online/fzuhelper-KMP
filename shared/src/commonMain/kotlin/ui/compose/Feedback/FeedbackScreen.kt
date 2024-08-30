@@ -7,21 +7,19 @@ import util.compose.ParentPaddingControl
 import util.compose.SettingTransitions
 import util.compose.defaultSelfPaddingControl
 
-
 /**
  * 反馈界面 一级界面
+ *
  * @property parentPaddingControl ParentPaddingControl
  * @constructor
  */
 class FeedbackVoyagerScreen(
-    val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
-):Screen{
-    @Composable
-    override fun Content() {
-        Navigator(FeedbackListVoyagerScreen(
-            parentPaddingControl
-        )){ navigator ->
-            SettingTransitions(navigator = navigator)
-        }
+  val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
+) : Screen {
+  @Composable
+  override fun Content() {
+    Navigator(FeedbackListVoyagerScreen(parentPaddingControl)) { navigator ->
+      SettingTransitions(navigator = navigator)
     }
+  }
 }

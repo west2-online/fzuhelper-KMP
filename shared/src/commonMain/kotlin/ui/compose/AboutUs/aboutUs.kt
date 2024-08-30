@@ -26,143 +26,128 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import kotlin.jvm.Transient
+import kotlin.math.sqrt
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ui.compose.Main.MainItems
 import util.compose.OwnMarkdown
 import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
-import kotlin.jvm.Transient
-import kotlin.math.sqrt
 
 /**
  * 关于我们的ui
+ *
  * @param modifier Modifier
  */
 @Preview
 @Composable
-fun AboutUsScreen(
-    modifier: Modifier = Modifier
-){
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        val rate = androidx.compose.animation.core.Animatable(1f)
-//        LaunchedEffect(Unit){
-//            withContext(Dispatchers.IO){
-//                rate.animateTo(
-//                    1f,
-//                    tween(1000)
-//                )
-//            }
-//        }
-        val text = rememberTextMeasurer()
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-        ){
-            Canvas(modifier = Modifier.align(Alignment.Center).fillMaxSize(0.5f)){
-                val padding = size.height/2
-                val otherPadding = padding/2*(sqrt(3.0)).toFloat()
-                val path1 = Path()
-                val path2 = Path()
-                val path1List = listOf(
-                    Offset(center.x+otherPadding,center.y - padding/2),
-                    Offset(center.x,center.y - padding),
-                    Offset(center.x-otherPadding,center.y-padding/2),
-                    Offset(center.x-otherPadding,center.y+padding/2),
-                    Offset(center.x,center.y + padding),
-                    Offset(center.x,center.y ),
-                    Offset(center.x+otherPadding,center.y - padding/2),
-                )
-                val path2List = listOf(
-                    Offset(center.x+otherPadding,center.y - padding/2),
-                    Offset(center.x,center.y),
-                    Offset(center.x,center.y + padding),
-                    Offset(center.x+otherPadding,center.y + padding/2),
-                    Offset(center.x+otherPadding,center.y - padding/2),
-                )
-                path1List.forEachIndexed { index, offset ->
-                    when (index) {
-                        0 -> {
-                            path1.moveTo(offset.x,offset.y)
-                        }
-                        path1List.size - 1 -> {
-                            path1.lineTo(offset.x,offset.y)
-                            path1.close()
-                        }
-                        else -> {
-                            path1.lineTo(offset.x,offset.y)
-                        }
-                    }
-                }
-                path2List.forEachIndexed { index, offset ->
-                    when (index) {
-                        0 -> {
-                            path2.moveTo(offset.x,offset.y)
-                        }
-                        path1List.size - 1 -> {
-                            path2.lineTo(offset.x,offset.y)
-                            path2.close()
-                        }
-                        else -> {
-                            path2.lineTo(offset.x,offset.y)
-                        }
-                    }
-                }
-
-                clipRect (bottom = rate.value * padding * 4 + size.height/2 - 2*padding){
-                    drawPath(path1, brush = Brush.linearGradient(
-                        listOf(
-                            Color(23,65,217),
-                            Color(21,77,222),
-                            Color(140,157,202),
-                        ),
-                        start = Offset(center.x,center.y - padding),
-                        end = Offset(center.x,center.y + padding)
-                    ))
-
-
-                }
-                clipRect(top = center.y + padding - rate.value * padding/2*3 , bottom = size.height) {
-                    drawPath(path2,
-                        brush = Brush.linearGradient(
-                            listOf(
-                                Color(38,185,176),
-                                Color(202,234,232),
-                            ),
-                            start = Offset(center.x,center.y + padding),
-                            end = Offset(center.x+otherPadding,center.y - padding/2)
-                        )
-                    )
-                }
-                rotate(330f, Offset(center.x,center.y)){
-                    val data = text.measure("FuTalk")
-                    drawText(
-                        data,
-                        topLeft = Offset(center.x,center.y),
-                    )
-                }
-
+fun AboutUsScreen(modifier: Modifier = Modifier) {
+  Column(
+    modifier = modifier.verticalScroll(rememberScrollState()),
+    horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
+    val rate = androidx.compose.animation.core.Animatable(1f)
+    //        LaunchedEffect(Unit){
+    //            withContext(Dispatchers.IO){
+    //                rate.animateTo(
+    //                    1f,
+    //                    tween(1000)
+    //                )
+    //            }
+    //        }
+    val text = rememberTextMeasurer()
+    Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f)) {
+      Canvas(modifier = Modifier.align(Alignment.Center).fillMaxSize(0.5f)) {
+        val padding = size.height / 2
+        val otherPadding = padding / 2 * (sqrt(3.0)).toFloat()
+        val path1 = Path()
+        val path2 = Path()
+        val path1List =
+          listOf(
+            Offset(center.x + otherPadding, center.y - padding / 2),
+            Offset(center.x, center.y - padding),
+            Offset(center.x - otherPadding, center.y - padding / 2),
+            Offset(center.x - otherPadding, center.y + padding / 2),
+            Offset(center.x, center.y + padding),
+            Offset(center.x, center.y),
+            Offset(center.x + otherPadding, center.y - padding / 2),
+          )
+        val path2List =
+          listOf(
+            Offset(center.x + otherPadding, center.y - padding / 2),
+            Offset(center.x, center.y),
+            Offset(center.x, center.y + padding),
+            Offset(center.x + otherPadding, center.y + padding / 2),
+            Offset(center.x + otherPadding, center.y - padding / 2),
+          )
+        path1List.forEachIndexed { index, offset ->
+          when (index) {
+            0 -> {
+              path1.moveTo(offset.x, offset.y)
             }
+            path1List.size - 1 -> {
+              path1.lineTo(offset.x, offset.y)
+              path1.close()
+            }
+            else -> {
+              path1.lineTo(offset.x, offset.y)
+            }
+          }
         }
-        OwnMarkdown(
-            content = markdown,
-            modifier = Modifier
-                .padding(bottom = 10.dp)
-                .fillMaxWidth(0.9f)
-                .wrapContentHeight()
-        )
+        path2List.forEachIndexed { index, offset ->
+          when (index) {
+            0 -> {
+              path2.moveTo(offset.x, offset.y)
+            }
+            path1List.size - 1 -> {
+              path2.lineTo(offset.x, offset.y)
+              path2.close()
+            }
+            else -> {
+              path2.lineTo(offset.x, offset.y)
+            }
+          }
+        }
+
+        clipRect(bottom = rate.value * padding * 4 + size.height / 2 - 2 * padding) {
+          drawPath(
+            path1,
+            brush =
+              Brush.linearGradient(
+                listOf(Color(23, 65, 217), Color(21, 77, 222), Color(140, 157, 202)),
+                start = Offset(center.x, center.y - padding),
+                end = Offset(center.x, center.y + padding),
+              ),
+          )
+        }
+        clipRect(top = center.y + padding - rate.value * padding / 2 * 3, bottom = size.height) {
+          drawPath(
+            path2,
+            brush =
+              Brush.linearGradient(
+                listOf(Color(38, 185, 176), Color(202, 234, 232)),
+                start = Offset(center.x, center.y + padding),
+                end = Offset(center.x + otherPadding, center.y - padding / 2),
+              ),
+          )
+        }
+        rotate(330f, Offset(center.x, center.y)) {
+          val data = text.measure("FuTalk")
+          drawText(data, topLeft = Offset(center.x, center.y))
+        }
+      }
     }
+    OwnMarkdown(
+      content = markdown,
+      modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth(0.9f).wrapContentHeight(),
+    )
+  }
 }
 
-/**
- * Markdown 显示的markdown
- */
-val markdown = """
+/** Markdown 显示的markdown */
+val markdown =
+  """
     
 # 欢迎使用FuTalk🤗
 
@@ -199,38 +184,29 @@ https://github.com/Futalker
 
 https://futalker.github.io
 
-""".trimIndent()
+"""
+    .trimIndent()
 
 /**
  * 关于我们的一级界面
+ *
  * @property parentPaddingControl ParentPaddingControl
  * @property options TabOptions
  * @constructor
  */
 class AboutUsVoyagerScreen(
-    @Transient
-    private val parentPaddingControl : ParentPaddingControl = defaultSelfPaddingControl()
+  @Transient private val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ) : Tab {
-    @Composable
-    override fun Content() {
-        AboutUsScreen(
-            modifier = Modifier
-                .fillMaxSize()
-                .parentSystemControl(parentPaddingControl)
-        )
-    }
+  @Composable
+  override fun Content() {
+    AboutUsScreen(modifier = Modifier.fillMaxSize().parentSystemControl(parentPaddingControl))
+  }
 
-    override val options: TabOptions
-        @Composable
-        get() {
-            val title = MainItems.POST.tag
-            val icon = rememberVectorPainter(MainItems.POST.selectImageVector)
-            return remember {
-                TabOptions(
-                    index = 0u,
-                    title = title,
-                    icon = icon
-                )
-            }
-        }
+  override val options: TabOptions
+    @Composable
+    get() {
+      val title = MainItems.POST.tag
+      val icon = rememberVectorPainter(MainItems.POST.selectImageVector)
+      return remember { TabOptions(index = 0u, title = title, icon = icon) }
+    }
 }
