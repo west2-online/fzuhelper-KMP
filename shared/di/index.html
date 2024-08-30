@@ -96,22 +96,15 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-login-client/index.html">LoginClient</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token operator"> = </span>HttpClient{
-        install(ContentNegotiation) {
-            json()
-        }
-        install(
-            DefaultRequest
-        ){
-            url(BaseUrlConfig.BaseUrl)
-        }
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-login-client/index.html">LoginClient</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token operator"> = </span>HttpClient {
+        install(ContentNegotiation) { json() }
+        install(DefaultRequest) { url(BaseUrlConfig.BaseUrl) }
         install(Logging)
-        install(HttpCookies){}
-        install(HttpRedirect) {
-            checkHttpMethod = false
-        }
+        install(HttpCookies) {}
+        install(HttpRedirect) { checkHttpMethod = false }
         configure()
-    }.encodeAction()</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">用于登录futalk的客户端</p></div></div></div>
+      }
+      .encodeAction()</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">用于登录futalk的客户端</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -126,22 +119,15 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-school-client/index.html">SchoolClient</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token operator"> = </span>HttpClient{
-        install(ContentNegotiation) {
-            json()
-        }
-        install(
-            DefaultRequest
-        ){
-            url(BaseUrlConfig.BaseUrl)
-        }
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-school-client/index.html">SchoolClient</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token operator"> = </span>HttpClient {
+        install(ContentNegotiation) { json() }
+        install(DefaultRequest) { url(BaseUrlConfig.BaseUrl) }
         install(Logging)
-        install(HttpCookies){}
-        install(HttpRedirect) {
-            checkHttpMethod = false
-        }
+        install(HttpCookies) {}
+        install(HttpRedirect) { checkHttpMethod = false }
         configure()
-    }.encodeAction()</span></span><span class="token punctuation">)</span></div></div></div>
+      }
+      .encodeAction()</span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -156,24 +142,25 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-share-client/index.html">ShareClient</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token operator"> = </span>HttpClient{
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-share-client/index.html">ShareClient</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token operator"> = </span>HttpClient {
         install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                encodeDefaults = true
-                isLenient = true
-                allowSpecialFloatingPointValues = true
-                allowStructuredMapKeys = true
-                prettyPrint = false
-                useArrayPolymorphism = false
-            })
+          json(
+            Json {
+              ignoreUnknownKeys = true
+              encodeDefaults = true
+              isLenient = true
+              allowSpecialFloatingPointValues = true
+              allowStructuredMapKeys = true
+              prettyPrint = false
+              useArrayPolymorphism = false
+            }
+          )
         }
         install(Logging)
-        install(HttpRedirect) {
-            checkHttpMethod = false
-        }
+        install(HttpRedirect) { checkHttpMethod = false }
         configure()
-    }.encodeAction()</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">用于共享的客户端</p></div></div></div>
+      }
+      .encodeAction()</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">用于共享的客户端</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -203,24 +190,25 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-web-client/index.html">WebClient</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token operator"> = </span>HttpClient{
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-web-client/index.html">WebClient</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token operator"> = </span>HttpClient {
         install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                encodeDefaults = true
-                isLenient = true
-                allowSpecialFloatingPointValues = true
-                allowStructuredMapKeys = true
-                prettyPrint = false
-                useArrayPolymorphism = false
-            })
+          json(
+            Json {
+              ignoreUnknownKeys = true
+              encodeDefaults = true
+              isLenient = true
+              allowSpecialFloatingPointValues = true
+              allowStructuredMapKeys = true
+              prettyPrint = false
+              useArrayPolymorphism = false
+            }
+          )
         }
         install(Logging)
-        install(HttpRedirect) {
-            checkHttpMethod = false
-        }
+        install(HttpRedirect) { checkHttpMethod = false }
         configure()
-    }.encodeAction()</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">用于web程序的客户端</p></div></div></div>
+      }
+      .encodeAction()</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">用于web程序的客户端</p></div></div></div>
                 </div>
               </div>
             </div>

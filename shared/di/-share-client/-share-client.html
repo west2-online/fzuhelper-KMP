@@ -66,24 +66,25 @@
   <div class="cover ">
     <h1 class="cover"><span>Share</span><wbr></wbr><span><span>Client</span></span></h1>
   </div>
-  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token operator"> = </span>HttpClient{
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token operator"> = </span>HttpClient {
         install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                encodeDefaults = true
-                isLenient = true
-                allowSpecialFloatingPointValues = true
-                allowStructuredMapKeys = true
-                prettyPrint = false
-                useArrayPolymorphism = false
-            })
+          json(
+            Json {
+              ignoreUnknownKeys = true
+              encodeDefaults = true
+              isLenient = true
+              allowSpecialFloatingPointValues = true
+              allowStructuredMapKeys = true
+              prettyPrint = false
+              useArrayPolymorphism = false
+            }
+          )
         }
         install(Logging)
-        install(HttpRedirect) {
-            checkHttpMethod = false
-        }
+        install(HttpRedirect) { checkHttpMethod = false }
         configure()
-    }.encodeAction()</span></span><span class="token punctuation">)</span></div></div></div>
+      }
+      .encodeAction()</span></span><span class="token punctuation">)</span></div></div></div>
 </div>
       <div class="footer">
         <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
