@@ -26,9 +26,6 @@ import io.ktor.client.statement.request
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.encodeBase64
 import io.ktor.util.pipeline.PipelinePhase
-import kotlin.random.nextInt
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapConcat
@@ -75,6 +72,9 @@ import ui.root.RootAction
 import util.compose.Toast
 import util.encode.encode
 import viewModelDefinition
+import kotlin.random.nextInt
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 /**
  * 对教务处client的相关处理
@@ -119,7 +119,7 @@ class ClassSchedule(
         newClient.apply {
           getVerifyCode()
             .map { it.encodeBase64() }
-            .flatMapConcat { verifyCodeForParse -> parseVerifyCodeFormWest2(verifyCodeForParse) }
+            .flatMapConcat { verifyCodeForParse -> parseVerifyCode(verifyCodeForParse) }
             .flatMapConcat { verifyCode ->
               loginStudent(user = userName, pass = password, verifyCode = verifyCode)
             }
@@ -186,7 +186,7 @@ class ClassSchedule(
         getVerifyCode()
           .map { it.encodeBase64() }
           .catch { failAction.invoke(VerifyYourAccountError.ValidationFailed) }
-          .flatMapConcat { verifyCodeForParse -> parseVerifyCodeFormWest2(verifyCodeForParse) }
+          .flatMapConcat { verifyCodeForParse -> parseVerifyCode(verifyCodeForParse) }
           .flatMapConcat { verifyCode ->
             loginStudent(user = userName, pass = password, verifyCode = verifyCode)
           }

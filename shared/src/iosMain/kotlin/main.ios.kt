@@ -160,3 +160,11 @@ actual fun getVersionFileName(): String {
 }
 
 actual fun HttpClientEngineConfig.ktorConfig() {}
+
+actual fun getStringMd5_32(string: String): String {
+  TODO("Not yet implemented")
+}
+
+actual fun debug(string: String) {
+  TODO("Not yet implemented")
+}

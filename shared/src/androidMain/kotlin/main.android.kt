@@ -1,6 +1,7 @@
 // Android main
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -20,22 +21,26 @@ import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.engine.okhttp.OkHttpConfig
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
-import java.util.concurrent.TimeUnit
-import javax.net.ssl.SSLContext
-import javax.net.ssl.SSLSocketFactory
-import javax.net.ssl.X509TrustManager
+import io.ktor.utils.io.core.toByteArray
 import okhttp3.Protocol
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.definition.Definition
 import org.koin.core.definition.KoinDefinition
 import org.koin.core.module.Module
 import org.koin.core.qualifier.Qualifier
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.X509TrustManager
 
 actual fun getPlatformName(): String = "Android"
 
-actual @Composable fun Modifier.ComposeSetting(): Modifier {
+actual @Composable
+fun Modifier.ComposeSetting(): Modifier {
   return this.safeContentPadding()
 }
 
@@ -81,7 +86,7 @@ val trustAllCerts =
       override fun getAcceptedIssuers(): Array<X509Certificate?> {
         return arrayOfNulls(0)
       }
-    }
+    },
   )
 
 val getSSLSocketFactory: SSLSocketFactory by lazy {
@@ -96,7 +101,8 @@ actual fun initStore(): KVault {
 
 actual class PlatformContext(val androidContext: Context)
 
-@Composable actual fun getPlatformContext(): PlatformContext = PlatformContext(LocalContext.current)
+@Composable
+actual fun getPlatformContext(): PlatformContext = PlatformContext(LocalContext.current)
 
 actual class ImagePicker(private val activity: ComponentActivity) {
   private lateinit var getContent: ActivityResultLauncher<String>
@@ -145,3 +151,41 @@ actual fun getVersionFileName(): String {
 }
 
 actual fun HttpClientEngineConfig.ktorConfig() {}
+
+
+actual fun getStringMd5_32(string: String): String {
+  val md5: MessageDigest
+  var encodeStr = ""
+  try {
+    md5 = MessageDigest.getInstance("MD5")
+    encodeStr = byte2Hex(md5.digest(string.toByteArray()))
+  } catch (e: NoSuchAlgorithmException) {
+    e.printStackTrace()
+  }
+  return encodeStr
+}
+
+/**
+ * 将byte转为16进制
+ *
+ * @param bytes
+ * @return
+ */
+fun byte2Hex(bytes: ByteArray): String {
+  val stringBuffer = StringBuilder()
+  var temp: String
+  for (aByte in bytes) {
+    temp = Integer.toHexString(aByte.toInt() and 0xFF)
+    if (temp.length == 1) {
+      //1得到一位的进行补0操作
+      stringBuffer.append("0")
+    }
+    stringBuffer.append(temp)
+  }
+  return stringBuffer.toString()
+}
+
+
+actual fun debug(string: String) {
+  Log.d("DEBUG", string)
+}

@@ -107,3 +107,7 @@ fun createDatabase(): FuTalkDatabase {
 expect fun getVersionFileName(): String
 
 expect fun HttpClientEngineConfig.ktorConfig()
+
+expect fun getStringMd5_32(string: String): String
+
+expect fun debug(string: String)

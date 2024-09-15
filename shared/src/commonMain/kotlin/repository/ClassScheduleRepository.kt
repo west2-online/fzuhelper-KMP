@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import util.CipherUtil
 import util.math.parseInt
 
 /**
@@ -48,11 +49,12 @@ class ClassScheduleRepository {
         this@loginStudent.submitForm(
           url = "https://jwcjwxt1.fzu.edu.cn/logincheck.asp",
           formParameters =
-            Parameters.build {
-              append("muser", user)
-              append("passwd", pass)
-              append("VerifyCode", verifyCode)
-            },
+          Parameters.build {
+            append("muser", user)
+            val passMd5 = CipherUtil.md5(pass, 16)
+            append("passwd", passMd5)
+            append("VerifyCode", verifyCode)
+          },
         ) {
           headers {
             append("Referer", "https://jwch.fzu.edu.cn/html/login/1.html")
@@ -70,13 +72,13 @@ class ClassScheduleRepository {
    * @return Flow<String>
    * @receiver HttpClient
    */
-  suspend fun HttpClient.parseVerifyCodeFormWest2(verifyCodeForParse: String): Flow<String> {
+  suspend fun HttpClient.parseVerifyCode(verifyCodeForParse: String): Flow<String> {
     return flow {
       val verifyCode =
-        this@parseVerifyCodeFormWest2.submitForm(
-            formParameters = Parameters.build { append("validateCode", verifyCodeForParse) },
-            url = "https://statistics.fzuhelper.w2fzu.com/api/login/validateCode",
-          )
+        this@parseVerifyCode.submitForm(
+          formParameters = Parameters.build { append("validateCode", verifyCodeForParse) },
+          url = "https://statistics.fzuhelper.w2fzu.com/api/login/validateCode",
+        )
           .body<GetVerifyCodeFormWest2>()
           .message
       emit(verifyCode)
@@ -108,10 +110,10 @@ class ClassScheduleRepository {
     return flow {
       val data =
         this@getExamStateHTML.get(
-            "https://jwcjwxt2.fzu.edu.cn:81/student/xkjg/examination/exam_list.aspx"
-          ) {
-            url { parameters.append("id", id) }
-          }
+          "https://jwcjwxt2.fzu.edu.cn:81/student/xkjg/examination/exam_list.aspx",
+        ) {
+          url { parameters.append("id", id) }
+        }
           .bodyAsText()
       emit(data)
     }
@@ -128,11 +130,11 @@ class ClassScheduleRepository {
     return flow {
       val response =
         this@loginByToken.submitForm(
-            url = "https://jwcjwxt2.fzu.edu.cn/Sfrz/SSOLogin",
-            formParameters = Parameters.build { append("token", token) },
-          ) {
-            headers { append("X-Requested-With", "XMLHttpRequest") }
-          }
+          url = "https://jwcjwxt2.fzu.edu.cn/Sfrz/SSOLogin",
+          formParameters = Parameters.build { append("token", token) },
+        ) {
+          headers { append("X-Requested-With", "XMLHttpRequest") }
+        }
           .readBytes()
           .decodeToString()
       emit(Json.decodeFromString<JwchTokenLoginResponseDto>(response))
@@ -153,11 +155,11 @@ class ClassScheduleRepository {
         this@loginCheckXs.get("https://jwcjwxt2.fzu.edu.cn:81/loginchk_xs.aspx") {
           url { url ->
             mapOf(
-                "id" to id,
-                "num" to num,
-                "ssourl" to "https://jwcjwxt2.fzu.edu.cn",
-                "hosturl" to "https://jwcjwxt2.fzu.edu.cn:81",
-              )
+              "id" to id,
+              "num" to num,
+              "ssourl" to "https://jwcjwxt2.fzu.edu.cn",
+              "hosturl" to "https://jwcjwxt2.fzu.edu.cn:81",
+            )
               .forEach { parameters.append(it.key, it.value) }
           }
         }
@@ -186,12 +188,12 @@ class ClassScheduleRepository {
         this@getCourses.submitForm(
           "${JWCH_BASE_URL}/student/xkjg/wdxk/xkjg_list.aspx",
           formParameters =
-            Parameters.build {
-              append("ctl00\$ContentPlaceHolder1\$DDL_xnxq", xuenian)
-              append("__EVENTVALIDATION", event)
-              append("__VIEWSTATE", state)
-              append("ctl00\$ContentPlaceHolder1\$BT_submit", "确定")
-            },
+          Parameters.build {
+            append("ctl00\$ContentPlaceHolder1\$DDL_xnxq", xuenian)
+            append("__EVENTVALIDATION", event)
+            append("__VIEWSTATE", state)
+            append("ctl00\$ContentPlaceHolder1\$BT_submit", "确定")
+          },
         ) {
           url { parameters.append("id", id) }
         }
@@ -230,11 +232,11 @@ class ClassScheduleRepository {
     id: String,
   ): Flow<List<CourseBeanForTemp>> {
     return this@getCoursesHTML.getCourses(
-        id,
-        xq,
-        viewStateMap["EVENTVALIDATION"] ?: "",
-        viewStateMap["VIEWSTATE"] ?: "",
-      )
+      id,
+      xq,
+      viewStateMap["EVENTVALIDATION"] ?: "",
+      viewStateMap["VIEWSTATE"] ?: "",
+    )
       .map {
         val result = it.bodyAsText(charSet)
         parseCoursesHTML(xq, result, onGetOptions = onGetOptions)
@@ -250,8 +252,8 @@ class ClassScheduleRepository {
     return flow {
       val response =
         this@getCourseStateHTML.get("${JWCH_BASE_URL}/student/xkjg/wdxk/xkjg_list.aspx") {
-            url { parameters.append("id", id) }
-          }
+          url { parameters.append("id", id) }
+        }
           .bodyAsText(Charset.forName("GB2312"))
       emit(response)
     }
@@ -265,11 +267,11 @@ class ClassScheduleRepository {
    */
   suspend fun HttpClient.getWeek(): Flow<WeekData> {
     return flow {
-        val response =
-          this@getWeek.get("https://jwcjwxt2.fzu.edu.cn:82/week.asp")
-            .bodyAsText(Charset.forName("GB2312"))
-        emit(response)
-      }
+      val response =
+        this@getWeek.get("https://jwcjwxt2.fzu.edu.cn:82/week.asp")
+          .bodyAsText(Charset.forName("GB2312"))
+      emit(response)
+    }
       .map { parseWeekHTML(it) }
   }
 
@@ -284,8 +286,8 @@ class ClassScheduleRepository {
     return flow {
       val response =
         this@getSchoolCalendar.get("$SCHOOL_CALENDAR_URL/xl.asp") {
-            url { parameters.append("xq", xq) }
-          }
+          url { parameters.append("xq", xq) }
+        }
           .bodyAsText(Charset.forName("GB2312"))
       emit(response)
     }
@@ -343,7 +345,7 @@ class ClassScheduleRepository {
     // 开始解析课表
     val courseEles =
       document.select(
-        "tr[onmouseover=c=this.style.backgroundColor;this.style.backgroundColor='#CCFFaa']"
+        "tr[onmouseover=c=this.style.backgroundColor;this.style.backgroundColor='#CCFFaa']",
       )
     for (i in courseEles.indices) {
       val kb = courseEles[i]
@@ -456,8 +458,8 @@ class ClassScheduleRepository {
         // 解析调课信息
         var matcher =
           Regex(
-              "(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*调至\\s*(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*(\\S*)"
-            )
+            "(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*调至\\s*(\\d{2})周 星期(\\d):(\\d{1,2})-(\\d{1,2})节\\s*(\\S*)",
+          )
             .matchEntire(note)
         while (matcher != null) {
           matcher.groupValues.get(5)
@@ -601,4 +603,5 @@ data class JwchTokenLoginResponseDto(
   var data: Data,
 )
 
-@Serializable class Data()
+@Serializable
+class Data()
