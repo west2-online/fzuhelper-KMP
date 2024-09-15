@@ -6,12 +6,15 @@ $dokka.location://BackHandlerWithPlatform/#kotlin.Boolean#kotlin.Function0[kotli
 $dokka.location://ComposeSetting/androidx.compose.ui.Modifier#/PointingToDeclaration/shared/[root]/-compose-setting.html
 $dokka.location://MainViewController/#/PointingToDeclaration/shared/[root]/-main-view-controller.html
 $dokka.location://asImageBitmap/kotlin.ByteArray#/PointingToDeclaration/shared/[root]/as-image-bitmap.html
+$dokka.location://byte2Hex/#kotlin.ByteArray/PointingToDeclaration/shared/[root]/byte2-hex.html
 $dokka.location://configureForPlatform/io.ktor.client.HttpClientConfig[*]#/PointingToDeclaration/shared/[root]/configure-for-platform.html
 $dokka.location://createDatabase/#/PointingToDeclaration/shared/[root]/create-database.html
 $dokka.location://createDriver/#/PointingToDeclaration/shared/[root]/create-driver.html
+$dokka.location://debug/#kotlin.String/PointingToDeclaration/shared/[root]/debug.html
 $dokka.location://getPlatformContext/#/PointingToDeclaration/shared/[root]/get-platform-context.html
 $dokka.location://getPlatformName/#/PointingToDeclaration/shared/[root]/get-platform-name.html
 $dokka.location://getSSLSocketFactory/#/PointingToDeclaration/shared/[root]/get-s-s-l-socket-factory.html
+$dokka.location://getStringMd5_32/#kotlin.String/PointingToDeclaration/shared/[root]/get-string-md5_32.html
 $dokka.location://getVersionFileName/#/PointingToDeclaration/shared/[root]/get-version-file-name.html
 $dokka.location://initStore/#/PointingToDeclaration/shared/[root]/init-store.html
 $dokka.location://ktorConfig/io.ktor.client.engine.HttpClientEngineConfig#/PointingToDeclaration/shared/[root]/ktor-config.html
@@ -946,7 +949,7 @@ $dokka.location:repository/ClassScheduleRepository/getWeek/io.ktor.client.HttpCl
 $dokka.location:repository/ClassScheduleRepository/loginByToken/io.ktor.client.HttpClient#kotlin.String/PointingToDeclaration/shared/repository/-class-schedule-repository/login-by-token.html
 $dokka.location:repository/ClassScheduleRepository/loginCheckXs/io.ktor.client.HttpClient#kotlin.String#kotlin.String/PointingToDeclaration/shared/repository/-class-schedule-repository/login-check-xs.html
 $dokka.location:repository/ClassScheduleRepository/loginStudent/io.ktor.client.HttpClient#kotlin.String#kotlin.String#kotlin.String/PointingToDeclaration/shared/repository/-class-schedule-repository/login-student.html
-$dokka.location:repository/ClassScheduleRepository/parseVerifyCodeFormWest2/io.ktor.client.HttpClient#kotlin.String/PointingToDeclaration/shared/repository/-class-schedule-repository/parse-verify-code-form-west2.html
+$dokka.location:repository/ClassScheduleRepository/parseVerifyCode/io.ktor.client.HttpClient#kotlin.String/PointingToDeclaration/shared/repository/-class-schedule-repository/parse-verify-code.html
 $dokka.location:repository/CourseBeanForTemp///PointingToDeclaration/shared/repository/-course-bean-for-temp/index.html
 $dokka.location:repository/CourseBeanForTemp/CourseBeanForTemp/#kotlin.Long#kotlin.String#kotlin.String#kotlin.Int#kotlin.Int#kotlin.Int#kotlin.Int#kotlin.Boolean#kotlin.Boolean#kotlin.Int#kotlin.Int#kotlin.Int#kotlin.String#kotlin.Int#kotlin.String#kotlin.String#kotlin.String#kotlin.Long#kotlin.Int/PointingToDeclaration/shared/repository/-course-bean-for-temp/-course-bean-for-temp.html
 $dokka.location:repository/CourseBeanForTemp/courseId/#/PointingToDeclaration/shared/repository/-course-bean-for-temp/course-id.html
@@ -2196,6 +2199,8 @@ $dokka.location:util.regex//matchPhone/#kotlin.String/PointingToDeclaration/sha
 $dokka.location:util.regex//toGithubAvatar/#kotlin.String#kotlin.String#kotlin.String/PointingToDeclaration/shared/util.regex/to-github-avatar.html
 $dokka.location:util.regex//toGithubComment/kotlin.String#/PointingToDeclaration/shared/util.regex/to-github-comment.html
 $dokka.location:util////PointingToDeclaration/shared/util/index.html
+$dokka.location:util/CipherUtil///PointingToDeclaration/shared/util/-cipher-util/index.html
+$dokka.location:util/CipherUtil/md5/#kotlin.String#kotlin.Int/PointingToDeclaration/shared/util/-cipher-util/md5.html
 $dokka.location:util/CookieUtil///PointingToDeclaration/shared/util/-cookie-util/index.html
 $dokka.location:util/CookieUtil/transform/#io.ktor.http.Cookie/PointingToDeclaration/shared/util/-cookie-util/transform.html
 androidVersion
