@@ -17,7 +17,6 @@ import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
 import config.JWCH_BASE_URL
-import kotlin.jvm.Transient
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -26,6 +25,7 @@ import util.compose.ParentPaddingControl
 import util.compose.defaultSelfPaddingControl
 import util.compose.parentSystemControl
 import util.network.CollectWithContentInBox
+import kotlin.jvm.Transient
 
 class UndergraduateWebViewVoyagerScreen(
   val url: String,
@@ -48,20 +48,13 @@ fun OwnWebViewScreen(start: String, parentPaddingControl: ParentPaddingControl) 
   val viewModel: UndergraduateWebViewViewModel = koinInject()
   val clientState = viewModel.clientState.collectAsState()
   val scope = rememberCoroutineScope()
-  LaunchedEffect(Unit) { viewModel.getClassScheduleClient() }
+  LaunchedEffect(Unit) { viewModel.getJwchClient() }
   var url = start
   val isLoadingCookie = remember { mutableStateOf(true) }
   clientState.CollectWithContentInBox(
     success = {
       url = start.replace("{id}", it.id)
-      val state =
-        rememberWebViewState(
-          url,
-          mapOf(
-            "User-Agent" to
-              "Mozilla/5.0 (Linux; Android 9; ELE-AL00 Build/HUAWEIELE-AL0001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/63.0.3239.83 Mobile Safari/537.36 T7/11.15 baiduboxapp/11.15.5.10 (Baidu; P1 9)"
-          ),
-        )
+      val state = rememberWebViewState(url)
       LaunchedEffect(state) {
         snapshotFlow { state.loadingState }
           .filter { it is LoadingState.Initializing }
@@ -94,7 +87,7 @@ fun OwnWebViewScreen(start: String, parentPaddingControl: ParentPaddingControl) 
     error = {
       ErrorText(
         text = "加载失败",
-        onClick = { scope.launch { viewModel.getClassScheduleClient() } },
+        onClick = { scope.launch { viewModel.getJwchClient() } },
         boxModifier = Modifier.fillMaxSize(),
       )
     },

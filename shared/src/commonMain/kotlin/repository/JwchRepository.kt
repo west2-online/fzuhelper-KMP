@@ -27,7 +27,7 @@ import util.math.parseInt
  *
  * @property charSet Charset 设置教务处常用的编码方式
  */
-class ClassScheduleRepository {
+class JwchRepository {
   private val charSet = Charset.forName("GB2312")
 
   /**

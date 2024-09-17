@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 val appyx_version = "2.0.0-alpha09"
 val koin_version = "3.5.0"
 val koin_compose_version = "1.1.0"
-val ktor_version = "2.3.5"
+val ktor_version = "2.3.12"
 val serialization_version = "1.6.2"
 val markdown_version = "0.10.0"
 val sqlDelightVersion = "2.0.1"

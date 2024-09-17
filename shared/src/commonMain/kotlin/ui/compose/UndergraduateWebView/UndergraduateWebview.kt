@@ -3,7 +3,7 @@ package ui.compose.UndergraduateWebView
 import config.JWCH_BASE_URL
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
-import di.ClassSchedule
+import di.Jwch
 import io.ktor.client.plugins.cookies.cookies
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,25 +13,25 @@ import util.network.NetworkResult
 import util.network.logicIfNotLoading
 import util.network.resetWithLog
 
-class UndergraduateWebViewViewModel(val classSchedule: ClassSchedule) : ViewModel() {
+class UndergraduateWebViewViewModel(val jwch: Jwch) : ViewModel() {
   private val _clientState =
     CMutableStateFlow(MutableStateFlow<NetworkResult<IdWithCookie>>(NetworkResult.UnSend()))
   val clientState = _clientState.asStateFlow()
 
-  fun getClassScheduleClient() {
+  fun getJwchClient() {
     viewModelScope.launchInIO {
       _clientState.logicIfNotLoading {
-        val client = classSchedule.getClassScheduleClient()
+        val client = jwch.getJwchClient()
         if (client.first == null || client.second == null) {
           _clientState.resetWithLog(
-            "getClassScheduleClient",
+            "getJwchClient",
             NetworkResult.Error(Throwable("获取教务处信息失败"), Throwable()),
           )
         } else {
           val cookie = client.first!!.cookies(JWCH_BASE_URL)
           val id = client.second!!
           _clientState.resetWithLog(
-            "getClassScheduleClient",
+            "getJwchClient",
             NetworkResult.Success(
               IdWithCookie(id, cookie.map { cookieItem -> CookieUtil.transform(cookieItem) })
             ),

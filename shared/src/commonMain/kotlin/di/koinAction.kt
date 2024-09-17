@@ -37,9 +37,9 @@ import kotlinx.datetime.plus
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.dsl.module
-import repository.ClassScheduleRepository
 import repository.EmptyHouseRepository
 import repository.FeedbackRepository
+import repository.JwchRepository
 import repository.LoginRepository
 import repository.ManageRepository
 import repository.ModifierInformationRepository
@@ -79,35 +79,35 @@ import kotlin.time.toDuration
 /**
  * 对教务处client的相关处理
  *
- * @property classScheduleRepository ClassScheduleRepository 有关
+ * @property jwchRepository JwchRepository 有关
  * @property kVaultAction UndergraduateKValueAction
  * @property toast Toast 用于提示的toast
  * @property client HttpClient? 用于储存可用的教务处client
  * @property userSchoolId String? 储存可用的学生id
- * @property upDataTime Instant client更新时间
+ * @property updateTime Instant client更新时间
  * @constructor
  */
-class ClassSchedule(
-  private val classScheduleRepository: ClassScheduleRepository,
+class Jwch(
+  private val jwchRepository: JwchRepository,
   private val kVaultAction: UndergraduateKValueAction,
   val toast: Toast,
 ) {
   private var client: HttpClient? = null
   private var userSchoolId: String? = null
-  private var upDataTime = Clock.System.now().plus(-50, DateTimeUnit.MINUTE)
+  private var updateTime = Clock.System.now().plus(-50, DateTimeUnit.MINUTE)
 
   @OptIn(ExperimentalCoroutinesApi::class)
   /** 获取可用于教务处请求的 client和学生id 如果失败则会返回Pair(null,null) */
-  suspend fun getClassScheduleClient(): Pair<HttpClient?, String?> {
-    if (client == null || Clock.System.now() - upDataTime > 20.toDuration(DurationUnit.MINUTES)) {
+  suspend fun getJwchClient(): Pair<HttpClient?, String?> {
+    if (client == null || Clock.System.now() - updateTime > 20.toDuration(DurationUnit.MINUTES)) {
       val newClient =
-        HttpClient() {
+        HttpClient {
           install(ContentNegotiation) { json() }
           install(HttpCookies) {}
           install(HttpRedirect) { checkHttpMethod = false }
           configureForPlatform()
         }
-      classScheduleRepository.apply {
+      jwchRepository.apply {
         val userName = kVaultAction.schoolUserName.currentValue.value
         val password = kVaultAction.schoolPassword.currentValue.value
         if (userName == null || password == null) {
@@ -138,7 +138,7 @@ class ClassSchedule(
               val url = it.call.request.url.toString()
               client = newClient
               userSchoolId = url.split("id=")[1].split("&")[0]
-              upDateClientTime()
+              updateClientTime()
             }
             .catch {
               client = null
@@ -152,9 +152,9 @@ class ClassSchedule(
     return Pair(client, userSchoolId)
   }
 
-  /** Up date client time 更新client更新时间 */
-  private fun upDateClientTime() {
-    upDataTime = Clock.System.now()
+  /** Update client time 更新client更新时间 */
+  private fun updateClientTime() {
+    updateTime = Clock.System.now()
   }
 
   /**
@@ -179,7 +179,7 @@ class ClassSchedule(
         install(HttpRedirect) { checkHttpMethod = false }
         configureForPlatform()
       }
-    classScheduleRepository.apply {
+    jwchRepository.apply {
       var id = ""
       var num = ""
       newClient.apply {
@@ -322,7 +322,7 @@ fun appModule(rootAction: RootAction, systemAction: SystemAction, navigator: Nav
   single { rootAction }
   single { ThemeKValueAction(get()) }
   single { UndergraduateKValueAction(get()) }
-  single { ClassSchedule(get(), get(), get()) }
+  single { Jwch(get(), get(), get()) }
   single { systemAction }
   single { navigator }
   single {
@@ -418,7 +418,7 @@ fun Module.repositoryList() {
   single { ManageRepository(get()) }
   single { RibbonRepository(get()) }
   single { EmptyHouseRepository(get()) }
-  single { ClassScheduleRepository() }
+  single { JwchRepository() }
 }
 
 /**

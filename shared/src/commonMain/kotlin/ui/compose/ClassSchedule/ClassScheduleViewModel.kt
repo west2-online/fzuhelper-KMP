@@ -10,7 +10,7 @@ import configureForPlatform
 import dao.Dao
 import dao.UndergraduateKValueAction
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
-import di.ClassSchedule
+import di.Jwch
 import di.ShareClient
 import di.database
 import io.ktor.client.HttpClient
@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
-import repository.ClassScheduleRepository
+import repository.JwchRepository
 import repository.WeekData
 import util.flow.actionWithLabel
 import util.flow.catchWithMassage
@@ -47,8 +47,8 @@ import util.network.resetWithoutLog
  * 课程功能的相关功能
  *
  * @property kValueAction UndergraduateKValueAction
- * @property classScheduleRepository ClassScheduleRepository
- * @property classSchedule ClassSchedule
+ * @property jwchRepository JwchRepository
+ * @property jwch Jwch
  * @property dao Dao
  * @property shareClient ShareClient
  * @property classScheduleUiState ClassScheduleUiState 用于渲染的开始年月日
@@ -68,8 +68,8 @@ import util.network.resetWithoutLog
 @OptIn(ExperimentalCoroutinesApi::class)
 class ClassScheduleViewModel(
   private val kValueAction: UndergraduateKValueAction,
-  private val classScheduleRepository: ClassScheduleRepository,
-  private val classSchedule: ClassSchedule,
+  private val jwchRepository: JwchRepository,
+  private val jwch: Jwch,
   private val dao: Dao,
   private val shareClient: ShareClient,
 ) : ViewModel() {
@@ -164,7 +164,7 @@ class ClassScheduleViewModel(
   /** 初始化会更新更新当前学期 */
   init {
     viewModelScope.launchInDefault {
-      classScheduleRepository.apply {
+      jwchRepository.apply {
         shareClient.client.apply {
           getWeek()
             .map {
@@ -213,8 +213,8 @@ class ClassScheduleViewModel(
   fun refreshClassData() {
     viewModelScope.launchInDefault {
       refreshState.logicIfNotLoading {
-        classScheduleRepository.apply {
-          val studentData = classSchedule.getClassScheduleClient()
+        jwchRepository.apply {
+          val studentData = jwch.getJwchClient()
           val client =
             studentData.first
               ?: run {
@@ -279,7 +279,7 @@ class ClassScheduleViewModel(
    */
   @OptIn(ExperimentalCoroutinesApi::class)
   private suspend fun HttpClient.getCourseFromNetwork(id: String) {
-    with(classScheduleRepository) {
+    with(jwchRepository) {
       with(this@getCourseFromNetwork) {
         getCourseStateHTML(id)
           .catchWithMassage { label, throwable ->
@@ -340,7 +340,7 @@ class ClassScheduleViewModel(
         .map { it.yearOptionsName }
         .forEach { yearOptionsName ->
           yearOptionsName.let { xq ->
-            with(classScheduleRepository) {
+            with(jwchRepository) {
               this@getOtherCourseFromNetwork.getCourseStateHTML(id)
                 .flatMapConcat { stateHtml -> getCourses(xq, stateHtml) }
                 .flatMapConcat {
@@ -364,7 +364,7 @@ class ClassScheduleViewModel(
     viewModelScope.launchInDefault {
       refreshExamState.logicIfNotLoading {
         val xq = kValueAction.currentXq.currentValue.value
-        val studentData = classSchedule.getClassScheduleClient()
+        val studentData = jwch.getJwchClient()
         val client =
           studentData.first
             ?: run {
@@ -384,7 +384,7 @@ class ClassScheduleViewModel(
               return@logicIfNotLoading
             }
         with(client) {
-          with(classScheduleRepository) {
+          with(jwchRepository) {
             getExamStateHTML(id)
               .map {
                 return@map (parseExamsHTML(it))
@@ -407,7 +407,7 @@ class ClassScheduleViewModel(
   fun changeCurrentYear(newValue: String) {
     viewModelScope.launchInDefault {
       selectYear.emit(newValue)
-      classScheduleRepository.apply {
+      jwchRepository.apply {
         val client =
           HttpClient() {
             install(ContentNegotiation) { json() }
