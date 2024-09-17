@@ -2,7 +2,7 @@
 <html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
-    <title>ClassScheduleViewModel</title>
+    <title>getSchoolCalendar</title>
     <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../../";</script>
     <script>document.documentElement.classList.replace("no-js","js");</script>
@@ -61,12 +61,12 @@
                 <div class="sidebar--inner" id="sideMenu"></div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="member" id="content" pageIds="shared::ui.compose.ClassSchedule/ClassScheduleViewModel/ClassScheduleViewModel/#dao.UndergraduateKValueAction#repository.JwchRepository#di.Jwch#dao.Dao#di.ShareClient/PointingToDeclaration//-1127283753">
-  <div class="breadcrumbs"><a href="../../../index.html">shared</a><span class="delimiter">/</span><a href="../index.html">ui.compose.ClassSchedule</a><span class="delimiter">/</span><a href="index.html">ClassScheduleViewModel</a><span class="delimiter">/</span><span class="current">ClassScheduleViewModel</span></div>
+<div class="main-content" data-page-type="member" id="content" pageIds="shared::repository/JwchRepository/getSchoolCalendar/io.ktor.client.HttpClient#kotlin.String/PointingToDeclaration//-1127283753">
+  <div class="breadcrumbs"><a href="../../../index.html">shared</a><span class="delimiter">/</span><a href="../index.html">repository</a><span class="delimiter">/</span><a href="index.html">JwchRepository</a><span class="delimiter">/</span><span class="current">getSchoolCalendar</span></div>
   <div class="cover ">
-    <h1 class="cover"><span>Class</span><wbr></wbr><span>Schedule</span><wbr></wbr><span>View</span><wbr></wbr><span><span>Model</span></span></h1>
+    <h1 class="cover"><span>get</span><wbr></wbr><span>School</span><wbr></wbr><span><span>Calendar</span></span></h1>
   </div>
-  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">kValueAction<span class="token operator">: </span><a href="../../dao/-undergraduate-k-value-action/index.html">UndergraduateKValueAction</a><span class="token punctuation">, </span></span><span class="parameter ">jwchRepository<span class="token operator">: </span><a href="../../repository/-jwch-repository/index.html">JwchRepository</a><span class="token punctuation">, </span></span><span class="parameter ">jwch<span class="token operator">: </span><a href="../../di/-jwch/index.html">Jwch</a><span class="token punctuation">, </span></span><span class="parameter ">dao<span class="token operator">: </span><a href="../../dao/-dao/index.html">Dao</a><span class="token punctuation">, </span></span><span class="parameter ">shareClient<span class="token operator">: </span><a href="../../di/-share-client/index.html">ShareClient</a></span></span><span class="token punctuation">)</span></div></div></div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":shared:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token punctuation">.</span><a href="get-school-calendar.html"><span class="token function">getSchoolCalendar</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">xq<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><p class="paragraph">获取每个学期的起始日期，包括年月日</p><span class="kdoc-tag"><h4 class="">Return</h4><p class="paragraph">Flow<String> 返回html</p></span><span class="kdoc-tag"><h4 class="">Receiver</h4><p class="paragraph">HttpClient</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":shared:dokkaHtml/commonMain" data-filterable-set=":shared:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>xq</span></span></u></div></span></div><div><div class="title"><p class="paragraph">String</p></div></div></div></div></div></div></div>
 </div>
       <div class="footer">
         <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
