@@ -72,6 +72,7 @@ $dokka.location:config//LIB_URL/#/PointingToDeclaration/shared/config/-l-i-b_-u
 $dokka.location:config//MY_URL/#/PointingToDeclaration/shared/config/-m-y_-u-r-l.html
 $dokka.location:config//NEW_JWCH_BASE_URL/#/PointingToDeclaration/shared/config/-n-e-w_-j-w-c-h_-b-a-s-e_-u-r-l.html
 $dokka.location:config//NEW_PUSH_URL/#/PointingToDeclaration/shared/config/-n-e-w_-p-u-s-h_-u-r-l.html
+$dokka.location:config//NEW_SERVER_URL/#/PointingToDeclaration/shared/config/-n-e-w_-s-e-r-v-e-r_-u-r-l.html
 $dokka.location:config//PAPER_URL/#/PointingToDeclaration/shared/config/-p-a-p-e-r_-u-r-l.html
 $dokka.location:config//PUSH_PLATFORM/#/PointingToDeclaration/shared/config/-p-u-s-h_-p-l-a-t-f-o-r-m.html
 $dokka.location:config//RECRUITMENT_PUSH_URL/#/PointingToDeclaration/shared/config/-r-e-c-r-u-i-t-m-e-n-t_-p-u-s-h_-u-r-l.html
@@ -918,6 +919,7 @@ $dokka.location:di/Jwch.VerifyYourAccountError/values/#/PointingToDeclaration/s
 $dokka.location:di/Jwch///PointingToDeclaration/shared/di/-jwch/index.html
 $dokka.location:di/Jwch/Jwch/#repository.JwchRepository#dao.UndergraduateKValueAction#util.compose.Toast/PointingToDeclaration/shared/di/-jwch/-jwch.html
 $dokka.location:di/Jwch/getJwchClient/#/PointingToDeclaration/shared/di/-jwch/get-jwch-client.html
+$dokka.location:di/Jwch/getSessionIdAndCookie/#/PointingToDeclaration/shared/di/-jwch/get-session-id-and-cookie.html
 $dokka.location:di/Jwch/toast/#/PointingToDeclaration/shared/di/-jwch/toast.html
 $dokka.location:di/Jwch/verifyYourAccount/#kotlin.String#kotlin.String#kotlin.coroutines.SuspendFunction1[di.Jwch.VerifyYourAccountError,kotlin.Unit]#kotlin.coroutines.SuspendFunction0[kotlin.Unit]/PointingToDeclaration/shared/di/-jwch/verify-your-account.html
 $dokka.location:di/LoginClient///PointingToDeclaration/shared/di/-login-client/index.html
@@ -960,10 +962,10 @@ $dokka.location:repository/CourseBeanForTemp/teacher/#/PointingToDeclaration/sh
 $dokka.location:repository/CourseBeanForTemp/type/#/PointingToDeclaration/shared/repository/-course-bean-for-temp/type.html
 $dokka.location:repository/Data///PointingToDeclaration/shared/repository/-data/index.html
 $dokka.location:repository/Data/Data/#/PointingToDeclaration/shared/repository/-data/-data.html
-$dokka.location:repository/EmptyHouseRepository///PointingToDeclaration/shared/repository/-empty-house-repository/index.html
-$dokka.location:repository/EmptyHouseRepository/EmptyHouseRepository/#io.ktor.client.HttpClient/PointingToDeclaration/shared/repository/-empty-house-repository/-empty-house-repository.html
-$dokka.location:repository/EmptyHouseRepository/client/#/PointingToDeclaration/shared/repository/-empty-house-repository/client.html
-$dokka.location:repository/EmptyHouseRepository/getEmptyRoom/#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.collections.List[kotlin.String]/PointingToDeclaration/shared/repository/-empty-house-repository/get-empty-room.html
+$dokka.location:repository/EmptyRoomRepository///PointingToDeclaration/shared/repository/-empty-room-repository/index.html
+$dokka.location:repository/EmptyRoomRepository/EmptyRoomRepository/#io.ktor.client.HttpClient/PointingToDeclaration/shared/repository/-empty-room-repository/-empty-room-repository.html
+$dokka.location:repository/EmptyRoomRepository/client/#/PointingToDeclaration/shared/repository/-empty-room-repository/client.html
+$dokka.location:repository/EmptyRoomRepository/getEmptyRoom/#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.collections.List[kotlin.String]/PointingToDeclaration/shared/repository/-empty-room-repository/get-empty-room.html
 $dokka.location:repository/FeedbackRepository///PointingToDeclaration/shared/repository/-feedback-repository/index.html
 $dokka.location:repository/FeedbackRepository/FeedbackRepository/#io.ktor.client.HttpClient#di.ShareClient/PointingToDeclaration/shared/repository/-feedback-repository/-feedback-repository.html
 $dokka.location:repository/FeedbackRepository/client/#/PointingToDeclaration/shared/repository/-feedback-repository/client.html
@@ -1265,20 +1267,6 @@ $dokka.location:ui.compose.ClassSchedule/WeekDay/englishName/#/PointingToDeclara
 $dokka.location:ui.compose.ClassSchedule/WeekDay/entries/#/PointingToDeclaration/shared/ui.compose.ClassSchedule/-week-day/entries.html
 $dokka.location:ui.compose.ClassSchedule/WeekDay/valueOf/#kotlin.String/PointingToDeclaration/shared/ui.compose.ClassSchedule/-week-day/value-of.html
 $dokka.location:ui.compose.ClassSchedule/WeekDay/values/#/PointingToDeclaration/shared/ui.compose.ClassSchedule/-week-day/values.html
-$dokka.location:ui.compose.EmptyHouse////PointingToDeclaration/shared/ui.compose.EmptyHouse/index.html
-$dokka.location:ui.compose.EmptyHouse//campusList/#/PointingToDeclaration/shared/ui.compose.EmptyHouse/campus-list.html
-$dokka.location:ui.compose.EmptyHouse/BuildForSelect///PointingToDeclaration/shared/ui.compose.EmptyHouse/-build-for-select/index.html
-$dokka.location:ui.compose.EmptyHouse/BuildForSelect/BuildForSelect/#androidx.compose.runtime.MutableState[kotlin.Boolean]#kotlin.String/PointingToDeclaration/shared/ui.compose.EmptyHouse/-build-for-select/-build-for-select.html
-$dokka.location:ui.compose.EmptyHouse/BuildForSelect/isSelect/#/PointingToDeclaration/shared/ui.compose.EmptyHouse/-build-for-select/is-select.html
-$dokka.location:ui.compose.EmptyHouse/BuildForSelect/name/#/PointingToDeclaration/shared/ui.compose.EmptyHouse/-build-for-select/name.html
-$dokka.location:ui.compose.EmptyHouse/EmptyHouseVoyagerScreen///PointingToDeclaration/shared/ui.compose.EmptyHouse/-empty-house-voyager-screen/index.html
-$dokka.location:ui.compose.EmptyHouse/EmptyHouseVoyagerScreen/Content/#/PointingToDeclaration/shared/ui.compose.EmptyHouse/-empty-house-voyager-screen/-content.html
-$dokka.location:ui.compose.EmptyHouse/EmptyHouseVoyagerScreen/EmptyHouseVoyagerScreen/#util.compose.ParentPaddingControl/PointingToDeclaration/shared/ui.compose.EmptyHouse/-empty-house-voyager-screen/-empty-house-voyager-screen.html
-$dokka.location:ui.compose.EmptyHouse/EmptyHouseVoyagerScreen/parentPaddingControl/#/PointingToDeclaration/shared/ui.compose.EmptyHouse/-empty-house-voyager-screen/parent-padding-control.html
-$dokka.location:ui.compose.EmptyHouse/EmptyHouseVoyagerViewModel///PointingToDeclaration/shared/ui.compose.EmptyHouse/-empty-house-voyager-view-model/index.html
-$dokka.location:ui.compose.EmptyHouse/EmptyHouseVoyagerViewModel/EmptyHouseVoyagerViewModel/#repository.EmptyHouseRepository/PointingToDeclaration/shared/ui.compose.EmptyHouse/-empty-house-voyager-view-model/-empty-house-voyager-view-model.html
-$dokka.location:ui.compose.EmptyHouse/EmptyHouseVoyagerViewModel/availableEmptyRoomData/#/PointingToDeclaration/shared/ui.compose.EmptyHouse/-empty-house-voyager-view-model/available-empty-room-data.html
-$dokka.location:ui.compose.EmptyHouse/EmptyHouseVoyagerViewModel/getAvailableEmptyRoomData/#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.collections.List[kotlin.String]/PointingToDeclaration/shared/ui.compose.EmptyHouse/-empty-house-voyager-view-model/get-available-empty-room-data.html
 $dokka.location:ui.compose.Feedback////PointingToDeclaration/shared/ui.compose.Feedback/index.html
 $dokka.location:ui.compose.Feedback//Discuss/#kotlin.String#kotlin.String#kotlin.String#data.feedback.github.githubComment.User?/PointingToDeclaration/shared/ui.compose.Feedback/-discuss.html
 $dokka.location:ui.compose.Feedback//Discuss/#kotlin.String#kotlin.String#kotlin.String#data.feedback.github.githubIssue.User?/PointingToDeclaration/shared/ui.compose.Feedback/-discuss.html
@@ -1935,6 +1923,20 @@ $dokka.location:ui.compose.Webview/GeneralWebViewVoyagerScreen/parentPaddingCont
 $dokka.location:ui.compose.Webview/GeneralWebViewVoyagerScreen/url/#/PointingToDeclaration/shared/ui.compose.Webview/-general-web-view-voyager-screen/url.html
 $dokka.location:ui.compose.Webview/WebviewViewModel///PointingToDeclaration/shared/ui.compose.Webview/-webview-view-model/index.html
 $dokka.location:ui.compose.Webview/WebviewViewModel/WebviewViewModel/#/PointingToDeclaration/shared/ui.compose.Webview/-webview-view-model/-webview-view-model.html
+$dokka.location:ui.compose.emptyRoom////PointingToDeclaration/shared/ui.compose.emptyRoom/index.html
+$dokka.location:ui.compose.emptyRoom//campusList/#/PointingToDeclaration/shared/ui.compose.emptyRoom/campus-list.html
+$dokka.location:ui.compose.emptyRoom/BuildForSelect///PointingToDeclaration/shared/ui.compose.emptyRoom/-build-for-select/index.html
+$dokka.location:ui.compose.emptyRoom/BuildForSelect/BuildForSelect/#androidx.compose.runtime.MutableState[kotlin.Boolean]#kotlin.String/PointingToDeclaration/shared/ui.compose.emptyRoom/-build-for-select/-build-for-select.html
+$dokka.location:ui.compose.emptyRoom/BuildForSelect/isSelect/#/PointingToDeclaration/shared/ui.compose.emptyRoom/-build-for-select/is-select.html
+$dokka.location:ui.compose.emptyRoom/BuildForSelect/name/#/PointingToDeclaration/shared/ui.compose.emptyRoom/-build-for-select/name.html
+$dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerScreen///PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-screen/index.html
+$dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerScreen/Content/#/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-screen/-content.html
+$dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerScreen/EmptyRoomVoyagerScreen/#util.compose.ParentPaddingControl/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-screen/-empty-room-voyager-screen.html
+$dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerScreen/parentPaddingControl/#/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-screen/parent-padding-control.html
+$dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerViewModel///PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-view-model/index.html
+$dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerViewModel/EmptyRoomVoyagerViewModel/#repository.EmptyRoomRepository/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-view-model/-empty-room-voyager-view-model.html
+$dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerViewModel/availableEmptyRoomData/#/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-view-model/available-empty-room-data.html
+$dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerViewModel/getAvailableEmptyRoomData/#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.collections.List[kotlin.String]/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-view-model/get-available-empty-room-data.html
 $dokka.location:ui.root////PointingToDeclaration/shared/ui.root/index.html
 $dokka.location:ui.root//RootUi/#di.SystemAction/PointingToDeclaration/shared/ui.root/-root-ui.html
 $dokka.location:ui.root//getRootAction/#/PointingToDeclaration/shared/ui.root/get-root-action.html
@@ -2111,8 +2113,8 @@ $dokka.location:util.encode////PointingToDeclaration/shared/util.encode/index.h
 $dokka.location:util.encode//encode/#kotlin.Int#kotlin.Int#kotlin.Long/PointingToDeclaration/shared/util.encode/encode.html
 $dokka.location:util.flow////PointingToDeclaration/shared/util.flow/index.html
 $dokka.location:util.flow//actionWithLabel/kotlinx.coroutines.flow.Flow[TypeParam(bounds=[kotlin.Any?])]#kotlin.String#kotlin.coroutines.SuspendFunction3[kotlinx.coroutines.flow.FlowCollector[TypeParam(bounds=[kotlin.Any?])],kotlin.String,kotlin.Throwable,kotlin.Unit]#kotlin.coroutines.SuspendFunction2[kotlin.String,TypeParam(bounds=[kotlin.Any?]),kotlin.Unit]/PointingToDeclaration/shared/util.flow/action-with-label.html
-$dokka.location:util.flow//catchWithMassage/kotlinx.coroutines.flow.Flow[TypeParam(bounds=[kotlin.Any?])]#kotlin.String#kotlin.coroutines.SuspendFunction3[kotlinx.coroutines.flow.FlowCollector[TypeParam(bounds=[kotlin.Any?])],kotlin.String,kotlin.Throwable,kotlin.Unit]?/PointingToDeclaration/shared/util.flow/catch-with-massage.html
-$dokka.location:util.flow//collectWithMassage/kotlinx.coroutines.flow.Flow[TypeParam(bounds=[kotlin.Any?])]#kotlin.String#kotlin.coroutines.SuspendFunction2[kotlin.String,TypeParam(bounds=[kotlin.Any?]),kotlin.Unit]/PointingToDeclaration/shared/util.flow/collect-with-massage.html
+$dokka.location:util.flow//catchWithMessage/kotlinx.coroutines.flow.Flow[TypeParam(bounds=[kotlin.Any?])]#kotlin.String#kotlin.coroutines.SuspendFunction3[kotlinx.coroutines.flow.FlowCollector[TypeParam(bounds=[kotlin.Any?])],kotlin.String,kotlin.Throwable,kotlin.Unit]?/PointingToDeclaration/shared/util.flow/catch-with-message.html
+$dokka.location:util.flow//collectWithMessage/kotlinx.coroutines.flow.Flow[TypeParam(bounds=[kotlin.Any?])]#kotlin.String#kotlin.coroutines.SuspendFunction2[kotlin.String,TypeParam(bounds=[kotlin.Any?]),kotlin.Unit]/PointingToDeclaration/shared/util.flow/collect-with-message.html
 $dokka.location:util.flow//launchInDefault/kotlinx.coroutines.CoroutineScope#kotlinx.coroutines.CoroutineStart#kotlin.coroutines.SuspendFunction1[kotlinx.coroutines.CoroutineScope,kotlin.Unit]/PointingToDeclaration/shared/util.flow/launch-in-default.html
 $dokka.location:util.flow//launchInIO/kotlinx.coroutines.CoroutineScope#kotlinx.coroutines.CoroutineStart#kotlin.coroutines.SuspendFunction1[kotlinx.coroutines.CoroutineScope,kotlin.Unit]/PointingToDeclaration/shared/util.flow/launch-in-i-o.html
 $dokka.location:util.kValue////PointingToDeclaration/shared/util.kValue/index.html
@@ -2253,7 +2255,6 @@ ui.compose.AboutUs
 ui.compose.Action
 ui.compose.Authentication
 ui.compose.ClassSchedule
-ui.compose.EmptyHouse
 ui.compose.Feedback
 ui.compose.Log
 ui.compose.Main
@@ -2274,6 +2275,7 @@ ui.compose.UndergraduateWebView
 ui.compose.Update
 ui.compose.Weather
 ui.compose.Webview
+ui.compose.emptyRoom
 ui.root
 util
 util.compose
