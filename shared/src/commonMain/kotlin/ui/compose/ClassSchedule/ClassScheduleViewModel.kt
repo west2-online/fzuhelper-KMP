@@ -32,8 +32,8 @@ import kotlinx.coroutines.flow.stateIn
 import repository.JwchRepository
 import repository.WeekData
 import util.flow.actionWithLabel
-import util.flow.catchWithMassage
-import util.flow.collectWithMassage
+import util.flow.catchWithMessage
+import util.flow.collectWithMessage
 import util.flow.launchInDefault
 import util.math.parseIntWithNull
 import util.network.NetworkResult
@@ -181,7 +181,7 @@ class ClassScheduleViewModel(
                 parseBeginDateReset(it.getXueQi(), result, true)
               }
             }
-            .catchWithMassage(label = "更新当前学期", action = null)
+            .catchWithMessage(label = "更新当前学期", action = null)
             .collect {}
         }
       }
@@ -244,7 +244,7 @@ class ClassScheduleViewModel(
                   selectWeek.value = nowWeek
                 }
               }
-              .catchWithMassage(
+              .catchWithMessage(
                 label = "更新当前学期失败",
                 action = { label, error ->
                   refreshState.resetWithLog(
@@ -282,7 +282,7 @@ class ClassScheduleViewModel(
     with(jwchRepository) {
       with(this@getCourseFromNetwork) {
         getCourseStateHTML(id)
-          .catchWithMassage { label, throwable ->
+          .catchWithMessage { label, throwable ->
             refreshState.resetWithLog(label, networkError(throwable, "更新失败"))
           }
           .flatMapConcat { stateHTML ->
@@ -290,7 +290,7 @@ class ClassScheduleViewModel(
               CourseData(stateHTML = stateHTML, weekData = weekDataOnFlow)
             }
           }
-          .catchWithMassage { label, throwable ->
+          .catchWithMessage { label, throwable ->
             refreshState.resetWithLog(label, networkError(throwable, "更新失败"))
           }
           .collect { courseData ->
@@ -307,7 +307,7 @@ class ClassScheduleViewModel(
                   id,
                 )
               }
-              .catchWithMassage { label, throwable ->
+              .catchWithMessage { label, throwable ->
                 refreshState.resetWithLog(label, networkError(throwable, "更新失败"))
               }
               .collect { initCourseBean ->
@@ -421,7 +421,7 @@ class ClassScheduleViewModel(
           .map { result ->
             return@map parseBeginDateReset(newValue, result)
           }
-          .collectWithMassage { label, data -> }
+          .collectWithMessage { label, data -> }
       }
     }
   }

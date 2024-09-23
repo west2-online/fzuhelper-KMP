@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.flow
  * @property client HttpClient
  * @constructor
  */
-class EmptyHouseRepository(val client: HttpClient) {
+class EmptyRoomRepository(val client: HttpClient) {
   /**
    * 刷新课程
    *

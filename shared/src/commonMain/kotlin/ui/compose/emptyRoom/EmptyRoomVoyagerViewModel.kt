@@ -1,11 +1,11 @@
-package ui.compose.EmptyHouse
+package ui.compose.emptyRoom
 
 import data.emptyRoom.EmptyItemData
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import repository.EmptyHouseRepository
+import repository.EmptyRoomRepository
 import util.flow.actionWithLabel
 import util.flow.launchInDefault
 import util.network.NetworkResult
@@ -16,13 +16,13 @@ import util.network.resetWithLog
 /**
  * 空教室逻辑
  *
- * @property emptyHouseRepository EmptyHouseRepository
+ * @property emptyRoomRepository EmptyRoomRepository
  * @property _availableEmptyRoomData CMutableStateFlow<NetworkResult<Map<String,
  *   List<EmptyRoom>?>?>>
  * @property availableEmptyRoomData StateFlow<NetworkResult<Map<String, List<EmptyRoom>?>?>>
  * @constructor
  */
-class EmptyHouseVoyagerViewModel(private val emptyHouseRepository: EmptyHouseRepository) :
+class EmptyRoomVoyagerViewModel(private val emptyRoomRepository: EmptyRoomRepository) :
   ViewModel() {
   private val _availableEmptyRoomData =
     CMutableStateFlow(
@@ -50,7 +50,7 @@ class EmptyHouseVoyagerViewModel(private val emptyHouseRepository: EmptyHouseRep
   ) {
     viewModelScope.launchInDefault {
       _availableEmptyRoomData.logicIfNotLoading {
-        emptyHouseRepository
+        emptyRoomRepository
           .getEmptyRoom(
             campus = campus,
             date = date,

@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
  * @return Flow<T>
  * @receiver Flow<T>
  */
-suspend fun <T> Flow<T>.catchWithMassage(
+suspend fun <T> Flow<T>.catchWithMessage(
   label: String = "",
   action:
     (suspend kotlinx.coroutines.flow.FlowCollector<T>.(
@@ -42,7 +42,7 @@ suspend fun <T> Flow<T>.catchWithMassage(
  * @param action SuspendFunction2<[@kotlin.ParameterName] String, [@kotlin.ParameterName] T, Unit>
  * @receiver Flow<T>
  */
-suspend fun <T> Flow<T>.collectWithMassage(
+suspend fun <T> Flow<T>.collectWithMessage(
   label: String = "",
   action: suspend (label: String, data: T) -> Unit,
 ) {
@@ -55,7 +55,7 @@ suspend fun <T> Flow<T>.collectWithMassage(
 }
 
 /**
- * 集合 collectWithMassage 和 catchWithMassage，共享同一个label
+ * 集合 collectWithMessage 和 catchWithMessage，共享同一个label
  *
  * @param label String
  * @param catchAction [@kotlin.ExtensionFunctionType] SuspendFunction3<FlowCollector<T>,
@@ -72,8 +72,8 @@ suspend fun <T> Flow<T>.actionWithLabel(
     ) -> kotlin.Unit,
   collectAction: suspend (label: String, data: T) -> Unit,
 ) {
-  this.catchWithMassage(label = label, action = catchAction)
-    .collectWithMassage(label = label, action = collectAction)
+  this.catchWithMessage(label = label, action = catchAction)
+    .collectWithMessage(label = label, action = collectAction)
 }
 
 /**

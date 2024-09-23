@@ -3,6 +3,7 @@ package di
 import cafe.adriel.voyager.navigator.Navigator
 import com.liftric.kvault.KVault
 import config.BaseUrlConfig
+import config.JWCH_BASE_URL
 import configureForPlatform
 import dao.ClassScheduleDao
 import dao.Dao
@@ -18,6 +19,7 @@ import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.cookies.cookies
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.statement.HttpReceivePipeline
@@ -37,7 +39,7 @@ import kotlinx.datetime.plus
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.dsl.module
-import repository.EmptyHouseRepository
+import repository.EmptyRoomRepository
 import repository.FeedbackRepository
 import repository.JwchRepository
 import repository.LoginRepository
@@ -53,7 +55,6 @@ import repository.WeatherRepository
 import ui.compose.Action.ActionViewModel
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.ClassSchedule.ClassScheduleViewModel
-import ui.compose.EmptyHouse.EmptyHouseVoyagerViewModel
 import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.Log.LogViewModel
 import ui.compose.Manage.ManageViewModel
@@ -68,7 +69,9 @@ import ui.compose.SplashPage.SplashPageViewModel
 import ui.compose.UndergraduateWebView.UndergraduateWebViewViewModel
 import ui.compose.Weather.WeatherViewModel
 import ui.compose.Webview.WebviewViewModel
+import ui.compose.emptyRoom.EmptyRoomVoyagerViewModel
 import ui.root.RootAction
+import util.CookieUtil
 import util.compose.Toast
 import util.encode.encode
 import viewModelDefinition
@@ -83,7 +86,7 @@ import kotlin.time.toDuration
  * @property kVaultAction UndergraduateKValueAction
  * @property toast Toast 用于提示的toast
  * @property client HttpClient? 用于储存可用的教务处client
- * @property userSchoolId String? 储存可用的学生id
+ * @property sessionId String? 储存可用的学生id
  * @property updateTime Instant client更新时间
  * @constructor
  */
@@ -93,11 +96,11 @@ class Jwch(
   val toast: Toast,
 ) {
   private var client: HttpClient? = null
-  private var userSchoolId: String? = null
+  private var sessionId: String? = null
   private var updateTime = Clock.System.now().plus(-50, DateTimeUnit.MINUTE)
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  /** 获取可用于教务处请求的 client和学生id 如果失败则会返回Pair(null,null) */
+  /** 获取可用于教务处请求的 client和 sessionId 如果失败则会返回Pair(null,null) */
   suspend fun getJwchClient(): Pair<HttpClient?, String?> {
     if (client == null || Clock.System.now() - updateTime > 20.toDuration(DurationUnit.MINUTES)) {
       val newClient =
@@ -137,19 +140,32 @@ class Jwch(
             .map {
               val url = it.call.request.url.toString()
               client = newClient
-              userSchoolId = url.split("id=")[1].split("&")[0]
+              sessionId = url.split("id=")[1].split("&")[0]
               updateClientTime()
             }
             .catch {
               client = null
-              userSchoolId = null
+              sessionId = null
             }
             .collect {}
         }
       }
-      return Pair(newClient, userSchoolId)
+      return Pair(newClient, sessionId)
     }
-    return Pair(client, userSchoolId)
+    return Pair(client, sessionId)
+  }
+
+  suspend fun getSessionIdAndCookie(): Pair<String, List<String>>? {
+    val pair = getJwchClient()
+    val sessionId = pair.second
+    val cookies = pair.first?.cookies(JWCH_BASE_URL)?.filter { it.name == "ASP.NET_SessionId" }
+    if (sessionId == null || cookies == null) {
+      return null
+    } else {
+      // webview cookie toString 转化为raw形式
+      val cookiesString = cookies.map { CookieUtil.transform(it).toString() }
+      return Pair(sessionId, cookiesString)
+    }
   }
 
   /** Update client time 更新client更新时间 */
@@ -417,7 +433,7 @@ fun Module.repositoryList() {
   single { ReportRepository(get()) }
   single { ManageRepository(get()) }
   single { RibbonRepository(get()) }
-  single { EmptyHouseRepository(get()) }
+  single { EmptyRoomRepository(get()) }
   single { JwchRepository() }
 }
 
@@ -442,7 +458,7 @@ fun Module.viewModel() {
   viewModelDefinition { ReleasePageViewModel(get()) }
   viewModelDefinition { ModifierInformationViewModel(get()) }
   viewModelDefinition { LogViewModel() }
-  viewModelDefinition { EmptyHouseVoyagerViewModel(get()) }
+  viewModelDefinition { EmptyRoomVoyagerViewModel(get()) }
   single { WebviewViewModel() }
   single { UndergraduateWebViewViewModel(get()) }
 }

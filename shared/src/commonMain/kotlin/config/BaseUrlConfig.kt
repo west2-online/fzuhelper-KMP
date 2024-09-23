@@ -52,3 +52,5 @@ const val BUGLY_APP_ID = "27422503a8"
 
 const val UMENG_APP_KEY = "5dce696b570df3081900033f"
 const val UMENG_MESSAGE_SECRET = "2931a731b52ca1457b387bcc22cdff32"
+
+const val NEW_SERVER_URL = "https://fzuhelper.west2.online"

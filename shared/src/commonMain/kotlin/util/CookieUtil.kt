@@ -1,6 +1,9 @@
 package util
 
 object CookieUtil {
+  /**
+   * 从ktor的cookie转换为webview的cookie
+   */
   fun transform(cookie: io.ktor.http.Cookie): com.multiplatform.webview.cookie.Cookie {
     return com.multiplatform.webview.cookie.Cookie(
       name = cookie.name,

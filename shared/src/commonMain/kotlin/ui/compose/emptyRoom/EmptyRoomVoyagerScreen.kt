@@ -1,4 +1,4 @@
-package ui.compose.EmptyHouse
+package ui.compose.emptyRoom
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -53,7 +53,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import config.CurrentZone
-import kotlin.jvm.Transient
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -75,6 +74,7 @@ import util.compose.parentSystemControl
 import util.compose.rememberToastState
 import util.network.CollectWithContentInBox
 import util.network.logicWithTypeWithLimit
+import kotlin.jvm.Transient
 
 class BuildForSelect(val isSelect: MutableState<Boolean>, val name: String)
 
@@ -84,7 +84,7 @@ class BuildForSelect(val isSelect: MutableState<Boolean>, val name: String)
  * @property parentPaddingControl ParentPaddingControl
  * @constructor
  */
-class EmptyHouseVoyagerScreen(
+class EmptyRoomVoyagerScreen(
   @Transient val parentPaddingControl: ParentPaddingControl = defaultSelfPaddingControl()
 ) : Screen {
   @OptIn(
@@ -95,7 +95,7 @@ class EmptyHouseVoyagerScreen(
   )
   @Composable
   override fun Content() {
-    val emptyHouseVoyagerViewModel = koinInject<EmptyHouseVoyagerViewModel>()
+    val emptyRoomVoyagerViewModel = koinInject<EmptyRoomVoyagerViewModel>()
     val startClass = remember { mutableStateOf<Int>(1) }
     val endClass = remember { mutableStateOf<Int>(1) }
     val selectDateExpand = remember { mutableStateOf(false) }
@@ -107,7 +107,7 @@ class EmptyHouseVoyagerScreen(
         }
       }
     }
-    val emptyData = emptyHouseVoyagerViewModel.availableEmptyRoomData.collectAsState()
+    val emptyData = emptyRoomVoyagerViewModel.availableEmptyRoomData.collectAsState()
     val selectBuild = remember { mutableStateOf<String?>("旗山校区") }
     val toastState = rememberToastState()
 
@@ -287,7 +287,7 @@ class EmptyHouseVoyagerScreen(
                 ?: run {
                   return@FloatingActionButton
                 }
-              emptyHouseVoyagerViewModel.getAvailableEmptyRoomData(
+              emptyRoomVoyagerViewModel.getAvailableEmptyRoomData(
                 campus = selectCampus.value,
                 date = dateForSend,
                 roomType = "普通教室",

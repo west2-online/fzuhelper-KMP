@@ -45,9 +45,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
-import ui.compose.EmptyHouse.EmptyHouseVoyagerScreen
 import ui.compose.Test.TestVoyagerScreen
 import ui.compose.Webview.GeneralWebViewVoyagerScreen
+import ui.compose.emptyRoom.EmptyRoomVoyagerScreen
 import ui.root.RootAction
 import ui.root.tokenJump
 import util.compose.ParentPaddingControl
@@ -247,7 +247,7 @@ enum class Functions(
   EmptyHouse(
     functionName = "空教室",
     painter = MR.images.ic_empty_room,
-    navigator = { rootAction -> rootAction.navigateToScreen(EmptyHouseVoyagerScreen()) },
+    navigator = { rootAction -> rootAction.navigateToScreen(EmptyRoomVoyagerScreen()) },
   ),
   ChangeMajors(
     functionName = "飞跃手册",
