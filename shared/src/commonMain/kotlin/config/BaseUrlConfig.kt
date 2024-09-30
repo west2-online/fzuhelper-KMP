@@ -3,10 +3,12 @@ package config
 object BaseUrlConfig {
   // 设置是否为debug状态，这会影响日志输出
   const val isDebug = true
+
   //    val BaseUrl = "http://47.116.24.13:9077"
   //    if( isDebug )"http://10.0.2.2:9077" else
   //    const val BaseUrl = "http://47.116.24.13:9077"
   const val BaseUrl = "http://10.0.2.2:9077"
+
   //    const val BaseUrl =  "http://192.168.1.233:9077"
   const val UserAvatar = "${BaseUrl}/static/userAvatar"
   const val CommentImage = "${BaseUrl}/static/comment"
@@ -14,6 +16,9 @@ object BaseUrlConfig {
   const val RibbonImage = "${BaseUrl}/static/ribbon"
   const val OpenImage = "${BaseUrl}/openImage"
   const val FuTalkFeedbackQuestionUrl = "https://api.github.com/repos/Futalker/FuTalk_Question"
+
+  const val NEW_SERVER_URL = "https://fzuhelper.west2.online"
+//  const val NEW_SERVER_URL = "http://121.199.41.144"
 }
 
 // BASE_URL配置
@@ -45,6 +50,7 @@ const val USERINFO_URL = "https://avatar.fzuhelper.w2fzu.com/"
 const val SCHOOL_MAP_URL = "https://map.fzu.edu.cn/#/home"
 const val SCREEN_BASE_URL = "https://launch.w2fzu.com/"
 const val WELCOME_URL = "https://welcome.fzuhelper.w2fzu.com"
+
 // 推送设置
 const val PUSH_PLATFORM = "android_umeng"
 
@@ -52,5 +58,3 @@ const val BUGLY_APP_ID = "27422503a8"
 
 const val UMENG_APP_KEY = "5dce696b570df3081900033f"
 const val UMENG_MESSAGE_SECRET = "2931a731b52ca1457b387bcc22cdff32"
-
-const val NEW_SERVER_URL = "https://fzuhelper.west2.online"

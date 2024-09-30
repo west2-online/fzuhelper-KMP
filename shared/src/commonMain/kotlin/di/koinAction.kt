@@ -253,6 +253,25 @@ class LoginClient(
       .encodeAction()
 )
 
+/**
+ * 用于访问福uu后端的client
+ *
+ * @property client HttpClient
+ * @constructor
+ */
+class FzuHelperClient(
+  val client: HttpClient =
+    HttpClient {
+      install(ContentNegotiation) { json() }
+      install(DefaultRequest) { url(BaseUrlConfig.NEW_SERVER_URL) }
+      install(Logging)
+      install(HttpCookies) {}
+      install(HttpRedirect) { checkHttpMethod = false }
+      configure()
+    }
+      .encodeAction()
+)
+
 class SchoolClient(
   val client: HttpClient =
     HttpClient {
@@ -407,6 +426,7 @@ fun appModule(rootAction: RootAction, systemAction: SystemAction, navigator: Nav
   viewModel()
   single { initStore() }
   single { LoginClient() }
+  single { FzuHelperClient() }
   single { ShareClient() }
   single { WebClient() }
   single { Toast(globalScope) }

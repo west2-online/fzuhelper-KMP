@@ -1,56 +1,44 @@
 package repository
 
-import data.emptyRoom.EmptyData
-import io.ktor.client.HttpClient
+import data.base.BaseResponseData
+import data.emptyRoom.EmptyRoom
+import di.FzuHelperClient
 import io.ktor.client.call.body
-import io.ktor.client.request.forms.submitForm
-import io.ktor.http.parameters
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 /**
- * 空教室的相关仓库层 -- 需要重写
+ * 空教室的相关仓库层
  *
- * @property client HttpClient
+ * @property client FzuHelperClient
  * @constructor
  */
-class EmptyRoomRepository(val client: HttpClient) {
+class EmptyRoomRepository(val client: FzuHelperClient) {
   /**
    * 刷新课程
    *
    * @param campus String
    * @param date String
-   * @param roomType String
-   * @param start String
-   * @param end String
-   * @param build String
-   * @return Flow<EmptyRoomData>
+   * @param startTime String
+   * @param endTime String
+   * @return Flow<List<EmptyRoom>>
    */
-  fun getEmptyRoom(
+  fun getEmptyRoomList(
     campus: String,
     date: String,
-    roomType: String,
-    start: String,
-    end: String,
-    build: List<String>,
-  ): Flow<EmptyData> {
+    startTime: String,
+    endTime: String
+  ): Flow<BaseResponseData<List<EmptyRoom>>> {
     return flow {
       val response =
-        client
-          .apply {}
-          .submitForm(
-            url = "/emptyRoom/class",
-            formParameters =
-              parameters {
-                append("Campus", campus)
-                build.forEach { append("Build", it) }
-                append("RoomType", roomType)
-                append("Date", date)
-                append("Start", start)
-                append("End", end)
-              },
-          )
-          .body<EmptyData>()
+        client.client.get("/api/v1/common/classroom/empty") {
+          parameter("date", date)
+          parameter("campus", campus)
+          parameter("startTime", startTime)
+          parameter("endTime", endTime)
+        }.body<BaseResponseData<List<EmptyRoom>>>()
       emit(response)
     }
   }

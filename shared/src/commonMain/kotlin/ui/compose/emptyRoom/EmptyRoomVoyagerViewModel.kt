@@ -1,12 +1,12 @@
 package ui.compose.emptyRoom
 
-import data.emptyRoom.EmptyItemData
+import data.emptyRoom.EmptyRoom
 import dev.icerock.moko.mvvm.flow.CMutableStateFlow
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import repository.EmptyRoomRepository
-import util.flow.actionWithLabel
+import util.flow.actionWithLabel2
 import util.flow.launchInDefault
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
@@ -25,9 +25,7 @@ import util.network.resetWithLog
 class EmptyRoomVoyagerViewModel(private val emptyRoomRepository: EmptyRoomRepository) :
   ViewModel() {
   private val _availableEmptyRoomData =
-    CMutableStateFlow(
-      MutableStateFlow<NetworkResult<Map<String, List<EmptyItemData>?>?>>(NetworkResult.UnSend())
-    )
+    CMutableStateFlow(MutableStateFlow<NetworkResult<List<EmptyRoom>>>(NetworkResult.UnSend()))
   val availableEmptyRoomData = _availableEmptyRoomData.asStateFlow()
 
   /**
@@ -35,34 +33,31 @@ class EmptyRoomVoyagerViewModel(private val emptyRoomRepository: EmptyRoomReposi
    *
    * @param campus String
    * @param date String
-   * @param roomType String
    * @param start String
    * @param end String
-   * @param build String
    */
   fun getAvailableEmptyRoomData(
     campus: String,
     date: String,
-    roomType: String,
     start: String,
     end: String,
-    build: List<String>,
   ) {
     viewModelScope.launchInDefault {
       _availableEmptyRoomData.logicIfNotLoading {
         emptyRoomRepository
-          .getEmptyRoom(
+          .getEmptyRoomList(
             campus = campus,
             date = date,
-            roomType = roomType,
-            start = start,
-            end = end,
-            build = build,
+            startTime = start,
+            endTime = end,
           )
-          .actionWithLabel(
+          .actionWithLabel2(
             "availableEmptyRoomData/availableEmptyRoom",
             catchAction = { label, error ->
-              _availableEmptyRoomData.resetWithLog(label, networkErrorWithLog(error, "获取空教室失败"))
+              _availableEmptyRoomData.resetWithLog(
+                label,
+                networkErrorWithLog(error, "获取空教室失败"),
+              )
             },
             collectAction = { label, data ->
               _availableEmptyRoomData.resetWithLog(label, data.toNetworkResult())

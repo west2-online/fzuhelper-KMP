@@ -1,6 +1,7 @@
 package util.flow
 
 import config.BaseUrlConfig
+import data.base.BaseResponseData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -19,14 +20,32 @@ import kotlinx.coroutines.launch
  * @return Flow<T>
  * @receiver Flow<T>
  */
+@Deprecated("catchWithMessage2")
 suspend fun <T> Flow<T>.catchWithMessage(
   label: String = "",
   action:
     (suspend kotlinx.coroutines.flow.FlowCollector<T>.(
-      label: String, kotlin.Throwable,
-    ) -> kotlin.Unit)? =
+      label: String, Throwable,
+    ) -> Unit)? =
     null,
 ): Flow<T> {
+  return this.catch {
+    if (BaseUrlConfig.isDebug) {
+      println("$label error : ${it.message.toString()}")
+    }
+    action?.invoke(this, label, it)
+  }
+}
+
+
+suspend fun <T> Flow<BaseResponseData<T>>.catchWithMessage2(
+  label: String = "",
+  action:
+  (suspend kotlinx.coroutines.flow.FlowCollector<BaseResponseData<T>>.(
+    label: String, Throwable,
+  ) -> Unit)? =
+    null,
+): Flow<BaseResponseData<T>> {
   return this.catch {
     if (BaseUrlConfig.isDebug) {
       println("$label error : ${it.message.toString()}")
@@ -42,13 +61,27 @@ suspend fun <T> Flow<T>.catchWithMessage(
  * @param action SuspendFunction2<[@kotlin.ParameterName] String, [@kotlin.ParameterName] T, Unit>
  * @receiver Flow<T>
  */
+@Deprecated("collectWithMessage2")
 suspend fun <T> Flow<T>.collectWithMessage(
   label: String = "",
   action: suspend (label: String, data: T) -> Unit,
 ) {
   this.flowOn(Dispatchers.IO).collect {
     if (BaseUrlConfig.isDebug) {
-      println("$label collect : ${it} ${this.toString()}")
+      println("$label collect : ${it} ${this}")
+    }
+    action(label, it)
+  }
+}
+
+
+suspend fun <T> Flow<BaseResponseData<T>>.collectWithMessage2(
+  label: String = "",
+  action: suspend (label: String, data: BaseResponseData<T>) -> Unit,
+) {
+  this.flowOn(Dispatchers.IO).collect {
+    if (BaseUrlConfig.isDebug) {
+      println("$label collect : ${it} ${this}")
     }
     action(label, it)
   }
@@ -64,16 +97,30 @@ suspend fun <T> Flow<T>.collectWithMessage(
  *   Unit>
  * @receiver Flow<T>
  */
+@Deprecated("actionWithLabel2")
 suspend fun <T> Flow<T>.actionWithLabel(
   label: String,
   catchAction:
     suspend kotlinx.coroutines.flow.FlowCollector<T>.(
-      label: String, error: kotlin.Throwable,
-    ) -> kotlin.Unit,
+      label: String, error: Throwable,
+    ) -> Unit,
   collectAction: suspend (label: String, data: T) -> Unit,
 ) {
   this.catchWithMessage(label = label, action = catchAction)
     .collectWithMessage(label = label, action = collectAction)
+}
+
+
+suspend fun <T> Flow<BaseResponseData<T>>.actionWithLabel2(
+  label: String,
+  catchAction:
+  suspend kotlinx.coroutines.flow.FlowCollector<BaseResponseData<T>>.(
+    label: String, error: Throwable,
+  ) -> Unit,
+  collectAction: suspend (label: String, data: BaseResponseData<T>) -> Unit,
+) {
+  this.catchWithMessage2(label = label, action = catchAction)
+    .collectWithMessage2(label = label, action = collectAction)
 }
 
 /**
