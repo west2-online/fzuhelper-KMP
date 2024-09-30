@@ -72,7 +72,6 @@ $dokka.location:config//LIB_URL/#/PointingToDeclaration/shared/config/-l-i-b_-u
 $dokka.location:config//MY_URL/#/PointingToDeclaration/shared/config/-m-y_-u-r-l.html
 $dokka.location:config//NEW_JWCH_BASE_URL/#/PointingToDeclaration/shared/config/-n-e-w_-j-w-c-h_-b-a-s-e_-u-r-l.html
 $dokka.location:config//NEW_PUSH_URL/#/PointingToDeclaration/shared/config/-n-e-w_-p-u-s-h_-u-r-l.html
-$dokka.location:config//NEW_SERVER_URL/#/PointingToDeclaration/shared/config/-n-e-w_-s-e-r-v-e-r_-u-r-l.html
 $dokka.location:config//PAPER_URL/#/PointingToDeclaration/shared/config/-p-a-p-e-r_-u-r-l.html
 $dokka.location:config//PUSH_PLATFORM/#/PointingToDeclaration/shared/config/-p-u-s-h_-p-l-a-t-f-o-r-m.html
 $dokka.location:config//RECRUITMENT_PUSH_URL/#/PointingToDeclaration/shared/config/-r-e-c-r-u-i-t-m-e-n-t_-p-u-s-h_-u-r-l.html
@@ -93,6 +92,7 @@ $dokka.location:config/BaseUrlConfig///PointingToDeclaration/shared/config/-bas
 $dokka.location:config/BaseUrlConfig/BaseUrl/#/PointingToDeclaration/shared/config/-base-url-config/-base-url.html
 $dokka.location:config/BaseUrlConfig/CommentImage/#/PointingToDeclaration/shared/config/-base-url-config/-comment-image.html
 $dokka.location:config/BaseUrlConfig/FuTalkFeedbackQuestionUrl/#/PointingToDeclaration/shared/config/-base-url-config/-fu-talk-feedback-question-url.html
+$dokka.location:config/BaseUrlConfig/NEW_SERVER_URL/#/PointingToDeclaration/shared/config/-base-url-config/-n-e-w_-s-e-r-v-e-r_-u-r-l.html
 $dokka.location:config/BaseUrlConfig/OpenImage/#/PointingToDeclaration/shared/config/-base-url-config/-open-image.html
 $dokka.location:config/BaseUrlConfig/PostImage/#/PointingToDeclaration/shared/config/-base-url-config/-post-image.html
 $dokka.location:config/BaseUrlConfig/RibbonImage/#/PointingToDeclaration/shared/config/-base-url-config/-ribbon-image.html
@@ -167,25 +167,24 @@ $dokka.location:data.Report.reportData/ReportResponse/code/#/PointingToDeclarati
 $dokka.location:data.Report.reportData/ReportResponse/data/#/PointingToDeclaration/shared/data.Report.reportData/-report-response/data.html
 $dokka.location:data.Report.reportData/ReportResponse/msg/#/PointingToDeclaration/shared/data.Report.reportData/-report-response/msg.html
 $dokka.location:data.Report.reportData/ReportResponse/toNetworkResult/#/PointingToDeclaration/shared/data.Report.reportData/-report-response/to-network-result.html
+$dokka.location:data.base////PointingToDeclaration/shared/data.base/index.html
+$dokka.location:data.base/BaseResponseData///PointingToDeclaration/shared/data.base/-base-response-data/index.html
+$dokka.location:data.base/BaseResponseData/BaseResponseData/#kotlin.Int#kotlin.String#TypeParam(bounds=[kotlin.Any?])/PointingToDeclaration/shared/data.base/-base-response-data/-base-response-data.html
+$dokka.location:data.base/BaseResponseData/code/#/PointingToDeclaration/shared/data.base/-base-response-data/code.html
+$dokka.location:data.base/BaseResponseData/data/#/PointingToDeclaration/shared/data.base/-base-response-data/data.html
+$dokka.location:data.base/BaseResponseData/message/#/PointingToDeclaration/shared/data.base/-base-response-data/message.html
+$dokka.location:data.base/BaseResponseData/toNetworkResult/#/PointingToDeclaration/shared/data.base/-base-response-data/to-network-result.html
 $dokka.location:data.classSchedule////PointingToDeclaration/shared/data.classSchedule/index.html
 $dokka.location:data.classSchedule/GetVerifyCodeFormWest2///PointingToDeclaration/shared/data.classSchedule/-get-verify-code-form-west2/index.html
 $dokka.location:data.classSchedule/GetVerifyCodeFormWest2/GetVerifyCodeFormWest2/#kotlin.String/PointingToDeclaration/shared/data.classSchedule/-get-verify-code-form-west2/-get-verify-code-form-west2.html
 $dokka.location:data.classSchedule/GetVerifyCodeFormWest2/message/#/PointingToDeclaration/shared/data.classSchedule/-get-verify-code-form-west2/message.html
 $dokka.location:data.emptyRoom////PointingToDeclaration/shared/data.emptyRoom/index.html
-$dokka.location:data.emptyRoom/Data///PointingToDeclaration/shared/data.emptyRoom/-data/index.html
-$dokka.location:data.emptyRoom/Data/Data/#kotlin.collections.Map[kotlin.String,kotlin.collections.List[data.emptyRoom.EmptyItemData]?]?/PointingToDeclaration/shared/data.emptyRoom/-data/-data.html
-$dokka.location:data.emptyRoom/Data/EmptyRoomList/#/PointingToDeclaration/shared/data.emptyRoom/-data/-empty-room-list.html
-$dokka.location:data.emptyRoom/EmptyData///PointingToDeclaration/shared/data.emptyRoom/-empty-data/index.html
-$dokka.location:data.emptyRoom/EmptyData/EmptyData/#kotlin.Int#data.emptyRoom.Data#kotlin.String/PointingToDeclaration/shared/data.emptyRoom/-empty-data/-empty-data.html
-$dokka.location:data.emptyRoom/EmptyData/code/#/PointingToDeclaration/shared/data.emptyRoom/-empty-data/code.html
-$dokka.location:data.emptyRoom/EmptyData/data/#/PointingToDeclaration/shared/data.emptyRoom/-empty-data/data.html
-$dokka.location:data.emptyRoom/EmptyData/msg/#/PointingToDeclaration/shared/data.emptyRoom/-empty-data/msg.html
-$dokka.location:data.emptyRoom/EmptyData/toNetworkResult/#/PointingToDeclaration/shared/data.emptyRoom/-empty-data/to-network-result.html
-$dokka.location:data.emptyRoom/EmptyItemData///PointingToDeclaration/shared/data.emptyRoom/-empty-item-data/index.html
-$dokka.location:data.emptyRoom/EmptyItemData/EmptyItemData/#kotlin.String#kotlin.String#kotlin.String/PointingToDeclaration/shared/data.emptyRoom/-empty-item-data/-empty-item-data.html
-$dokka.location:data.emptyRoom/EmptyItemData/Name/#/PointingToDeclaration/shared/data.emptyRoom/-empty-item-data/-name.html
-$dokka.location:data.emptyRoom/EmptyItemData/Number/#/PointingToDeclaration/shared/data.emptyRoom/-empty-item-data/-number.html
-$dokka.location:data.emptyRoom/EmptyItemData/RoomType/#/PointingToDeclaration/shared/data.emptyRoom/-empty-item-data/-room-type.html
+$dokka.location:data.emptyRoom/EmptyRoom///PointingToDeclaration/shared/data.emptyRoom/-empty-room/index.html
+$dokka.location:data.emptyRoom/EmptyRoom/EmptyRoom/#kotlin.String#kotlin.String#kotlin.String#kotlin.String/PointingToDeclaration/shared/data.emptyRoom/-empty-room/-empty-room.html
+$dokka.location:data.emptyRoom/EmptyRoom/build/#/PointingToDeclaration/shared/data.emptyRoom/-empty-room/build.html
+$dokka.location:data.emptyRoom/EmptyRoom/capacity/#/PointingToDeclaration/shared/data.emptyRoom/-empty-room/capacity.html
+$dokka.location:data.emptyRoom/EmptyRoom/location/#/PointingToDeclaration/shared/data.emptyRoom/-empty-room/location.html
+$dokka.location:data.emptyRoom/EmptyRoom/type/#/PointingToDeclaration/shared/data.emptyRoom/-empty-room/type.html
 $dokka.location:data.feedback.FeedbackDetailComment////PointingToDeclaration/shared/data.feedback.FeedbackDetailComment/index.html
 $dokka.location:data.feedback.FeedbackDetailComment/FeedbackDetailComment///PointingToDeclaration/shared/data.feedback.FeedbackDetailComment/-feedback-detail-comment/index.html
 $dokka.location:data.feedback.FeedbackDetailComment/FeedbackDetailComment/FeedbackDetailComment/#kotlin.Int#kotlin.String?#kotlin.String/PointingToDeclaration/shared/data.feedback.FeedbackDetailComment/-feedback-detail-comment/-feedback-detail-comment.html
@@ -910,6 +909,9 @@ $dokka.location:di//encodeAction/io.ktor.client.HttpClient#/PointingToDeclaratio
 $dokka.location:di//globalScope/#/PointingToDeclaration/shared/di/global-scope.html
 $dokka.location:di//repositoryList/org.koin.core.module.Module#/PointingToDeclaration/shared/di/repository-list.html
 $dokka.location:di//viewModel/org.koin.core.module.Module#/PointingToDeclaration/shared/di/view-model.html
+$dokka.location:di/FzuHelperClient///PointingToDeclaration/shared/di/-fzu-helper-client/index.html
+$dokka.location:di/FzuHelperClient/FzuHelperClient/#io.ktor.client.HttpClient/PointingToDeclaration/shared/di/-fzu-helper-client/-fzu-helper-client.html
+$dokka.location:di/FzuHelperClient/client/#/PointingToDeclaration/shared/di/-fzu-helper-client/client.html
 $dokka.location:di/Jwch.VerifyYourAccountError.LoginFailed///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}shared/di/-jwch/-verify-your-account-error/-login-failed/index.html
 $dokka.location:di/Jwch.VerifyYourAccountError.ValidationFailed///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}shared/di/-jwch/-verify-your-account-error/-validation-failed/index.html
 $dokka.location:di/Jwch.VerifyYourAccountError///PointingToDeclaration/shared/di/-jwch/-verify-your-account-error/index.html
@@ -963,9 +965,9 @@ $dokka.location:repository/CourseBeanForTemp/type/#/PointingToDeclaration/share
 $dokka.location:repository/Data///PointingToDeclaration/shared/repository/-data/index.html
 $dokka.location:repository/Data/Data/#/PointingToDeclaration/shared/repository/-data/-data.html
 $dokka.location:repository/EmptyRoomRepository///PointingToDeclaration/shared/repository/-empty-room-repository/index.html
-$dokka.location:repository/EmptyRoomRepository/EmptyRoomRepository/#io.ktor.client.HttpClient/PointingToDeclaration/shared/repository/-empty-room-repository/-empty-room-repository.html
+$dokka.location:repository/EmptyRoomRepository/EmptyRoomRepository/#di.FzuHelperClient/PointingToDeclaration/shared/repository/-empty-room-repository/-empty-room-repository.html
 $dokka.location:repository/EmptyRoomRepository/client/#/PointingToDeclaration/shared/repository/-empty-room-repository/client.html
-$dokka.location:repository/EmptyRoomRepository/getEmptyRoom/#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.collections.List[kotlin.String]/PointingToDeclaration/shared/repository/-empty-room-repository/get-empty-room.html
+$dokka.location:repository/EmptyRoomRepository/getEmptyRoomList/#kotlin.String#kotlin.String#kotlin.String#kotlin.String/PointingToDeclaration/shared/repository/-empty-room-repository/get-empty-room-list.html
 $dokka.location:repository/FeedbackRepository///PointingToDeclaration/shared/repository/-feedback-repository/index.html
 $dokka.location:repository/FeedbackRepository/FeedbackRepository/#io.ktor.client.HttpClient#di.ShareClient/PointingToDeclaration/shared/repository/-feedback-repository/-feedback-repository.html
 $dokka.location:repository/FeedbackRepository/client/#/PointingToDeclaration/shared/repository/-feedback-repository/client.html
@@ -1925,10 +1927,6 @@ $dokka.location:ui.compose.Webview/WebviewViewModel///PointingToDeclaration/sha
 $dokka.location:ui.compose.Webview/WebviewViewModel/WebviewViewModel/#/PointingToDeclaration/shared/ui.compose.Webview/-webview-view-model/-webview-view-model.html
 $dokka.location:ui.compose.emptyRoom////PointingToDeclaration/shared/ui.compose.emptyRoom/index.html
 $dokka.location:ui.compose.emptyRoom//campusList/#/PointingToDeclaration/shared/ui.compose.emptyRoom/campus-list.html
-$dokka.location:ui.compose.emptyRoom/BuildForSelect///PointingToDeclaration/shared/ui.compose.emptyRoom/-build-for-select/index.html
-$dokka.location:ui.compose.emptyRoom/BuildForSelect/BuildForSelect/#androidx.compose.runtime.MutableState[kotlin.Boolean]#kotlin.String/PointingToDeclaration/shared/ui.compose.emptyRoom/-build-for-select/-build-for-select.html
-$dokka.location:ui.compose.emptyRoom/BuildForSelect/isSelect/#/PointingToDeclaration/shared/ui.compose.emptyRoom/-build-for-select/is-select.html
-$dokka.location:ui.compose.emptyRoom/BuildForSelect/name/#/PointingToDeclaration/shared/ui.compose.emptyRoom/-build-for-select/name.html
 $dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerScreen///PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-screen/index.html
 $dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerScreen/Content/#/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-screen/-content.html
 $dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerScreen/EmptyRoomVoyagerScreen/#util.compose.ParentPaddingControl/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-screen/-empty-room-voyager-screen.html
@@ -1936,7 +1934,7 @@ $dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerScreen/parentPaddingControl
 $dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerViewModel///PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-view-model/index.html
 $dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerViewModel/EmptyRoomVoyagerViewModel/#repository.EmptyRoomRepository/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-view-model/-empty-room-voyager-view-model.html
 $dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerViewModel/availableEmptyRoomData/#/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-view-model/available-empty-room-data.html
-$dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerViewModel/getAvailableEmptyRoomData/#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.collections.List[kotlin.String]/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-view-model/get-available-empty-room-data.html
+$dokka.location:ui.compose.emptyRoom/EmptyRoomVoyagerViewModel/getAvailableEmptyRoomData/#kotlin.String#kotlin.String#kotlin.String#kotlin.String/PointingToDeclaration/shared/ui.compose.emptyRoom/-empty-room-voyager-view-model/get-available-empty-room-data.html
 $dokka.location:ui.root////PointingToDeclaration/shared/ui.root/index.html
 $dokka.location:ui.root//RootUi/#di.SystemAction/PointingToDeclaration/shared/ui.root/-root-ui.html
 $dokka.location:ui.root//getRootAction/#/PointingToDeclaration/shared/ui.root/get-root-action.html
@@ -2113,8 +2111,11 @@ $dokka.location:util.encode////PointingToDeclaration/shared/util.encode/index.h
 $dokka.location:util.encode//encode/#kotlin.Int#kotlin.Int#kotlin.Long/PointingToDeclaration/shared/util.encode/encode.html
 $dokka.location:util.flow////PointingToDeclaration/shared/util.flow/index.html
 $dokka.location:util.flow//actionWithLabel/kotlinx.coroutines.flow.Flow[TypeParam(bounds=[kotlin.Any?])]#kotlin.String#kotlin.coroutines.SuspendFunction3[kotlinx.coroutines.flow.FlowCollector[TypeParam(bounds=[kotlin.Any?])],kotlin.String,kotlin.Throwable,kotlin.Unit]#kotlin.coroutines.SuspendFunction2[kotlin.String,TypeParam(bounds=[kotlin.Any?]),kotlin.Unit]/PointingToDeclaration/shared/util.flow/action-with-label.html
+$dokka.location:util.flow//actionWithLabel2/kotlinx.coroutines.flow.Flow[data.base.BaseResponseData[TypeParam(bounds=[kotlin.Any?])]]#kotlin.String#kotlin.coroutines.SuspendFunction3[kotlinx.coroutines.flow.FlowCollector[data.base.BaseResponseData[TypeParam(bounds=[kotlin.Any?])]],kotlin.String,kotlin.Throwable,kotlin.Unit]#kotlin.coroutines.SuspendFunction2[kotlin.String,data.base.BaseResponseData[TypeParam(bounds=[kotlin.Any?])],kotlin.Unit]/PointingToDeclaration/shared/util.flow/action-with-label2.html
 $dokka.location:util.flow//catchWithMessage/kotlinx.coroutines.flow.Flow[TypeParam(bounds=[kotlin.Any?])]#kotlin.String#kotlin.coroutines.SuspendFunction3[kotlinx.coroutines.flow.FlowCollector[TypeParam(bounds=[kotlin.Any?])],kotlin.String,kotlin.Throwable,kotlin.Unit]?/PointingToDeclaration/shared/util.flow/catch-with-message.html
+$dokka.location:util.flow//catchWithMessage2/kotlinx.coroutines.flow.Flow[data.base.BaseResponseData[TypeParam(bounds=[kotlin.Any?])]]#kotlin.String#kotlin.coroutines.SuspendFunction3[kotlinx.coroutines.flow.FlowCollector[data.base.BaseResponseData[TypeParam(bounds=[kotlin.Any?])]],kotlin.String,kotlin.Throwable,kotlin.Unit]?/PointingToDeclaration/shared/util.flow/catch-with-message2.html
 $dokka.location:util.flow//collectWithMessage/kotlinx.coroutines.flow.Flow[TypeParam(bounds=[kotlin.Any?])]#kotlin.String#kotlin.coroutines.SuspendFunction2[kotlin.String,TypeParam(bounds=[kotlin.Any?]),kotlin.Unit]/PointingToDeclaration/shared/util.flow/collect-with-message.html
+$dokka.location:util.flow//collectWithMessage2/kotlinx.coroutines.flow.Flow[data.base.BaseResponseData[TypeParam(bounds=[kotlin.Any?])]]#kotlin.String#kotlin.coroutines.SuspendFunction2[kotlin.String,data.base.BaseResponseData[TypeParam(bounds=[kotlin.Any?])],kotlin.Unit]/PointingToDeclaration/shared/util.flow/collect-with-message2.html
 $dokka.location:util.flow//launchInDefault/kotlinx.coroutines.CoroutineScope#kotlinx.coroutines.CoroutineStart#kotlin.coroutines.SuspendFunction1[kotlinx.coroutines.CoroutineScope,kotlin.Unit]/PointingToDeclaration/shared/util.flow/launch-in-default.html
 $dokka.location:util.flow//launchInIO/kotlinx.coroutines.CoroutineScope#kotlinx.coroutines.CoroutineStart#kotlin.coroutines.SuspendFunction1[kotlinx.coroutines.CoroutineScope,kotlin.Unit]/PointingToDeclaration/shared/util.flow/launch-in-i-o.html
 $dokka.location:util.kValue////PointingToDeclaration/shared/util.kValue/index.html
@@ -2210,6 +2211,7 @@ annotation
 config
 dao
 data.Report.reportData
+data.base
 data.classSchedule
 data.emptyRoom
 data.feedback.FeedbackDetailComment
