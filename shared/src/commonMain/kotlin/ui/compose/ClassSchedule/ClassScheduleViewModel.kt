@@ -474,7 +474,6 @@ class ClassScheduleViewModel(
       classScheduleUiState.startDay.emit(beginDay)
       classScheduleUiState.startYear.emit(beginYear)
       classScheduleUiState.startMonth.emit(beginMonth)
-      //            println(beginMonth)
       //                val calendar = Calendar.getInstance()
       //                calendar.set(beginYear, beginMonth - 1, beginDay, 0, 0, 0)
       // 存储当前设置的学期开学时间
