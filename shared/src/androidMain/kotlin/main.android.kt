@@ -39,8 +39,8 @@ import javax.net.ssl.X509TrustManager
 
 actual fun getPlatformName(): String = "Android"
 
-actual @Composable
-fun Modifier.ComposeSetting(): Modifier {
+@Composable
+actual fun Modifier.ComposeSetting(): Modifier {
   return this.safeContentPadding()
 }
 

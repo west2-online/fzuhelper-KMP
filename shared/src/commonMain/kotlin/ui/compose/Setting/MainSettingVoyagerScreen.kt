@@ -77,7 +77,9 @@ fun AccountSettings(navigator: Navigator) {
           setting.loginType.currentValue.collectAsState().value == TYPE_UNDERGRADUATE
         Row(
           modifier =
-            Modifier.clickable { navigator.push(AccountSettingsVoyagerScreen()) }
+            Modifier.clickable {
+//              navigator.push(AccountSettingsVoyagerScreen()) 意义不明？
+            }
               .padding(vertical = 10.dp)
               .fillMaxWidth(),
           verticalAlignment = Alignment.CenterVertically,

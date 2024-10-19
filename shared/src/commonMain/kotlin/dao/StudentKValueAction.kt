@@ -19,6 +19,8 @@ const val UserSchoolIdKey = "UserSchoolId"
 const val DataStartDayKey = "DataStartDay"
 const val DataStartMonthKey = "DataStartMonth"
 const val DataStartYearKey = "DataStartYear"
+const val ExamToCourseKey = "ExamToCourse"
+const val NeedFreshKey = "NeedFresh"
 
 const val TYPE_UNDERGRADUATE = 0 // 本科生
 const val TYPE_POSTGRADUATE = 1 // 研究生
@@ -35,6 +37,8 @@ const val TYPE_VISITOR = 2 // 游客
  * @property dataStartMonth KValueIntData 对开始月的操作
  * @property dataStartYear KValueIntData 对开始年的操作
  * @property currentYear StateFlow<String?> 根据对currentXq和currentXn的计算获取当前学年 如202301
+ * @property examToCourse KValueIntData 对考试到课程的映射关系的操作
+ * @property needFresh KValueIntData 对是否需要刷新课表的操作
  */
 class UndergraduateKValueAction(private val kValue: KVault) {
 
@@ -47,6 +51,8 @@ class UndergraduateKValueAction(private val kValue: KVault) {
   val dataStartDay = KValueIntData(DataStartDayKey, MutableStateFlow(null), kValue)
   val dataStartMonth = KValueIntData(DataStartMonthKey, MutableStateFlow(null), kValue)
   val dataStartYear = KValueIntData(DataStartYearKey, MutableStateFlow(null), kValue)
+  val examToCourse = KValueIntData(ExamToCourseKey, MutableStateFlow(null), kValue)
+  val needFresh = KValueIntData(NeedFreshKey, MutableStateFlow(null), kValue)
 
   val currentYear =
     currentXq.currentValue

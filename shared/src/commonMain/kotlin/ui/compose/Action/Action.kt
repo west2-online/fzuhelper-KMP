@@ -45,6 +45,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.example.library.MR
 import org.koin.compose.koinInject
+import ui.compose.Exam.ExamVoyagerScreen
 import ui.compose.Test.TestVoyagerScreen
 import ui.compose.Webview.GeneralWebViewVoyagerScreen
 import ui.compose.emptyRoom.EmptyRoomVoyagerScreen
@@ -229,6 +230,11 @@ enum class Functions(
 //    painter = MR.images.not_solved,
 //    { rootAction -> rootAction.navigateFromAnywhereToManage() },
 //  ),
+  Exam(
+    functionName = "考场查询",
+    painter = MR.images.exam,
+    { rootAction -> rootAction.navigateToScreen(ExamVoyagerScreen()) },
+  ),
   Feedback(
     functionName = "反馈",
     painter = MR.images.feedback2,

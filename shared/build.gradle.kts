@@ -147,6 +147,7 @@ kotlin {
                 val androidxRoom = "2.7.0-alpha01"
                 val sqlite = "2.5.0-SNAPSHOT"
 
+//                implementation("androidx.room:room-gradle-plugin:$androidxRoom")
 //                implementation("androidx.room:room-compiler:$androidxRoom")
 //                implementation("androidx:room:room-runtime:$androidxRoom")
 //                implementation("androidx:sqlite:sqlite-bundled:$sqlite")
