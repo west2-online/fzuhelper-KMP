@@ -55,6 +55,7 @@ import repository.WeatherRepository
 import ui.compose.Action.ActionViewModel
 import ui.compose.Authentication.AuthenticationViewModel
 import ui.compose.ClassSchedule.ClassScheduleViewModel
+import ui.compose.Exam.ExamVoyagerScreenViewModel
 import ui.compose.Feedback.FeedBackViewModel
 import ui.compose.Log.LogViewModel
 import ui.compose.Manage.ManageViewModel
@@ -463,6 +464,7 @@ fun Module.repositoryList() {
  * @receiver Module
  */
 fun Module.viewModel() {
+  single { ExamVoyagerScreenViewModel(get(), get(), get(), get(), get()) }
   viewModelDefinition { AuthenticationViewModel(get(), get(), get()) }
   single { ActionViewModel(get(), get()) }
   single { SplashPageViewModel(get(), get()) }

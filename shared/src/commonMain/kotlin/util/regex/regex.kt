@@ -14,7 +14,7 @@ fun matchEmail(email: String): Boolean {
 }
 
 /**
- * 匹配手机好
+ * 匹配手机号
  *
  * @param phone String
  * @return Boolean

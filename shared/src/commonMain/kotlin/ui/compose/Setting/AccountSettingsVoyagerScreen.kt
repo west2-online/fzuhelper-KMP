@@ -11,18 +11,27 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import dao.TYPE_POSTGRADUATE
@@ -55,6 +64,7 @@ class AccountSettingsVoyagerScreen(
     val account = remember {
       mutableStateOf(settingViewModel.kValueAction.schoolPassword.currentValue.value ?: "")
     }
+    val showPassword = remember { mutableStateOf(false) }
     val isUndergraduate = remember {
       val loginType = settingViewModel.kValueAction.loginType.currentValue.value
       mutableStateOf(if (loginType == null) true else loginType == TYPE_UNDERGRADUATE)
@@ -110,7 +120,31 @@ class AccountSettingsVoyagerScreen(
               onValueChange = { account.value = it },
               label = { Text("密码") },
               modifier = Modifier.fillMaxWidth(),
-              visualTransformation = PasswordVisualTransformation('*'),
+              visualTransformation = if (showPassword.value) VisualTransformation.None else PasswordVisualTransformation(
+                '*'
+              ),
+              keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+              trailingIcon = {
+                Row{
+                  //清除密码
+                  if (account.value.isNotEmpty()) {
+                    IconButton(onClick = { account.value = "" }) {
+                      Icon(Icons.Filled.Clear, contentDescription = null)
+                    }
+                  }
+                  //显示密码
+                  IconButton(
+                    onClick = {
+                      showPassword.value = !showPassword.value
+                    },
+                  ) {
+                    Icon(
+                      if (showPassword.value) Icons.Default.Lock else Icons.Outlined.Lock,
+                      contentDescription = null,
+                    )
+                  }
+                }
+              },
             )
             Button(
               onClick = {

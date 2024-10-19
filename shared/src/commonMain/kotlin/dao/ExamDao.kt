@@ -1,8 +1,7 @@
 package dao
 
 import di.database
-import ui.compose.ClassSchedule.ExamBean
-
+import ui.compose.Exam.ExamBean
 /**
  * Exam dao 考试的数据库相关操作
  *

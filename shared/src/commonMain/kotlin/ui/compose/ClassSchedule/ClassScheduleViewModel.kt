@@ -5,7 +5,6 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.fleeksoft.ksoup.Ksoup
 import com.futalk.kmm.CourseBean
-import com.futalk.kmm.Exam
 import configureForPlatform
 import dao.Dao
 import dao.UndergraduateKValueAction
@@ -25,21 +24,26 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Month
+import kotlinx.datetime.isoDayNumber
+import repository.CourseBeanForTemp
 import repository.JwchRepository
 import repository.WeekData
+import ui.compose.Exam.ExamBean
 import util.flow.actionWithLabel
 import util.flow.catchWithMessage
 import util.flow.collectWithMessage
 import util.flow.launchInDefault
-import util.math.parseIntWithNull
 import util.network.NetworkResult
 import util.network.logicIfNotLoading
 import util.network.networkError
-import util.network.networkSuccess
 import util.network.resetWithLog
 import util.network.resetWithoutLog
 
@@ -88,10 +92,12 @@ class ClassScheduleViewModel(
   val scrollState = ScrollState(initial = 0)
   val courseDialog = MutableStateFlow<CourseBean?>(null)
   val refreshState = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
-  val refreshExamState = MutableStateFlow<NetworkResult<String>>(NetworkResult.UnSend())
 
   private var course: Flow<List<CourseBean>> =
     database.classScheduleQueries.getAllCourse().asFlow().mapToList(Dispatchers.IO)
+
+  val examToCourse = MutableStateFlow(kValueAction.examToCourse.currentValue)
+  val needFresh = MutableStateFlow(kValueAction.needFresh.currentValue)
 
   val courseForShow =
     selectYear
@@ -102,64 +108,6 @@ class ClassScheduleViewModel(
 
   val yearOptions =
     database.yearOptionsQueries.getAllYearOptions().asFlow().mapToList(Dispatchers.IO)
-
-  data class ExamAddressParse(
-    val year: Int?,
-    val month: Int?,
-    val startHour: Int?,
-    val startMinute: Int?,
-    val endHour: Int?,
-    val endMinute: Int?,
-    val address: String?,
-  )
-
-  private fun (ExamAddressParse?).verify(): ExamAddressParse? {
-    this ?: return null
-    return if (
-      year == null ||
-        month == null ||
-        startHour == null ||
-        startMinute == null ||
-        endHour == null ||
-        endMinute == null ||
-        address == null
-    ) {
-      null
-    } else {
-      this
-    }
-  }
-
-  data class ExamForShow(val exam: Exam, var examAddressParse: ExamAddressParse?)
-
-  val examList =
-    database.examQueries.selectAllExams().asFlow().mapToList(Dispatchers.IO).map { exams ->
-      exams
-        .filter { it.address.isNotEmpty() }
-        .map { exam ->
-          // 定义正则表达式
-          val datePattern =
-            Regex("""(\d{4})年(\d{2})月(\d{2})日 (\d{2}):(\d{2})-(\d{2}):(\d{2}) (\S+)""")
-              .matchEntire(exam.address)
-          datePattern ?: return@map ExamForShow(exam, null)
-          datePattern.groupValues.let {
-            return@map ExamForShow(
-              exam = exam,
-              examAddressParse =
-                ExamAddressParse(
-                  year = parseIntWithNull(it[1]),
-                  month = parseIntWithNull(it[2]),
-                  startHour = parseIntWithNull(it[3]),
-                  startMinute = parseIntWithNull(it[4]),
-                  endHour = parseIntWithNull(it[5]),
-                  endMinute = parseIntWithNull(it[6]),
-                  address = it[7],
-                ),
-            )
-          }
-        }
-        .map { it.apply { examAddressParse = examAddressParse.verify() } }
-    }
 
   /** 初始化会更新更新当前学期 */
   init {
@@ -263,11 +211,15 @@ class ClassScheduleViewModel(
                 catchAction = { label, error ->
                   refreshState.resetWithLog(label, networkError(error, "更新开学日期失败"))
                 },
-                collectAction = { label, data -> getCourseFromNetwork(id) },
+                collectAction = { label, data ->
+                  getCourseFromNetwork(id)
+                  getExamFromNetwork(id)
+                                },
               )
           }
         }
       }
+      kValueAction.needFresh.setValue(0)
     }
   }
 
@@ -359,69 +311,80 @@ class ClassScheduleViewModel(
     }
   }
 
-  /** 刷新考试数据 */
-  fun refreshExamData() {
-    viewModelScope.launchInDefault {
-      refreshExamState.logicIfNotLoading {
-        val xq = kValueAction.currentXq.currentValue.value
-        val studentData = jwch.getJwchClient()
-        val client =
-          studentData.first
-            ?: run {
-              refreshState.resetWithLog(
-                logLabel = "登录失败",
-                NetworkResult.Error(Throwable("登录失败"), Throwable("登录失败")),
-              )
-              return@logicIfNotLoading
-            }
-        val id =
-          studentData.second
-            ?: run {
-              refreshState.resetWithLog(
-                logLabel = "id有误",
-                NetworkResult.Error(Throwable("获取课程失败"), Throwable("id有误")),
-              )
-              return@logicIfNotLoading
-            }
-        with(client) {
-          with(jwchRepository) {
-            getExamStateHTML(id)
-              .map {
-                return@map (parseExamsHTML(it))
-              }
-              .collect {
-                dao.examDao.insertExam(it)
-                refreshExamState.resetWithoutLog(networkSuccess("刷新考试记录成功"))
-              }
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private suspend fun HttpClient.getExamFromNetwork(id: String) {
+    with(jwchRepository) {
+      with(this@getExamFromNetwork) {
+        getExamStateHTML(id)
+          .catchWithMessage { label, throwable ->
+            refreshState.resetWithLog(label, networkError(throwable, "更新失败"))
           }
-        }
-      }
-    }
-  }
+          .map {
+            return@map (parseExamsHTML(it))
+          }
+          .collect {
+            dao.examDao.insertExam(it)
+            it.filter { it.address.isNotEmpty() }
+              .map { exam ->
+                val matchedCourse =
+                  database.classScheduleQueries.getAllCourse().asFlow().mapToList(Dispatchers.IO)
+                    .flatMapConcat { courseList ->
+                      flowOf(courseList.firstOrNull { it.kcName == exam.name })
+                    }
+                    .firstOrNull()
+                // 定义正则表达式
+                val datePattern =
+                  Regex("""(\d{4})年(\d{2})月(\d{2})日 (\d{2}):(\d{2})-(\d{2}):(\d{2}) (\S+)""")
+                    .matchEntire(exam.address)
+                if (matchedCourse == null || datePattern == null || datePattern.groupValues.size < 9
+                  || datePattern.groupValues.drop(1).any { it.isEmpty() }) {
+                  return@map null
+                }
 
-  /**
-   * 更改当前学年
-   *
-   * @param newValue String
-   */
-  fun changeCurrentYear(newValue: String) {
-    viewModelScope.launchInDefault {
-      selectYear.emit(newValue)
-      jwchRepository.apply {
-        val client =
-          HttpClient() {
-            install(ContentNegotiation) { json() }
-            install(HttpCookies) {}
-            install(HttpRedirect) { checkHttpMethod = false }
-            configureForPlatform()
+                val week = getWeekOfYear(
+                  datePattern.groupValues[1].toInt(),
+                  datePattern.groupValues[2].toInt(),
+                  datePattern.groupValues[3].toInt()
+                )-getWeekOfYear(
+                  classScheduleUiState.startYear.value,
+                  classScheduleUiState.startMonth.value,
+                  classScheduleUiState.startDay.value
+                )+1
+
+                val examCourse = CourseBeanForTemp()
+                datePattern.groupValues.let {
+                  examCourse.apply {
+                    kcName = exam.name
+                    kcLocation = it[8]
+                    kcStartTime = startTime.entries.filter { time ->
+                      time.key <= it[4].toInt() * 60 + it[5].toInt()
+                    }.last().value
+                    kcEndTime = endTime.entries.filter { time ->
+                      time.key >= it[6].toInt() * 60 + it[7].toInt()
+                    }.first().value
+                    kcStartWeek = week
+                    kcEndWeek = week
+                    kcIsDouble = true
+                    kcIsSingle = true
+                    kcWeekend = LocalDate(
+                      it[1].toInt(),
+                      it[2].toInt(),
+                      it[3].toInt()
+                    ).dayOfWeek.isoDayNumber
+                    kcYear = matchedCourse!!.kcYear.toInt()
+                    kcXuenian = matchedCourse!!.kcXuenian.toInt()
+                    kcNote = "${it[4]}:${it[5]}-${it[6]}:${it[7]}"
+                    kcBackgroundId = matchedCourse!!.kcBackgroundId.toInt()
+                    shoukeJihua = matchedCourse!!.shoukeJihua
+                    jiaoxueDagang = matchedCourse!!.jiaoxueDagang
+                    teacher = exam.teacher
+                    priority = matchedCourse!!.priority + 1
+                    type = 1
+                  }
+                  dao.classScheduleDao.insertExamSchedule(examCourse)
+                }
+              }
           }
-        client
-          .getSchoolCalendar(newValue)
-          .retry(10)
-          .map { result ->
-            return@map parseBeginDateReset(newValue, result)
-          }
-          .collectWithMessage { label, data -> }
       }
     }
   }
@@ -455,8 +418,34 @@ class ClassScheduleViewModel(
       val exam = ExamBean(name, xuefen, teacher, address, zuohao)
       exams.add(exam)
     }
-    println(exams)
     return exams
+  }
+
+  /**
+   * 更改当前学年
+   *
+   * @param newValue String
+   */
+  fun changeCurrentYear(newValue: String) {
+    viewModelScope.launchInDefault {
+      selectYear.emit(newValue)
+      jwchRepository.apply {
+        val client =
+          HttpClient() {
+            install(ContentNegotiation) { json() }
+            install(HttpCookies) {}
+            install(HttpRedirect) { checkHttpMethod = false }
+            configureForPlatform()
+          }
+        client
+          .getSchoolCalendar(newValue)
+          .retry(10)
+          .map { result ->
+            return@map parseBeginDateReset(newValue, result)
+          }
+          .collectWithMessage { label, data -> }
+      }
+    }
   }
 
   data class CourseData(val stateHTML: String, val weekData: WeekData)
@@ -485,7 +474,6 @@ class ClassScheduleViewModel(
       classScheduleUiState.startDay.emit(beginDay)
       classScheduleUiState.startYear.emit(beginYear)
       classScheduleUiState.startMonth.emit(beginMonth)
-      //            println(beginMonth)
       //                val calendar = Calendar.getInstance()
       //                calendar.set(beginYear, beginMonth - 1, beginDay, 0, 0, 0)
       // 存储当前设置的学期开学时间
@@ -501,22 +489,38 @@ class ClassScheduleViewModel(
       //                DataManager.endWeek = endWeek
     }
   }
+
+  fun getWeekOfYear(year: Int, month: Int, day: Int): Int {
+    val epochDay = LocalDate(year, month, day).toEpochDays()
+    val firstDayOfYear = LocalDate(year, Month.JANUARY, 1).toEpochDays()
+    return (epochDay - firstDayOfYear) / 7 + 1
+  }
 }
 
-/**
- * 考试的信息
- *
- * @property name String 考试名
- * @property xuefen String 学分
- * @property teacher String 老师
- * @property address String 地址
- * @property zuohao String 座号
- * @constructor
- */
-data class ExamBean(
-  var name: String = "",
-  var xuefen: String = "",
-  var teacher: String = "",
-  var address: String = "",
-  var zuohao: String = "",
+val startTime=mapOf<Int,Int>(
+  8*60+20 to 1,
+  9*60+15 to 2,
+  10*60+20 to 3,
+  11*60+15 to 4,
+  14*60 to 5,
+  14*60+55 to 6,
+  15*60+50 to 7,
+  16*60+45 to 8,
+  19*60 to 9,
+  19*60+55 to 10,
+  20*60+50 to 11,
+)
+
+val endTime=mapOf<Int,Int>(
+  8*60+45+45 to 1,
+  9*60+15+45 to 2,
+  10*60+20+45 to 3,
+  11*60+15+45 to 4,
+  14*60+45 to 5,
+  14*60+55+45 to 6,
+  15*60+50+45 to 7,
+  16*60+45+45 to 8,
+  19*60+45 to 9,
+  19*60+55+45 to 10,
+  20*60+50+45 to 11,
 )

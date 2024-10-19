@@ -1,11 +1,8 @@
 package ui.compose.ClassSchedule
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -29,7 +26,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -46,7 +42,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
@@ -66,14 +61,18 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -84,17 +83,12 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.futalk.kmm.CourseBean
 import com.futalk.kmm.YearOptions
 import config.CurrentZone
-import dev.icerock.moko.resources.compose.painterResource
-import kotlin.jvm.Transient
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.Month
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-import org.example.library.MR
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.koin.compose.koinInject
 import ui.root.getRootAction
@@ -102,11 +96,14 @@ import util.compose.EasyToast
 import util.compose.ParentPaddingControl
 import util.compose.ScrollSelection
 import util.compose.defaultSelfPaddingControl
+import util.compose.drawTag
 import util.compose.parentStatusControl
 import util.compose.rememberToastState
 import util.compose.toastBindNetworkResult
-import util.math.parseInt
 import util.network.CollectWithContentInBox
+import kotlin.jvm.Transient
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 /**
  * 课程表的ui
@@ -124,10 +121,8 @@ fun ClassSchedule(
   classScheduleViewModel: ClassScheduleViewModel = koinInject<ClassScheduleViewModel>(),
   parentPaddingControl: ParentPaddingControl,
 ) {
-  val showExamList = rememberSaveable { mutableStateOf(false) }
   val toastState = rememberToastState()
   toastState.toastBindNetworkResult(classScheduleViewModel.refreshState.collectAsState())
-  toastState.toastBindNetworkResult(classScheduleViewModel.refreshExamState.collectAsState())
   val pageNumber = remember { mutableStateOf(30) }
   val pagerState =
     rememberPagerState(
@@ -140,6 +135,13 @@ fun ClassSchedule(
   val academicYearSelectsDialogState = remember { mutableStateOf(false) }
   val yearOptionsBean by classScheduleViewModel.yearOptions.collectAsState(listOf())
   val currentWeek by classScheduleViewModel.selectWeek.collectAsState()
+  val examToCourse by classScheduleViewModel.examToCourse.collectAsState()
+  val needFresh by classScheduleViewModel.needFresh.collectAsState()
+  LaunchedEffect(needFresh){
+    if(needFresh.value==1){
+      classScheduleViewModel.refreshClassData()
+    }
+  }
   LaunchedEffect(currentWeek) {
     pagerState.animateScrollToPage(classScheduleViewModel.selectWeek.value - 1)
   }
@@ -207,17 +209,6 @@ fun ClassSchedule(
             }
           }
 
-          IconButton(onClick = { showExamList.value = true }) {
-            Icon(
-              painter = painterResource(MR.images.exam).apply { this.intrinsicSize },
-              null,
-              modifier =
-                Modifier.fillMaxHeight()
-                  .aspectRatio(1f)
-                  .wrapContentSize(Alignment.Center)
-                  .fillMaxSize(0.55f),
-            )
-          }
           IconButton(onClick = { classScheduleViewModel.refreshClassData() }) {
             classScheduleViewModel.refreshState
               .collectAsState()
@@ -306,6 +297,9 @@ fun ClassSchedule(
                   classScheduleViewModel.courseForShow.collectAsState().value.let { courseBeans ->
                     courseBeans
                       .filter {
+                        examToCourse.value!=1 && it.type!=1L || examToCourse.value==1
+                      }
+                      .filter {
                         it.kcStartWeek <= page + 1 &&
                           it.kcEndWeek >= page + 1 &&
                           (it.kcIsDouble.toInt() == 1 && ((page + 1) % 2 == 0) ||
@@ -314,7 +308,7 @@ fun ClassSchedule(
                       .filter { courseBeanData ->
                         courseBeanData.kcWeekend.toInt() == weekIndex + 1
                       }
-                      .sortedBy { courseBean -> courseBean.kcStartTime }
+                      .sortedWith ( compareBy<CourseBean> { it.kcStartTime } .thenByDescending { it.priority })
                       .let {
                         it.forEachIndexed { index, item ->
                           if (index == 0) {
@@ -358,124 +352,6 @@ fun ClassSchedule(
         currentYear = currentYear,
       )
     }
-    AnimatedVisibility(
-      showExamList.value,
-      enter = slideInVertically { fullHeight -> fullHeight },
-      exit = slideOutVertically { fullHeight -> fullHeight },
-      modifier = Modifier.fillMaxSize().parentStatusControl(parentPaddingControl),
-    ) {
-      Surface(modifier = Modifier.fillMaxSize()) {
-        val examList = classScheduleViewModel.examList.collectAsState(listOf())
-        Column(modifier = Modifier.padding(10.dp)) {
-          Row(modifier = Modifier.height(64.dp), verticalAlignment = Alignment.CenterVertically) {
-            Row(modifier = Modifier.weight(1f)) {
-              val weekExpanded = remember { mutableStateOf(false) }
-              TextButton(onClick = { weekExpanded.value = true }) { Text(text = "考试列表") }
-            }
-
-            IconButton(onClick = { showExamList.value = false }) {
-              Icon(Icons.Default.KeyboardArrowDown, null)
-            }
-            IconButton(onClick = { classScheduleViewModel.refreshExamData() }) {
-              classScheduleViewModel.refreshExamState
-                .collectAsState()
-                .CollectWithContentInBox(
-                  loading = {
-                    CircularProgressIndicator(
-                      modifier =
-                        Modifier.fillMaxHeight()
-                          .aspectRatio(1f)
-                          .wrapContentSize(Alignment.Center)
-                          .fillMaxSize(0.8f)
-                    )
-                  },
-                  content = {
-                    Icon(
-                      imageVector = Icons.Filled.Refresh,
-                      contentDescription = null,
-                      modifier = Modifier.align(Alignment.Center),
-                    )
-                  },
-                )
-            }
-          }
-          LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(examList.value.filter { it.exam.address.isNotEmpty() }) {
-              Card {
-                Column(
-                  modifier = Modifier.fillMaxWidth().padding(10.dp),
-                  verticalArrangement = Arrangement.spacedBy(5.dp),
-                ) {
-                  with(it) {
-                    val timeDatePeriod = remember { mutableStateOf("解析中...") }
-                    val color = remember { mutableStateOf(Color.Gray) }
-                    LaunchedEffect(Unit) {
-                      timeDatePeriod.value = "解析中..."
-                      color.value = Color.Gray
-                      try {
-                        val datePattern =
-                          Regex(
-                              """(\d{4})年(\d{2})月(\d{2})日 (\d{2}):(\d{2})-(\d{2}):(\d{2}) (\S+)"""
-                            )
-                            .matchEntire(exam.address)
-                        datePattern
-                          ?: run {
-                            timeDatePeriod.value = "解析失败"
-                            color.value = Color.Red
-                            return@LaunchedEffect
-                          }
-                        datePattern.groupValues.let {
-                          val dateTime =
-                            LocalDateTime(
-                                year = parseInt(it[1]),
-                                month = Month(parseInt(it[2])),
-                                dayOfMonth = parseInt(it[3]),
-                                hour = 12,
-                                minute = 12,
-                                second = 12,
-                              )
-                              .dayOfYear
-                          val currentDate =
-                            Clock.System.now().toLocalDateTime(CurrentZone).dayOfYear
-                          if (dateTime - currentDate < 0) {
-                            timeDatePeriod.value = "已经结束"
-                            color.value = Color.Cyan
-                          } else if (dateTime - currentDate == 0) {
-                            timeDatePeriod.value = "就在今天"
-                            color.value = Color.Red
-                          } else {
-                            timeDatePeriod.value = "还有 ${dateTime - currentDate} 天"
-                            when {
-                              dateTime - currentDate > 14 -> {
-                                color.value = Color.Green
-                              }
-                              dateTime - currentDate > 7 && dateTime - currentDate > 3 -> {
-                                color.value = Color.Yellow
-                              }
-                              dateTime - currentDate < 3 -> {
-                                color.value = Color.Red
-                              }
-                            }
-                          }
-                        }
-                      } catch (e: Exception) {
-                        timeDatePeriod.value = "解析失败"
-                        return@LaunchedEffect
-                      }
-                    }
-                    Text(exam.name, fontSize = 20.sp)
-                    Text("学分: ${exam.xuefen}")
-                    Text("老师: ${exam.teacher}")
-                    Text("地址: ${exam.address}")
-                    Text("时间期限: ${timeDatePeriod.value}", color = color.value)
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
     EasyToast(toastState)
   }
 }
@@ -488,10 +364,25 @@ fun ClassSchedule(
  */
 @Composable
 fun ClassCard(courseBean: CourseBean, detailAboutCourse: (CourseBean) -> Unit = {}) {
+  val textMeasurer = rememberTextMeasurer()
   Column(
     modifier =
       Modifier.height(((courseBean.kcEndTime - courseBean.kcStartTime + 1) * 75).toInt().dp)
         .fillMaxWidth()
+        .drawWithContent {
+          this.drawContent()
+          if (courseBean.type != 0L){
+            this.scale(2.5f, Offset.Zero)
+            {
+              drawTag(0xFF4A59D2)
+            }
+            drawText(
+              textMeasurer,
+              " 考试",
+              style = TextStyle(color = Color.White, fontSize = 10.sp),
+            )
+          }
+        }
         .padding(vertical = 2.dp, horizontal = 2.dp)
         .clip(RoundedCornerShape(5.dp))
         .background(
