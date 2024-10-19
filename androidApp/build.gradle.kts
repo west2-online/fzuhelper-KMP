@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     kotlin("multiplatform")
     id("com.android.application")
@@ -28,6 +31,10 @@ android {
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 
+    val configFile = rootProject.file("android-sign.properties")
+    val prop = Properties()
+    prop.load(FileInputStream(configFile))
+
     defaultConfig {
         applicationId = "com.fzu.futalk"
         minSdk = (findProperty("android.minSdk") as String).toInt()
@@ -44,10 +51,10 @@ android {
     }
     signingConfigs {
         create("release") {
-            storeFile = file("futalk.jks")
-            storePassword = "futalk"
-            keyAlias = "futalk"
-            keyPassword = "futalk"
+            keyAlias = prop.getProperty("alias")
+            keyPassword = prop.getProperty("keyPassword")
+            storeFile = File(prop.getProperty("file"))
+            storePassword = prop.getProperty("password")
         }
     }
     buildTypes {

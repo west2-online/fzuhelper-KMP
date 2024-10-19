@@ -1,4 +1,17 @@
-# 开发者指南
+# 福uu Kotlin MultiPlatform 客户端
+
+## 项目信息
+
+本项目由学长的试验项目`FuTalk`发展而来，因此项目中会出现此关键字，我们会在后期进行统一。
+
+签名文件的配置：请在项目根目录创建`android-sign.properties`文件，示例内容如下：
+
+```properties
+file=/path/to/your/key.jks
+keyPassword=keyPassword
+alias=alias
+password=storePassword
+```
 
 ## 代码格式化
 本项目通过 [ktfmt](https://github.com/facebook/ktfmt) 对 kotlin 文件格式化。
@@ -55,11 +68,10 @@ gradlew ktfmtFormat
 - **repository** 仓库层
 - **ui** 负责ui编写
 - ![image-20240516013314655](./README/image-20240516013314655.png)
-  - **compse** 该目录下的每个文件夹都代表一个功能，一个主界面 每个文件夹包括ui和viewModel
+    - **compose** 该目录下的每个文件夹都代表一个功能，一个主界面 每个文件夹包括ui和viewModel
 - **root** 根ui
 - **buildBridge** 负责逻辑的特别平台特别实现
 - **util** 工具类
-- 
 
 ## 架构
 
